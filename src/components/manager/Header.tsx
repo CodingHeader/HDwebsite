@@ -38,7 +38,7 @@ const pageTitleMap: Record<string, string> = {
   "/manager/media": "媒体管理",
   "/manager/partners": "合作院校",
   "/manager/gallery": "证书风采",
-  "/manager/campus": "学院风采",
+  "/manager/campus": "校区环境",
   "/manager/service-guides": "服务指南",
   "/manager/hot-majors": "热门专业",
   "/manager/users": "用户管理",
@@ -130,7 +130,7 @@ export function Header({ user }: HeaderProps) {
               <div className="absolute right-0 top-full mt-2 w-56 bg-[#1a1d27] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="p-4 border-b border-white/[0.06]">
                   <p className="font-medium text-white">{user.nickname || user.username}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{user.email || "admin@example.com"}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{user.email || "admin@xgnedu.cn"}</p>
                 </div>
                 <div className="p-2">
                   <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-gray-300 hover:bg-white/[0.06] hover:text-white transition-colors text-sm">

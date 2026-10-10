@@ -5,12 +5,12 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "党建专栏",
-  description: "弘道经理学院党建工作专栏，展示党建活动、学习动态和党员风采",
+  description: "弘道教育党建工作专栏，展示党建活动、学习动态和党员风采",
 };
 
 export default async function PartyPage() {
   const settings = await getSettings();
-  const schoolName = settings.schoolShortName || "弘道经理学院";
+  const schoolName = settings.schoolShortName || "弘道教育";
 
   const sections = [
     {

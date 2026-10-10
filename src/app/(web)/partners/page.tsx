@@ -3,38 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { GraduationCap, BookOpen, CheckCircle } from "lucide-react";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 import type { Metadata } from "next";
-import { localImageExists, resolvePartnerLogo } from "@/lib/showcase";
 
 export const metadata: Metadata = {
   title: "招生院校",
-  description: "弘道经理学院与多所知名高校合作，为您提供优质的学历提升服务",
+  description: "弘道教育与多所知名高校合作，为您提供优质的学历提升服务",
 };
 
 export default async function PartnersPage() {
-  const partnersRaw = await prisma.partner.findMany({
+  const partners = await prisma.partner.findMany({
     where: { status: "active" },
     orderBy: { sort: "asc" },
   });
-
-  type PartnerRecord = {
-    id: number;
-    name: string;
-    logo: string;
-    website: string | null;
-    sort: number;
-    status: string;
-    createdAt: Date;
-  };
-
-  const partners = await Promise.all(
-    partnersRaw.map(async (partner: PartnerRecord) => ({
-      ...partner,
-      logo: resolvePartnerLogo({
-        logo: partner.logo,
-        imageMissing: !(await localImageExists(partner.logo)),
-      }),
-    }))
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,7 +37,7 @@ export default async function PartnersPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {partners.map((partner: { id: number; name: string; logo: string; website: string | null; sort: number; status: string; createdAt: Date }) => (
+            {partners.map((partner) => (
               <div
                 key={partner.id}
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"

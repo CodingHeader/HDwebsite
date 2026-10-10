@@ -21,12 +21,12 @@ export async function GET() {
 
     // 合并Registry默认值
     const defaults = getDefaultValues();
-    const settingsMap: Record<string, string | null> = settings.reduce(
+    const settingsMap = settings.reduce<Record<string, string | null>>(
       (acc: Record<string, string | null>, setting: { key: string; value: string | null }) => {
         acc[setting.key] = setting.value;
         return acc;
       },
-      {} as Record<string, string | null>
+      {}
     );
 
     // 填充缺失的默认值

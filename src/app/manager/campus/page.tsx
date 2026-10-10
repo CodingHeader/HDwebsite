@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, MapPin, ImageIcon, X } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, MapPin, ImageIcon } from "lucide-react";
 import { managerFetch } from "@/lib/manager-fetch";
 import { ImageField } from "@/components/manager/ImageField";
 
@@ -25,7 +25,6 @@ export default function CampusPage() {
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newCaption, setNewCaption] = useState("");
   const [addingImage, setAddingImage] = useState(false);
-  const [tempImages, setTempImages] = useState<{image: string; caption: string | null}[]>([]);
 
   const fetchItems = useCallback(async () => {
     try {
@@ -43,8 +42,8 @@ export default function CampusPage() {
     const url = editingItem ? `/api/campus/${editingItem.id}` : "/api/campus";
     const method = editingItem ? "PUT" : "POST";
     try {
-      const res = await managerFetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...formData, sort: parseInt(formData.sort), images: tempImages }) });
-      if (res.ok) { setIsDialogOpen(false); resetForm(); fetchItems(); }
+      const res = await managerFetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...formData, sort: parseInt(formData.sort) }) });
+      if (res.ok) { setIsDialogOpen(false); setEditingItem(null); setFormData({ name: "", address: "", sort: "0", status: "active" }); fetchItems(); }
       else alert("保存失败");
     } catch { alert("保存失败"); }
   };
@@ -52,27 +51,7 @@ export default function CampusPage() {
   const handleEdit = (item: Campus) => {
     setEditingItem(item);
     setFormData({ name: item.name, address: item.address || "", sort: item.sort.toString(), status: item.status });
-    setTempImages(item.images?.map(img => ({ image: img.image, caption: img.caption })) || []);
     setIsDialogOpen(true);
-  };
-
-  const handleAddTempImage = () => {
-    if (!newImageUrl) return;
-    setTempImages([...tempImages, { image: newImageUrl, caption: newCaption || null }]);
-    setNewImageUrl("");
-    setNewCaption("");
-  };
-
-  const handleRemoveTempImage = (index: number) => {
-    setTempImages(tempImages.filter((_, i) => i !== index));
-  };
-
-  const resetForm = () => {
-    setFormData({ name: "", address: "", sort: "0", status: "active" });
-    setTempImages([]);
-    setNewImageUrl("");
-    setNewCaption("");
-    setEditingItem(null);
   };
 
   const handleDelete = async (id: number) => {
@@ -136,10 +115,10 @@ export default function CampusPage() {
     <div>
       {/* 头部 + 添加校区弹窗 */}
       <div className="flex items-center justify-between mb-6">
-        <div><h1 className="text-2xl font-bold text-white">学院风采管理</h1><p className="text-gray-400 mt-1">管理学院风采分组及图片展示</p></div>
+        <div><h1 className="text-2xl font-bold text-white">校区分布管理</h1><p className="text-gray-400 mt-1">管理校区及图片展示</p></div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700" onClick={() => { resetForm(); }}>
+            <Button className="bg-red-600 hover:bg-red-700" onClick={() => { setEditingItem(null); setFormData({ name: "", address: "", sort: "0", status: "active" }); }}>
               <Plus className="h-4 w-4 mr-2" />添加校区
             </Button>
           </DialogTrigger>
@@ -156,56 +135,6 @@ export default function CampusPage() {
                   </select>
                 </div>
               </div>
-
-              {/* 图片上传区域 */}
-              <div className="space-y-3 border-t border-white/[0.06] pt-4">
-                <Label className="text-gray-300">校区图片 ({tempImages.length} 张)</Label>
-                
-                {/* 添加图片 */}
-                <div className="space-y-2">
-                  <ImageField value={newImageUrl} onChange={(url) => setNewImageUrl(url)} placeholder="选择图片" />
-                  <div className="flex gap-2">
-                    <Input 
-                      value={newCaption} 
-                      onChange={(e) => setNewCaption(e.target.value)} 
-                      placeholder="图片说明（可选）" 
-                      className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-gray-600 text-sm flex-1"
-                    />
-                    <Button 
-                      type="button" 
-                      onClick={handleAddTempImage} 
-                      disabled={!newImageUrl}
-                      className="bg-red-600 hover:bg-red-700 h-10"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* 已添加图片预览 */}
-                {tempImages.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mt-3">
-                    {tempImages.map((img, idx) => (
-                      <div key={idx} className="relative rounded-lg overflow-hidden border border-white/[0.06] bg-white/[0.03] aspect-video">
-                        <img src={img.image} alt={img.caption || ""} className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTempImage(idx)}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                        {img.caption && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs px-2 py-1 truncate">
-                            {img.caption}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
               <div className="flex gap-3 pt-4"><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">取消</Button><Button type="submit" className="flex-1 bg-red-600 hover:bg-red-700">保存</Button></div>
             </form>
           </DialogContent>

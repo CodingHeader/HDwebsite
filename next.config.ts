@@ -1,11 +1,7 @@
 import type { NextConfig } from "next";
 
-const isWindows = process.platform === "win32";
-
 const nextConfig: NextConfig = {
-  // Windows 本地开发/构建时，standalone traced-files 复制会触发 symlink 警告。
-  // 对当前项目而言，本机运行可直接使用 next start，无需强制生成 standalone。
-  output: isWindows ? undefined : "standalone",
+  output: "standalone",
   devIndicators: false,
   experimental: {
     optimizeCss: false,

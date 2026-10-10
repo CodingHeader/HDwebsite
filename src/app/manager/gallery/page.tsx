@@ -76,7 +76,7 @@ export default function GalleryPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label className="text-gray-300">分类</Label>
                   <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full h-10 px-3 rounded-md border border-white/[0.15] bg-white/[0.04] text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30">
-                    <option value="certificate" className="bg-[#161922]">证书风采</option><option value="exam" className="bg-[#161922]">考试现场</option><option value="campus" className="bg-[#161922]">学院风采</option>
+                    <option value="certificate" className="bg-[#161922]">证书风采</option><option value="exam" className="bg-[#161922]">考试现场</option><option value="campus" className="bg-[#161922]">校区环境</option>
                   </select>
                 </div>
                 <div className="space-y-2"><Label className="text-gray-300">排序</Label><Input type="number" value={formData.sort} onChange={(e) => setFormData({ ...formData, sort: e.target.value })} className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-gray-600" /></div>

@@ -12,18 +12,6 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-type CourseEnrollmentOffering = {
-  id: number;
-  educationType: string;
-  level: string | null;
-  majorCode: string | null;
-  yearTuition: number | null;
-  totalTuition: number | null;
-  feeDetail: string | null;
-  extraFeeNote: string | null;
-  partner: { name: string };
-};
-
 async function getCourse(id: string) {
   const courseId = parseInt(id);
   if (isNaN(courseId)) return null;
@@ -32,15 +20,6 @@ async function getCourse(id: string) {
     where: { id: courseId },
     include: {
       category: { select: { id: true, name: true } },
-      major: {
-        include: {
-          offerings: {
-            where: { status: "active" },
-            include: { partner: { select: { id: true, name: true } } },
-            orderBy: [{ sort: "asc" }, { id: "asc" }],
-          },
-        },
-      },
     },
   });
 
@@ -65,7 +44,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
     getCourse(id),
     getSettings(),
   ]);
-  const contactPhone = settings.contactPhone || "139-0809-1091";
+  const contactPhone = settings.contactPhone || "400-001-5729";
 
   if (!course) {
     notFound();
@@ -131,7 +110,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
               <div className="mb-6">
                 <p className="text-sm text-gray-500 mb-1">课程费用</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-red-600 text-2xl font-bold">{course.priceText || `¥${course.price}`}</span>
+                  <span className="text-red-600 text-2xl font-bold">¥{course.price}</span>
                   <span className="text-gray-400 text-sm">/全程</span>
                 </div>
               </div>
@@ -157,40 +136,6 @@ export default async function CourseDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
-        {course.major?.offerings && course.major.offerings.length > 0 && (
-          <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">招生院校与费用明细</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-gray-500">
-                    <th className="py-3 pr-4">学校</th>
-                    <th className="py-3 pr-4">类型/层次</th>
-                    <th className="py-3 pr-4">专业代码</th>
-                    <th className="py-3 pr-4">年学费</th>
-                    <th className="py-3 pr-4">总费用</th>
-                    <th className="py-3 pr-4">说明</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(course.major.offerings as CourseEnrollmentOffering[]).map((offering) => (
-                    <tr key={offering.id} className="border-b last:border-0">
-                      <td className="py-3 pr-4 font-medium text-gray-900">{offering.partner.name}</td>
-                      <td className="py-3 pr-4 text-gray-600">{offering.educationType}{offering.level ? ` / ${offering.level}` : ""}</td>
-                      <td className="py-3 pr-4 text-gray-600">{offering.majorCode || "--"}</td>
-                      <td className="py-3 pr-4 text-gray-600">{offering.yearTuition === null ? "--" : `¥${offering.yearTuition}`}</td>
-                      <td className="py-3 pr-4 font-semibold text-red-600">{offering.totalTuition === null ? "--" : `¥${offering.totalTuition}`}</td>
-                      <td className="py-3 pr-4 text-gray-500 max-w-sm">
-                        {[offering.feeDetail, offering.extraFeeNote].filter(Boolean).join("；") || "--"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
       </div>
     </div>
     </div>

@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { managerFetch } from "@/lib/manager-fetch";
 import { cn } from "@/lib/utils";
-import { ImageField } from "@/components/manager/ImageField";
 
 interface HomeCardItem {
   id: number;
@@ -27,7 +26,6 @@ interface HomeCardItem {
   gradient: string;
   hoverGradient: string;
   shadow: string;
-  backgroundImage: string | null;
   sort: number;
   status: string;
 }
@@ -40,7 +38,6 @@ const initialFormData = {
   gradient: "from-blue-500 to-blue-600",
   hoverGradient: "from-blue-400 to-blue-500",
   shadow: "shadow-blue-200",
-  backgroundImage: "",
   sort: 0,
   status: "active",
 };
@@ -112,7 +109,6 @@ export default function HomeCardsPage() {
       gradient: card.gradient,
       hoverGradient: card.hoverGradient,
       shadow: card.shadow,
-      backgroundImage: card.backgroundImage || "",
       sort: card.sort,
       status: card.status,
     });
@@ -378,17 +374,6 @@ export default function HomeCardsPage() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* 背景图片上传 */}
-            <div className="space-y-2">
-              <Label className="text-gray-300">卡片背景图（可选）</Label>
-              <p className="text-xs text-gray-500">上传图片后将覆盖渐变色背景</p>
-              <ImageField
-                value={formData.backgroundImage}
-                onChange={(url) => setFormData({ ...formData, backgroundImage: url })}
-                placeholder="点击上传卡片背景图"
-              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

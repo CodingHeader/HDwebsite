@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { success, error } from "@/lib/api-response";
 import { z } from "zod";
 import { authenticateRequest } from "@/lib/api-auth";
-import { localImageExists, resolvePartnerLogo } from "@/lib/showcase";
 
 const partnerSchema = z.object({
   name: z.string().min(1, "院校名称不能为空"),
@@ -12,16 +11,6 @@ const partnerSchema = z.object({
   sort: z.number().default(0),
   status: z.enum(["active", "inactive"]).default("active"),
 });
-
-type PartnerRecord = {
-  id: number;
-  name: string;
-  logo: string;
-  website: string | null;
-  sort: number;
-  status: string;
-  createdAt: Date;
-};
 
 // GET /api/partners - 获取招生院校列表
 export async function GET(request: NextRequest) {
@@ -43,17 +32,7 @@ export async function GET(request: NextRequest) {
       orderBy: [{ sort: "asc" }, { id: "desc" }],
     });
 
-    const normalizedPartners = await Promise.all(
-      partners.map(async (partner: PartnerRecord) => ({
-        ...partner,
-        logo: resolvePartnerLogo({
-          logo: partner.logo,
-          imageMissing: !(await localImageExists(partner.logo)),
-        }),
-      }))
-    );
-
-    return NextResponse.json(success(normalizedPartners));
+    return NextResponse.json(success(partners));
   } catch (err) {
     console.error("Error fetching partners:", err);
     return NextResponse.json(error("获取院校列表失败"), { status: 500 });

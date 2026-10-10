@@ -9,12 +9,11 @@ interface Category {
   name: string;
 }
 
-export interface Course {
+interface Course {
   id: number;
   title: string;
   description: string | null;
   price: number;
-  priceText?: string | null;
   duration: string | null;
   cover: string | null;
   status: string;
@@ -76,11 +75,8 @@ export function CourseCard({ course }: CourseCardProps) {
 
         <div className="flex items-center justify-between">
           <div className="text-red-600">
-            {course.priceText === "--" ? (
-              <span className="text-xl font-bold">--</span>
-            ) : (
-              <span className="text-xl font-bold">{course.priceText || `¥${course.price}`}</span>
-            )}
+            <span className="text-xs">¥</span>
+            <span className="text-xl font-bold">{course.price}</span>
           </div>
           <Link
             href={`/courses/${course.id}`}

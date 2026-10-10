@@ -162,7 +162,7 @@ async function main() {
     create: {
       username: 'admin',
       passwordHash: adminPassword,
-      email: 'admin@example.com',
+      email: 'admin@xgnedu.cn',
       nickname: '超级管理员',
       roleId: superAdminRole.id,
       isActive: true,
@@ -180,7 +180,7 @@ async function main() {
     { parentId: null, level: 1, name: '热门院校', slug: 'partners', link: '/partners', linkType: 'internal', sort: 4 },
     { parentId: null, level: 1, name: '热门专业', slug: 'majors', linkType: 'dropdown', sort: 5 },
     { parentId: null, level: 1, name: '资讯中心', slug: 'news', linkType: 'dropdown', sort: 6 },
-    { parentId: null, level: 1, name: '学习中心', slug: 'learning', link: '/learning', linkType: 'internal', sort: 7 },
+    { parentId: null, level: 1, name: '学习中心', slug: 'learning', link: 'https://xgn.ynzk.net', linkType: 'external', target: '_blank', sort: 7 },
     { parentId: null, level: 1, name: '党建专栏', slug: 'party', link: '/party', linkType: 'internal', sort: 8 },
     { parentId: null, level: 1, name: '联系我们', slug: 'contact', link: '/contact', linkType: 'internal', sort: 9 },
   ];
@@ -350,7 +350,7 @@ async function main() {
       create: {
         id: 4,
         title: '弘道经理学院2026年春季专升本课程招生简章',
-        content: '<p>弘道经理学院2026年春季专升本课程招生工作正式启动，欢迎广大专科毕业生咨询报名。</p><h3>招生专业</h3><ul><li>自考专升本：行政管理、汉语言文学、工商管理、会计</li><li>成考专升本：工商管理、计算机科学、学前教育、护理学</li></ul><h3>报名方式</h3><p>可通过学院官网在线报名，或拨打咨询热线：139-0809-1091</p><p>学院地址：四川省成都市高新区天府大道1700号新世界环球中心N2区601室</p>',
+        content: '<p>弘道经理学院2026年春季专升本课程招生工作正式启动，欢迎广大专科毕业生咨询报名。</p><h3>招生专业</h3><ul><li>自考专升本：行政管理、汉语言文学、工商管理、会计</li><li>成考专升本：工商管理、计算机科学、学前教育、护理学</li></ul><h3>报名方式</h3><p>可通过学院官网在线报名，或拨打咨询热线：400-001-5729</p><p>学院地址：成都市青羊区大石西路12号</p>',
         status: 'published',
         views: 560,
       },
@@ -410,33 +410,34 @@ async function main() {
   // ============================================
   const settingData = [
     // 基本站点信息
-    { key: 'site.title', value: '弘道经理学院', type: 'string', group: 'basic' },
-    { key: 'site.subtitle', value: '弘道经理学院学历提升服务平台', type: 'string', group: 'basic' },
+    { key: 'site.title', value: '新概念学历教育', type: 'string', group: 'basic' },
+    { key: 'site.subtitle', value: '成都市成华区新概念外语培训学校', type: 'string', group: 'basic' },
     { key: 'site.logo', value: '/images/logo.png', type: 'string', group: 'basic' },
     // 学校名称配置（用于全站统一显示）
-    { key: 'schoolFullName', value: '弘道经理学院', type: 'string', group: 'school' },
-    { key: 'schoolShortName', value: '弘道经理学院', type: 'string', group: 'school' },
-    { key: 'schoolSlogan', value: '弘道经理学院，百年大计，教育为本！', type: 'string', group: 'school' },
+    { key: 'schoolFullName', value: '成都市成华区新概念外语培训学校', type: 'string', group: 'school' },
+    { key: 'schoolShortName', value: '新概念学历教育', type: 'string', group: 'school' },
+    { key: 'schoolSlogan', value: '新概念学历教育，百年大计，教育为本！', type: 'string', group: 'school' },
     // 公司简介
-    { key: 'companyIntro', value: '弘道经理学院成立于2004年2月，是一家专注于学历提升、职业证书考试培训的成人教育机构。学校位于四川省成都市高新区天府大道1700号新世界环球中心N2区601室，教学及办公设施设备齐全，设有标准化教室和多功能教室，可为学员提供稳定、规范的学习支持服务。\n\n学校坚持与时俱进、务实创新、诚信办学，长期围绕成人继续教育需求，形成了学历继续教育为主、兼顾职业能力提升的办学特色。我们持续优化课程体系、教学服务和学习支持流程，帮助不同基础的学员稳步完成学习目标。\n\n学校采用线下辅导与线上学习相结合的教学支持方式，为学员提供从咨询、报读、学习到毕业的全流程服务，持续输出规范、可靠、可追踪的学习成果。', type: 'text', group: 'school' },
-    { key: 'statsText', value: '办学26年培养输送各类人才11万余人', type: 'string', group: 'stats' },
+    { key: 'companyIntro', value: '成都市成华区新概念外语培训学校成立于2004年2月，是一家专注于学历提升、职业证书考试培训的成人教育机构。学校位于成都市青羊区大石西路12号，注册地址为成都市成华区双店路66号，总面积超过2000平米，学校教学及办公设施设备齐全，设有26间标准化教室和容纳上百人的多功能教室，共计300台教学及考试专用计算机。\n\n我校与时俱进、创新务实、团结奋进、诚信办学，经过十五年的教育积淀，形成了学历继续教育为主，兼顾非学历培训的面向全社会的办学特色。我校坚持致力于适应国家教育改革及社会发展需求，更好地服务继续教育事业，传播先进的继续教育理念、科学的继续教育教学、助学、培训方法以及前沿的继续教育思想。\n\n我校采用现场助学与在线学习相结合的自学考试助学方式，在各主考、主办院校的支持下，已经培养的成千上万的各类自学考试本专科毕业生。', type: 'text', group: 'school' },
+    { key: 'yearsOfEstablishment', value: '26', type: 'string', group: 'school' },
+    { key: 'totalGraduates', value: '11万', type: 'string', group: 'school' },
     // 联系方式
-    { key: 'contact.phone1', value: '13908091091', type: 'string', group: 'contact' },
-    { key: 'contact.phone2', value: '02885329903', type: 'string', group: 'contact' },
-    { key: 'contact.email', value: '2360618023@qq.com', type: 'string', group: 'contact' },
-    { key: 'contact.address', value: '四川省成都市高新区天府大道1700号新世界环球中心N2区601室', type: 'string', group: 'contact' },
+    { key: 'contact.phone1', value: '13219455550', type: 'string', group: 'contact' },
+    { key: 'contact.phone2', value: '028-61675329', type: 'string', group: 'contact' },
+    { key: 'contact.email', value: 'info@xgnedu.cn', type: 'string', group: 'contact' },
+    { key: 'contact.address', value: '成都市青羊区大石西路12号', type: 'string', group: 'contact' },
     { key: 'contact.worktime', value: '周一至周日 9:00-18:00', type: 'string', group: 'contact' },
     // SEO设置
     { key: 'seo.title', value: '专升本_成人高考_自考_网络教育', type: 'string', group: 'seo' },
     { key: 'seo.keywords', value: '专升本,成人高考,自考,网络教育,学历提升', type: 'string', group: 'seo' },
-    { key: 'seo.description', value: '弘道经理学院提供专升本、成人高考、自考等学历提升服务', type: 'string', group: 'seo' },
+    { key: 'seo.description', value: '新概念学历教育提供专升本、成人高考、自考等学历提升服务', type: 'string', group: 'seo' },
     // 社交链接
-    { key: 'social.wechat', value: 'hongdaoedu', type: 'string', group: 'social' },
-    { key: 'social.weibo', value: 'https://weibo.com/hongdaoedu', type: 'string', group: 'social' },
-    { key: 'social.douyin', value: 'hongdaoedu', type: 'string', group: 'social' },
+    { key: 'social.wechat', value: 'xgnedu', type: 'string', group: 'social' },
+    { key: 'social.weibo', value: 'https://weibo.com/xgnedu', type: 'string', group: 'social' },
+    { key: 'social.douyin', value: 'xgnedu', type: 'string', group: 'social' },
     // ICP备案
-    { key: 'site.icp', value: '蜀ICP备14008479号-2', type: 'string', group: 'basic' },
-    { key: 'site.copyright', value: '© 2026 弘道经理学院 版权所有', type: 'string', group: 'basic' },
+    { key: 'site.icp', value: '蜀ICP备XXXXXXXX号', type: 'string', group: 'basic' },
+    { key: 'site.copyright', value: '© 2026 新概念学历教育 版权所有', type: 'string', group: 'basic' },
   ];
 
   for (const setting of settingData) {
@@ -574,9 +575,8 @@ async function main() {
     { code: 'partners', label: '合作院校', icon: 'School', path: '/manager/partners', sort: 1, permission: 'partner:list' },
     { code: 'gallery', label: '证书风采', icon: 'Award', path: '/manager/gallery', sort: 2, permission: 'gallery:list' },
     { code: 'hot-majors', label: '热门专业', icon: 'Flame', path: '/manager/hot-majors', sort: 3, permission: 'content:edit' },
-    { code: 'enrollment-offerings', label: '招生计划', icon: 'BookOpen', path: '/manager/enrollment-offerings', sort: 4, permission: 'course:list' },
-    { code: 'campus', label: '校区环境', icon: 'MapPin', path: '/manager/campus', sort: 5, permission: 'campus:list' },
-    { code: 'service-guides', label: '服务指南', icon: 'HelpCircle', path: '/manager/service-guides', sort: 6, permission: 'service:list' },
+    { code: 'campus', label: '校区环境', icon: 'MapPin', path: '/manager/campus', sort: 4, permission: 'campus:list' },
+    { code: 'service-guides', label: '服务指南', icon: 'HelpCircle', path: '/manager/service-guides', sort: 5, permission: 'service:list' },
   ];
 
   for (const menu of enrollmentSubMenus) {
@@ -657,31 +657,6 @@ async function main() {
     } else {
       await prisma.homeCard.update({ where: { id: existing.id }, data: card });
     }
-  }
-
-  // ============================================
-  // Phase 3.2: 创建默认AI配置
-  // ============================================
-  const existingAIConfig = await prisma.aIConfig.findFirst({
-    where: { name: 'ModelScope Qwen' }
-  });
-  if (!existingAIConfig) {
-    await prisma.aIConfig.create({
-      data: {
-        name: 'ModelScope Qwen',
-        apiEndpoint: 'https://api-inference.modelscope.cn/v1',
-        apiKey: 'sk-请替换为您的API密钥',
-        model: 'qwen2.5-7b-instruct',
-        systemPrompt: '你是弘道经理学院的AI课程顾问，专业解答学历提升相关问题。请简洁、准确地回答用户关于自学考试、成人高考、开放大学等问题。',
-        greeting: '您好，我是弘道经理学院在线客服。请简短告诉我您最关心的1-2个问题（例：学费多少、哪家院校、多久能毕业），我直接给您答案，不绕弯。',
-        isActive: true,
-        temperature: 0.7,
-        maxTokens: 1000,
-        rateLimit: 60,
-        dailyQuota: 1000,
-      },
-    });
-    console.log('📌 AI配置: 已创建默认ModelScope Qwen配置');
   }
 
   console.log('✅ 种子数据创建成功！');

@@ -26,8 +26,8 @@ interface HeaderProps {
  */
 export function Header({ 
   siteLogoIcon = "/images/logo_card.png",
-  contactPhone1 = "139-0809-1091",
-  contactPhone2 = "028-8532-9903"
+  contactPhone1 = "132-1945-5550",
+  contactPhone2 = "028-6167-5329"
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -43,7 +43,7 @@ export function Header({
           >
             <Image
               src={siteLogoIcon}
-              alt="弘道经理学院"
+              alt="弘道教育"
               width={240}
               height={46}
               className="object-contain"

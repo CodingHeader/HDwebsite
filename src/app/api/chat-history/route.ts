@@ -75,20 +75,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
     const search = searchParams.get("search") || "";
     const sessionId = searchParams.get("sessionId") || "";
-    const mode = searchParams.get("mode") || "sessions"; // "sessions" | "messages"
 
-    // 模式1: 查看特定会话的所有消息
-    if (sessionId && mode === "messages") {
-      const messages = await prisma.aIChatHistory.findMany({
-        where: { sessionId },
-        orderBy: { createdAt: "asc" },
-      });
-      return NextResponse.json(
-        success({ messages, sessionId }, "获取会话消息成功")
-      );
-    }
-
-    // 模式2: 按会话分组列表（默认）
     const where: Record<string, unknown> = {};
     if (search) {
       where.OR = [
@@ -97,57 +84,24 @@ export async function GET(request: NextRequest) {
         { conversationId: { contains: search } },
       ];
     }
+    if (sessionId) {
+      where.sessionId = sessionId;
+    }
 
-    // 获取所有匹配的sessionId列表（去重）
-    const allSessions = await prisma.aIChatHistory.findMany({
-      where,
-      select: { sessionId: true },
-      distinct: ["sessionId"],
-    });
-
-    const totalSessions = allSessions.length;
-    const sessionIds = allSessions
-      .slice((page - 1) * pageSize, page * pageSize)
-      .map((s: { sessionId: string }) => s.sessionId);
-
-    // 获取每个会话的汇总信息
-    const sessions = await Promise.all(
-      sessionIds.map(async (sid: string) => {
-        const messages = await prisma.aIChatHistory.findMany({
-          where: { sessionId: sid },
-          orderBy: { createdAt: "asc" },
-        });
-
-        const firstMessage = messages[0];
-        const lastMessage = messages[messages.length - 1];
-        const userMessages = messages.filter((m: { role: string }) => m.role === "user");
-        const aiMessages = messages.filter((m: { role: string }) => m.role === "assistant");
-
-        return {
-          sessionId: sid,
-          messageCount: messages.length,
-          userMessageCount: userMessages.length,
-          aiMessageCount: aiMessages.length,
-          firstMessageAt: firstMessage?.createdAt || null,
-          lastMessageAt: lastMessage?.createdAt || null,
-          firstMessage: firstMessage?.message || "",
-          lastMessage: lastMessage?.message || "",
-          ipAddress: firstMessage?.ipAddress,
-          pageUrl: firstMessage?.pageUrl,
-        };
-      })
-    );
+    const [items, total] = await Promise.all([
+      prisma.aIChatHistory.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.aIChatHistory.count({ where }),
+    ]);
 
     return NextResponse.json(
       success(
-        {
-          items: sessions,
-          total: totalSessions,
-          page,
-          pageSize,
-          totalPages: Math.ceil(totalSessions / pageSize),
-        },
-        "获取会话列表成功"
+        { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+        "获取对话日志成功"
       )
     );
   } catch (err) {

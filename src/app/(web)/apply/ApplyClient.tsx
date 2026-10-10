@@ -136,7 +136,7 @@ interface ApplyClientProps {
 
 export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProps) {
   const { getSetting } = useSettings();
-  const schoolShortName = getSetting("schoolShortName", "弘道经理学院");
+  const schoolShortName = getSetting("schoolShortName", "弘道教育");
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -243,7 +243,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
       const reply =
         json?.code === 200 && typeof json?.data?.reply === "string"
           ? json.data.reply
-          : (json?.message || `AI 暂时不可用（HTTP ${res.status}），请稍后重试或拨打 139-0809-1091。`);
+          : (json?.message || `AI 暂时不可用（HTTP ${res.status}），请稍后重试或拨打 132-1945-5550。`);
 
       setMessages((prev) => [
         ...prev,
@@ -259,8 +259,8 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
       const isAbort = (err as Error | undefined)?.name === "AbortError";
       console.warn("[chat/completion] failed", err);
       const fallback = isAbort
-        ? "AI 响应超时（可能模型冷启动），已为您转接人工。请拨打 139-0809-1091 咨询。"
-        : "网络异常，请稍后重试。如需加急可拨打 139-0809-1091。";
+        ? "AI 响应超时（可能模型冷启动），已为您转接人工。请拨打 132-1945-5550 或加微信 xgnedu 咨询。"
+        : "网络异常，请稍后重试。如需加急可拨打 132-1945-5550。";
       setMessages((prev) => [
         ...prev,
         {
@@ -462,7 +462,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    <span>{getSetting("contactPhone", "139-0809-1091")}</span>
+                    <span>{getSetting("contactPhone", "132-1945-5550")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
@@ -470,7 +470,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
                   </div>
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5" />
-                    <span>{getSetting("address", "四川省成都市高新区天府大道1700号新世界环球中心N2区601室")}</span>
+                    <span>{getSetting("address", "成都市青羊区大石西路12号")}</span>
                   </div>
                 </div>
               </div>

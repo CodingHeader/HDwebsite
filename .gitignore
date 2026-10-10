@@ -49,25 +49,3 @@ next-env.d.ts
 temp/
 
 /src/generated/prisma
-
-# Archives
-hdwebsite_0429.zip
-public.zip
-
-# Test artifacts
-screenshots/
-dev.log
-dev-error.log
-dev-output.log
-dev-homepage.png
-homepage.html
-homepage_test.png
-
-# Planning temp files
-findings.md
-task_plan.md
-
-# IDE
-.aider.conf.yml
-.windsurf/
-.windsurfrules

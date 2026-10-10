@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
-  const siteName = settings.siteName || "弘道经理学院";
+  const siteName = settings.siteName || "弘道教育";
   return {
     title: {
       default: siteName,
@@ -27,19 +27,18 @@ export default async function WebLayout({
   const settings = await getSettings();
 
   // 提取常用设置
-  const schoolShortName = settings.schoolShortName || "弘道经理学院";
+  const schoolShortName = settings.schoolShortName || "弘道教育";
   const welcomeText = settings.welcomeText || `${schoolShortName} 欢迎您!`;
   const siteLogo = settings.siteLogo || "/images/logo.png";
   const siteLogoIcon = settings.siteLogoIcon || "/images/logo_card.png";
-  const contactPhone1 = settings.contactPhone1 || "139-0809-1091";
-  const contactPhone2 = settings.contactPhone2 || "028-8532-9903";
-  const wechatQrCode = settings.wechatQrCode || "";
+  const contactPhone1 = settings.contactPhone1 || "132-1945-5550";
+  const contactPhone2 = settings.contactPhone2 || "028-6167-5329";
   const footerSlogan = settings.footerSlogan || "专注学历提升教育";
-  const footerDescription = settings.footerDescription || "弘道经理学院致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。";
+  const footerDescription = settings.footerDescription || "弘道教育致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。";
   const footerLogo = settings.footerLogo || "";
-  const address = settings.address || "四川省成都市高新区天府大道1700号新世界环球中心N2区601室";
-  const contactEmail = settings.contactEmail || "2360618023@qq.com";
-  const icp = settings.icp || "蜀ICP备14008479号-2";
+  const address = settings.address || "成都市青羊区大石西路12号";
+  const contactEmail = settings.contactEmail || "contact@hdaomanager.com";
+  const icp = settings.icp || "蜀ICP备XXXXXXXX号";
   const workHours = settings.workHours || "周一至周日 9:00-18:00";
 
   return (
@@ -68,7 +67,7 @@ export default async function WebLayout({
         workHours={workHours}
       />
       {/* 右侧悬浮组件 [FLOAT-001~020] 20交互点 */}
-      <FloatingContact phone={contactPhone1} wechatQrCode={wechatQrCode} />
+      <FloatingContact phone={contactPhone1} />
     </div>
   );
 }

@@ -1,0 +1,216 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.145 0 0);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-heading: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand Colors */
+  --color-brand-50: oklch(0.971 0.013 17.5);
+  --color-brand-100: oklch(0.936 0.032 18.1);
+  --color-brand-200: oklch(0.885 0.062 20.3);
+  --color-brand-300: oklch(0.802 0.109 24.3);
+  --color-brand-400: oklch(0.696 0.162 27.8);
+  --color-brand-500: oklch(0.577 0.245 27.3);
+  --color-brand-600: oklch(0.505 0.213 27.5);
+  --color-brand-700: oklch(0.442 0.177 26.8);
+  --color-brand-800: oklch(0.37 0.138 25.6);
+  --color-brand-900: oklch(0.284 0.095 23.9);
+  --color-brand-950: oklch(0.195 0.042 22.4);
+  --color-sidebar-ring: oklch(0.708 0 0);
+  --color-sidebar-border: oklch(0.922 0 0);
+  --color-sidebar-accent-foreground: oklch(0.205 0 0);
+  --color-sidebar-accent: oklch(0.97 0 0);
+  --color-sidebar-primary-foreground: oklch(0.985 0 0);
+  --color-sidebar-primary: oklch(0.205 0 0);
+  --color-sidebar-foreground: oklch(0.145 0 0);
+  --color-sidebar: oklch(0.985 0 0);
+  --color-chart-5: oklch(0.269 0 0);
+  --color-chart-4: oklch(0.371 0 0);
+  --color-chart-3: oklch(0.439 0 0);
+  --color-chart-2: oklch(0.556 0 0);
+  --color-chart-1: oklch(0.87 0 0);
+  --color-ring: oklch(0.708 0 0);
+  --color-input: oklch(0.922 0 0);
+  --color-border: oklch(0.922 0 0);
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-accent-foreground: oklch(0.205 0 0);
+  --color-accent: oklch(0.97 0 0);
+  --color-muted-foreground: oklch(0.556 0 0);
+  --color-muted: oklch(0.97 0 0);
+  --color-secondary-foreground: oklch(0.205 0 0);
+  --color-secondary: oklch(0.97 0 0);
+  --color-primary-foreground: oklch(0.985 0 0);
+  --color-primary: #da251d;
+  --color-popover-foreground: oklch(0.145 0 0);
+  --color-popover: oklch(1 0 0);
+  --color-card-foreground: oklch(0.145 0 0);
+  --color-card: oklch(1 0 0);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.375rem;
+  --radius-4xl: 1.625rem;
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #da251d;
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    outline-color: oklch(0.708 0 0 / 0.5);
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* TipTap 深色编辑器自定义样式 */
+.tiptap-editor-dark .ProseMirror {
+  color: rgb(229 231 235); /* gray-200 */
+  min-height: inherit;
+  outline: none;
+}
+
+.tiptap-editor-dark .ProseMirror p.is-editor-empty:first-child::before {
+  color: rgb(107 114 128); /* gray-500 */
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-editor-dark .ProseMirror a {
+  color: rgb(248 113 113); /* red-400 */
+  text-decoration: underline;
+}
+
+.tiptap-editor-dark .ProseMirror blockquote {
+  border-left: 3px solid rgb(248 113 113 / 0.5);
+  padding-left: 1rem;
+  color: rgb(156 163 175); /* gray-400 */
+}
+
+.tiptap-editor-dark .ProseMirror code {
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(251 191 36); /* amber-400 */
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.tiptap-editor-dark .ProseMirror pre {
+  background: rgb(0 0 0 / 0.3);
+  color: rgb(229 231 235);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.tiptap-editor-dark .ProseMirror pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.tiptap-editor-dark .ProseMirror ::selection {
+  background: rgb(239 68 68 / 0.3);
+}
+
+.tiptap-editor-dark .ProseMirror h1,
+.tiptap-editor-dark .ProseMirror h2,
+.tiptap-editor-dark .ProseMirror h3,
+.tiptap-editor-dark .ProseMirror h4 {
+  color: rgb(255 255 255);
+}
+
+.tiptap-editor-dark .ProseMirror strong {
+  color: rgb(255 255 255);
+  font-weight: 600;
+}
+
+.tiptap-editor-dark .ProseMirror hr {
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+.tiptap-editor-dark .ProseMirror img {
+  border-radius: 0.5rem;
+  max-width: 100%;
+}

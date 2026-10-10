@@ -36,7 +36,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   // 获取文章详情
-  const article = await prisma.article.findFirst({
+  const article = await prisma.article.findUnique({
     where: { id: articleId, status: "published" },
     include: {
       author: { select: { id: true, username: true, nickname: true } },
@@ -291,7 +291,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     return { title: "文章不存在" };
   }
 
-  const siteName = settings.siteName || "弘道经理学院";
+  const siteName = settings.siteName || "弘道教育";
   const schoolShortName = settings.schoolShortName || siteName;
   const resolvedTitle = (article.seoTitle || article.title).trim();
   const title = hasBrandSuffix(resolvedTitle, [siteName, schoolShortName])

@@ -8,13 +8,11 @@ const courseSchema = z.object({
   title: z.string().min(1, "标题不能为空"),
   description: z.string().optional(),
   price: z.number().min(0, "价格不能为负数").default(0),
-  priceText: z.string().optional().nullable(),
   duration: z.string().optional(),
   outline: z.string().optional(),
   cover: z.string().optional(),
   status: z.enum(["active", "inactive"]).default("active"),
   categoryId: z.number().min(1, "请选择分类"),
-  majorId: z.number().optional().nullable(),
 });
 
 // GET /api/courses - 获取课程列表
@@ -42,7 +40,7 @@ export async function GET(request: NextRequest) {
     const [courses, total] = await Promise.all([
       prisma.course.findMany({
         where,
-        include: { category: true, major: true },
+        include: { category: true },
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: "desc" },

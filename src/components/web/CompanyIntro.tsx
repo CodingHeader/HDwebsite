@@ -4,28 +4,21 @@ interface CompanyIntroProps {
   videoUrl?: string;
   introText: string;
   slogan?: string;
-  showOverlay?: boolean;
 }
 
-export function CompanyIntro({
-  videoUrl,
-  introText,
-  slogan,
-  showOverlay = true,
-}: CompanyIntroProps) {
+export function CompanyIntro({ videoUrl, introText, slogan }: CompanyIntroProps) {
   return (
     <section className="bg-white py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {showOverlay && (
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
-              公司简介
-            </h2>
-            {slogan && (
-              <p className="text-gray-500">{slogan}</p>
-            )}
-          </div>
-        )}
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
+            公司简介
+          </h2>
+          {slogan && (
+            <p className="text-gray-500">{slogan}</p>
+          )}
+        </div>
 
         {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -51,17 +44,16 @@ export function CompanyIntro({
             )}
           </div>
 
-          {showOverlay && (
-            <div className="flex flex-col justify-center">
-              <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed space-y-4">
-                {introText.split("\n\n").map((paragraph, index) => (
-                  <p key={index} className="text-justify">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+          {/* 右侧：文字介绍 */}
+          <div className="flex flex-col justify-center">
+            <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed space-y-4">
+              {introText.split("\n\n").map((paragraph, index) => (
+                <p key={index} className="text-justify">
+                  {paragraph}
+                </p>
+              ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>

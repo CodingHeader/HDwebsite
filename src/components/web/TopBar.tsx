@@ -17,7 +17,7 @@ interface TopBarProps {
  * - 001-001: 联系我们 → 跳转 /contact
  * - 001-002: 关于我们 → 跳转 /about
  */
-export function TopBar({ welcomeText = "弘道经理学院 欢迎您!" }: TopBarProps) {
+export function TopBar({ welcomeText = "弘道教育 欢迎您!" }: TopBarProps) {
   return (
     <div className="w-full bg-[#da251d] text-white text-sm">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">

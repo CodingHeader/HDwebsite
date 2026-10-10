@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "弘道经理学院",
+  title: "弘道教育",
   description: "专注专升本教育，助力学历提升",
   icons: {
     icon: [

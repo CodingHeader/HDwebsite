@@ -55,12 +55,12 @@ export function TopEntranceSection({ news, serviceGuides }: TopEntranceSectionPr
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* 左侧：3个大入口 */}
-          <div className="md:col-span-4 lg:col-span-3 space-y-4 self-center">
+          <div className="md:col-span-12 lg:col-span-3 space-y-4">
             {leftEntrances.map((item) => (
               <Link
                 key={item.title}
                 href={item.link}
-                className={`flex items-center gap-4 p-4 rounded-lg ${item.bg} hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 w-full`}
+                className={`flex items-center gap-4 p-4 rounded-lg ${item.bg} hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 w-full md:w-auto`}
               >
                 <div className={`flex-shrink-0 w-12 h-12 rounded-full ${item.iconBg} flex items-center justify-center shadow-sm`}>
                   {item.icon}

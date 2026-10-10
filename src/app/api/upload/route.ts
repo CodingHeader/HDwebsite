@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const category = formData.get("category") as string || "upload";
 
     if (!file) {
       return NextResponse.json(error("请选择文件"), { status: 400 });
@@ -42,8 +41,8 @@ export async function POST(request: NextRequest) {
     const user = authHeader ? await getCurrentUser(authHeader) : null;
     const uploaderId = user?.id || 1;
 
-    // 使用统一上传服务，传入分类
-    const result = await uploadFile(file, uploaderId, category);
+    // 使用统一上传服务
+    const result = await uploadFile(file, uploaderId, "upload");
 
     return NextResponse.json(
       success({

@@ -85,7 +85,7 @@ export default async function ServicePage({ params }: PageProps) {
                   <p className="text-lg mb-2">该指南暂未配置详细内容</p>
                   <p className="text-sm">请前往{" "}
                     <Link href="/apply?source=guide" className="text-blue-600 underline">在线咨询</Link>{" "}
-                    获取权威解答，或拨打 {settings.contactPhone || "139-0809-1091"}。
+                    获取权威解答，或拨打 {settings.contactPhone || "132-1945-5550"}。
                   </p>
                 </div>
               )}
@@ -95,7 +95,7 @@ export default async function ServicePage({ params }: PageProps) {
                 <div className="bg-red-50 rounded-xl p-6">
                   <h3 className="font-bold text-red-700 mb-2">还有更多疑问？</h3>
                   <p className="text-sm text-red-600 mb-4">
-                    弘道经理学院 1 对 1 课程顾问 2 分钟内响应，帮您精准定位院校 / 专业 / 学费。
+                    弘道教育 1 对 1 课程顾问 2 分钟内响应，帮您精准定位院校 / 专业 / 学费。
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <Link
@@ -105,10 +105,10 @@ export default async function ServicePage({ params }: PageProps) {
                       在线咨询 →
                     </Link>
                     <a
-                      href={`tel:${(settings.contactPhone || "13908091091").replace(/-/g, "")}`}
+                      href={`tel:${(settings.contactPhone || "13219455550").replace(/-/g, "")}`}
                       className="inline-flex items-center px-4 py-2 rounded-lg border border-red-200 text-red-700 text-sm font-medium hover:bg-white transition-colors"
                     >
-                      电话咨询：{settings.contactPhone || "139-0809-1091"}
+                      电话咨询：{settings.contactPhone || "132-1945-5550"}
                     </a>
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export default async function ServicePage({ params }: PageProps) {
               <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-4">
                 <h3 className="font-bold text-gray-900 mb-4">其它服务</h3>
                 <ul className="space-y-2">
-                  {siblings.map((s: { id: number; slug: string | null; title: string; icon: string; link: string }) => {
+                  {siblings.map((s) => {
                     const SibIcon = resolveServiceGuideIcon(s.icon);
                     const href = s.slug ? `/services/${s.slug}` : s.link;
                     return (

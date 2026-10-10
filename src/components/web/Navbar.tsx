@@ -25,7 +25,7 @@ const aboutSubmenu = [
   { id: "SUB-002-003", label: "名师推荐", href: "/about/teachers" },
 ];
 
-// 二级菜单数据 - 学历提升 (3项, 9交互点) - 已剔除扩展升学项
+// 二级菜单数据 - 学历提升 (3项, 9交互点) - 已剔除考研
 const educationSubmenu = [
   { id: "003-010", label: "自学考试", href: "/courses/self-study" },
   { id: "003-011", label: "成人高考", href: "/courses/adult-exam" },

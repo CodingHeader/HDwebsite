@@ -8,13 +8,11 @@ const courseSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   price: z.number().min(0).optional(),
-  priceText: z.string().optional().nullable(),
   duration: z.string().optional(),
   outline: z.string().optional(),
   cover: z.string().optional(),
   status: z.enum(["active", "inactive"]).optional(),
   categoryId: z.number().min(1).optional(),
-  majorId: z.number().optional().nullable(),
 });
 
 // GET /api/courses/[id] - 获取课程详情
@@ -26,7 +24,7 @@ export async function GET(
     const { id } = await params;
     const course = await prisma.course.findUnique({
       where: { id: parseInt(id) },
-      include: { category: true, major: true },
+      include: { category: true },
     });
 
     if (!course) {
@@ -62,7 +60,7 @@ export async function PUT(
     const course = await prisma.course.update({
       where: { id: parseInt(id) },
       data: result.data,
-      include: { category: true, major: true },
+      include: { category: true },
     });
 
     return NextResponse.json(success(course, "更新成功"));

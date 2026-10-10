@@ -1,0 +1,647 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model AIChatHistory {
+  id             Int      @id @default(autoincrement())
+  sessionId      String
+  conversationId String
+  ipAddress      String?
+  userAgent      String?
+  role           String
+  message        String
+  model          String?
+  temperature    Float?
+  tokensUsed     Int?
+  responseTime   Int?
+  pageUrl        String?
+  pageTitle      String?
+  metadata       String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([conversationId])
+  @@index([sessionId])
+}
+
+model AIConfig {
+  id             Int      @id @default(autoincrement())
+  name           String
+  apiEndpoint    String
+  apiKey         String
+  model          String   @default("gpt-3.5-turbo")
+  systemPrompt   String?
+  userPrompt     String?
+  greeting       String?
+  isActive       Boolean  @default(false)
+  temperature    Float    @default(0.7)
+  maxTokens      Int      @default(1000)
+  rateLimit      Int      @default(60)
+  dailyQuota     Int      @default(1000)
+  allowedDomains String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+}
+
+model Article {
+  id             Int          @id @default(autoincrement())
+  title          String
+  slug           String       @unique
+  content        String
+  excerpt        String?
+  coverImage     String?
+  authorId       Int
+  categoryId     Int
+  status         String       @default("draft")
+  isTop          Boolean      @default(false)
+  isRecommend    Boolean      @default(false)
+  isHot          Boolean      @default(false)
+  viewCount      Int          @default(0)
+  likeCount      Int          @default(0)
+  seoTitle       String?
+  seoKeywords    String?
+  seoDescription String?
+  publishedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime
+  Category       Category     @relation(fields: [categoryId], references: [id])
+  User           User         @relation(fields: [authorId], references: [id])
+  ArticleTag     ArticleTag[]
+
+  @@index([slug])
+  @@index([isHot])
+  @@index([isRecommend])
+  @@index([isTop])
+  @@index([publishedAt])
+  @@index([status])
+  @@index([authorId])
+  @@index([categoryId])
+}
+
+model ArticleTag {
+  articleId Int
+  tagId     Int
+  Tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  Article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@index([articleId])
+}
+
+model Banner {
+  id        Int      @id @default(autoincrement())
+  image     String
+  link      String?
+  sort      Int      @default(0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+}
+
+model Campus {
+  id          Int           @id @default(autoincrement())
+  name        String
+  address     String?
+  sort        Int           @default(0)
+  status      String        @default("active")
+  createdAt   DateTime      @default(now())
+  CampusImage CampusImage[]
+}
+
+model CampusImage {
+  id        Int      @id @default(autoincrement())
+  campusId  Int
+  image     String
+  caption   String?
+  sort      Int      @default(0)
+  createdAt DateTime @default(now())
+  Campus    Campus   @relation(fields: [campusId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id             Int          @id @default(autoincrement())
+  name           String
+  slug           String       @unique
+  description    String?
+  image          String?
+  parentId       Int?
+  type           String       @default("article")
+  templateList   String?
+  templateDetail String?
+  seoTitle       String?
+  seoKeywords    String?
+  seoDescription String?
+  sort           Int          @default(0)
+  isNav          Boolean      @default(false)
+  isVisible      Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime
+  Article        Article[]
+  Category       Category?    @relation("CategoryToCategory", fields: [parentId], references: [id])
+  other_Category Category[]   @relation("CategoryToCategory")
+  Course         Course[]
+  Navigation     Navigation[]
+
+  @@index([sort])
+  @@index([isVisible])
+  @@index([slug])
+  @@index([type])
+  @@index([parentId])
+}
+
+model ChatScene {
+  id               Int      @id @default(autoincrement())
+  code             String   @unique
+  name             String
+  description      String?
+  greeting         String
+  systemPrompt     String
+  knowledgeTags    String   @default("")
+  starters         String?
+  pageTitle        String?
+  pageSubtitle     String?
+  headerTip        String?
+  sidebarTitle     String?
+  processSteps     String?
+  promiseList      String?
+  contactCardTitle String?
+  useKnowledgeBase Boolean  @default(true)
+  status           String   @default("active")
+  sort             Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+
+  @@index([status])
+}
+
+model ContentBlock {
+  id            Int             @id @default(autoincrement())
+  code          String          @unique
+  name          String
+  type          String
+  title         String?
+  subtitle      String?
+  contentType   String?
+  query         String?
+  limit         Int?
+  content       String?
+  style         String?
+  interactions  String?
+  status        String          @default("active")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  TemplateBlock TemplateBlock[]
+
+  @@index([status])
+  @@index([contentType])
+  @@index([type])
+}
+
+model Conversation {
+  id                  String                @id
+  sessionId           String
+  userId              String?
+  userName            String?
+  ipAddress           String?
+  userAgent           String?
+  pageUrl             String?
+  pageTitle           String?
+  summary             String?
+  messageCount        Int                   @default(0)
+  status              String                @default("active")
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  ConversationMessage ConversationMessage[]
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model ConversationMessage {
+  id             String       @id
+  conversationId String
+  role           String
+  content        String
+  timestamp      DateTime     @default(now())
+  metadata       String?
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([timestamp])
+  @@index([conversationId])
+}
+
+model Course {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float     @default(0)
+  duration    String?
+  outline     String?
+  cover       String?
+  status      String    @default("active")
+  categoryId  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  Category    Category  @relation(fields: [categoryId], references: [id])
+  Student     Student[]
+}
+
+model ElementConfig {
+  id           Int         @id @default(autoincrement())
+  elementId    String      @unique
+  elementName  String
+  layer        Int
+  layerName    String
+  navigationId Int?
+  elementType  String?
+  selector     String?
+  position     String?
+  interactions String?
+  normalState  String?
+  hoverState   String?
+  activeState  String?
+  content      String?
+  icon         String?
+  status       String      @default("active")
+  sort         Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime
+  Navigation   Navigation? @relation(fields: [navigationId], references: [id])
+
+  @@index([status])
+  @@index([navigationId])
+  @@index([layer])
+  @@index([elementId])
+}
+
+model Gallery {
+  id        Int      @id @default(autoincrement())
+  title     String
+  image     String
+  category  String   @default("certificate")
+  sort      Int      @default(0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+}
+
+model HomeCard {
+  id              Int      @id @default(autoincrement())
+  title           String
+  subtitle        String
+  icon            String   @default("MessageSquare")
+  href            String   @default("/courses")
+  gradient        String   @default("from-blue-500 to-blue-600")
+  hoverGradient   String   @default("from-blue-400 to-blue-500")
+  shadow          String   @default("shadow-blue-200")
+  sort            Int      @default(0)
+  status          String   @default("active")
+  showIcon        Boolean  @default(true)
+  showTitle       Boolean  @default(true)
+  showSubtitle    Boolean  @default(true)
+  showArrow       Boolean  @default(true)
+  showDecoration  Boolean  @default(true)
+  textAlign       String   @default("left")
+  backgroundImage String?
+  backgroundType  String   @default("gradient")
+  description     String?
+  badge           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+
+  @@index([sort])
+  @@index([status])
+}
+
+model HotMajor {
+  id          Int      @id @default(autoincrement())
+  title       String
+  subtitle    String   @default("专升本")
+  description String?
+  duration    String   @default("2年")
+  iconType    String   @default("text")
+  iconImage   String?
+  iconColor   String   @default("from-blue-500 to-blue-600")
+  link        String   @default("/apply")
+  sort        Int      @default(0)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+
+  @@index([sort])
+  @@index([status])
+}
+
+model Knowledge {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  tags        String
+  source      String   @default("local")
+  externalId  String?
+  externalUrl String?
+  priority    Int      @default(0)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+
+  @@index([tags])
+  @@index([status])
+}
+
+model ManagerMenu {
+  id                Int           @id @default(autoincrement())
+  code              String        @unique
+  label             String
+  icon              String
+  path              String?
+  parentId          Int?
+  level             Int           @default(1)
+  permission        String?
+  sort              Int           @default(0)
+  isVisible         Boolean       @default(true)
+  badge             String?
+  description       String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime
+  ManagerMenu       ManagerMenu?  @relation("ManagerMenuToManagerMenu", fields: [parentId], references: [id])
+  other_ManagerMenu ManagerMenu[] @relation("ManagerMenuToManagerMenu")
+
+  @@index([isVisible])
+  @@index([sort])
+  @@index([code])
+  @@index([level])
+  @@index([parentId])
+}
+
+model Media {
+  id         Int      @id @default(autoincrement())
+  filename   String
+  path       String
+  url        String
+  mimeType   String
+  size       Int
+  type       String   @default("image")
+  category   String?
+  uploaderId Int
+  metadata   String?
+  createdAt  DateTime @default(now())
+  User       User     @relation(fields: [uploaderId], references: [id])
+
+  @@index([createdAt])
+  @@index([category])
+  @@index([type])
+  @@index([uploaderId])
+}
+
+model Navigation {
+  id               Int             @id @default(autoincrement())
+  name             String
+  slug             String          @unique
+  parentId         Int?
+  level            Int             @default(1)
+  icon             String?
+  link             String?
+  linkType         String          @default("internal")
+  target           String          @default("_self")
+  templateId       Int?
+  categoryId       Int?
+  contentType      String?
+  sort             Int             @default(0)
+  status           String          @default("active")
+  isVisible        Boolean         @default(true)
+  isNav            Boolean         @default(true)
+  metadata         String?
+  hoverEffect      String?
+  clickAction      String?
+  activeIndicator  String?
+  seoTitle         String?
+  seoKeywords      String?
+  seoDescription   String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  ElementConfig    ElementConfig[]
+  Category         Category?       @relation(fields: [categoryId], references: [id])
+  PageTemplate     PageTemplate?   @relation(fields: [templateId], references: [id])
+  Navigation       Navigation?     @relation("NavigationToNavigation", fields: [parentId], references: [id])
+  other_Navigation Navigation[]    @relation("NavigationToNavigation")
+
+  @@index([categoryId])
+  @@index([templateId])
+  @@index([isVisible])
+  @@index([status])
+  @@index([sort])
+  @@index([slug])
+  @@index([level])
+  @@index([parentId])
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  cover     String?
+  views     Int      @default(0)
+  status    String   @default("draft")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model OperationLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  username  String
+  module    String
+  action    String
+  title     String?
+  content   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([module])
+  @@index([userId])
+}
+
+model PageTemplate {
+  id            Int             @id @default(autoincrement())
+  code          String          @unique
+  name          String
+  description   String?
+  layout        String          @default("default")
+  contentType   String?
+  templateFile  String
+  thumbnail     String?
+  config        String?
+  status        String          @default("active")
+  isDefault     Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  Navigation    Navigation[]
+  TemplateBlock TemplateBlock[]
+
+  @@index([status])
+  @@index([contentType])
+  @@index([code])
+}
+
+model Partner {
+  id        Int      @id @default(autoincrement())
+  name      String
+  logo      String
+  website   String?
+  sort      Int      @default(0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  permissions String
+  isSuper     Boolean  @default(false)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  User        User[]
+
+  @@index([status])
+  @@index([slug])
+}
+
+model ServiceGuide {
+  id        Int      @id @default(autoincrement())
+  slug      String?  @unique
+  title     String
+  subtitle  String?
+  content   String?
+  icon      String
+  link      String
+  sort      Int      @default(0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model Setting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String?
+  type        String   @default("string")
+  group       String   @default("general")
+  description String?
+  isPublic    Boolean  @default(true)
+  isEncrypted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+
+  @@index([isPublic])
+  @@index([group])
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  courseId  Int
+  message   String?
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  Course    Course   @relation(fields: [courseId], references: [id])
+}
+
+model Tag {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  slug       String       @unique
+  createdAt  DateTime     @default(now())
+  ArticleTag ArticleTag[]
+
+  @@index([slug])
+}
+
+model TemplateBlock {
+  id           Int          @id @default(autoincrement())
+  templateId   Int
+  blockId      Int
+  sort         Int          @default(0)
+  config       String?
+  ContentBlock ContentBlock @relation(fields: [blockId], references: [id])
+  PageTemplate PageTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([sort])
+  @@index([blockId])
+  @@index([templateId])
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String         @unique
+  passwordHash String
+  email        String?        @unique
+  nickname     String?
+  realName     String?
+  avatar       String?
+  phone        String?
+  roleId       Int
+  isActive     Boolean        @default(true)
+  status       String         @default("active")
+  lastLoginAt  DateTime?
+  lastLoginIp  String?
+  loginCount   Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  Article      Article[]
+  Media        Media[]
+  OperationLog OperationLog[]
+  Role         Role           @relation(fields: [roleId], references: [id])
+
+  @@index([status])
+  @@index([roleId])
+  @@index([email])
+  @@index([username])
+}
+
+model UserAction {
+  id           Int      @id @default(autoincrement())
+  actionType   String
+  actionTarget String
+  sessionId    String
+  ipAddress    String?
+  userAgent    String?
+  pageUrl      String?
+  pageTitle    String?
+  referrer     String?
+  metadata     String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([actionType])
+}
+
+model ViewStats {
+  id             Int      @id @default(autoincrement())
+  contentType    String
+  contentId      Int
+  viewDate       DateTime @default(now())
+  pageViews      Int      @default(0)
+  uniqueVisitors Int      @default(0)
+  source         String?
+  referrer       String?
+
+  @@index([viewDate])
+  @@index([contentType, contentId])
+}

@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     });
 
     const itemsWithStatus = await Promise.all(
-      items.map(async (item: { id: number; title: string; image: string; category: string; sort: number; status: string; createdAt: Date }) => ({
+      items.map(async (item) => ({
         ...item,
         imageMissing: !(await localImageExists(item.image)),
       }))

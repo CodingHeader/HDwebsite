@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function LearningPage() {
   const settings = await getSettings();
-  const schoolName = settings.schoolShortName || "弘道经理学院";
+  const schoolName = settings.schoolShortName || "弘道教育";
 
   const resources = [
     {

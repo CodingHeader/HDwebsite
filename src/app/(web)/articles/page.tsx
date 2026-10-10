@@ -79,7 +79,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                 >
                   全部资讯
                 </Link>
-                {categories.map((cat: { id: number; name: string }) => (
+                {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/articles?category=${cat.id}${tagSlug ? `&tag=${tagSlug}` : ""}`}
@@ -117,7 +117,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                   <p className="text-gray-500">暂无文章</p>
                 </div>
               ) : (
-                articles.map((article: { id: number; title: string; coverImage: string | null; category: { name: string } | null; excerpt: string | null; tags: { tag: { id: number; name: string } }[]; viewCount: number; publishedAt: Date | null; createdAt: Date; isTop: boolean; isRecommend: boolean; isHot: boolean }) => (
+                articles.map((article) => (
                   <article
                     key={article.id}
                     className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
@@ -155,7 +155,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                         {/* 标签 */}
                         {article.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-3">
-                            {article.tags.slice(0, 3).map(({ tag }: { tag: { id: number; name: string } }) => (
+                            {article.tags.slice(0, 3).map(({ tag }) => (
                               <span
                                 key={tag.id}
                                 className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded"
@@ -248,7 +248,7 @@ async function HotArticles() {
 
   return (
     <ul className="space-y-3">
-      {articles.map((article: { id: number; title: string }, index: number) => (
+      {articles.map((article, index) => (
         <li key={article.id}>
           <Link
             href={`/articles/${article.id}`}
@@ -280,7 +280,7 @@ async function TagCloud() {
   });
   
   // 按文章数量排序
-  const sortedTags = tags.sort((a: { _count: { articles: number } }, b: { _count: { articles: number } }) => b._count.articles - a._count.articles);
+  const sortedTags = tags.sort((a, b) => b._count.articles - a._count.articles);
 
   if (sortedTags.length === 0) {
     return <p className="text-gray-500 text-sm">暂无标签</p>;
@@ -288,7 +288,7 @@ async function TagCloud() {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {sortedTags.map((tag: { id: number; name: string; slug: string }) => (
+      {sortedTags.map((tag) => (
         <Link
           key={tag.id}
           href={`/articles?tag=${tag.slug}`}

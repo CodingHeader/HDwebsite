@@ -91,7 +91,7 @@ export function Sidebar({ user }: SidebarProps) {
   const router = useRouter();
   const { getSetting } = useSettings();
   const { token, logout } = useAuthStore();
-  const schoolShortName = getSetting("schoolShortName", "弘道经理学院");
+  const schoolShortName = getSetting("schoolShortName", "弘道教育");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);

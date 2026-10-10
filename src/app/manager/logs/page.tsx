@@ -2,19 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Monitor,
-  ScrollText,
-  Search,
-  User,
-} from "lucide-react";
+import { Search, ScrollText, User, Monitor } from "lucide-react";
 import { managerFetch } from "@/lib/manager-fetch";
 
 interface LogItem {
@@ -50,42 +41,26 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [keyword, setKeyword] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
 
   const fetchLogs = useCallback(async () => {
-    setLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: "20",
-      });
-      if (keyword.trim()) {
-        params.set("search", keyword.trim());
-      }
-
-      const response = await managerFetch(`/api/logs?${params}`);
+      const response = await managerFetch("/api/logs");
       const result = await response.json();
-      if (result.code === 200) {
-        setLogs(result.data.items || []);
-        setTotal(result.data.total || 0);
-        setTotalPages(result.data.totalPages || 1);
-      }
+      if (result.code === 200) setLogs(result.data.items || result.data);
     } catch (err) {
       console.error("Failed to fetch logs:", err);
     } finally {
       setLoading(false);
     }
-  }, [keyword, page]);
+  }, []);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
-  const handleSearch = () => {
-    setPage(1);
-    setKeyword(searchTerm.trim());
-  };
+  const filteredLogs = logs.filter(l =>
+    l.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    l.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (l.title && l.title.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <div className="space-y-6">
@@ -98,28 +73,19 @@ export default function LogsPage() {
 
       <div className="bg-[#161922] rounded-xl border border-white/[0.06] overflow-hidden">
         <div className="p-4 border-b border-white/[0.06]">
-          <div className="flex items-center gap-3">
-            <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-              <Input
-                placeholder="搜索用户、模块、动作、标题..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-gray-600"
-              />
-            </div>
-            <Button onClick={handleSearch} className="bg-red-600 hover:bg-red-700">
-              搜索
-            </Button>
-            <span className="text-xs text-gray-500 ml-auto">共 {total} 条</span>
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="搜索日志..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white/[0.04] border-white/[0.08] text-white placeholder:text-gray-600"
+            />
           </div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-          </div>
+          <div className="p-8 text-center text-gray-400">加载中...</div>
         ) : (
           <Table>
             <TableHeader>
@@ -133,8 +99,8 @@ export default function LogsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {logs.length > 0 ? (
-                logs.map((log) => (
+              {filteredLogs.length > 0 ? (
+                filteredLogs.map((log) => (
                   <TableRow key={log.id} className="border-white/[0.04] hover:bg-white/[0.02]">
                     <TableCell>
                       <div className="flex items-center gap-2 text-white text-sm">
@@ -179,32 +145,6 @@ export default function LogsPage() {
               )}
             </TableBody>
           </Table>
-        )}
-
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-white/[0.06] flex items-center justify-between">
-            <span className="text-xs text-gray-500">第 {page} / {totalPages} 页</span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-                disabled={page <= 1}
-                className="text-gray-400 hover:text-white disabled:opacity-30"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                disabled={page >= totalPages}
-                className="text-gray-400 hover:text-white disabled:opacity-30"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
         )}
       </div>
     </div>

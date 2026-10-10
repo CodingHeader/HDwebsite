@@ -3,7 +3,6 @@ import { createRequire } from "node:module";
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { shouldRunBuild } from "./start-next-utils.mjs";
 
 const require = createRequire(import.meta.url);
 const nextBin = require.resolve("next/dist/bin/next");
@@ -17,28 +16,13 @@ const databaseFile = path.resolve(process.cwd(), "prisma", "dev.db");
 const port = process.env.PORT || "6789";
 const hostname = process.env.HOSTNAME || "0.0.0.0";
 const resolvedDatabaseUrl = process.env.DATABASE_URL || pathToFileURL(databaseFile).href;
-const useStandalone = process.platform !== "win32";
-const watchedBuildEntries = [
-  "src",
-  "public",
-  "prisma",
-  "scripts",
-  "package.json",
-  "package-lock.json",
-  "next.config.ts",
-  "tsconfig.json",
-];
 
-function runBuildIfNeeded() {
-  if (!shouldRunBuild({
-    projectRoot: process.cwd(),
-    buildIdPath: buildIdFile,
-    watchEntries: watchedBuildEntries,
-  })) {
+function runBuildIfMissing() {
+  if (existsSync(buildIdFile)) {
     return;
   }
 
-  console.log("[start-next] Build missing or stale. Running next build...");
+  console.log("[start-next] Production build not found. Running next build...");
 
   const result = spawnSync(process.execPath, [nextBin, "build"], {
     stdio: "inherit",
@@ -78,7 +62,7 @@ function copyDirectory(source, target) {
 }
 
 function syncStandaloneAssets() {
-  if (!useStandalone || !existsSync(standaloneServer)) {
+  if (!existsSync(standaloneServer)) {
     return;
   }
 
@@ -86,10 +70,10 @@ function syncStandaloneAssets() {
   copyDirectory(publicDir, standalonePublicDir);
 }
 
-runBuildIfNeeded();
+runBuildIfMissing();
 syncStandaloneAssets();
 
-const commandArgs = useStandalone && existsSync(standaloneServer)
+const commandArgs = existsSync(standaloneServer)
   ? [standaloneServer]
   : [nextBin, "start", "-p", port, "-H", hostname];
 

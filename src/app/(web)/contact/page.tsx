@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "联系我们",
-  description: "弘道经理学院联系方式、校区地址、咨询热线",
+  description: "弘道教育联系方式、校区地址、咨询热线",
 };
 
 export default async function ContactPage() {
@@ -19,12 +19,12 @@ export default async function ContactPage() {
     }),
   ]);
 
-  const schoolName = settings.schoolShortName || "弘道经理学院";
-  const contactPhone = settings.contactPhone || "139-0809-1091";
-  const contactPhone1 = settings.contactPhone1 || "139-0809-1091";
-  const contactPhone2 = settings.contactPhone2 || "028-8532-9903";
-  const contactEmail = settings.contactEmail || "2360618023@qq.com";
-  const address = settings.address || "四川省成都市高新区天府大道1700号新世界环球中心N2区601室";
+  const schoolName = settings.schoolShortName || "弘道教育";
+  const contactPhone = settings.contactPhone || "400-001-5729";
+  const contactPhone1 = settings.contactPhone1 || "132-1945-5550";
+  const contactPhone2 = settings.contactPhone2 || "028-6167-5329";
+  const contactEmail = settings.contactEmail || "contact@hdaomanager.com";
+  const address = settings.address || "成都市青羊区大石西路12号";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,7 +97,7 @@ export default async function ContactPage() {
 
             {campuses.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {campuses.map((campus: { id: number; name: string; address: string | null }) => (
+                {campuses.map((campus) => (
                   <div key={campus.id} className="border rounded-lg p-4 hover:border-[#da251d] transition-colors">
                     <h3 className="font-bold text-gray-800 mb-2">{campus.name}</h3>
                     {campus.address && (

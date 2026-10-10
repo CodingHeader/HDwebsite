@@ -1,58 +1,65 @@
-在回答之前：读取全局和项目技能列表，执行中自由使用技能和MCP服务，并展示使用过程。
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
 
-## 规则
-1. `.docs/`是文档目录，所有文档必须存储在此目录下。
-2. `.docs/`内必须包含：需求文档、界面交互文档、功能设计文档、目录结构文档。
-3. 目录结构文档(递归)必须包含项目所有目录和文件及其相对路径与说明。
-4. 每次对话前必须先阅读`.docs/`目录下所有文档和`.memory.md`。
-5. 每次对话后必须同步更新`.docs/`目录和`.memory.md`，有错必纠，更新完成后结束对话。
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
 
-## 铁律
-0. 必须先查询技能：任何时候收到指令，必须先调用 skill 工具查询可用技能，1%概率适用=必须使用（using-superpowers规则）。
-1. 复述原需求，分要点拆解，提取关键词。
-2. 执行前必须阅读全局规则和用户规则等文档。
-3. 代入领域专家角色思考，说明核心风格。
-4. 思考前完全熟悉项目基本结构和逻辑设计。
-5. 优先和用户讨论完善需求（反问/追问/辩论/预演）。
-6. 思考时深入学习互联网优秀案例，重点参考相似功能场景。
-7. 多角度全面考虑，深度分析，从"前端"、"后端"、"资源"、"文档"4方面依次输出文件说明。
-8. 整合思路，使用"plan mode"/"task todos"模式建立详细流程化预执行方案。严格遵守《输出规范》。
-9. 优先提供方案供用户选择，等待确认后执行。
-   **强制标准：**
-   - 必须提供至少2个方案（A推荐/B备选/C可选）
-   - 必须等待用户输入"确认"或选择方案编号
-   - 严禁将"好的"、"行"等模糊回复视为确认
-   - 未获明确确认前，严禁执行任何操作
-10. 执行完毕后进行逻辑验证。
-11. 必须使用"记忆"MCP，将历史对话问答记录在`.memory.md`中，每次对话补充/更新/修正。
-12. 始终使用中文对话，不在项目内创建任何说明文档。
+# Website Reverse-Engineer Template
 
-## 禁止敷衍
-- 核查文件实际情况，逐行核查代码引用，杜绝主观判断；
-- 重视各模块与实际间的关联，深入查看相关代码、检查记录状态；
-- 输出必须经过实证，确保每个结论都有代码和数据支撑。
+## What This Is
+A reusable template for reverse-engineering any website into a clean, modern Next.js codebase using AI coding agents. The Next.js + shadcn/ui + Tailwind v4 base is pre-scaffolded — just run `/clone-website <url1> [<url2> ...]`.
 
-## 错误避坑（来自.learnings/ERRORS.md）
-- 不要虚构关联关系：技能SKILL.md中的"关联关系"必须真实存在
-- 不要跳过自检清单：cleanliness五步流程的第四步（自检）必须逐项过
-- 不要忘记更新目录结构文档：每次文件变更后，必须更新`.docs/目录结构文档.md`
-- 不要使用相对时间：记忆文件中使用绝对日期（2026-04-29，不写"今天"）
-- 必须先查技能：using-superpowers规则——1%概率适用=必须使用
-- 不要重复造轮子：系统已有的技能（fix-issue、check-api等）无需重建
-- 规则文件要少而精：GLOBAL_AGENTS_MANUAL_UPDATE.md从67行→25行
-- eval测试集很重要：60个queries确保触发率≥95%
+## Tech Stack
+- **Framework:** Next.js 16 (App Router, React 19, TypeScript strict)
+- **UI:** shadcn/ui (Radix primitives, Tailwind CSS v4, `cn()` utility)
+- **Icons:** Lucide React (default — will be replaced/supplemented by extracted SVGs)
+- **Styling:** Tailwind CSS v4 with oklch design tokens
+- **Deployment:** Vercel
 
-## 输出规范
-适用于"产品构建"、"产品设计"、"相似功能场景分析"、"异常原因分析"、"预执行方案"等。
+## Commands
+- `npm run dev` — Start dev server
+- `npm run build` — Production build
+- `npm run lint` — ESLint check
+- `npm run typecheck` — TypeScript check
+- `npm run check` — Run lint + typecheck + build
 
-1. 使用markdown标准格式输出多层级
-2. 层级一：作用
-3. 层级二：目录/文件（相对路径）
-4. 层级三：作用（类/方法/属性/值）
+## Code Style
+- TypeScript strict mode, no `any`
+- Named exports, PascalCase components, camelCase utils
+- Tailwind utility classes, no inline styles
+- 2-space indentation
+- Responsive: mobile-first
 
-示例：
+## Design Principles
+- **Pixel-perfect emulation** — match the target's spacing, colors, typography exactly
+- **No personal aesthetic changes during emulation phase** — match 1:1 first, customize later
+- **Real content** — use actual text and assets from the target site, not placeholders
+- **Beauty-first** — every pixel matters
+
+## Project Structure
 ```
-# 项目内基础配置文件
-  ## ./docker.env
-    ### HF_HUB_ENABLE_HF_TRANSFER=1（并发下载优化开关）
+src/
+  app/              # Next.js routes
+  components/       # React components
+    ui/             # shadcn/ui primitives
+    icons.tsx       # Extracted SVG icons as React components
+  lib/
+    utils.ts        # cn() utility (shadcn)
+  types/            # TypeScript interfaces
+  hooks/            # Custom React hooks
+public/
+  images/           # Downloaded images from target site
+  videos/           # Downloaded videos from target site
+  seo/              # Favicons, OG images, webmanifest
+docs/
+  research/         # Inspection output (design tokens, components, layout)
+  design-references/ # Screenshots and visual references
+scripts/            # Asset download scripts
 ```
+
+## MOST IMPORTANT NOTES
+- When launching Claude Code agent teams, ALWAYS have each teammate work in their own worktree branch and merge everyone's work at the end, resolving any merge conflicts smartly since you are basically serving the orchestrator role and have full context to our goals, work given, work achieved, and desired outcomes.
+- After editing `AGENTS.md`, run `bash scripts/sync-agent-rules.sh` to regenerate platform-specific instruction files.
+- After editing `.claude/skills/clone-website/SKILL.md`, run `node scripts/sync-skills.mjs` to regenerate the skill for all platforms.
+
+@docs/research/INSPECTION_GUIDE.md

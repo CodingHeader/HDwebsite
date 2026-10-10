@@ -33,7 +33,7 @@ const footerLinks = [
       { label: "学习中心", href: "/learning" },
       { label: "证书风采", href: "/gallery" },
       { label: "合作院校", href: "/partners" },
-      { label: "学院风采", href: "/campus" },
+      { label: "校区环境", href: "/campus" },
     ],
   },
   {
@@ -48,15 +48,15 @@ const footerLinks = [
 ];
 
 export function Footer({
-  schoolShortName = "弘道经理学院",
+  schoolShortName = "弘道教育",
   siteLogo = "/images/logo.png",
   footerLogo,
   footerSlogan = "专注学历提升教育",
-  footerDescription = "弘道经理学院致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。",
-  address = "四川省成都市高新区天府大道1700号新世界环球中心N2区601室",
-  contactPhone = "139-0809-1091",
-  contactEmail = "2360618023@qq.com",
-  icp = "蜀ICP备14008479号-2",
+  footerDescription = "弘道教育致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。",
+  address = "成都市青羊区大石西路12号",
+  contactPhone = "400-001-5729",
+  contactEmail = "contact@hdaomanager.com",
+  icp = "蜀ICP备XXXXXXXX号",
   workHours = "周一至周日 9:00-18:00"
 }: FooterProps) {
   // 底部独立Logo优先，否则回退到网站主Logo
@@ -103,7 +103,7 @@ export function Footer({
 
           {/* Link Columns */}
           {footerLinks.map((column) => (
-            <div key={column.title} className="flex flex-col justify-center">
+            <div key={column.title}>
               <h4 className="text-sm font-semibold text-white mb-4">
                 {column.title}
               </h4>

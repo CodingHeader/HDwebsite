@@ -28,6 +28,10 @@ export interface BannerSettings {
   textAlign?: "left" | "center" | "right";
   /** 文字垂直位置 top/middle/bottom */
   textVerticalAlign?: "top" | "middle" | "bottom";
+  /** 遮罩层颜色，默认 #000000 */
+  overlayColor?: string;
+  /** 遮罩层透明度 0-100，默认 40 */
+  overlayOpacity?: number;
   /** 一键控制整个Banner内容层（标题+副标题+按钮）的显示；关闭后Banner仅显示图片/背景 */
   showContent?: boolean;
   /** 是否显示主标题 */
@@ -36,12 +40,6 @@ export interface BannerSettings {
   showSubtitle?: boolean;
   /** 是否显示按钮 */
   showBtn?: boolean;
-  /** 是否显示附加按钮 */
-  showExtraBtn?: boolean;
-  /** 附加按钮文字 */
-  extraBtnText?: string;
-  /** 附加按钮链接 */
-  extraBtnLink?: string;
 }
 
 interface BannerProps {
@@ -49,6 +47,15 @@ interface BannerProps {
   settings?: BannerSettings;
 }
 
+/** HEX 颜色 + 透明度 → rgba 字符串 */
+function hexToRgba(hex: string, opacityPct: number): string {
+  const safeHex = /^#?[0-9a-fA-F]{6}$/.test(hex.replace("#", "")) ? hex.replace("#", "") : "000000";
+  const r = parseInt(safeHex.slice(0, 2), 16);
+  const g = parseInt(safeHex.slice(2, 4), 16);
+  const b = parseInt(safeHex.slice(4, 6), 16);
+  const a = Math.max(0, Math.min(100, opacityPct)) / 100;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
 
 const ALIGN_CLASSES: Record<string, string> = {
   left: "items-center justify-start text-left",
@@ -67,20 +74,19 @@ export function Banner({ banners, settings }: BannerProps) {
   const router = useRouter();
 
   const cfg: Required<BannerSettings> = {
-    title: settings?.title || "弘道经理学院",
+    title: settings?.title || "弘道教育",
     subtitle: settings?.subtitle || "专注专升本教育，助力学历提升",
-    btnText: settings?.btnText || "立即咨询",
+    btnText: settings?.btnText || "",
     btnLink: settings?.btnLink || "/apply",
     bgImage: settings?.bgImage || "",
     textAlign: settings?.textAlign || "center",
     textVerticalAlign: settings?.textVerticalAlign || "middle",
+    overlayColor: settings?.overlayColor || "#000000",
+    overlayOpacity: typeof settings?.overlayOpacity === "number" ? settings.overlayOpacity : 40,
     showContent: settings?.showContent !== false,
     showTitle: settings?.showTitle !== false,
     showSubtitle: settings?.showSubtitle !== false,
     showBtn: settings?.showBtn !== false,
-    showExtraBtn: settings?.showExtraBtn === true,
-    extraBtnText: settings?.extraBtnText || "了解更多",
-    extraBtnLink: settings?.extraBtnLink || "/courses",
   };
 
   // 配置了统一的 Banner 背景图 + 文案，而且管理后台 banner 列表为空 → 使用配置渲染单张
@@ -101,6 +107,7 @@ export function Banner({ banners, settings }: BannerProps) {
   const goNext = () => setCurrent((prev) => (prev + 1) % slides.length);
   const goPrev = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
 
+  const overlayRgba = hexToRgba(cfg.overlayColor, cfg.overlayOpacity);
   const hAlign = ALIGN_CLASSES[cfg.textAlign] || ALIGN_CLASSES.center;
   const vAlign = VALIGN_CLASSES[cfg.textVerticalAlign] || VALIGN_CLASSES.middle;
 
@@ -115,7 +122,7 @@ export function Banner({ banners, settings }: BannerProps) {
                 <h2 className="text-3xl md:text-5xl font-extrabold mb-4">{cfg.title}</h2>
               )}
               {cfg.showSubtitle && (
-                <p className="text-lg md:text-xl font-bold opacity-90">{cfg.subtitle}</p>
+                <p className="text-lg md:text-xl opacity-90">{cfg.subtitle}</p>
               )}
               {cfg.showBtn && cfg.btnText && (
                 <Link
@@ -123,14 +130,6 @@ export function Banner({ banners, settings }: BannerProps) {
                   className="inline-block mt-6 px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
                 >
                   {cfg.btnText}
-                </Link>
-              )}
-              {cfg.showBtn && cfg.showExtraBtn && cfg.extraBtnText && (
-                <Link
-                  href={cfg.extraBtnLink}
-                  className="inline-block mt-3 sm:ml-4 px-6 py-3 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 backdrop-blur-sm transition-colors"
-                >
-                  {cfg.extraBtnText}
                 </Link>
               )}
             </div>
@@ -150,6 +149,9 @@ export function Banner({ banners, settings }: BannerProps) {
           >
             {cfg.showContent && (
               <>
+                {/* 遮罩层 */}
+                <div className="absolute inset-0" style={{ backgroundColor: overlayRgba }} />
+                {/* 文字内容 */}
                 <div className={`relative z-10 flex h-full px-4 md:px-12 ${hAlign} ${vAlign}`}>
                   <div className="text-white max-w-3xl">
                     {cfg.showTitle && (
@@ -158,7 +160,7 @@ export function Banner({ banners, settings }: BannerProps) {
                       </h2>
                     )}
                     {cfg.showSubtitle && (
-                      <p className="text-lg md:text-xl font-bold opacity-95 drop-shadow">
+                      <p className="text-lg md:text-xl opacity-95 drop-shadow">
                         {cfg.subtitle}
                       </p>
                     )}
@@ -169,15 +171,6 @@ export function Banner({ banners, settings }: BannerProps) {
                         className="relative z-20 inline-block mt-6 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 shadow-lg transition-colors"
                       >
                         {cfg.btnText}
-                      </Link>
-                    )}
-                    {cfg.showBtn && cfg.showExtraBtn && cfg.extraBtnText && (
-                      <Link
-                        href={cfg.extraBtnLink}
-                        onClick={(e) => e.stopPropagation()}
-                        className="relative z-20 inline-block mt-3 sm:ml-4 px-6 py-3 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 backdrop-blur-sm transition-colors"
-                      >
-                        {cfg.extraBtnText}
                       </Link>
                     )}
                   </div>

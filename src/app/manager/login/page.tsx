@@ -24,7 +24,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { getSetting } = useSettings();
   const { login } = useAuthStore();
-  const schoolShortName = getSetting("schoolShortName", "弘道经理学院");
+  const schoolShortName = getSetting("schoolShortName", "弘道教育");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);

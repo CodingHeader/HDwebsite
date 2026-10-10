@@ -11,24 +11,33 @@ import { CertificateGallery } from "@/components/web/CertificateGallery";
 import { CampusSection } from "@/components/web/CampusSection";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Phone, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import {
-  localImageExists,
-  resolveCampusCaption,
-  resolveCampusName,
-  resolvePartnerLogo,
-  resolveShowcaseImage,
-  resolveShowcaseTitle,
-} from "@/lib/showcase";
+import path from "node:path";
+import { stat } from "node:fs/promises";
 
 // 强制每次请求动态渲染，保证后台 CMS（服务指南/轮播图/热门专业等）改动后前台立即生效
 export const dynamic = "force-dynamic";
 
+async function localImageExists(url: string) {
+  if (!url.startsWith("/")) {
+    return true;
+  }
+
+  const fullPath = path.join(process.cwd(), "public", url.replace(/^\//, ""));
+
+  try {
+    const fileStat = await stat(fullPath);
+    return fileStat.isFile();
+  } catch {
+    return false;
+  }
+}
+
 export default async function HomePage() {
   // Fetch all data from database (分组串行: 绕过 libsql 并发 race condition)
-  const [hotMajorsRaw, articles, bannersRaw, campusesRaw, galleryRaw] =
-    await Promise.all([
-    prisma.hotMajor.findMany({ where: { status: "active" }, orderBy: { sort: "asc" } }),
+  const [hotMajorsRaw, articles, bannersRaw] = await Promise.all([
+    prisma.hotMajor.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 12 }),
     prisma.article.findMany({
       where: { status: "published" },
       include: {
@@ -40,20 +49,16 @@ export default async function HomePage() {
       orderBy: [{ isTop: "desc" }, { publishedAt: "desc" }],
     }),
     prisma.banner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" } }),
+  ]);
+
+  const [partnersRaw, campusesRaw, galleryRaw] = await Promise.all([
+    prisma.partner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 8 }),
     prisma.campus.findMany({
       where: { status: "active" },
       include: { images: { orderBy: { sort: "asc" } } },
-      orderBy: [{ sort: "asc" }, { id: "asc" }],
-      take: 4,
+      orderBy: { sort: "asc" },
     }),
-    prisma.gallery.findMany({
-      where: { status: "active", category: "certificate" },
-      orderBy: [{ sort: "asc" }, { id: "asc" }],
-    }),
-  ]);
-
-  const [partnersRaw] = await Promise.all([
-    prisma.partner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" } }),
+    prisma.gallery.findMany({ where: { status: "active", category: "certificate" }, orderBy: { sort: "asc" }, take: 8 }),
   ]);
 
   const [serviceGuidesRaw, settings, homeCards] = await Promise.all([
@@ -82,15 +87,29 @@ export default async function HomePage() {
     link: h.link,
   }));
 
-  const partners: { id: number; name: string; logo: string; website: string | null }[] = await Promise.all(
-    partnersRaw.map(async (p: { id: number; name: string; logo: string; website: string | null }) => ({
-      id: p.id,
-      name: p.name,
-      logo: resolvePartnerLogo({
-        logo: p.logo,
-        imageMissing: !(await localImageExists(p.logo)),
-      }),
-      website: p.website,
+  const partners: { id: number; name: string; logo: string; website: string | null }[] = partnersRaw.map((p: { id: number; name: string; logo: string; website: string | null }) => ({
+    id: p.id,
+    name: p.name,
+    logo: p.logo,
+    website: p.website,
+  }));
+
+  const campuses: { id: number; name: string; images: { id: number; image: string; caption: string | null }[] }[] = campusesRaw.map((c: { id: number; name: string; images: { id: number; image: string; caption: string | null }[] }) => ({
+    id: c.id,
+    name: c.name,
+    images: c.images.map((img: { id: number; image: string; caption: string | null }) => ({
+      id: img.id,
+      image: img.image,
+      caption: img.caption,
+    })),
+  }));
+
+  const gallery: { id: number; title: string; image: string; imageMissing: boolean }[] = await Promise.all(
+    galleryRaw.map(async (g: { id: number; title: string; image: string }) => ({
+      id: g.id,
+      title: g.title,
+      image: g.image,
+      imageMissing: !(await localImageExists(g.image)),
     }))
   );
 
@@ -102,20 +121,20 @@ export default async function HomePage() {
   }));
 
   // Parse settings
-  const settingsMap: Record<string, string | null> = settings.reduce(
+  const settingsMap = settings.reduce<Record<string, string | null>>(
     (acc: Record<string, string | null>, setting: { key: string; value: string | null }) => {
       acc[setting.key] = setting.value;
       return acc;
     },
-    {} as Record<string, string | null>
+    {}
   );
 
   // 学校名称（从系统配置获取，有默认值）
-  const schoolFullName = settingsMap.schoolFullName || "弘道经理学院";
-  const schoolShortName = settingsMap.schoolShortName || "弘道经理学院";
+  const schoolFullName = settingsMap.schoolFullName || "弘道教育";
+  const schoolShortName = settingsMap.schoolShortName || "弘道教育";
 
   // Default intro text（使用变量替换硬编码的学校名称）
-  const defaultIntro = `${schoolFullName}成立于2004年2月，是一家专注于学历提升、职业证书考试培训的成人教育机构。学校位于四川省成都市高新区天府大道1700号新世界环球中心N2区601室，注册地址为成都市成华区双店路66号，总面积超过2000平米，学校教学及办公设施设备齐全，设有26间标准化教室和容纳上百人的多功能教室，共计300台教学及考试专用计算机。
+  const defaultIntro = `${schoolFullName}成立于2004年2月，是一家专注于学历提升、职业证书考试培训的成人教育机构。学校位于成都市青羊区大石西路12号，注册地址为成都市成华区双店路66号，总面积超过2000平米，学校教学及办公设施设备齐全，设有26间标准化教室和容纳上百人的多功能教室，共计300台教学及考试专用计算机。
 
 我校与时俱进、创新务实、团结奋进、诚信办学，经过十五年的教育积淀，形成了学历继续教育为主，兼顾非学历培训的面向全社会的办学特色。我校坚持致力于适应国家教育改革及社会发展需求，更好地服务继续教育事业，传播先进的继续教育理念、科学的继续教育教学、助学、培训方法以及前沿的继续教育思想。
 
@@ -123,21 +142,13 @@ export default async function HomePage() {
   
   const introText = settingsMap.companyIntro || defaultIntro;
 
-  // 全局图片上层元素显示开关（总控）
-  const showImageOverlays = settingsMap.showImageOverlays !== "false";
-
   // Top banner data
   const topNoticeText = settingsMap.topNoticeText || "2026成人高考火热报名中";
-  const topNoticePhone = settingsMap.topNoticePhone || "139-0809-1091";
-  const topbarShowContent = settingsMap.topbarShowContent !== "false";
-  const topbarShowOverlay = showImageOverlays && settingsMap.topbarShowOverlay !== "false";
-  const topbarBgImage = settingsMap.topbarBgImage || undefined;
+  const topNoticePhone = settingsMap.topNoticePhone || "132-1945-5550";
 
   // Stats data
-  const statsText = settingsMap.statsText || "办学26年培养输送各类人才11万余人";
-  const statsShowContent = settingsMap.statsShowContent !== "false";
-  const statsShowOverlay = showImageOverlays && settingsMap.statsShowOverlay !== "false";
-  const statsBgImage = settingsMap.statsBgImage || undefined;
+  const years = parseInt(settingsMap.yearsOfEstablishment || "26");
+  const graduates = settingsMap.totalGraduates || "11万";
   const advantages = [
     settingsMap.advantage1 || "正规可靠",
     settingsMap.advantage2 || "国家承认",
@@ -145,7 +156,7 @@ export default async function HomePage() {
     settingsMap.advantage4 || "终生可查",
   ];
 
-  // Banner 设置（与全局开关联动）
+  // Banner 设置
   const bannerSettings = {
     title: settingsMap.bannerTitle || undefined,
     subtitle: settingsMap.bannerSubtitle || undefined,
@@ -154,133 +165,21 @@ export default async function HomePage() {
     bgImage: settingsMap.bannerBgImage || undefined,
     textAlign: (settingsMap.bannerTextAlign as "left" | "center" | "right") || undefined,
     textVerticalAlign: (settingsMap.bannerTextVerticalAlign as "top" | "middle" | "bottom") || undefined,
-    showContent: showImageOverlays && settingsMap.bannerShowContent !== "false",
-    showTitle: showImageOverlays && settingsMap.bannerShowTitle !== "false",
-    showSubtitle: showImageOverlays && settingsMap.bannerShowSubtitle !== "false",
-    showBtn: showImageOverlays && settingsMap.bannerShowBtn !== "false",
-    showExtraBtn: showImageOverlays && settingsMap.bannerShowExtraBtn === "true",
-    extraBtnText: settingsMap.bannerExtraBtnText || undefined,
-    extraBtnLink: settingsMap.bannerExtraBtnLink || undefined,
+    overlayColor: settingsMap.bannerOverlayColor || undefined,
+    overlayOpacity: settingsMap.bannerOverlayOpacity
+      ? parseInt(settingsMap.bannerOverlayOpacity, 10)
+      : undefined,
+    showContent: settingsMap.bannerShowContent !== "false",
+    showTitle: settingsMap.bannerShowTitle !== "false",
+    showSubtitle: settingsMap.bannerShowSubtitle !== "false",
+    showBtn: settingsMap.bannerShowBtn !== "false",
   };
 
-  // 卡片显示开关（与全局开关联动）
-  const cardShowOverlay = showImageOverlays && settingsMap.cardShowOverlay !== "false";
-  const fourCardsShowSection = settingsMap.fourCardsShowSection !== "false";
-  const fourCardsBgColor = settingsMap.fourCardsBgColor || "#f9fafb";
-  const fourCardsBgImage = settingsMap.fourCardsBgImage || "";
-  const fourCardsContainerAlign =
-    (settingsMap.fourCardsContainerAlign as "left" | "center" | "right") || "center";
+  // 卡片显示开关
+  const cardShowOverlay = settingsMap.cardShowOverlay !== "false";
 
   // 默认占位图
   const defaultPlaceholderImage = settingsMap.defaultPlaceholderImage || "/images/logo_card.png";
-
-  type HomeCampusImageRecord = {
-    id: number;
-    image: string;
-    caption: string | null;
-    sort: number;
-  };
-
-  type HomeCampusRecord = {
-    id: number;
-    name: string;
-    images: HomeCampusImageRecord[];
-  };
-
-  type HomeGalleryRecord = {
-    id: number;
-    title: string;
-    image: string;
-  };
-
-  const resolvedHomeCards = [
-    {
-      title: settingsMap.cardZikaoTitle || "自学考试",
-      subtitle: settingsMap.cardZikaoSubtitle || "自助者天助之",
-      href: settingsMap.cardZikaoLink || "/courses?cat=zikao",
-    },
-    {
-      title: settingsMap.cardChengkaoTitle || "成人高考",
-      subtitle: settingsMap.cardChengkaoSubtitle || "成就学员梦想",
-      href: settingsMap.cardChengkaoLink || "/courses?cat=chengkao",
-    },
-    {
-      title: settingsMap.cardKaifangTitle || "开放大学",
-      subtitle: settingsMap.cardKaifangSubtitle || "终身学习伙伴",
-      href: settingsMap.cardKaifangLink || "/courses?cat=kaifang",
-    },
-  ].map((configuredCard, index) => {
-    const dbCard = homeCards[index];
-
-    return {
-      id: dbCard?.id || index + 1,
-      title: configuredCard.title || dbCard?.title || `卡片 ${index + 1}`,
-      subtitle: configuredCard.subtitle || dbCard?.subtitle || "",
-      href: configuredCard.href || dbCard?.href || "/courses",
-      icon: dbCard?.icon || (index === 0 ? "BookOpen" : index === 1 ? "GraduationCap" : "Globe"),
-      gradient: dbCard?.gradient || (index === 0 ? "from-blue-500 to-blue-600" : index === 1 ? "from-green-500 to-green-600" : "from-orange-500 to-orange-600"),
-      hoverGradient: dbCard?.hoverGradient || (index === 0 ? "from-blue-400 to-blue-500" : index === 1 ? "from-green-400 to-green-500" : "from-orange-400 to-orange-500"),
-      shadow: dbCard?.shadow || (index === 0 ? "shadow-blue-200" : index === 1 ? "shadow-green-200" : "shadow-orange-200"),
-      backgroundImage: dbCard?.backgroundImage || null,
-      showIcon: cardShowOverlay,
-      showTitle: cardShowOverlay,
-      showSubtitle: cardShowOverlay,
-      showArrow: cardShowOverlay,
-      showDecoration: cardShowOverlay,
-      textAlign: "left" as const,
-    };
-  });
-
-  const campuses = await Promise.all(
-    campusesRaw.map(async (campus: HomeCampusRecord, campusIndex: number) => ({
-      id: campus.id,
-      name: resolveCampusName(campus.name, campusIndex),
-      images: await Promise.all(
-        campus.images.map(async (image: HomeCampusImageRecord, index: number) => {
-          const imageMissing = !(await localImageExists(image.image));
-          const resolvedCaption = resolveCampusCaption(
-            image.caption,
-            campus.name,
-            campusIndex,
-            index,
-          );
-
-          return {
-            id: image.id,
-            image: resolveShowcaseImage({
-              image: image.image,
-              imageMissing,
-              placeholderImage: defaultPlaceholderImage,
-            }),
-            caption: resolvedCaption,
-            title: resolvedCaption,
-            imageMissing,
-          };
-        })
-      ),
-    }))
-  );
-
-  const gallery = await Promise.all(
-    galleryRaw.map(async (item: HomeGalleryRecord, index: number) => {
-      const imageMissing = !(await localImageExists(item.image));
-
-      return {
-        id: item.id,
-        title: resolveShowcaseTitle({
-          rawTitle: item.title,
-          fallbackPrefix: "证书风采",
-          index,
-        }),
-        image: resolveShowcaseImage({
-          image: item.image,
-          imageMissing,
-          placeholderImage: defaultPlaceholderImage,
-        }),
-        imageMissing,
-      };
-    })
-  );
 
   return (
     <div>
@@ -288,23 +187,19 @@ export default async function HomePage() {
       <Banner banners={banners} settings={bannerSettings} />
 
       {/* Layer 4: 四宫格入口 [004-001~034] 34交互点 */}
-      <FourCards
-        cards={resolvedHomeCards}
-        showOverlay={cardShowOverlay}
-        showSection={fourCardsShowSection}
-        bgColor={fourCardsBgColor}
-        bgImage={fourCardsBgImage}
-        containerAlign={fourCardsContainerAlign}
-      />
+      <FourCards cards={homeCards.map((c: { id: number; title: string; subtitle: string; icon: string; href?: string; gradient?: string; hoverGradient?: string; shadow?: string }) => ({
+        id: c.id,
+        title: c.title,
+        subtitle: c.subtitle,
+        icon: c.icon,
+        href: c.href || "/courses",
+        gradient: c.gradient || "from-blue-500 to-blue-600",
+        hoverGradient: c.hoverGradient || "from-blue-400 to-blue-500",
+        shadow: c.shadow || "shadow-blue-200",
+      }))} showOverlay={cardShowOverlay} />
 
       {/* Layer 2.5: 顶部横幅 - 位于四宫格后、三栏入口前 */}
-      <TopBanner
-        noticeText={topNoticeText}
-        noticePhone={topNoticePhone}
-        showContent={topbarShowContent}
-        bgImage={topbarBgImage}
-        showOverlay={topbarShowOverlay}
-      />
+      <TopBanner noticeText={topNoticeText} noticePhone={topNoticePhone} />
 
       {/* Layer 6: 三栏内容区 [006-001~156] 156交互点 */}
       <TopEntranceSection
@@ -318,26 +213,19 @@ export default async function HomePage() {
       />
 
       {/* 统计横幅 */}
-      <StatsBanner
-        statsText={statsText}
-        advantages={advantages}
-        showContent={statsShowContent}
-        bgImage={statsBgImage}
-        showOverlay={statsShowOverlay}
-      />
+      <StatsBanner years={years} graduates={graduates} advantages={advantages} />
 
       {/* 招生院校 */}
-      <PartnerUniversities partners={partners} showOverlay={showImageOverlays} />
+      <PartnerUniversities partners={partners} />
 
       {/* 热门专业 */}
-      <CourseSectionNew hotMajors={hotMajors} showOverlay={showImageOverlays} />
+      <CourseSectionNew hotMajors={hotMajors} />
 
       {/* 公司简介 */}
       <CompanyIntro
         videoUrl={settingsMap.companyVideoUrl || undefined}
         introText={introText}
         slogan={settingsMap.companySlogan || `${schoolShortName}，百年大计，教育为本！`}
-        showOverlay={showImageOverlays}
       />
 
       {/* 资讯中心 */}
@@ -348,13 +236,13 @@ export default async function HomePage() {
         category: n.category?.name || "资讯",
         categorySlug: n.category?.slug || "",
         date: (n.publishedAt || n.createdAt).toISOString(),
-      }))} showOverlay={showImageOverlays} />
+      }))} />
 
       {/* 证书风采 */}
-      <CertificateGallery items={gallery} placeholderImage={defaultPlaceholderImage} showOverlay={showImageOverlays} />
+      <CertificateGallery items={gallery} placeholderImage={defaultPlaceholderImage} />
 
       {/* 学院风采 */}
-      <CampusSection campuses={campuses} placeholderImage={defaultPlaceholderImage} showOverlay={showImageOverlays} />
+      <CampusSection campuses={campuses} placeholderImage={defaultPlaceholderImage} />
 
       {/* Contact CTA */}
       <section className="py-16 bg-[#da251d]">
@@ -363,7 +251,7 @@ export default async function HomePage() {
             立即开始您的学历提升之旅
           </h2>
           <p className="text-white/80 mb-8 max-w-xl mx-auto">
-            咨询热线：{settingsMap.contactPhone || "139-0809-1091"}，专业顾问为您提供一对一咨询服务
+            咨询热线：{settingsMap.contactPhone || "400-001-5729"}，专业顾问为您提供一对一咨询服务
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/apply">

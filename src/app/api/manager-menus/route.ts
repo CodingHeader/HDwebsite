@@ -28,16 +28,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const normalizeMenuLabels = <T extends { code: string; label: string; children?: T[] }>(
-      menuList: T[]
-    ): T[] =>
-      menuList.map((menu) => ({
-        ...menu,
-        label: menu.code === "campus" ? "学院风采" : menu.label,
-        children: menu.children ? normalizeMenuLabels(menu.children) : menu.children,
-      }));
-
-    return NextResponse.json(success(normalizeMenuLabels(menus), "获取菜单成功"));
+    return NextResponse.json(success(menus, "获取菜单成功"));
   } catch (err) {
     const message = err instanceof Error ? err.message : "获取菜单失败";
     return NextResponse.json(unauthorized(message), { status: 401 });

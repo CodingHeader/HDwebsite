@@ -2,7 +2,6 @@ import Link from "next/link";
 import { CategoryFilter } from "@/components/web/CategoryFilter";
 import { SearchBox } from "@/components/web/SearchBox";
 import { CourseCard } from "@/components/web/CourseCard";
-import type { Course } from "@/components/web/CourseCard";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 import { prisma } from "@/lib/prisma";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -72,7 +71,7 @@ export default async function CoursesPage({ searchParams }: PageProps) {
           {/* Course Grid */}
           {courses.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course: Course) => (
+              {courses.map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}
             </div>

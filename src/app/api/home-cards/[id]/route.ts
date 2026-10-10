@@ -33,7 +33,6 @@ export async function PUT(
         ...(body.gradient !== undefined && { gradient: body.gradient }),
         ...(body.hoverGradient !== undefined && { hoverGradient: body.hoverGradient }),
         ...(body.shadow !== undefined && { shadow: body.shadow }),
-        ...(body.backgroundImage !== undefined && { backgroundImage: body.backgroundImage || null }),
         ...(body.sort !== undefined && { sort: body.sort }),
         ...(body.status !== undefined && { status: body.status }),
       },

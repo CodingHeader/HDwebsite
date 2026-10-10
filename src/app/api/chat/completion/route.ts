@@ -49,14 +49,7 @@ export async function POST(request: NextRequest) {
       orderBy: { updatedAt: "desc" },
     });
     if (!config) {
-      return NextResponse.json(errorResp("AI客服尚未配置，请联系管理员在后台【AI配置】中添加并启用AI模型"), {
-        status: 503,
-      });
-    }
-
-    // 检查API密钥是否已配置
-    if (!config.apiKey || config.apiKey.includes('请替换') || config.apiKey.length < 10) {
-      return NextResponse.json(errorResp("AI服务API密钥未配置，请联系管理员在后台【AI配置】中设置有效的API密钥"), {
+      return NextResponse.json(errorResp("尚未配置可用的 AI 模型，请在后台启用一条 AIConfig"), {
         status: 503,
       });
     }
@@ -96,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (scene?.systemPrompt) systemParts.push(scene.systemPrompt);
     if (knowledgeContext) {
       systemParts.push(
-        `以下是可供参考的弘道经理学院知识片段，请在回答学员问题时优先使用，并结合自己的理解给出自然答复：\n\n${knowledgeContext}`
+        `以下是可供参考的弘道教育知识片段，请在回答学员问题时优先使用，并结合自己的理解给出自然答复：\n\n${knowledgeContext}`
       );
     }
     const openaiMessages: OpenAIMessage[] = [];
@@ -168,11 +161,7 @@ export async function POST(request: NextRequest) {
       usage?: { total_tokens?: number };
     };
 
-    let reply = data.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      console.error('[chat/completion] 上游AI返回空回复:', JSON.stringify(data));
-      return NextResponse.json(errorResp("AI服务暂时无响应，请稍后重试或联系管理员检查AI配置"), { status: 502 });
-    }
+    const reply = data.choices?.[0]?.message?.content?.trim() || "抱歉，我暂时无法回答这个问题，请稍后再试。";
     const tokensUsed = data.usage?.total_tokens ?? null;
 
     return NextResponse.json(

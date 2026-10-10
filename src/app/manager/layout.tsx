@@ -4,7 +4,7 @@ import { ManagerLayoutClient } from "@/components/manager/ManagerLayoutClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
-  const siteName = settings.siteName || settings.schoolShortName || "弘道经理学院";
+  const siteName = settings.siteName || settings.schoolShortName || "弘道教育";
 
   return {
     title: {

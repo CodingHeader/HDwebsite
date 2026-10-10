@@ -5,21 +5,19 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "关于我们",
-  description: "弘道经理学院专注专升本教育，助力学历提升，成就美好未来",
+  description: "弘道教育专注专升本教育，助力学历提升，成就美好未来",
 };
 
 export default async function AboutPage() {
   const settings = await getSettings();
 
-  const schoolName = settings.schoolShortName || "弘道经理学院";
+  const schoolName = settings.schoolShortName || "弘道教育";
   const companyIntro = settings.companyIntro || `${schoolName}是经教育主管部门批准成立的专业教育培训机构，致力于为专科毕业生提供优质的专升本教育服务。学院自成立以来，始终秉承"弘道励学，知行合一"的办学理念，累计帮助数万名学员成功通过专升本考试。`;
-  const contactPhone = settings.contactPhone || "139-0809-1091";
-  const contactEmail = settings.contactEmail || "2360618023@qq.com";
-  const address = settings.address || "四川省成都市高新区天府大道1700号新世界环球中心N2区601室";
-  const statsText = settings.statsText || "办学26年培养输送各类人才11万余人";
-  const statsMatches = statsText.match(/(\d+[\d万]+)/g);
-  const years = statsMatches?.[0] ?? "26";
-  const graduates = statsMatches?.[1] ?? "11万";
+  const contactPhone = settings.contactPhone || "400-001-5729";
+  const contactEmail = settings.contactEmail || "contact@hdaomanager.com";
+  const address = settings.address || "成都市青羊区大石西路12号";
+  const years = settings.yearsOfEstablishment || "26";
+  const graduates = settings.totalGraduates || "11万";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -139,7 +137,7 @@ export default async function AboutPage() {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900 mb-1">电子邮箱</h3>
-                <p className="text-sm text-gray-500">{contactEmail || "2360618023@qq.com"}</p>
+                <p className="text-sm text-gray-500">{contactEmail || "contact@hdaomanager.com"}</p>
                 <p className="text-sm text-gray-500">我们会在24小时内回复</p>
               </div>
             </div>

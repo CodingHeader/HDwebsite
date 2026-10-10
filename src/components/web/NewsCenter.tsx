@@ -15,7 +15,6 @@ interface NewsItem {
 
 interface NewsCenterProps {
   news: NewsItem[];
-  showOverlay?: boolean;
 }
 
 // Tab配置
@@ -41,7 +40,7 @@ function formatDate(dateStr: string): string {
   return `${yy}-${mm}-${dd}`;
 }
 
-export function NewsCenter({ news, showOverlay = true }: NewsCenterProps) {
+export function NewsCenter({ news }: NewsCenterProps) {
   const [activeTab, setActiveTab] = useState<"latest" | "exam" | "qa">("latest");
 
   // 根据Tab过滤新闻
@@ -60,20 +59,19 @@ export function NewsCenter({ news, showOverlay = true }: NewsCenterProps) {
   return (
     <section className="bg-gray-50 py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {showOverlay && (
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
-              资讯中心
-            </h2>
-            <Link
-              href="/news"
-              className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
-            >
-              查看更多
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
+            资讯中心
+          </h2>
+          <Link
+            href="/news"
+            className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+          >
+            查看更多
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
 
         {/* 左右两栏布局 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -101,31 +99,30 @@ export function NewsCenter({ news, showOverlay = true }: NewsCenterProps) {
           {/* 右侧: 新闻列表 */}
           <div className="lg:col-span-10">
             <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-              {showOverlay && (
-                <div className="flex border-b bg-gray-50">
-                  {TABS.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      onMouseEnter={() => setActiveTab(tab.id)}
-                      className={`px-5 py-3 text-sm font-medium transition-colors cursor-pointer ${
-                        activeTab === tab.id
-                          ? "text-gray-900 border-b-2 border-red-600 bg-white"
-                          : "text-gray-600 hover:text-gray-900"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                  <div className="flex-1" />
-                  <Link
-                    href="/news"
-                    className="flex items-center gap-1 px-4 py-3 text-sm text-blue-600 hover:text-blue-700"
+              {/* Tab Header */}
+              <div className="flex border-b bg-gray-50">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    onMouseEnter={() => setActiveTab(tab.id)}
+                    className={`px-5 py-3 text-sm font-medium transition-colors cursor-pointer ${
+                      activeTab === tab.id
+                        ? "text-gray-900 border-b-2 border-red-600 bg-white"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
                   >
-                    查看更多&gt;&gt;
-                  </Link>
-                </div>
-              )}
+                    {tab.label}
+                  </button>
+                ))}
+                <div className="flex-1" />
+                <Link
+                  href="/news"
+                  className="flex items-center gap-1 px-4 py-3 text-sm text-blue-600 hover:text-blue-700"
+                >
+                  查看更多&gt;&gt;
+                </Link>
+              </div>
 
               {/* News List */}
               <div className="p-3">

@@ -2,12 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { success, error, unauthorized } from "@/lib/api-response";
 import { requireAuth } from "@/lib/auth";
-import {
-  deleteLocalMediaByUrl,
-  extractMediaUrls,
-  getBuiltinImages,
-} from "@/lib/media-assets";
-import { BUILTIN_MEDIA_CATEGORY } from "@/lib/media-management";
 
 export async function DELETE(
   _request: NextRequest,
@@ -20,24 +14,8 @@ export async function DELETE(
     const { id } = await params;
     const mediaId = parseInt(id, 10);
 
-    if (isNaN(mediaId) || mediaId === 0) {
+    if (isNaN(mediaId) || mediaId <= 0) {
       return NextResponse.json(error("无效的媒体ID"), { status: 400 });
-    }
-
-    if (mediaId < 0) {
-      const builtinImages = await getBuiltinImages();
-      const builtin = builtinImages.find((item) => item.id === mediaId);
-
-      if (!builtin) {
-        return NextResponse.json(error("内置静态图不存在"), { status: 404 });
-      }
-
-      const deleted = await deleteLocalMediaByUrl(builtin.url);
-      if (!deleted) {
-        return NextResponse.json(error("删除内置静态图失败"), { status: 500 });
-      }
-
-      return NextResponse.json(success(null, "删除内置静态图成功"));
     }
 
     const existing = await prisma.media.findUnique({ where: { id: mediaId } });
@@ -45,9 +23,7 @@ export async function DELETE(
       return NextResponse.json(error("媒体不存在"), { status: 404 });
     }
 
-    const relatedUrls = extractMediaUrls(existing.url, existing.metadata);
     await prisma.media.delete({ where: { id: mediaId } });
-    await Promise.all(relatedUrls.map((url) => deleteLocalMediaByUrl(url)));
 
     return NextResponse.json(success(null, "删除媒体成功"));
   } catch (err) {
@@ -67,21 +43,8 @@ export async function PATCH(
     const { id } = await params;
     const mediaId = parseInt(id, 10);
 
-    if (isNaN(mediaId) || mediaId === 0) {
+    if (isNaN(mediaId) || mediaId <= 0) {
       return NextResponse.json(error("无效的媒体ID"), { status: 400 });
-    }
-
-    if (mediaId < 0) {
-      const body = await request.json();
-      const nextCategory = typeof body.category === "string" ? body.category.trim() : "";
-
-      if (!nextCategory || nextCategory === BUILTIN_MEDIA_CATEGORY) {
-        return NextResponse.json(
-          success({ id: mediaId, category: BUILTIN_MEDIA_CATEGORY }, "内置静态图分类保持不变"),
-        );
-      }
-
-      return NextResponse.json(error("内置静态图仅支持固定分类"), { status: 400 });
     }
 
     const existing = await prisma.media.findUnique({ where: { id: mediaId } });

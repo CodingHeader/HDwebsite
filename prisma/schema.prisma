@@ -173,7 +173,6 @@ model Category {
   // 关联
   articles    Article[]
   courses     Course[]
-  majors      Major[]
   navigations Navigation[]
 
   // 时间戳
@@ -188,47 +187,20 @@ model Category {
   @@index([sort])
 }
 
-model Major {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  slug        String   @unique
-  description String?
-  duration    String?
-  cover       String?
-  status      String   @default("active")
-  sort        Int      @default(0)
-  categoryId  Int?
-  category    Category? @relation(fields: [categoryId], references: [id])
-  courses     Course[]
-  hotMajors   HotMajor[]
-  offerings   EnrollmentOffering[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([status])
-  @@index([sort])
-  @@index([categoryId])
-}
-
 model Course {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
   price       Float     @default(0)
-  priceText   String?
   duration    String?
   outline     String?
   cover       String?
   status      String    @default("active")
   categoryId  Int
   category    Category  @relation(fields: [categoryId], references: [id])
-  majorId     Int?
-  major       Major?    @relation(fields: [majorId], references: [id], onDelete: SetNull)
   students    Student[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  @@index([majorId])
 }
 
 model News {
@@ -455,7 +427,6 @@ model Partner {
   website   String?  // 官网链接
   sort      Int      @default(0)
   status    String   @default("active")
-  offerings EnrollmentOffering[]
   createdAt DateTime @default(now())
 }
 
@@ -502,7 +473,6 @@ model HomeCard {
   gradient  String @default("from-blue-500 to-blue-600") // Tailwind渐变类
   hoverGradient String @default("from-blue-400 to-blue-500")
   shadow    String @default("shadow-blue-200")
-  backgroundImage String? // 卡片背景图片URL
   sort      Int    @default(0)
   status    String @default("active") // active/inactive
   createdAt DateTime @default(now())
@@ -536,8 +506,6 @@ model HotMajor {
   subtitle    String @default("专升本") // 副标题/分类标签
   description String? // 简介文本
   duration    String @default("2年") // 学制
-  majorId     Int?
-  major       Major? @relation(fields: [majorId], references: [id], onDelete: SetNull)
 
   // 图标配置
   iconType  String @default("text") // text | image
@@ -558,36 +526,6 @@ model HotMajor {
   // 索引
   @@index([status])
   @@index([sort])
-  @@index([majorId])
-}
-
-model EnrollmentOffering {
-  id              Int      @id @default(autoincrement())
-  majorId         Int
-  major           Major    @relation(fields: [majorId], references: [id], onDelete: Cascade)
-  partnerId       Int
-  partner         Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  sourceBatch     String   @default("26春")
-  educationType   String   @default("自考")
-  level           String?
-  majorCode       String?
-  studyForm       String?
-  yearTuition     Float?
-  totalTuition    Float?
-  feeDetail       String?
-  extraFeeNote    String?
-  hasPrice        Boolean  @default(false)
-  status          String   @default("active")
-  sort            Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([sourceBatch, partnerId, majorId, educationType, level, majorCode])
-  @@index([majorId, educationType, level, status])
-  @@index([partnerId, status])
-  @@index([sourceBatch, status])
-  @@index([hasPrice, status])
-  @@index([totalTuition])
 }
 
 // ============================================

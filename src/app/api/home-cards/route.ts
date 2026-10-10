@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subtitle, icon, href, gradient, hoverGradient, shadow, backgroundImage, sort } = body;
+    const { title, subtitle, icon, href, gradient, hoverGradient, shadow, sort } = body;
 
     if (!title || !subtitle) {
       return NextResponse.json(error("标题和副标题不能为空"), { status: 400 });
@@ -60,7 +60,6 @@ export async function POST(request: NextRequest) {
         gradient: gradient || "from-blue-500 to-blue-600",
         hoverGradient: hoverGradient || "from-blue-400 to-blue-500",
         shadow: shadow || "shadow-blue-200",
-        backgroundImage: backgroundImage || null,
         sort: sort ?? 0,
         status: "active",
       },

@@ -84,7 +84,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
         key: "topNoticePhone",
         label: "联系电话",
         type: "text",
-        defaultValue: "139-0809-1091",
+        defaultValue: "132-1945-5550",
         group: "topbar",
       },
     ],
@@ -98,7 +98,8 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     dataSource: "settings",
     order: 3,
     fields: [
-      { key: "statsText", label: "统计文案", type: "text", defaultValue: "办学26年培养输送各类人才11万余人", group: "stats" },
+      { key: "yearsOfEstablishment", label: "办学年限", type: "text", defaultValue: "26", group: "stats" },
+      { key: "totalGraduates", label: "毕业人数", type: "text", defaultValue: "11万", group: "stats" },
       { key: "advantage1", label: "优势1", type: "text", defaultValue: "正规可靠", group: "stats" },
       { key: "advantage2", label: "优势2", type: "text", defaultValue: "国家承认", group: "stats" },
       { key: "advantage3", label: "优势3", type: "text", defaultValue: "管家服务", group: "stats" },
@@ -114,7 +115,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     dataSource: "settings",
     order: 4,
     fields: [
-      { key: "companySlogan", label: "公司标语", type: "text", defaultValue: "弘道经理学院，百年大计，教育为本！", group: "company" },
+      { key: "companySlogan", label: "公司标语", type: "text", defaultValue: "弘道教育，百年大计，教育为本！", group: "company" },
       { key: "companyIntro", label: "公司简介", type: "textarea", defaultValue: "", group: "company" },
       { key: "companyVideoUrl", label: "宣传视频URL", type: "url", defaultValue: "", group: "company" },
     ],
