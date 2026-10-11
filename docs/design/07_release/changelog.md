@@ -94,3 +94,15 @@ updated: 2026-10-10
 - **review→fix**：独立审查报告 1×P0+7×P1+17×P2 → P0/P1 全修 + 择要 P2（登录防爆破、审核幂等事务、wechat 凭证不出接口、slug/日期/URL 基址边界、action 语义补全、Editor content:list、effect 规则合规）。
 - **test**：vitest 33/33；npm run check 全绿；冒烟（菜单树 11+28、采集源 5、报名落库、发布/内容/公众号 API、前台 9 页 200、chat 降级链路）。
 - **待用户输入（更新）**：①微信凭证（M4 联调）；②SMTP 凭证（真实邮件投递）；③**Coze 新 PAT**（旧 PAT 已过期，coze.cn 重新生成后填入「模型供应商→编辑→API Key」即恢复 AI 客服全能力）。
+
+## 2026-10-11（第十二轮）：执行轮 E3——浏览器端到端测试与修复
+
+按 verify-plan.md 八阶段（V1 前台浏览 / V2 互动 / V3 认证 / V4 后台 CRUD / V5 采集 / V6 发布闭环 / V7 通知 / V8 安全）以真实浏览器 + API 探针完成全量测试。
+
+- **fix（P1）埋点断流**：R0 CRUD 生成器覆盖了 M1 公开 POST /api/user-actions → 405；恢复公开 POST 并保留管理 GET（浏览器报名后 submit+page_view 双落库复测通过）。
+- **fix（P1）表单校验三连**：select 空值未拦截 + resources.ts 92 处 optional 字段不可收 null + number 默认 0 → normalizeFormValues 删键策略 + 全量 nullable 化 + 默认值空串；zod 英文消息统一转中文"参数校验失败：字段"（契约②）。
+- **fix（P1）slug 契约对齐**：resources.ts 7 处 slug regex 补中文集（上轮漏网），中文 slug 资源编辑恢复。
+- **fix（数据）**：admin nickname 乱码为测试工具（Git Bash curl GBK）污染，非系统缺陷；已修数据并登记测试纪律。
+- **验证亮点**：调度器启动补跑自动完成教育厅源采集（REQ-NF-004 补跑语义实证）；urlHash 去重（重复执行跳过 8/8）；审核事务化双写（ContentItem+Knowledge）；**采集→审核→发布→前台展示端到端闭环**（真实政府公告）；权限矩阵（无 token 401×5、Editor 403×4+200×1）；上传白名单（txt 拒/png 过+文件可访问）。
+- 证据：06_validation/evidence/EVD-VERIFY/（issues.md 台账 + 7 张浏览器截图）。
+- 回归：npm run check 全绿；vitest 33/33。

@@ -37,8 +37,14 @@ export function serverError(message = "服务器错误") {
   return build(500, null, message, 500);
 }
 
-/** zod 校验失败 → 400 + 首条 issue 文案 */
-export function validationError(issues: { message: string }[]) {
-  const first = issues[0]?.message ?? "参数校验失败";
-  return build(400, null, first, 400);
+/** zod 校验失败 → 400 + 中文文案（契约②：默认 zod 英文消息统一转为参数校验失败 + 字段路径） */
+export function validationError(issues: { message: string; path?: (string | number | symbol)[] }[]) {
+  const first = issues[0];
+  if (!first) return build(400, null, "参数校验失败", 400);
+  const isZodDefault = /^(Invalid input|Expected|Too|Unrecognized|Required)/i.test(first.message);
+  const pathStr = first.path?.length ? String(first.path[0]) : "";
+  const message = isZodDefault
+    ? `参数校验失败${pathStr ? `：${pathStr}` : ""}`
+    : first.message;
+  return build(400, null, message, 400);
 }

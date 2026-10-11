@@ -22,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const rule = await prisma.notifyRule.update({
       where: { id: parsedId.data },
       data: {
-        enabled: inputGuard(parsed.data.enabled),
+        enabled: parsed.data.enabled ?? undefined,
         templateId: parsed.data.templateId ?? undefined,
         recipientGroups: parsed.data.recipientGroups ? JSON.stringify(parsed.data.recipientGroups) : undefined,
       },

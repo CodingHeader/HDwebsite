@@ -192,7 +192,7 @@ export function SchemaForm({
   );
 }
 
-/** 提交前转换：tags 逗号串 → 数组；空串 → null（可空字段） */
+/** 提交前转换：tags 逗号串 → 数组；select 空值删键（让 zod default 生效）；其余空串 → null（可空字段） */
 export function normalizeFormValues(fields: FieldSpec[], values: FormValues): FormValues {
   const out: FormValues = { ...values };
   for (const f of fields) {
@@ -200,7 +200,10 @@ export function normalizeFormValues(fields: FieldSpec[], values: FormValues): Fo
     if ((f.type ?? "text") === "tags" && typeof v === "string") {
       out[f.key] = v.trim() ? v.split(/[,，]/).map((s) => s.trim()).filter(Boolean) : [];
     }
-    if (v === "") out[f.key] = null;
+    if (v === "") {
+      if ((f.type ?? "text") === "select") delete out[f.key];
+      else out[f.key] = null;
+    }
   }
   return out;
 }

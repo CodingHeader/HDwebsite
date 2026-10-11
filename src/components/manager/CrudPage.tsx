@@ -286,7 +286,7 @@ function defaultValues(fields: FieldSpec[]): FormValues {
   for (const f of fields) {
     const type = f.type ?? "text";
     if (type === "switch") v[f.key] = true;
-    else if (type === "number") v[f.key] = 0;
+    else if (type === "number") v[f.key] = ""; // 空串由 normalizeFormValues 置 null，避免 0 触发 positive 校验
     else if (type === "tags") v[f.key] = [];
     else if (type === "select") v[f.key] = f.options?.[0]?.value ?? null;
     else v[f.key] = "";
