@@ -235,6 +235,7 @@ model ArticleTag {
 model Course {
   id          Int       @id @default(autoincrement())
   title       String
+  sort        Int       @default(0)
   description String?
   price       Float     @default(0)
   priceText   String? // 展示用价格文案（B 分支补录）
@@ -273,7 +274,7 @@ model Student {
 }
 
 model Partner {
-  id      String  @id @default(cuid())
+  id      Int     @id @default(autoincrement())
   name    String
   logo    String?
   website String?
@@ -310,10 +311,10 @@ model Major {
 }
 
 model EnrollmentOffering {
-  id            String  @id @default(cuid())
+  id            Int     @id @default(autoincrement())
   majorId       Int
   major         Major   @relation(fields: [majorId], references: [id], onDelete: Cascade)
-  partnerId     String
+  partnerId     Int
   partner       Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   sourceBatch   String  @default("26春")
   educationType String  @default("自考")
@@ -478,6 +479,8 @@ model Media {
 model LLMProvider {
   id               Int       @id @default(autoincrement())
   name             String
+  kind             String    @default("openai") // openai 兼容 / coze（ADR-023）
+  botId            String?
   endpoint         String
   apiKey           String
   isEncrypted      Boolean   @default(true)

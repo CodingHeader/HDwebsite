@@ -27,12 +27,16 @@ updated: 2026-10-10
 | TASK-M1-010 | UserAction 最小埋点 | M1 | done | ASM-008 |
 | TASK-M1-011 | 迁移脚本 + seed + M1 端到端验证 | M1 | done | ADR-001 |
 
+| TASK-R0-001 | 站点基线重建（CRUD 工厂+全资源+前后台页面+媒体） | R0 | done | ADR-022 |
+| TASK-M2-001 | 知识与智能（KBAdapter+Coze+LLM 网关+SSE 客服） | M2 | done | ADR-023 |
+| TASK-M3-001 | 采集引擎（5 源+审核+图片转存） | M3 | done | SOL-004 |
+| TASK-M3-002 | 发布中枢与邮箱提醒（SMTP 降级运行） | M3 | done | SOL-005 |
+| TASK-S6-001 | 公众号对接层（凭证后补即插桩） | M4 | done | SOL-006 |
+
 ## R0 / 后续切片（开工前建卡）
 
-- R0 基线重建：前台 13 页 + 后台 25 页 + CrudPage/SchemaForm + upload/file + B 域（REQ-F-012）管理页（可与 M2 并行，见 master-plan §8/§9）
-- M2：KBAdapter + LLM 网关 + ChatWidget（S2+S3）
-- M3：采集引擎 + 发布中枢 + 邮箱提醒（S4+S5）
-- M4：公众号对接 + 灰度切换（S6 + ADR-021）
+- ~~R0 基线重建 / M2 / M3 / S6 对接层~~ → 已完成（见上表；真实联调项见待用户输入清单）
+- M4 剩余：部署灰度切换演练（ADR-021，待 DEP-001/003 凭证与生产环境）
 
 ## 登记规则
 

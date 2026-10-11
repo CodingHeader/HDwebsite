@@ -40,7 +40,7 @@ async function seedRoles() {
         'banner:list', 'banner:edit',
         'media:list', 'media:create',
         'service:list', 'service:create', 'service:edit',
-        'content:edit',
+        'content:list', 'content:edit',
       ]),
       isSuper: false,
     },
@@ -79,19 +79,96 @@ async function seedAdmin() {
 }
 
 async function seedMenus() {
-  const menus: { code: string; label: string; icon?: string; path?: string; level: number; sort: number; permission?: string; parentId?: number }[] = [
-    { code: 'dashboard', label: '仪表盘', icon: 'LayoutDashboard', path: '/manager', level: 1, sort: 0 },
-    { code: 'articles', label: '文章管理', icon: 'FileText', path: '/manager/articles', level: 1, sort: 10, permission: 'article:list' },
-    // R0 基线重建时补齐：categories/tags/courses/majors/enrollment-offerings/students/
-    // banners/partners/gallery/campus/home-cards/hot-majors/service-guides/media/
-    // content-hub/collect-sources/collect-items/publish-jobs/knowledge/llm-providers/
-    // notify/wechat-accounts/users/roles/settings/logs/chat-scenes 等（ManagerMenu 表驱动）
+  // 一级直出
+  const top: { code: string; label: string; icon?: string; path?: string; sort: number; permission?: string }[] = [
+    { code: 'dashboard', label: '仪表盘', icon: 'LayoutDashboard', path: '/manager', sort: 0 },
+    { code: 'articles', label: '文章管理', icon: 'FileText', path: '/manager/articles', sort: 10, permission: 'article:list' },
+    { code: 'courses', label: '课程管理', icon: 'GraduationCap', path: '/manager/courses', sort: 20, permission: 'course:list' },
+    { code: 'students', label: '报名管理', icon: 'UserPlus', path: '/manager/students', sort: 30, permission: 'student:list' },
+    { code: 'media', label: '媒体库', icon: 'Image', path: '/manager/media', sort: 40, permission: 'media:list' },
   ];
-  for (const m of menus) {
+  // 折叠分组
+  const groups: { code: string; label: string; icon: string; sort: number }[] = [
+    { code: 'group-content', label: '内容管理', icon: 'FolderEdit', sort: 50 },
+    { code: 'group-enrollment', label: '招生管理', icon: 'School', sort: 60 },
+    { code: 'group-site', label: '站点管理', icon: 'PanelsTopLeft', sort: 70 },
+    { code: 'group-ai', label: 'AI 与自动化', icon: 'Bot', sort: 80 },
+    { code: 'group-notify', label: '提醒通知', icon: 'BellRing', sort: 90 },
+    { code: 'group-system', label: '系统管理', icon: 'Settings', sort: 100 },
+  ];
+  const children: { parent: string; code: string; label: string; path: string; sort: number; permission?: string }[] = [
+    { parent: 'group-content', code: 'categories', label: '分类管理', path: '/manager/categories', sort: 1, permission: 'category:list' },
+    { parent: 'group-content', code: 'tags', label: '标签管理', path: '/manager/tags', sort: 2, permission: 'tag:list' },
+    { parent: 'group-content', code: 'service-guides', label: '服务指南', path: '/manager/service-guides', sort: 3, permission: 'service:list' },
+    { parent: 'group-content', code: 'navigations', label: '导航管理', path: '/manager/navigations', sort: 4, permission: 'navigation:list' },
+    { parent: 'group-enrollment', code: 'majors', label: '专业管理', path: '/manager/majors', sort: 1, permission: 'major:list' },
+    { parent: 'group-enrollment', code: 'enrollment-offerings', label: '招生计划', path: '/manager/enrollment-offerings', sort: 2, permission: 'enrollment:list' },
+    { parent: 'group-enrollment', code: 'partners', label: '合作院校', path: '/manager/partners', sort: 3, permission: 'partner:list' },
+    { parent: 'group-enrollment', code: 'hot-majors', label: '热门专业位', path: '/manager/hot-majors', sort: 4, permission: 'course:list' },
+    { parent: 'group-site', code: 'banners', label: '轮播图', path: '/manager/banners', sort: 1, permission: 'banner:list' },
+    { parent: 'group-site', code: 'home-cards', label: '首页卡片', path: '/manager/home-cards', sort: 2, permission: 'banner:list' },
+    { parent: 'group-site', code: 'campus', label: '校区管理', path: '/manager/campus', sort: 3, permission: 'campus:list' },
+    { parent: 'group-site', code: 'gallery', label: '证书风采', path: '/manager/gallery', sort: 4, permission: 'gallery:list' },
+    { parent: 'group-ai', code: 'content-hub', label: '内容中枢', path: '/manager/content-hub', sort: 0, permission: 'content:list' },
+    { parent: 'group-ai', code: 'chat-scenes', label: 'AI 场景', path: '/manager/chat-scenes', sort: 1, permission: 'setting:list' },
+    { parent: 'group-ai', code: 'knowledge', label: '知识库', path: '/manager/knowledge', sort: 2, permission: 'kb:list' },
+    { parent: 'group-ai', code: 'llm-providers', label: '模型供应商', path: '/manager/llm-providers', sort: 3, permission: 'llm:list' },
+    { parent: 'group-ai', code: 'collect-sources', label: '采集源', path: '/manager/collect-sources', sort: 4, permission: 'collect:list' },
+    { parent: 'group-ai', code: 'collect-items', label: '采集审核', path: '/manager/collect-items', sort: 5, permission: 'collect:list' },
+    { parent: 'group-ai', code: 'publish-jobs', label: '发布任务', path: '/manager/publish-jobs', sort: 6, permission: 'publish:list' },
+    { parent: 'group-ai', code: 'wechat-accounts', label: '公众号账号', path: '/manager/wechat-accounts', sort: 7, permission: 'wechat:list' },
+    { parent: 'group-notify', code: 'notify-recipients', label: '提醒接收人', path: '/manager/notify-recipients', sort: 1, permission: 'notify:list' },
+    { parent: 'group-notify', code: 'notify-templates', label: '邮件模板', path: '/manager/notify-templates', sort: 2, permission: 'notify:list' },
+    { parent: 'group-notify', code: 'notify-records', label: '通知记录', path: '/manager/notify-records', sort: 3, permission: 'notify:list' },
+    { parent: 'group-system', code: 'users', label: '用户管理', path: '/manager/users', sort: 1, permission: 'user:list' },
+    { parent: 'group-system', code: 'roles', label: '角色管理', path: '/manager/roles', sort: 2, permission: 'role:list' },
+    { parent: 'group-system', code: 'settings', label: '站点设置', path: '/manager/settings', sort: 3, permission: 'setting:list' },
+    { parent: 'group-system', code: 'logs', label: '操作日志', path: '/manager/logs', sort: 4, permission: 'log:list' },
+    { parent: 'group-system', code: 'user-actions', label: '行为记录', path: '/manager/user-actions', sort: 5, permission: 'log:list' },
+  ];
+
+  for (const m of top) {
     await prisma.managerMenu.upsert({
       where: { code: m.code },
       update: {},
-      create: { code: m.code, label: m.label, icon: m.icon, path: m.path, level: m.level, sort: m.sort, permission: m.permission },
+      create: { code: m.code, label: m.label, icon: m.icon, path: m.path, level: 1, sort: m.sort, permission: m.permission },
+    });
+  }
+  for (const g of groups) {
+    await prisma.managerMenu.upsert({
+      where: { code: g.code },
+      update: {},
+      create: { code: g.code, label: g.label, icon: g.icon, level: 1, sort: g.sort },
+    });
+  }
+  for (const c of children) {
+    const parent = await prisma.managerMenu.findUnique({ where: { code: c.parent } });
+    if (!parent) throw new Error(`seed: 菜单分组缺失 ${c.parent}`);
+    await prisma.managerMenu.upsert({
+      where: { code: c.code },
+      update: {},
+      create: { code: c.code, label: c.label, path: c.path, parentId: parent.id, level: 2, sort: c.sort, permission: c.permission },
+    });
+  }
+}
+
+async function seedFrontNavigation() {
+  const navs: { slug: string; name: string; link: string; sort: number; level: number }[] = [
+    { slug: 'home', name: '首页', link: '/', sort: 1, level: 1 },
+    { slug: 'about', name: '关于我们', link: '/about', sort: 2, level: 1 },
+    { slug: 'courses', name: '课程中心', link: '/courses', sort: 3, level: 1 },
+    { slug: 'articles', name: '新闻资讯', link: '/articles', sort: 4, level: 1 },
+    { slug: 'partners', name: '合作院校', link: '/partners', sort: 5, level: 1 },
+    { slug: 'campus', name: '校区环境', link: '/campus', sort: 6, level: 1 },
+    { slug: 'gallery', name: '证书风采', link: '/gallery', sort: 7, level: 1 },
+    { slug: 'apply', name: '在线报名', link: '/apply', sort: 8, level: 1 },
+    { slug: 'contact', name: '联系我们', link: '/contact', sort: 9, level: 1 },
+  ];
+  for (const n of navs) {
+    await prisma.navigation.upsert({
+      where: { slug: n.slug },
+      update: {},
+      create: { slug: n.slug, name: n.name, link: n.link, linkType: 'internal', sort: n.sort, level: n.level, isNav: true, isVisible: true },
     });
   }
 }
@@ -249,6 +326,63 @@ async function seedServiceGuide() {
   }
 }
 
+async function seedCollectSources() {
+  // 采集源（用户 2026-10-11 指定 + 强关联补选；URL 已核实真实可达；选择器可经"试抓预览"校准）
+  const sources: { name: string; type: 'html' | 'rss'; url: string; parser: string; autoTags: string[]; cron: string }[] = [
+    {
+      name: '四川省教育考试院 · 招考动态',
+      type: 'html',
+      url: 'https://www.sceea.cn/List/NewsList_1.html',
+      parser: JSON.stringify({ listSelector: 'ul.list li', titleSelector: 'a', linkSelector: 'a', contentSelector: '.content, #content, .article-content, main' }),
+      autoTags: ['招生政策', '四川'],
+      cron: '0 4 * * *',
+    },
+    {
+      name: '四川大学继续教育学院',
+      type: 'html',
+      url: 'https://cce.scu.edu.cn/',
+      parser: JSON.stringify({ listSelector: '.news-list li', titleSelector: 'a', linkSelector: 'a' }),
+      autoTags: ['院校动态', '四川大学'],
+      cron: '0 4 * * *',
+    },
+    {
+      name: '电子科技大学继续教育学院 · 通知公告',
+      type: 'html',
+      url: 'https://jxjy.uestc.edu.cn/xwzx/tzgg.htm',
+      parser: JSON.stringify({ listSelector: 'div[class*=list-box] li, .list li', titleSelector: 'a', linkSelector: 'a', contentSelector: '#vsb_content, .v_news_content, .content' }),
+      autoTags: ['院校动态', '电子科技大学'],
+      cron: '0 4 * * *',
+    },
+    {
+      name: '电子科技大学继续教育学院 · 学院新闻',
+      type: 'html',
+      url: 'https://jxjy.uestc.edu.cn/xwzx/xyxw.htm',
+      parser: JSON.stringify({ listSelector: 'div[class*=list-box] li, .list li', titleSelector: 'a', linkSelector: 'a', contentSelector: '#vsb_content, .v_news_content, .content' }),
+      autoTags: ['院校动态', '电子科技大学'],
+      cron: '30 4 * * *',
+    },
+    {
+      name: '四川省教育厅 · 通知公告',
+      type: 'html',
+      url: 'http://edu.sc.gov.cn/scedu/c100495/xwzx_list.shtml',
+      parser: JSON.stringify({ listSelector: 'ul li, .news_list li', titleSelector: 'a', linkSelector: 'a', contentSelector: '.TRS_Editor, #zoom, .content' }),
+      autoTags: ['招生政策', '四川教育厅'],
+      cron: '0 5 * * *',
+    },
+  ];
+  for (const s of sources) {
+    const exists = await prisma.collectSource.findFirst({ where: { url: s.url } });
+    if (!exists) {
+      await prisma.collectSource.create({
+        data: { name: s.name, type: s.type, url: s.url, parser: s.parser, cron: s.cron, autoTags: JSON.stringify(s.autoTags), enabled: true },
+      });
+      console.log('seed: 采集源已登记 — ' + s.name);
+    }
+  }
+  // 川大继教为 JS 渲染站（设计文档已知限制）：试抓为空属预期，选择器待校准或走前端渲染扩展
+  console.log('seed: 注意 — cce.scu.edu.cn 为 JS 渲染站，若试抓为空需人工校准解析规则');
+}
+
 async function seedNotifyDefaults() {
   const events = [
     'before_publish_news',
@@ -285,12 +419,14 @@ async function main() {
   await seedRoles();
   await seedAdmin();
   await seedMenus();
+  await seedFrontNavigation();
   await seedSettings();
   await seedCategoriesAndTags();
   await seedArticles();
   await seedChatScenes();
   await seedCronJobs();
   await seedServiceGuide();
+  await seedCollectSources();
   await seedNotifyDefaults();
   console.log('seed: 完成。管理员账号 admin / admin123（上线必须修改）');
 }

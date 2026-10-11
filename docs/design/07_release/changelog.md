@@ -83,3 +83,14 @@ updated: 2026-10-10
 - **docs**：document-index/project-map/README(83 件)/product-requirements 追溯矩阵同步执行轮；任务卡证据路径修正。
 - **test**：修复后 vitest 33/33（新增 XSS 回归 3 例）；npm run check 全绿。
 - **遗留（登记不阻塞）**：埋点/登录频控（R0）、列表响应瘦身为 articleSummarySchema（R0）、viewCount 显式路由化（R0）、seed/scripts 纳入 typecheck（R0）、busy_timeout 适配器评估（RISK-007 观察）。
+
+## 2026-10-11（第十一轮）：执行轮 E2——R0+M2+M3+S6 全模块落地
+
+- **feat（R0）**：CRUD 工厂（crud.ts + 26 资源规格 SSOT）+ 52 个路由文件 + 全资源契约（contracts/resources.ts）；CrudPage/SchemaForm 驱动 26 个管理页；前台 13 类页面重建（导航表驱动 Header/首页 8 分区/栏目页/报名表单+api/apply 双层频控/FloatingContact）；upload（sharp 缩略图+白名单）与 file 直读（双重路径穿越防护）；ManagerMenu 11+28 全量 seed；Partner/EnrollmentOffering 主键改 Int、Course+sort、LLMProvider+kind/botId 迁移。
+- **feat（M2）**：Coze 客户端（v3/chat SSE+轮询，ADR-023）；llm-gateway（default→priority→fallback 路由、熔断、用量统计、双适配器）；KBAdapter 双轨（本地兜底+Coze）；/api/chat/stream（限频+敏感词+历史收敛+SSE）；ChatWidget 悬浮客服；llm/providers 管理（加密+脱敏+测试+余额填报）。
+- **feat（M3）**：采集引擎（html/rss、限速、urlHash+标题相似度去重、sharp 图片转存、审核事务化入库）；5 个真实采集源 seed（用户指定+补选，逐一核实可达；川大继教 JS 渲染站限制登记）；发布中枢（PublishJob 状态机 publish/update/offline、指数退避≤3、渠道行复用）；通知网关（五类事件+模板+重试+dead 终态防风暴；SMTP 未配置 skipped 降级）。
+- **feat（S6）**：公众号对接层（token 缓存、验签、XML 分发、被动回复+48h 客服补发走 Coze、素材→草稿→freepublish、每日上限）；凭证后补即插桩（ADR-002）。
+- **联调**：Coze 真实调用打通至 API 层（请求格式/加密/错误透传正确）；参考项目 PAT 已过期（4101）→ 登记为外部输入失效，新 PAT 后台粘贴即生效。
+- **review→fix**：独立审查报告 1×P0+7×P1+17×P2 → P0/P1 全修 + 择要 P2（登录防爆破、审核幂等事务、wechat 凭证不出接口、slug/日期/URL 基址边界、action 语义补全、Editor content:list、effect 规则合规）。
+- **test**：vitest 33/33；npm run check 全绿；冒烟（菜单树 11+28、采集源 5、报名落库、发布/内容/公众号 API、前台 9 页 200、chat 降级链路）。
+- **待用户输入（更新）**：①微信凭证（M4 联调）；②SMTP 凭证（真实邮件投递）；③**Coze 新 PAT**（旧 PAT 已过期，coze.cn 重新生成后填入「模型供应商→编辑→API Key」即恢复 AI 客服全能力）。

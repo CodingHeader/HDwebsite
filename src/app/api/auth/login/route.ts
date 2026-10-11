@@ -7,6 +7,17 @@ import type { Role, User } from ".prisma/client";
 
 export const dynamic = "force-dynamic";
 
+// 登录防爆破（P2-2）：同 IP 每分钟 ≤10 次尝试（内存计数，单机口径 REQ-C-003）
+const loginAttempts = new Map<string, number[]>();
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const list = (loginAttempts.get(ip) ?? []).filter((t) => now - t < 60_000);
+  if (list.length >= 10) return true;
+  list.push(now);
+  loginAttempts.set(ip, list);
+  return false;
+}
+
 /** POST /api/auth/login：用户名密码 → JWT（7d） */
 export async function POST(request: Request) {
   let body: unknown;
@@ -18,6 +29,9 @@ export async function POST(request: Request) {
   const parsed = loginRequestSchema.safeParse(body);
   if (!parsed.success) return validationError(parsed.error.issues);
   const { username, password } = parsed.data;
+  if (isRateLimited(clientIp(request) ?? "unknown")) {
+    return error("尝试过于频繁，请稍后再试", 400);
+  }
 
   try {
     const user = (await prisma.user.findUnique({

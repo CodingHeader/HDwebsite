@@ -6,3 +6,4 @@ export * from "./auth";
 export * from "./article";
 export * from "./setting";
 export * from "./user-action";
+export * from "./resources";
