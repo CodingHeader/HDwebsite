@@ -1,0 +1,925 @@
+// 弘道教育官网 hdwebsite_1011 — 数据模型基线（PRISMA-BASELINE v1, 2026-10-11）
+//
+// 来源与口径：
+// - 既有模型：04292309 prisma/schema.prisma（32 模型）为基线
+// - 裁剪（ADR-012 / C1）：移除 News / PageTemplate / ContentBlock / TemplateBlock / ElementConfig / AIConfig
+// - 补录（ADR-022，hdwebsite_0429 分支既有功能）：Major / EnrollmentOffering
+// - 新增（SOL-001~006）：CronJob / ContentItem / ContentChannel / CollectSource / CollectTask /
+//   CollectItem / PublishJob / LLMProvider / LLMUsage / WechatAccount / NotifyRecipient /
+//   NotifyRule / NotifyTemplate / NotifyRecord
+// - 保留 Knowledge（ADR-020：外部知识库对接前的本地兜底双轨）
+// - 约定：SQLite 无原生 JSON → 灵活结构以 String 存 JSON（读取侧 try/catch 容错，JSON-in-String）
+// - 字段口径统一（消解文档差异）：CollectItem.status = new|approved|rejected|imported（SOL-004）；
+//   ContentItem 按 16-新增 §1.1 口径 + source/collectItemId 回链
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================
+// 一、权限层
+// ============================================
+
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  // 权限字符串数组（JSON-in-String），如 ["article:create", "*"]
+  permissions String
+  isSuper     Boolean @default(false)
+  users       User[]
+  status      String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  passwordHash String
+  email        String?   @unique
+  nickname     String?
+  realName     String?
+  avatar       String?
+  phone        String?
+  roleId       Int
+  role         Role      @relation(fields: [roleId], references: [id])
+  isActive     Boolean   @default(true)
+  status       String    @default("active")
+  lastLoginAt  DateTime?
+  lastLoginIp  String?
+  loginCount   Int       @default(0)
+
+  articles     Article[]
+  media        Media[]
+  logs         OperationLog[]
+  contentItems ContentItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roleId])
+  @@index([status])
+}
+
+// ============================================
+// 二、结构与配置层
+// ============================================
+
+model Navigation {
+  id              Int          @id @default(autoincrement())
+  name            String
+  slug            String       @unique
+  parentId        Int?
+  parent          Navigation?  @relation("NavTree", fields: [parentId], references: [id])
+  children        Navigation[] @relation("NavTree")
+  level           Int          @default(1)
+  icon            String?
+  link            String?
+  linkType        String       @default("internal") // internal/external/dropdown
+  target          String       @default("_self")
+  categoryId      Int?
+  category        Category?    @relation(fields: [categoryId], references: [id])
+  contentType     String? // news/course/partner/page
+  sort            Int          @default(0)
+  status          String       @default("active")
+  isVisible       Boolean      @default(true)
+  isNav           Boolean      @default(true)
+  // 元数据 JSON（badge/hoverEffect/clickAction/activeIndicator）
+  metadata        String?
+  hoverEffect     String?
+  clickAction     String?
+  activeIndicator String?
+  seoTitle        String?
+  seoKeywords     String?
+  seoDescription  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([status])
+}
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String
+  slug        String     @unique
+  description String?
+  image       String?
+  parentId    Int?
+  parent      Category?  @relation("CatTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CatTree")
+  type        String     @default("article") // article/course/partner
+  sort        Int        @default(0)
+  isNav       Boolean    @default(false)
+  isVisible   Boolean    @default(true)
+
+  articles    Article[]
+  courses     Course[]
+  majors      Major[]
+  navigations Navigation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([parentId])
+}
+
+model ManagerMenu {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique
+  label       String
+  icon        String?
+  path        String?
+  parentId    Int?
+  parent      ManagerMenu?  @relation("MenuTree", fields: [parentId], references: [id])
+  children    ManagerMenu[] @relation("MenuTree")
+  level       Int           @default(1)
+  permission  String?
+  sort        Int           @default(0)
+  isVisible   Boolean       @default(true)
+  badge       String?
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([level])
+}
+
+model Setting {
+  id          Int     @id @default(autoincrement())
+  key         String  @unique
+  value       String?
+  type        String  @default("string") // string/number/boolean/json
+  group       String  @default("site") // Registry 扁平分组（ADR-009）：site/topbar/banner/stats/cards/footer/company/contact/seo/other/email/wechat-mp/collect/llm/notify/publish
+  description String?
+  isPublic    Boolean @default(true)
+  isEncrypted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+}
+
+// ============================================
+// 三、内容层（官网渠道）
+// ============================================
+
+model Article {
+  id             Int          @id @default(autoincrement())
+  title          String
+  slug           String       @unique
+  content        String
+  contentType    String       @default("html") // html（存量）/ markdown（新增，SOL-001）
+  channel        String       @default("info") // info（资讯）/ news（新闻，ADR-001 News 并入）
+  excerpt        String?
+  coverImage     String?
+  authorId       Int
+  author         User         @relation(fields: [authorId], references: [id])
+  categoryId     Int?
+  category       Category?    @relation(fields: [categoryId], references: [id])
+  tags           ArticleTag[]
+  status         String       @default("draft") // draft/published/archived
+  isTop          Boolean      @default(false)
+  isRecommend    Boolean      @default(false)
+  isHot          Boolean      @default(false)
+  viewCount      Int          @default(0)
+  likeCount      Int          @default(0)
+  seoTitle       String?
+  seoKeywords    String?
+  seoDescription String?
+  publishedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([channel])
+  @@index([categoryId])
+  @@index([publishedAt])
+}
+
+model Tag {
+  id       Int          @id @default(autoincrement())
+  name     String       @unique
+  slug     String       @unique
+  articles ArticleTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ArticleTag {
+  articleId Int
+  tagId     Int
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+model Course {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float     @default(0)
+  priceText   String? // 展示用价格文案（B 分支补录）
+  duration    String?
+  outline     String?
+  cover       String?
+  status      String    @default("active")
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  majorId     Int?
+  major       Major?    @relation(fields: [majorId], references: [id])
+  students    Student[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([majorId])
+  @@index([status])
+}
+
+model Student {
+  id       Int     @id @default(autoincrement())
+  name     String
+  phone    String
+  courseId Int?
+  course   Course? @relation(fields: [courseId], references: [id])
+  message  String?
+  status   String  @default("pending")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([courseId])
+}
+
+model Partner {
+  id      String  @id @default(cuid())
+  name    String
+  logo    String?
+  website String?
+  sort    Int     @default(0)
+  status  String  @default("active")
+
+  offerings EnrollmentOffering[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Major {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  duration    String?
+  cover       String?
+  status      String    @default("active")
+  sort        Int       @default(0)
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  courses   Course[]
+  hotMajors HotMajor[]
+  offerings EnrollmentOffering[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+}
+
+model EnrollmentOffering {
+  id            String  @id @default(cuid())
+  majorId       Int
+  major         Major   @relation(fields: [majorId], references: [id], onDelete: Cascade)
+  partnerId     String
+  partner       Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  sourceBatch   String  @default("26春")
+  educationType String  @default("自考")
+  level         String?
+  majorCode     String?
+  studyForm     String?
+  yearTuition   Float?
+  totalTuition  Float?
+  feeDetail     String?
+  extraFeeNote  String?
+  hasPrice      Boolean @default(false)
+  status        String  @default("active")
+  sort          Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sourceBatch, partnerId, majorId, educationType, level, majorCode])
+  @@index([majorId])
+  @@index([partnerId])
+  @@index([status])
+}
+
+model Campus {
+  id      Int     @id @default(autoincrement())
+  name    String
+  address String?
+  sort    Int     @default(0)
+  status  String  @default("active")
+
+  images CampusImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CampusImage {
+  id       Int     @id @default(autoincrement())
+  campusId Int
+  campus   Campus  @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  image    String
+  caption  String?
+  sort     Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([campusId])
+}
+
+model Gallery {
+  id       Int    @id @default(autoincrement())
+  title    String
+  image    String
+  category String @default("certificate") // certificate/exam/campus
+  sort     Int    @default(0)
+  status   String @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+model Banner {
+  id     Int     @id @default(autoincrement())
+  image  String
+  link   String?
+  sort   Int     @default(0)
+  status String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model HomeCard {
+  id            Int     @id @default(autoincrement())
+  title         String
+  subtitle      String?
+  icon          String?
+  href          String?
+  gradient      String?
+  hoverGradient String?
+  shadow        String?
+  sort          Int     @default(0)
+  status        String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model HotMajor {
+  id              Int     @id @default(autoincrement())
+  title           String
+  subtitle        String  @default("专升本")
+  description     String?
+  duration        String  @default("2年")
+  iconType        String  @default("text") // text/image
+  iconImage       String?
+  iconColor       String?
+  backgroundImage String?
+  link            String  @default("/apply")
+  majorId         Int?
+  major           Major?  @relation(fields: [majorId], references: [id])
+  sort            Int     @default(0)
+  status          String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([majorId])
+}
+
+model ServiceGuide {
+  id          Int     @id @default(autoincrement())
+  slug        String  @unique
+  title       String
+  subtitle    String?
+  content     String?
+  contentType String  @default("html") // html/markdown（SOL-001 同管线）
+  icon        String?
+  link        String?
+  sort        Int     @default(0)
+  status      String  @default("active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model Media {
+  id         Int     @id @default(autoincrement())
+  filename   String
+  path       String
+  url        String
+  mimeType   String
+  size       Int
+  type       String  @default("image") // image/video/document
+  category   String?
+  uploaderId Int?
+  uploader   User?   @relation(fields: [uploaderId], references: [id])
+  // JSON（width/height/duration/thumb 等缩略图信息）
+  metadata   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([uploaderId])
+}
+
+// ============================================
+// 四、AI 层（SOL-003：LLM 网关替代 AIConfig）
+// ============================================
+
+model LLMProvider {
+  id               Int       @id @default(autoincrement())
+  name             String
+  endpoint         String
+  apiKey           String
+  isEncrypted      Boolean   @default(true)
+  model            String
+  temperature      Float     @default(0.7)
+  maxTokens        Int       @default(2048)
+  topP             Float?
+  // 对话优先级：小值优先（1 最高）；失败按 priority 升序尝试
+  priority         Int       @default(10)
+  isDefault        Boolean   @default(false)
+  isFallback       Boolean   @default(false)
+  status           String    @default("active") // active/inactive
+  // 余额人工填报（ADR-005）
+  balance          Float?
+  balanceCurrency  String    @default("CNY")
+  balanceCheckedAt DateTime?
+  balanceThreshold Float?
+  dailyQuota       Int       @default(1000)
+  rateLimit        Int       @default(60)
+  // JSON（allowedDomains 等扩展）
+  metadata         String?
+
+  usages LLMUsage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([priority])
+}
+
+model LLMUsage {
+  id         Int         @id @default(autoincrement())
+  date       String // YYYY-MM-DD
+  providerId Int
+  provider   LLMProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  calls      Int         @default(0)
+  tokensIn   Int         @default(0)
+  tokensOut  Int         @default(0)
+  failures   Int         @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, providerId])
+}
+
+model AIChatHistory {
+  id             Int     @id @default(autoincrement())
+  sessionId      String
+  conversationId String?
+  channel        String  @default("website") // website/wechat（SOL-003/006）
+  ipAddress      String?
+  userAgent      String?
+  role           String // user/assistant/system
+  message        String
+  model          String?
+  temperature    Float?
+  tokensUsed     Int?
+  responseTime   Int?
+  pageUrl        String?
+  pageTitle      String?
+  // JSON
+  metadata       String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([channel])
+  @@index([createdAt])
+}
+
+model Knowledge {
+  id          Int     @id @default(autoincrement())
+  title       String
+  content     String
+  tags        String? // 逗号分隔（ADR-020 后降为库内过滤维度）
+  source      String  @default("local") // local/notion/feishu/web/collect
+  externalId  String?
+  externalUrl String?
+  priority    Int     @default(0)
+  status      String  @default("active") // active/inactive
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model ChatScene {
+  id               Int     @id @default(autoincrement())
+  code             String  @unique // apply/float/guide/faq
+  name             String
+  description      String?
+  greeting         String
+  systemPrompt     String
+  knowledgeTags    String? // 逗号分隔（库内过滤）
+  // JSON 数组：绑定的本地知识库 id 列表（ADR-020 兜底双轨）
+  baseIds          String?
+  // JSON（开场问题，原 starters 死字段 → R0 接线或移除）
+  starters         String?
+  pageTitle        String?
+  pageSubtitle     String?
+  headerTip        String?
+  sidebarTitle     String?
+  processSteps     String?
+  promiseList      String?
+  contactCardTitle String?
+  useKnowledgeBase Boolean @default(true)
+  status           String  @default("active")
+  sort             Int     @default(0)
+
+  wechatAccounts WechatAccount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// 五、统计与审计层
+// ============================================
+
+model UserAction {
+  id           Int     @id @default(autoincrement())
+  actionType   String // click/view/submit
+  actionTarget String // phone/wechat/qq/apply/page_view 等
+  sessionId    String
+  ipAddress    String?
+  userAgent    String?
+  pageUrl      String?
+  pageTitle    String?
+  referrer     String?
+  // JSON
+  metadata     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([actionType])
+  @@index([createdAt])
+}
+
+model ViewStats {
+  id             Int      @id @default(autoincrement())
+  contentType    String
+  contentId      Int
+  viewDate       DateTime
+  pageViews      Int      @default(0)
+  uniqueVisitors Int      @default(0)
+  source         String?
+  referrer       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contentType, contentId, viewDate])
+}
+
+model OperationLog {
+  id        Int     @id @default(autoincrement())
+  userId    Int?
+  user      User?   @relation(fields: [userId], references: [id])
+  username  String
+  module    String
+  action    String
+  title     String?
+  // JSON（{before, after}）
+  content   String?
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([module])
+  @@index([createdAt])
+}
+
+// ============================================
+// 六、调度基座（SOL-001）
+// ============================================
+
+model CronJob {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique // collect.run / publish.scan / notify.scan / retry.failed / llm.balance-check / backup
+  cron      String
+  enabled   Boolean   @default(true)
+  lastRunAt DateTime?
+  lockedAt  DateTime? // 心跳锁：超 10 分钟视为僵死自动释放
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// 七、内容中枢与发布（SOL-005 / Q10-D4）
+// ============================================
+
+model ContentItem {
+  id            Int          @id @default(autoincrement())
+  title         String
+  contentType   String       @default("markdown") // markdown/html
+  content       String
+  excerpt       String?
+  coverImage    String?
+  authorId      Int?
+  author        User?        @relation(fields: [authorId], references: [id])
+  tags          String? // JSON 数组
+  source        String       @default("manual") // manual/collect
+  collectItemId Int?         @unique
+  collectItem   CollectItem? @relation(fields: [collectItemId], references: [id])
+  status        String       @default("draft") // draft/pending_review/approved/published/offline
+  publishedAt   DateTime?
+
+  channels    ContentChannel[]
+  publishJobs PublishJob[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([source])
+  @@index([authorId])
+}
+
+model ContentChannel {
+  id          Int            @id @default(autoincrement())
+  itemId      Int
+  item        ContentItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  channel     String // website/wechat
+  accountId   Int?
+  account     WechatAccount? @relation(fields: [accountId], references: [id])
+  externalId  String? // 微信 publish_id / media_id；官网渠道为 Article id
+  externalUrl String?
+  status      String         @default("unsent") // unsent/scheduled/publishing/published/failed
+  errMsg      String?
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([itemId])
+  @@index([channel])
+  @@index([status])
+}
+
+model PublishJob {
+  id           Int            @id @default(autoincrement())
+  itemId       Int?
+  item         ContentItem?   @relation(fields: [itemId], references: [id])
+  contentType  String         @default("article") // article/info/service_guide/wechat
+  channel      String         @default("website") // website/wechat
+  accountId    Int?
+  account      WechatAccount? @relation(fields: [accountId], references: [id])
+  action       String         @default("publish") // publish/update/offline
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  status       String         @default("pending") // pending/reviewing/scheduled/publishing/published/failed/cancelled
+  preNotify    Boolean        @default(true)
+  attemptCount Int            @default(0)
+  notifySentAt DateTime?
+  // JSON（执行结果）
+  result       String?
+  errMsg       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([channel])
+}
+
+// ============================================
+// 八、采集引擎（SOL-004）
+// ============================================
+
+model CollectSource {
+  id         Int       @id @default(autoincrement())
+  name       String
+  type       String    @default("html") // html/rss（wechat_mp/api 预留不实现）
+  url        String
+  // JSON：listSelector/titleSelector/contentSelector/timeSelector
+  parser     String?
+  cron       String    @default("0 4 * * *") // 默认每日 04:00（Q10-D1 错峰备份）
+  // JSON 数组：自动标签
+  autoTags   String?
+  enabled    Boolean   @default(true)
+  lastRunAt  DateTime?
+  lastStatus String?
+  errMsg     String?
+
+  tasks CollectTask[]
+  items CollectItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+model CollectTask {
+  id         Int           @id @default(autoincrement())
+  sourceId   Int
+  source     CollectSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+  status     String        @default("running") // running/done/failed
+  newCount   Int           @default(0)
+  skipCount  Int           @default(0)
+  // JSON 统计（fetched/created/duplicated/failed）
+  stat       String?
+  errMsg     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sourceId])
+  @@index([status])
+}
+
+model CollectItem {
+  id          Int           @id @default(autoincrement())
+  sourceId    Int
+  source      CollectSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  url         String
+  urlHash     String        @unique // 去重主键（sha1）
+  title       String
+  rawContent  String?
+  contentMd   String? // 清洗后 markdown
+  // JSON：转存后的站内图片 URL 列表（Q10-D5 默认转存本地，失败降级留原链）
+  images      String?
+  summary     String?
+  publishTime DateTime?
+  status      String        @default("new") // new/approved/rejected/imported
+  knowledgeId Int? // 本地兜底入库回链（Knowledge.id，ADR-020）
+
+  contentItem ContentItem?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sourceId])
+  @@index([status])
+}
+
+// ============================================
+// 九、通知网关（SOL-005 / Q10-D2）
+// ============================================
+
+model NotifyRecipient {
+  id      Int     @id @default(autoincrement())
+  name    String
+  email   String
+  // JSON 数组：["publish","ops"]
+  groups  String  @default("[\"publish\"]")
+  enabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+model NotifyRule {
+  id              Int             @id @default(autoincrement())
+  // before_publish_news/before_publish_info/before_publish_wechat/llm_balance_low/job_failed/system_error/collect_failed
+  event           String          @unique
+  enabled         Boolean         @default(true)
+  templateId      Int?
+  template        NotifyTemplate? @relation(fields: [templateId], references: [id])
+  // JSON 数组：通知组
+  recipientGroups String          @default("[\"publish\"]")
+  // JSON：静默时段（预留）
+  quietHours      String?
+
+  records NotifyRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotifyTemplate {
+  id        Int     @id @default(autoincrement())
+  name      String
+  event     String? // 适用事件（空 = 通用默认）
+  subject   String
+  // 正文模板，变量 {title} {time} {detail} {link}
+  body      String
+  isDefault Boolean @default(false)
+
+  rules NotifyRule[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotifyRecord {
+  id       Int         @id @default(autoincrement())
+  ruleId   Int?
+  rule     NotifyRule? @relation(fields: [ruleId], references: [id])
+  event    String
+  toEmails String
+  subject  String
+  content  String
+  status   String      @default("pending") // pending/sent/failed/skipped(smtp_not_configured)
+  retries  Int         @default(0)
+  errMsg   String?
+  sentAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
+// 十、公众号对接（SOL-006）
+// ============================================
+
+model WechatAccount {
+  id                 Int        @id @default(autoincrement())
+  name               String
+  type               String     @default("service") // service/subscription
+  appid              String
+  appSecret          String
+  isEncrypted        Boolean    @default(true)
+  verifyToken        String?
+  encodingAESKey     String? // 明文模式可空
+  // JSON：{accessToken, expiresAt}
+  tokenCache         String?
+  aiEnabled          Boolean    @default(true)
+  freepublishEnabled Boolean    @default(true)
+  sceneId            Int?
+  scene              ChatScene? @relation(fields: [sceneId], references: [id])
+  status             String     @default("active")
+
+  channels    ContentChannel[]
+  publishJobs PublishJob[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
