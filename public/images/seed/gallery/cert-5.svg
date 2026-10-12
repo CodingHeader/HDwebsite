@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="c5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9a3412"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <pattern id="grid5" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="#f9fafb"/>
+  <rect x="12" y="12" width="376" height="276" fill="url(#c5)" rx="6"/>
+  <rect x="12" y="12" width="376" height="276" fill="url(#grid5)" rx="6"/>
+  <rect x="24" y="24" width="352" height="252" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" rx="4"/>
+  <!-- 国徽 -->
+  <g transform="translate(200,80)">
+    <circle r="28" fill="#fee2e2"/>
+    <circle r="22" fill="#dc2626"/>
+    <polygon points="0,-12 3.5,-3.7 14,-3.7 5.7,2.5 9,12 0,6 -9,12 -5.7,2.5 -14,-3.7 -3.5,-3.7" fill="#fbbf24"/>
+  </g>
+  <text x="200" y="150" font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB',system-ui,sans-serif" fill="#ffffff" font-size="18" font-weight="700" text-anchor="middle" letter-spacing="2">西南交通大学</text>
+  <text x="200" y="180" font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB',system-ui,sans-serif" fill="rgba(255,255,255,0.92)" font-size="22" font-weight="800" text-anchor="middle" letter-spacing="3">自考学位证书</text>
+  <text x="200" y="230" font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB',system-ui,sans-serif" fill="rgba(255,255,255,0.82)" font-size="12" font-weight="500" text-anchor="middle">中华人民共和国教育部 学信网可查</text>
+  <circle cx="320" cy="250" r="26" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+  <text x="320" y="256" font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB',system-ui,sans-serif" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle" opacity="0.7">印 章</text>
+</svg>
