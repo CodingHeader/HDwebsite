@@ -60,11 +60,11 @@ main 公开 `POST /api/chat-history` 不恢复（replaced：upgrade 由 `/api/ch
 
 | # | 验收项 | 结果 | 证据 |
 | --- | --- | --- | --- |
-| 1 | `npm test` 新增契约测试全部通过（≥20） | PASS | 新增 35 例（28+7）；全量 68/68（原 33 + 35）`P03/test.log` |
-| 2 | 登录后 `/api/logs`、`/api/chat-history` 200 且 `{code,data:{list,pagination},message}`；无 token 401 | PASS | `P03/curl.log`：`/api/logs 200`、`/api/chat-history 200`；keys `[code,data,message]`/`[list,pagination]`；nologin 401 ×2 |
-| 3 | `/manager/logs`、`/manager/chat-history` 200 | PASS | `P03/curl.log` |
+| 1 | `npm test` 新增契约测试全部通过（≥20） | PASS | 新增 35 例（28+7）；全量 68/68（原 33 + 35）`P03/test.txt` |
+| 2 | 登录后 `/api/logs`、`/api/chat-history` 200 且 `{code,data:{list,pagination},message}`；无 token 401 | PASS | `P03/curl.txt`：`/api/logs 200`、`/api/chat-history 200`；keys `[code,data,message]`/`[list,pagination]`；nologin 401 ×2 |
+| 3 | `/manager/logs`、`/manager/chat-history` 200 | PASS | `P03/curl.txt` |
 | 4 | 权限一致性脚本：路由权限点 ⊆ permissionCatalog | PASS（见注） | 修正版脚本 `used 26 missing perms: []`；P03 前同脚本 `missing: collect:list,kb:list,llm:list,notify:list,wechat:list`。另有 vitest 两例覆盖 withApi `permission:` 字面量与 crud 工厂派生权限 |
-| 5 | `npm run test:visual` 通过（前台未变） | PASS | `P03/visual.log`：46 passed（15 路由 × 3 宽度 + 首页区块顺序），EXIT 0 |
+| 5 | `npm run test:visual` 通过（前台未变） | PASS | `P03/visual.txt`：46 passed（15 路由 × 3 宽度 + 首页区块顺序），EXIT 0 |
 
 **注（#4）**：prompt 中验证命令的正则在 shell 单引号内写成 `"\\\\s*"`，JS 字符串得到 `\\s*`（匹配字面反斜杠），因此对任何仓库都会把全部 26 个权限判为 missing（P03 前后均 exit 1）。按规则不修改 prompt 验收标准；使用语义等价的修正版（`docs/design/06_validation/evidence/P03/permcheck.js`）验证，并建议编排者修正 prompt 命令。
 
@@ -73,7 +73,7 @@ main 公开 `POST /api/chat-history` 不恢复（replaced：upgrade 由 `/api/ch
 | 项 | 结果 | 证据 |
 | --- | --- | --- |
 | 导航树 /api/navigations?tree=true | PASS | 契约测试 4 例；curl `nav tree code 200 roots 9` |
-| 恢复 main 29 条服务端重定向，移除 catch-all | PASS | `P03/curl.log`：31 个旧 URL（含 /about/a/b、/partners/pku/y 多段）upgrade 与 main 均 `307 → 同一目标`，31/31 MATCH；`curl -i /about/intro` → `HTTP/1.1 307 Temporary Redirect`、`location: /about` |
+| 恢复 main 29 条服务端重定向，移除 catch-all | PASS | `P03/curl.txt`：31 个旧 URL（含 /about/a/b、/partners/pku/y 多段）upgrade 与 main 均 `307 → 同一目标`，31/31 MATCH；`curl -i /about/intro` → `HTTP/1.1 307 Temporary Redirect`、`location: /about` |
 | parity B6 | PASS（决定：扁平唯一契约 + 嵌套兼容层） | 契约测试 3 例；parity-matrix B6 行已更新 |
 
 ## 5. 通用验证
@@ -82,13 +82,13 @@ main 公开 `POST /api/chat-history` 不恢复（replaced：upgrade 由 `/api/ch
 
 | 命令 | 结果 | 日志 |
 | --- | --- | --- |
-| `npm run lint` | EXIT 0（0 error / 26 warning，全部为既有文件，P03 新增文件 0 warning） | `P03/lint.log` |
-| `npm run typecheck` | EXIT 0 | `P03/typecheck.log` |
-| `npm test` | EXIT 0，8 files / 68 tests passed | `P03/test.log` |
-| `npm run build` | EXIT 0 | `P03/build.log` |
-| curl（重定向 31/31 MATCH、API/页面状态码、信封形态） | PASS | `P03/curl.log` |
-| `npm run test:visual`（PLAYWRIGHT_BROWSERS_PATH=/workspace/work/.pw-browsers） | 46 passed，EXIT 0 | `P03/visual.log` |
-| 权限一致性（修正版脚本） | `missing perms: []`，EXIT 0 | `P03/permcheck.log` |
+| `npm run lint` | EXIT 0（0 error / 26 warning，全部为既有文件，P03 新增文件 0 warning） | `P03/lint.txt` |
+| `npm run typecheck` | EXIT 0 | `P03/typecheck.txt` |
+| `npm test` | EXIT 0，8 files / 68 tests passed | `P03/test.txt` |
+| `npm run build` | EXIT 0 | `P03/build.txt` |
+| curl（重定向 31/31 MATCH、API/页面状态码、信封形态） | PASS | `P03/curl.txt` |
+| `npm run test:visual`（PLAYWRIGHT_BROWSERS_PATH=/workspace/work/.pw-browsers） | 46 passed，EXIT 0 | `P03/visual.txt` |
+| 权限一致性（修正版脚本） | `missing perms: []`，EXIT 0 | `P03/permcheck.txt` |
 
 环境备注：第一轮视觉回归因沙箱重置丢失 Chromium 系统库（`libatk-1.0.so.0`）全部启动失败（非代码问题）；`sudo npx playwright install-deps chromium` 重装后第二轮 46/46 通过。
 

@@ -1,0 +1,50 @@
+### redirects: path | upgrade code target | main code target | match
+/about/intro | 307 /about | 307 /about | MATCH
+/about/a/b | 307 /about | 307 /about | MATCH
+/courses/self-study | 307 /courses | 307 /courses | MATCH
+/courses/adult-exam | 307 /courses | 307 /courses | MATCH
+/courses/open-university | 307 /courses | 307 /courses | MATCH
+/courses/business | 307 /courses | 307 /courses | MATCH
+/courses/technology | 307 /courses | 307 /courses | MATCH
+/courses/humanities | 307 /courses | 307 /courses | MATCH
+/courses/education | 307 /courses | 307 /courses | MATCH
+/courses/medicine | 307 /courses | 307 /courses | MATCH
+/courses/law | 307 /courses | 307 /courses | MATCH
+/courses/art | 307 /courses | 307 /courses | MATCH
+/courses/other | 307 /courses | 307 /courses | MATCH
+/partners/x | 307 /partners | 307 /partners | MATCH
+/partners/pku/y | 307 /partners | 307 /partners | MATCH
+/news/self-study | 307 /articles | 307 /articles | MATCH
+/news/adult-exam | 307 /articles | 307 /articles | MATCH
+/news/policy | 307 /articles | 307 /articles | MATCH
+/news/experience | 307 /articles | 307 /articles | MATCH
+/news/self-help | 307 /articles | 307 /articles | MATCH
+/news/self-info | 307 /articles | 307 /articles | MATCH
+/news/adult-guide | 307 /articles | 307 /articles | MATCH
+/news/adult-info | 307 /articles | 307 /articles | MATCH
+/news/adult-tips | 307 /articles | 307 /articles | MATCH
+/news/adult-policy | 307 /articles | 307 /articles | MATCH
+/news | 307 /articles | 307 /articles | MATCH
+/news/123 | 307 /articles/123 | 307 /articles/123 | MATCH
+/images/banners/reference1.webp | 307 /images/seed/banner/banner-1.svg | 307 /images/seed/banner/banner-1.svg | MATCH
+/images/banners/reference2.webp | 307 /images/seed/banner/banner-2.svg | 307 /images/seed/banner/banner-2.svg | MATCH
+/images/banners/reference3.webp | 307 /images/seed/banner/banner-3.svg | 307 /images/seed/banner/banner-3.svg | MATCH
+/images/banners/reference4.webp | 307 /images/seed/banner/banner-1.svg | 307 /images/seed/banner/banner-1.svg | MATCH
+### curl -i sample
+HTTP/1.1 307 Temporary Redirect
+location: /about
+Date: Mon, 12 Oct 2026 13:33:06 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+### API
+login ok
+/api/logs 200
+/api/chat-history 200
+/manager/logs 200
+/manager/chat-history 200
+nologin /api/logs 401
+nologin /api/chat-history 401
+### envelopes
+logs keys [ 'code', 'data', 'message' ] [ 'list', 'pagination' ] {"page":1,"limit":2,"total":4,"totalPages":2}
+chat keys [ 'code', 'data', 'message' ] [ 'list', 'pagination' ] {"page":1,"limit":2,"total":1,"totalPages":1}
+nav tree code 200 roots 9 withChildren 0
