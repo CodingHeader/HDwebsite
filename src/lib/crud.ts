@@ -13,6 +13,7 @@ import { ApiHttpError, parseBody, parseId, parseQuery, withApi } from "@/lib/api
 import { ZodError } from "zod";
 import { listQuerySchema } from "@/contracts";
 import type { z } from "zod";
+import type { SessionUser } from "@/contracts";
 import type { Prisma } from ".prisma/client";
 
 type AnyRecord = Record<string, unknown>;
@@ -37,9 +38,9 @@ export type CrudSpec = {
   /** 更新 schema（默认 createSchema.partial()） */
   updateSchema?: z.ZodObject<z.ZodRawShape>;
   /** 创建前钩子（如 slug 生成、密码哈希）；抛 badRequest()/ZodError 即 400，其余异常 500 */
-  beforeCreate?: (input: AnyRecord, session: { id: number; username: string }) => Promise<AnyRecord>;
+  beforeCreate?: (input: AnyRecord, session: SessionUser) => Promise<AnyRecord>;
   /** 更新前钩子 */
-  beforeUpdate?: (input: AnyRecord, existing: AnyRecord) => Promise<AnyRecord>;
+  beforeUpdate?: (input: AnyRecord, existing: AnyRecord, session: SessionUser) => Promise<AnyRecord>;
   /** 列表行收尾（如补关联标题）；在分页查询后执行 */
   mapList?: (rows: AnyRecord[]) => Promise<AnyRecord[]>;
   /** 创建数据收尾（authorId 等） */
@@ -158,7 +159,7 @@ export function crudUpdate(spec: CrudSpec) {
       const existing = await delegate(spec.model).findUnique({ where: { id } });
       if (!existing) return notFound(`${spec.label}不存在`);
       let data = input as AnyRecord;
-      if (spec.beforeUpdate) data = await runHook(() => spec.beforeUpdate!(data, existing as AnyRecord));
+      if (spec.beforeUpdate) data = await runHook(() => spec.beforeUpdate!(data, existing as AnyRecord, session));
       const row = await delegate(spec.model).update({ where: { id }, data, include: spec.include });
       await logOperation({
         userId: session.id,

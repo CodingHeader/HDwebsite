@@ -37,7 +37,7 @@ import {
   templateBlockCreateSchema,
 } from "@/contracts/blocks";
 import { CONTENT_EDITABLE_STATUSES, canTransitionContentItem, contentItemStatusSchema } from "@/contracts/events";
-import { badRequest } from "@/lib/api-handler";
+import { ApiHttpError, badRequest } from "@/lib/api-handler";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -81,6 +81,13 @@ function jsonifyFields(keys: string[]) {
 }
 
 const contentItemTags = jsonifyArray(["tags"]);
+const collectSourceTags = jsonifyArray(["autoTags"]);
+
+function assertAutoApproveAllowed(data: Record<string, unknown>, session: { role: { isSuper: boolean } }) {
+  if (data.autoApprove === true && !session.role.isSuper) {
+    throw new ApiHttpError(403, "仅超级管理员可开启「自动通过」（审核预授权，ADR-017）");
+  }
+}
 
 export const crudSpecs: Record<string, CrudSpec> = {
   categories: {
@@ -318,7 +325,15 @@ export const crudSpecs: Record<string, CrudSpec> = {
     filters: { type: "string", enabled: "boolean" },
     orderBy: [{ id: "asc" }],
     createSchema: collectSourceCreateSchema,
-    ...jsonifyArray(["autoTags"]),
+    // P06 / ADR-017 补充：autoApprove = 超管预授权，仅 SuperAdmin 可开启（Editor 持有 collect:edit 也不行）
+    beforeCreate: async (data, session) => {
+      assertAutoApproveAllowed(data, session);
+      return collectSourceTags.beforeCreate(data);
+    },
+    beforeUpdate: async (data, existing, session) => {
+      if (data.autoApprove !== existing.autoApprove) assertAutoApproveAllowed(data, session);
+      return collectSourceTags.beforeUpdate(data);
+    },
   },
   "collect-tasks": {
     model: "collectTask",

@@ -58,3 +58,23 @@ describe("发布任务列表", () => {
     expect(titles.some((t: string) => /^发布任务 #\d+$/.test(t))).toBe(true);
   });
 });
+
+import { POST as srcPOST } from "@/app/api/collect-sources/route";
+import { PUT as srcPUT } from "@/app/api/collect-sources/[id]/route";
+
+describe("autoApprove 仅超管可开启", () => {
+  it("collect:edit 非超管创建/更新 autoApprove=true → 403；超管 → 201", async () => {
+    const ed = (await createActor(prisma, "colleditor", ["collect:create", "collect:edit", "collect:list"])).token;
+    const r1 = await srcPOST(req("/api/collect-sources", { method: "POST", token: ed, body: { name: "x", url: "https://a.com", autoApprove: true } }), ctx());
+    expect(r1.status).toBe(403);
+    const ok = await srcPOST(req("/api/collect-sources", { method: "POST", token: ed, body: { name: "y", url: "https://a.com", cron: "" } }), ctx());
+    expect(ok.status).toBe(201);
+    const id = (await json(ok)).data.id;
+    const r2 = await srcPUT(req(`/api/collect-sources/${id}`, { method: "PUT", token: ed, body: { autoApprove: true } }), ctx({ id: String(id) }));
+    expect(r2.status).toBe(403);
+    const r3 = await srcPUT(req(`/api/collect-sources/${id}`, { method: "PUT", token: SUPER, body: { autoApprove: true } }), ctx({ id: String(id) }));
+    expect(r3.status).toBe(200);
+    const r4 = await srcPUT(req(`/api/collect-sources/${id}`, { method: "PUT", token: ed, body: { name: "改名", autoApprove: true } }), ctx({ id: String(id) }));
+    expect(r4.status).toBe(200); // 未改动 autoApprove 不拦截
+  });
+});
