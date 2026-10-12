@@ -16,6 +16,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, REQ-F-013, ADR-001, ADR-012,
 - 方法：`git ls-tree` 路由/页面/组件/模型清单逐项比对 + 关键文件行数与实现阅读 + 运行时 curl（见 06_validation/evidence/P0-baseline.md）。
 - 状态口径：**present**＝功能与行为在 upgrade 可用；**replaced**＝经 ADR 以新实现替代，功能覆盖；**partial**＝存在但功能缺项或**前台视觉风格与 main 不一致**（用户硬约束：前台风格不得改变）；**missing**＝upgrade 无实现；**dropped-by-ADR**＝经 ADR 裁剪，需用户复核是否仍算"main 功能"。
 - 归属方向：P01~P15（见 04_planning/review-prompts/）。
+- 2026-10-12（P03）更新：A18、B3、B6、B7、B8、B11、B12、C4、C5 → present（证据 06_validation/evidence/P03-execution.md）；下方"缺失/部分清单"计数为 P01 快照，未重算。
 - 2026-10-12（P01）更新：用户裁决 U-B2 = 恢复（ADR-024 取代 ADR-012）→ C9/C10 由 dropped-by-ADR 改为 missing 并分派方向；U-B3 = Coze 集成 + Word/Markdown/TXT（ADR-025）→ F6/F7 口径更新；A1 组件数勘误 25→26；E2 增 P11（CLAUDE.md）。
 
 ## 汇总
@@ -52,7 +53,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, REQ-F-013, ADR-001, ADR-012,
 | A15 | 党建 /party | 100 行 | 12 行 | partial | P02 |
 | A16 | 服务指南 /services/[slug] | 146 行 | 25 行（已净化） | partial | P02 |
 | A17 | /news、/news/[id] → /articles | `(web)/news/*` 重定向页 | next.config.ts:39-40 redirects | replaced（ADR-001） | — |
-| A18 | 二级菜单重定向（/about/:slug+、/courses/self-study 等 11 条、/partners/:slug+、/news/<10 个 slug>、旧 banner 图） | main `next.config.ts` redirects（约 30 条） | upgrade 仅 2 条 | missing | P11 |
+| A18 | 二级菜单重定向（/about/:slug+、/courses/self-study 等 11 条、/partners/:slug+、/news/<10 个 slug>、旧 banner 图） | main `next.config.ts` redirects（约 30 条） | P03：`next.config.ts` 恢复 main 全部 29 条（307，逐条 curl 对比 MATCH；移除 P02 的 about/partners catch-all 页） | present（P03） | P03 |
 | A19 | 静态资源 public/（favicon×7、logo×4、campus×10、gallery×8、seed svg 等 150 个） | `public/**` | 无 public/；`/images/logo.png → 404`（P0-baseline F3） | missing | P02（原样恢复）/P15（治理） |
 | A20 | error / loading / not-found | `(web)/error.tsx`、`loading.tsx`、`not-found.tsx` | 同名存在 + `app/not-found.tsx` | present | — |
 | A21 | 动态元数据（站点标题/描述取 Setting） | `(web)/layout.tsx` generateMetadata | `app/layout.tsx` generateMetadata | present | — |
@@ -64,16 +65,16 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, REQ-F-013, ADR-001, ADR-012,
 | --- | --- | --- | --- | --- | --- |
 | B1 | 认证 login/logout/me/refresh | `api/auth/*` | 同名 4 路由 | present | — |
 | B2 | 文章 CRUD | `api/articles`、`[id]` GET/PUT/DELETE | 同名 | present | — |
-| B3 | 文章状态 PATCH（publish/archive，需 article:publish） | `api/articles/[id]` PATCH（:312） | 无 PATCH | partial | P03 |
+| B3 | 文章状态 PATCH（publish/archive，需 article:publish） | `api/articles/[id]` PATCH（:312） | P03：`api/articles/[id]` PATCH（article:publish，记 OperationLog） | present（P03） | P03 |
 | B4 | 新闻 CRUD | `api/news*` | 并入 articles(channel) | replaced（ADR-001） | — |
 | B5 | 轮播/分类/课程/画廊/首页卡片/热门专业/导航/合作院校/服务指南/学员/标签/用户/校区/知识/场景 CRUD（15 族） | `api/<资源>` | 同名（crudGet/crudCreate… 工厂） | present | — |
-| B6 | 校区图片嵌套 `campus/[id]/images[/imageId]` | main 嵌套路由 | 扁平 `/api/campus-images[/id]` | replaced（路径契约变化；P03 决定保持扁平或补嵌套兼容路由，见 P03 评审 #7） | P03 |
-| B7 | 媒体：列表 GET、上传 POST、改名/分类 PATCH、删除 | `api/media` GET/POST、`[id]` PATCH/DELETE | `api/media` GET、`[id]` GET/DELETE；上传走 `/api/upload` | partial（缺 PATCH） | P03 |
-| B8 | 媒体批量 `media/batch` | `c6ff40b:src/app/api/media/batch/route.ts`（B 仓历史） | 无 | missing | P03 |
+| B6 | 校区图片嵌套 `campus/[id]/images[/imageId]` | main 嵌套路由 | 扁平 `/api/campus-images[/id]` + P03 嵌套兼容层 `api/campus/[id]/images`（GET 数组/POST）、`[imageId]`（PUT/DELETE，跨校区 404） | present（P03 决定：扁平为唯一数据契约，嵌套路由作为 main 路径兼容层；main 调用点仅 main `manager/campus/page.tsx:77,101`） | P03 |
+| B7 | 媒体：列表 GET、上传 POST、改名/分类 PATCH、删除 | `api/media` GET/POST、`[id]` PATCH/DELETE | `api/media` GET、`[id]` GET/PATCH/DELETE；上传走 `/api/upload` | present（P03 补 PATCH） | P03 |
+| B8 | 媒体批量 `media/batch` | `c6ff40b:src/app/api/media/batch/route.ts`（B 仓历史） | P03：`POST /api/media/batch`（action delete/move-category，ids≤100） | present（P03；main DELETE/PATCH 两方法收敛为 action 字段） | P03 |
 | B9 | AI 配置 `ai-config` CRUD | `api/ai-config*` | `/api/llm/providers*`（+test/balance） | replaced（SOL-003） | — |
 | B10 | AI 对话 `chat/completion` | 非流式 | `/api/chat/stream` SSE | replaced | — |
-| B11 | 对话记录 `chat-history`（POST 持久化、GET 列表、GET/DELETE 单条） | `api/chat-history*` | 无路由（模型 AIChatHistory 存在，chat/stream 内写入） | missing | P03 |
-| B12 | 操作日志 `logs` GET | `api/logs` | 无路由（OperationLog 由 lib/log.ts 写入） | missing | P03 |
+| B11 | 对话记录 `chat-history`（POST 持久化、GET 列表、GET/DELETE 单条） | `api/chat-history*` | P03：`GET /api/chat-history`（按会话聚合）、`[id]`=sessionId GET/DELETE；公开 POST 不恢复（chat/stream 服务端写入） | present（P03；POST replaced） | P03 |
+| B12 | 操作日志 `logs` GET | `api/logs` | P03：`GET /api/logs`（log:list，module/action/username/时间筛选） | present（P03） | P03 |
 | B13 | 角色 | GET | GET/POST + `[id]` | present（扩展） | — |
 | B14 | 设置 settings | GET/POST | GET/PUT + definitions + email/test | present（方法变化） | P03 |
 | B15 | 埋点 user-actions | GET | GET/POST | present | — |
@@ -87,8 +88,8 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, REQ-F-013, ADR-001, ADR-012,
 | C1 | 22 个同名管理页（articles/banners/campus/categories/chat-scenes/courses/gallery/home-cards/hot-majors/knowledge/media/navigations/partners/roles/service-guides/students/tags/user-actions/users/settings/dashboard/login） | `src/app/manager/*` | 同名存在（多数为 8 行 CrudPage 包装） | present（功能）；UI 待升级 | P02/P07 |
 | C2 | AI 配置页 | `manager/ai-config` | `manager/llm-providers`（201 行） | replaced | — |
 | C3 | 新闻管理页 | `manager/news` | 并入 articles | replaced | — |
-| C4 | 对话日志页 | `manager/chat-history` | 无 | missing | P03/P07 |
-| C5 | 操作日志页 | `manager/logs` | 无；seed 菜单 `/manager/logs` 指向 404（seed.ts:126） | missing | P03/P07 |
+| C4 | 对话日志页 | `manager/chat-history` | P03：`src/app/manager/chat-history/page.tsx`（会话列表+详情弹窗+删除） | present（P03；P07 升级组件） | P03/P07 |
+| C5 | 操作日志页 | `manager/logs` | P03：`src/app/manager/logs/page.tsx`（CrudPage 只读 → /api/logs）；seed 菜单 `/manager/logs` 不再 404 | present（P03；P07 升级组件） | P03/P07 |
 | C6 | 富文本编辑器（TipTap：RichTextField/RichTextEditor） | `components/manager/RichTextField.tsx`、`fields/RichTextEditor.tsx`；package.json `@tiptap/*` | SchemaForm `richtext` = 纯 textarea（SchemaForm.tsx:100-105） | partial | P07 |
 | C7 | 图片字段/上传器 ImageField/ImageUploader | 存在 | SchemaForm 内置 image 上传 | present | — |
 | C8 | 分页组件 Pagination | 存在 | CrudPage 内置上一页/下一页 | present | — |
