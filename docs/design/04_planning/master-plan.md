@@ -5,11 +5,13 @@ title: 任务分配与执行规划总纲（Master Plan）
 status: active
 owner: 产品所有者
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-12
 requires: [ADR-011, ADR-022, SOL-001, SOL-002, SOL-003, SOL-004, SOL-005, SOL-006]
 ---
 
 # 任务分配与执行规划总纲（Master Plan）
+
+> ⚠️ **已被 [current-plan.md](./current-plan.md) 2026-10-12 版取代**（main → upgrade 全量重构 P0~P15；需求基线见 REQ-F-013/014/015 与 parity-matrix）。本文件保留为 2026-10-11 历史规划，不再作为执行依据；下文 §1/§3 的口径更正见各节"2026-10-12 更正"块（P01，current-plan I1/I3）。
 
 > 本文件是「任务分配与完整规划指令」的落地产物：把既有 88 件设计文档收敛为可执行的规划包。
 > 详细事实源在根级 01~16 与 02_requirements/03_solution 各文件，本文只做规划级汇总并补齐缺口
@@ -29,6 +31,8 @@ requires: [ADR-011, ADR-022, SOL-001, SOL-002, SOL-003, SOL-004, SOL-005, SOL-00
 测试命令: npm run check（lint+typecheck+build）/ npm run test（vitest 30 用例）
 工具链: node v24.12.0 / npm 11.7.0 / git 2.52.0 / registry npmmirror
 ```
+
+> **2026-10-12 更正（current-plan I3）**：GitHub `origin/main` HEAD = `94dbbbb`，其内容为 **A 仓口径**（schema 32 模型、无 Major/EnrollmentOffering；前台 16 个 page.tsx、manager 26 页、API 56 个 route.ts）。`c6ff40b` 只是 main 的**首个提交**（schema 34 模型，含 B 仓业务域 Major/EnrollmentOffering），已被 94dbbbb 覆盖。上文"hdwebsite_0429（main，c6ff40b）= B 仓"的说法仅指历史来源，本轮对照基准一律为 `origin/main@94dbbbb`，B 仓业务域以 c6ff40b 为补充参照（parity-matrix 头部说明）。
 
 ## 2. 事实基线（含文档与代码不一致清单）
 
@@ -54,6 +58,7 @@ requires: [ADR-011, ADR-022, SOL-001, SOL-002, SOL-003, SOL-004, SOL-005, SOL-00
 
 **MUST（每条可验证）**
 - M-1 原分支 A 的 17 条前台路由、26 个后台页面、70+ API 在新仓全部重建且行为对齐（RISK-009 清单核验）。
+  - **2026-10-12 更正（current-plan I1）**：该条在代码中**未达成**——P0 对等矩阵显示 missing 9（P01 后为 11，含 ADR-024 恢复的 C9/C10）、partial 21（chat-history/logs 的 API 与页面缺失、前台 16 项视觉与 main 不同等）。本条由 [REQ-F-013](../02_requirements/features/REQ-F-013-main功能对等.md) 与 [parity-matrix](../02_requirements/parity-matrix.md) 取代，按 current-plan P01~P15 推进。
 - M-2 B 分支的专业/招生计划域（Major/EnrollmentOffering/招生管理页）在新仓可用（ADR-022）。
 - M-3 全部管理端实体具备增删改查 + 分页 + 权限拦截（越权请求返回 401/403）。
 - M-4 采集→审核→入库→发布（官网/公众号）→邮件提醒全链路可运行（M3/M4 验收）。
@@ -94,7 +99,7 @@ requires: [ADR-011, ADR-022, SOL-001, SOL-002, SOL-003, SOL-004, SOL-005, SOL-00
 ## 5. 数据模型基线（迁移编排）
 
 - 基线 = `prisma/migrations/20261011052216_init`（42 模型，一次成型）：A 的 26 存留 + B 的 2 补录 + 新增 14（CronJob/ContentItem/ContentChannel/CollectSource/CollectTask/CollectItem/PublishJob/LLMProvider/LLMUsage/WechatAccount/NotifyRecipient/NotifyRule/NotifyTemplate/NotifyRecord）。
-- 裁剪：News（并入 Article，channel=news）/PageTemplate/ContentBlock/TemplateBlock/ElementConfig/AIConfig（ADR-012/SOL-003）。
+- 裁剪：News（并入 Article，channel=news）/PageTemplate/ContentBlock/TemplateBlock/ElementConfig/AIConfig（ADR-012/SOL-003）。**2026-10-12 更正**：ADR-012 已被 ADR-024 取代，PageTemplate/ContentBlock/TemplateBlock/ElementConfig 将由 P04 恢复（News→Article、AIConfig→LLMProvider 的替代不变）。
 - 保留 Knowledge（ADR-020 本地兜底双轨）；KBAdapter 对接 M2，不建三级模型表。
 - 迁移策略：**版本号串行**（每切片至多一个迁移，按 M1→M4 顺序合并，禁止并行改同一张表）；schema 保持 PG 可迁移（无 SQLite 特有 SQL）。
 - 建模约定：JSON-in-String + try/catch；枚举即字符串；无软删除（审计靠 OperationLog）；高频过滤列已建 @@index；seed 幂等（update 分支空 {}）。

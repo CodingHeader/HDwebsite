@@ -5,7 +5,7 @@ title: 风险登记册（治理级）
 status: active
 owner: AI Agent
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-12
 ---
 
 # Risks（风险登记）
@@ -38,6 +38,20 @@ updated: 2026-10-10
 | RISK-009 | 新仓重写引入功能遗漏/偏差（对照旧仓 25 管理页 + 40 API，无自动化测试兜底） | 切换后功能缺失 | 高 | 平行新仓降低现网回归风险（ADR-011，切换前旧仓不受影响）；新仓对照旧仓功能清单逐项核验（VAL）；关键路径手工回归清单 | VAL 验收 fail 或切换后功能异常报告 | open |
 
 > 触发信号列为监控落地的推断设计（Q7 轮确认推断内容可写入并标注），里程碑复审时可调整。
+
+## 2.1 本轮风险（2026-10-12，current-plan §12 R-P1~R-P9）
+
+| ID | 风险 | 影响 | 概率 | 缓解/应对 | 触发信号 | 状态 |
+| --- | --- | --- | --- | --- | --- | --- |
+| R-P1 | 前台恢复后视觉仍与 main 有偏差 | 违反 REQ-F-014 | 中 | 直接移植 main 组件与 globals.css，数据适配层隔离；字体/动画在测试中固定 | 截图 diff >1% | open |
+| R-P2 | 管理端令牌污染前台 | 前台外观漂移 | 中 | 管理端令牌仅在 `[data-theme="manager"]`；P02 之后每方向跑 `npm run test:visual` | 前台截图 diff 回升 | open |
+| R-P3 | 沙箱无法安装 Playwright 浏览器 | visual/E2E 无法执行 | 中 | 改用系统 chromium 路径或在可联网环境执行；验证记 UNKNOWN 不记 PASS | `npx playwright install` 失败 | open |
+| R-P4 | 迁移顺序被打乱 | 迁移冲突/数据风险 | 低 | 仅 P04/P06/P12 可新增迁移；验证命令检查 migrations 路径归属 | 非 P04/P06/P12 出现迁移 | open |
+| R-P5 | 无凭证导致公众号/邮件/Coze 知识库仅 mock 验证 | 真实联调问题后置 | 高 | 契约测试 + 显式 UNKNOWN；拿到凭证后补联调留证 | U-B1/U-B4 无凭证；Coze PAT 无 dataset 权限 | open |
+| R-P6 | uploads 移出 git 造成现有图片丢失 | 前台/后台图片 404 | 中 | P14 先导出到运行时目录并写迁移说明，再 `git rm --cached` | 图片 404 | open |
+| R-P7 | SQLite 写并发（调度+请求） | SQLITE_BUSY | 低 | 短事务；P04 设 busy_timeout | SQLITE_BUSY 报错 | open |
+| R-P8 | 恢复首页区块配置后默认配置与 main 不一致或被误改（ADR-024） | 前台外观漂移 | 中 | 默认配置复现 main 且受 visual 门禁保护；管理页提供"恢复默认" | visual diff 回升；区块顺序断言失败 | open |
+| R-P9 | Coze 接口/权限限制：md 不被接受（按 txt 上传）、单文件上限未知、PAT 有效期约 30 天、需 createDocument 权限（ADR-025） | 知识库同步失败 | 中 | 封装单模块 + 明确权限提示 + 本地兜底双轨；联调时核实上限 | Coze 返回非 0 code / document status=9 | open |
 
 ## 3. 风险审查节奏
 
