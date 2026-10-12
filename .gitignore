@@ -20,7 +20,7 @@ prisma/dev.db.bak
 backups/
 
 # 运行时与临时（生命周期：Local/Temporary 绝不入库）
-logs/
+/logs/
 *.log
 .local/
 tmp/
