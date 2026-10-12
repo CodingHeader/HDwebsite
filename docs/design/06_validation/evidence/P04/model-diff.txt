@@ -1,0 +1,6 @@
+PageTemplate: identical (18 lines)
+ContentBlock: identical (19 lines)
+TemplateBlock: identical (10 lines)
+ElementConfig: identical (24 lines)
+Navigation template/elements fields main: ['templateId Int?', 'template PageTemplate? @relation(fields: [templateId], references: [id])', 'elements ElementConfig[]']
+Navigation template/elements fields upgrade: ['templateId Int?', 'template PageTemplate? @relation(fields: [templateId], references: [id])', 'elements ElementConfig[]']

@@ -1,0 +1,20 @@
+
+Running 15 tests using 1 worker
+
+  ✓   1 tests/visual/web.spec.ts:45:11 › web @768 › home @768 (4.5s)
+  ✓   2 tests/visual/web.spec.ts:45:11 › web @768 › about @768 (1.6s)
+  ✓   3 tests/visual/web.spec.ts:45:11 › web @768 › apply @768 (1.8s)
+  ✓   4 tests/visual/web.spec.ts:45:11 › web @768 › articles @768 (2.0s)
+  ✓   5 tests/visual/web.spec.ts:45:11 › web @768 › article-detail @768 (1.7s)
+  ✓   6 tests/visual/web.spec.ts:45:11 › web @768 › campus @768 (1.4s)
+  ✓   7 tests/visual/web.spec.ts:45:11 › web @768 › contact @768 (1.4s)
+  ✓   8 tests/visual/web.spec.ts:45:11 › web @768 › courses @768 (1.8s)
+  ✓   9 tests/visual/web.spec.ts:45:11 › web @768 › course-detail @768 (1.6s)
+  ✓  10 tests/visual/web.spec.ts:45:11 › web @768 › gallery @768 (1.6s)
+  ✓  11 tests/visual/web.spec.ts:45:11 › web @768 › learning @768 (1.4s)
+  ✓  12 tests/visual/web.spec.ts:45:11 › web @768 › partners @768 (1.5s)
+  ✓  13 tests/visual/web.spec.ts:45:11 › web @768 › party @768 (1.4s)
+  ✓  14 tests/visual/web.spec.ts:45:11 › web @768 › service-detail @768 (6.3s)
+  ✓  15 tests/visual/web.spec.ts:45:11 › web @768 › not-found @768 (1.0s)
+
+  15 passed (32.2s)
