@@ -1,0 +1,41 @@
+
+ RUN  v3.2.7 /workspace/work/HDwebsite
+
+ ✓ src/lib/__tests__/collect-autokb.test.ts (4 tests) 464ms
+ ✓ src/lib/__tests__/block-registry.test.ts (17 tests) 458ms
+ ✓ src/lib/__tests__/wechat-chat.test.ts (3 tests) 366ms
+stderr | src/lib/__tests__/notify-before-publish.test.ts > API 异常 → system_error 邮件 > 路由抛异常 → 500 信封 + 多收件人 system_error；10 分钟聚合为 1 条
+[api-error] GET test/boom TypeError: boom
+    at __vi_import_4__.withApi.route [90m(/workspace/work/HDwebsite/[39msrc/lib/__tests__/notify-before-publish.test.ts:105:47[90m)[39m
+    at route [90m(/workspace/work/HDwebsite/[39msrc/lib/api-handler.ts:152:20[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:103:5)[39m
+    at [90m/workspace/work/HDwebsite/[39msrc/lib/__tests__/notify-before-publish.test.ts:106:16
+    at [90mfile:///workspace/work/HDwebsite/[39mnode_modules/[4m@vitest/runner[24m/dist/chunk-hooks.js:752:20
+
+stderr | src/lib/__tests__/notify-before-publish.test.ts > API 异常 → system_error 邮件 > 路由抛异常 → 500 信封 + 多收件人 system_error；10 分钟聚合为 1 条
+[api-error] GET test/boom TypeError: boom
+    at __vi_import_4__.withApi.route [90m(/workspace/work/HDwebsite/[39msrc/lib/__tests__/notify-before-publish.test.ts:105:47[90m)[39m
+    at route [90m(/workspace/work/HDwebsite/[39msrc/lib/api-handler.ts:152:20[90m)[39m
+    at [90m/workspace/work/HDwebsite/[39msrc/lib/__tests__/notify-before-publish.test.ts:111:16
+    at [90mfile:///workspace/work/HDwebsite/[39mnode_modules/[4m@vitest/runner[24m/dist/chunk-hooks.js:752:20
+
+stderr | src/lib/__tests__/notify-before-publish.test.ts > 调度任务异常 → job_failed > scanOnce 中任务抛错 → job_failed 记录
+[scheduler] 任务 test.explode 执行失败： Error: job exploded
+    at [90m/workspace/work/HDwebsite/[39msrc/lib/__tests__/notify-before-publish.test.ts:124:53
+    at Module.scanOnce [90m(/workspace/work/HDwebsite/[39msrc/lib/scheduler.ts:107:13[90m)[39m
+    at [90m/workspace/work/HDwebsite/[39msrc/lib/__tests__/notify-before-publish.test.ts:125:5
+    at [90mfile:///workspace/work/HDwebsite/[39mnode_modules/[4m@vitest/runner[24m/dist/chunk-hooks.js:752:20
+
+ ✓ src/lib/__tests__/notify-before-publish.test.ts (6 tests) 6736ms
+   ✓ 发布前提醒（立即发布） > scheduledAt=null 的任务执行前产生 before_publish_news 记录且邮件已发  2123ms
+   ✓ 发布前提醒（立即发布） > preNotify=false 不提醒  2016ms
+   ✓ 发布前提醒（立即发布） > 未审核内容不得发布（failed，不改内容状态）  2009ms
+   ✓ API 异常 → system_error 邮件 > 路由抛异常 → 500 信封 + 多收件人 system_error；10 分钟聚合为 1 条  368ms
+ ✓ src/lib/__tests__/content-review.test.ts (7 tests) 261ms
+ ✓ src/lib/__tests__/publish-state-machine.test.ts (89 tests) 11ms
+
+ Test Files  6 passed (6)
+      Tests  126 passed (126)
+   Start at  15:56:06
+   Duration  15.18s (transform 643ms, setup 0ms, collect 4.48s, tests 8.30s, environment 1ms, prepare 1.03s)
+

@@ -40,11 +40,17 @@ export async function searchLocal(query: string, opts: { tags?: string[]; take?:
   if (!q) {
     return rows.slice(0, take).map((r) => ({ source: "local" as const, title: r.title, content: r.content, tags: r.tags ?? undefined }));
   }
+  // P06：整词命中（空白分词）权重 3；中文无空格时补充字符 bigram 重叠（≥2 个或 ≥30% 视为相关）
+  const words = q.split(/\s+/).filter(Boolean);
+  const grams = cjkBigrams(q);
+  const minGrams = Math.max(2, Math.ceil(grams.length * 0.3));
   const scored = rows
     .map((r) => {
       const hay = `${r.title}\n${r.content}\n${r.tags ?? ""}`;
-      const hits = q.split(/\s+/).filter((w) => w && hay.includes(w)).length;
-      return { r, score: hits };
+      const wordHits = words.filter((w) => hay.includes(w)).length;
+      const gramHits = grams.filter((g) => hay.includes(g)).length;
+      const score = wordHits * 3 + (gramHits >= Math.min(minGrams, grams.length) && gramHits > 0 ? gramHits : 0);
+      return { r, score };
     })
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -56,6 +62,16 @@ export async function searchLocal(query: string, opts: { tags?: string[]; take?:
     tags: r.tags ?? undefined,
     score,
   }));
+}
+
+/** 查询中连续汉字片段的字符 bigram（去重） */
+export function cjkBigrams(q: string): string[] {
+  const out = new Set<string>();
+  for (const seg of q.match(/[\u4e00-\u9fff]+/g) ?? []) {
+    if (seg.length === 1) out.add(seg);
+    for (let i = 0; i < seg.length - 1; i++) out.add(seg.slice(i, i + 2));
+  }
+  return [...out];
 }
 
 /** 知识上下文注入格式（SOL-002 口径）：[标题]\n内容 */

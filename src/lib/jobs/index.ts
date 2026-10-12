@@ -15,14 +15,22 @@ registerJob("collect.run", async () => {
   const { prisma } = await import("@/lib/prisma");
   const { runSource } = await import("@/lib/collect-engine");
   const { notifyCollectFailed } = await import("@/lib/notify-gateway");
+  const { isDue } = await import("@/lib/scheduler");
+  const { processKbSyncQueue } = await import("@/lib/kb-sync");
   const sources = await prisma.collectSource.findMany({ where: { enabled: true }, orderBy: { id: "asc" } });
+  const now = new Date();
   for (const source of sources) {
+    // P06：cron 为空 = 仅手动执行；否则按源自身 cron 判断是否到期（任务行 cron 决定检查频率）
+    if (!source.cron.trim()) continue;
+    if (!isDue(source.cron, source.lastRunAt, now)) continue;
     try {
       await runSource(source);
     } catch (err) {
       await notifyCollectFailed(source.name, err instanceof Error ? err.message : String(err));
     }
   }
+  // 入库条目推送远端知识库（未注册适配器时保持排队；P12 注册 Coze 适配器）
+  await processKbSyncQueue();
 });
 
 // ── 发布（S5）──

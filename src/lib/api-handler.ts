@@ -6,7 +6,7 @@
  *   默认（未给 permission 且未设 auth）为公开路由。
  * - 解析：handler 内用 parseBody / parseQuery / parseId（失败抛 ApiHttpError → 契约 400）。
  * - 异常：ApiHttpError → 对应契约响应；Prisma P2002/P2003 → 400；其余未捕获异常 →
- *   onApiError 钩子（默认 console.error；P06 接 notify-gateway 的 system_error 邮件）→ serverError()。
+ *   onApiError 钩子（默认 console.error + notify-gateway system_error 多收件人邮件，P06）→ serverError()。
  * 响应信封始终是 { code, data, message }（src/contracts/common.ts）。
  */
 import type { z } from "zod";
@@ -47,8 +47,11 @@ export type ApiErrorContext = {
 };
 export type ApiErrorListener = (ctx: ApiErrorContext) => void | Promise<void>;
 
-const defaultListener: ApiErrorListener = (ctx) => {
+/** 默认监听（P06）：记日志 + system_error 邮件（notify-gateway 动态导入，避免循环依赖；10 分钟同类聚合） */
+const defaultListener: ApiErrorListener = async (ctx) => {
   console.error(`[api-error] ${ctx.method} ${ctx.route ?? ctx.path}`, ctx.error);
+  const { notifyApiError } = await import("@/lib/notify-gateway");
+  await notifyApiError(ctx);
 };
 
 const listeners = new Set<ApiErrorListener>([defaultListener]);

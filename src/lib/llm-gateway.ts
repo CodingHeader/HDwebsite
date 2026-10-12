@@ -1,11 +1,12 @@
 /**
  * llm-gateway（SOL-003）：多供应商路由/降级/用量统计单点
- * 路由：isDefault → 失败按 priority 升序遍历 active → 全败 → isFallback 必试
+ * 路由：[场景指定模型] → isDefault → 失败按 priority 升序遍历 active → 全败 → isFallback 必试
+ * P06：按场景选模型——ChatScene.llmProviderId 作为 preferredProviderId 置顶（停用则忽略，仍按默认路由降级）
  * kind：openai（OpenAI 兼容 /chat/completions）| coze（v3/chat，ADR-023）
  * 统计：LLMUsage(date+providerId 唯一) upsert；失败计数；余额人工填报（ADR-005）
  */
 import { prisma } from "@/lib/prisma";
-import { getSettings } from "@/lib/settings";
+import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
 import { decryptField } from "@/lib/crypto";
 import { cozeChatStream, cozeChat } from "@/lib/coze";
 import type { LLMProvider } from ".prisma/client";
@@ -33,12 +34,21 @@ async function resolveKey(provider: LLMProvider): Promise<string> {
 }
 
 /** 活跃供应商：default 优先，其余按 priority 升序，fallback 殿后 */
-export async function getRoutedProviders(): Promise<LLMProvider[]> {
-  const rows = await prisma.lLMProvider.findMany({ where: { status: "active" }, orderBy: { priority: "asc" } });
-  const byDefault = rows.filter((r) => r.isDefault);
-  const byFallback = rows.filter((r) => r.isFallback && !r.isDefault);
-  const rest = rows.filter((r) => !r.isDefault && !r.isFallback);
-  return [...byDefault, ...rest, ...byFallback];
+export type RouteOptions = { preferredProviderId?: number | null };
+
+export async function getRoutedProviders(opts: RouteOptions = {}): Promise<LLMProvider[]> {
+  const rows = await prisma.lLMProvider.findMany({ where: { status: "active" }, orderBy: [{ priority: "asc" }, { id: "asc" }] });
+  return orderProviders(rows, opts.preferredProviderId);
+}
+
+/** 纯函数（导出供单测）：场景指定 → default → priority 升序 → fallback 殿后 */
+export function orderProviders<T extends { id: number; isDefault: boolean; isFallback: boolean }>(rows: T[], preferredId?: number | null): T[] {
+  const preferred = preferredId ? rows.filter((r) => r.id === preferredId) : [];
+  const others = rows.filter((r) => r.id !== preferredId);
+  const byDefault = others.filter((r) => r.isDefault);
+  const byFallback = others.filter((r) => r.isFallback && !r.isDefault);
+  const rest = others.filter((r) => !r.isDefault && !r.isFallback);
+  return [...preferred, ...byDefault, ...rest, ...byFallback];
 }
 
 async function recordUsage(providerId: number, tokensIn: number, tokensOut: number, failure: boolean): Promise<void> {
@@ -125,8 +135,8 @@ function hashUserId(seed: string): string {
 /**
  * 非流式对话（测试端点/内部调用）
  */
-export async function gatewayChat(messages: ChatMessage[]): Promise<GatewayResult> {
-  const providers = await getRoutedProviders();
+export async function gatewayChat(messages: ChatMessage[], opts: RouteOptions = {}): Promise<GatewayResult> {
+  const providers = await getRoutedProviders(opts);
   if (providers.length === 0) {
     return { ok: false, reply: "", errMsg: "尚未配置可用的 AI 模型供应商" };
   }
@@ -161,9 +171,10 @@ export async function gatewayChat(messages: ChatMessage[]): Promise<GatewayResul
  * 上层（SSE 路由）负责把 Uint8Array 增量转为事件帧。
  */
 export async function gatewayChatStream(
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  opts: RouteOptions = {}
 ): Promise<{ ok: true; stream: ReadableStream<Uint8Array>; providerId: number; providerName: string } | { ok: false; errMsg: string }> {
-  const providers = await getRoutedProviders();
+  const providers = await getRoutedProviders(opts);
   if (providers.length === 0) {
     return { ok: false, errMsg: "尚未配置可用的 AI 模型供应商" };
   }

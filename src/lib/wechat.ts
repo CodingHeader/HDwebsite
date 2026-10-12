@@ -3,15 +3,17 @@
  * - access_token：/cgi-bin/token 缓存 7200s 过期前 5min 刷新（tokenCache JSON-in-String）
  * - 服务器回调验签：node:crypto sha1 排序（GET echostr / POST XML 事件分发）
  * - 发布：图片转永久素材 → draft/add → freepublish/submit（频控 ≥60s、每日上限默认 20）
- * - AI 客服：5s 内被动回复话术 + 48h 客服消息接口异步补发（ADR-006，答案走 llm-gateway）
+ * - AI 客服：5s 内被动回复话术 + 48h 客服消息接口异步补发（ADR-006）；P06 起答案走 chat-service
+ *   （账号绑定场景的提示词 + 知识库 + 会话历史 + 场景模型），兜底文案取 Setting wechatFallbackReply
  * 凭证未配置时所有对外调用返回明确 errMsg（不抛裸错），真实联调在 M4。
  */
 import crypto from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
 import { prisma } from "@/lib/prisma";
-import { getSettings } from "@/lib/settings";
+import { getAllSettings } from "@/lib/settings";
+import { appOrigin } from "@/lib/app-origin";
+import { chatOnce, findScene } from "@/lib/chat-service";
 import { decryptField } from "@/lib/crypto";
-import { gatewayChat } from "@/lib/llm-gateway";
 import type { WechatAccount, ContentItem } from ".prisma/client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -114,11 +116,9 @@ export async function handleCallback(account: WechatAccount, body: string): Prom
     // 异步补发：等待网关结果后经客服消息接口发送
     void (async () => {
       try {
-        const result = await gatewayChat([{ role: "user", content: incoming.content! }]);
-        const answer = result.ok ? result.reply : "抱歉，当前咨询繁忙，请拨打 400-001-5729 或访问官网留言。";
-        const clipped = answer.length > 600 ? `${answer.slice(0, 600)}…\n完整回答请访问 https://www.hd1994.com` : answer;
+        const answer = await answerWechatText(account, incoming.fromUser, incoming.content!);
         if (!secret) throw new Error("AppSecret 未配置");
-        await sendCustomerMessage(account, secret, incoming.fromUser, clipped);
+        await sendCustomerMessage(account, secret, incoming.fromUser, answer);
       } catch (err) {
         console.error("[wechat] 客服消息补发失败：", err);
       }
@@ -126,6 +126,25 @@ export async function handleCallback(account: WechatAccount, body: string): Prom
     return replyTextXml(incoming.fromUser, incoming.toUser, ack);
   }
   return null;
+}
+
+/**
+ * 公众号文本问答（导出供单测）：会话 id = wx:<openid>；场景 = 账号绑定场景（缺省取 code=wechat，再缺省 float）
+ * 返回可直接发给用户的文本（超长截断并附官网地址；模型不可用 → Setting 兜底文案）
+ */
+export async function answerWechatText(account: WechatAccount, openId: string, content: string): Promise<string> {
+  const scene =
+    (await findScene({ id: account.sceneId })) ?? (await findScene({ code: "wechat" })) ?? (await findScene({ code: "float" }));
+  const settings = await getAllSettings();
+  const origin = await appOrigin();
+  const result = await chatOnce({ scene, sessionId: `wx:${openId}`, channel: "wechat", message: content });
+  if (!result.ok) {
+    return (settings.wechatFallbackReply || "抱歉，当前咨询繁忙，请稍后再试。")
+      .replaceAll("{contactPhone}", settings.contactPhone ?? "")
+      .replaceAll("{siteUrl}", origin);
+  }
+  const max = Math.max(50, Number(settings.wechatReplyMaxLength || 600));
+  return result.reply.length > max ? `${result.reply.slice(0, max)}…\n完整回答请访问 ${origin}` : result.reply;
 }
 
 async function sendCustomerMessage(account: WechatAccount, secret: string, openId: string, content: string): Promise<void> {
@@ -150,7 +169,7 @@ export type WechatPublishResult = { ok: boolean; mediaId?: string; publishId?: s
 
 export async function publishDraftToWechat(account: WechatAccount, secret: string, item: ContentItem): Promise<WechatPublishResult> {
   try {
-    const settings = await getSettings();
+    const settings = await getAllSettings();
     // 每日上限（Q10 口径默认 20）
     const dailyCount = await prisma.contentChannel.count({
       where: { channel: "wechat", accountId: account.id, publishedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
@@ -211,7 +230,7 @@ async function addDraft(token: string, item: ContentItem, thumbMediaId: string |
           title: item.title.slice(0, 64),
           author: "弘道教育",
           content,
-          content_source_url: process.env.APP_ORIGIN ?? "https://www.hd1994.com",
+          content_source_url: await appOrigin(),
           need_open_comment: 0,
           only_fans_can_comment: 0,
           ...(thumbMediaId ? { thumb_media_id: thumbMediaId } : {}),

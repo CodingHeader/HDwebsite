@@ -2,23 +2,21 @@
  * 通知网关（SOL-005）：邮件单点——事件 → 规则 → 模板渲染 → 异步发送 + 留痕重试
  * - SMTP 走 Setting email 分组（ADR-004）；未配置 → skipped(smtp_not_configured)
  * - 同类错误 10 分钟聚合只发 1 封；发送间隔 ≥2s；失败重试 3 次指数退避（notify.retryCount）
+ * - P06：事件全集移入契约（contracts/events）；立即发布任务执行前同步发 before_publish_*（notifyBeforePublish）；
+ *   API 未捕获异常（api-handler onApiError 默认监听）与调度任务异常 → system_error / job_failed；链接走 appOrigin()
  */
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { decryptField } from "@/lib/crypto";
 import { getAllSettings } from "@/lib/settings";
 import { execute as executeJob } from "@/lib/scheduler";
+import { managerLink } from "@/lib/app-origin";
+import { AGGREGATED_EVENTS, type NotifyEvent } from "@/contracts/events";
+import type { PublishJob } from ".prisma/client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type NotifyEvent =
-  | "before_publish_news"
-  | "before_publish_info"
-  | "before_publish_wechat"
-  | "llm_balance_low"
-  | "job_failed"
-  | "system_error"
-  | "collect_failed";
+export type { NotifyEvent };
 
 type NotifyVars = { title: string; time?: string; detail?: string; link?: string };
 
@@ -38,15 +36,27 @@ async function transport(): Promise<any> {
   });
 }
 
+// 聚合类事件进程内串行化：并发异常同时到达时，"查最近记录 → 建记录"不被交错，保证 10 分钟只建 1 条
+let aggregateChain: Promise<unknown> = Promise.resolve();
+
 /** 事件入口：查规则 → 组收件人 → 渲染模板 → 建 NotifyRecord（异步发送由 retry.failed 兜底重试） */
 export async function notifyEvent(event: NotifyEvent, vars: NotifyVars): Promise<void> {
+  if (AGGREGATED_EVENTS.includes(event)) {
+    const run = aggregateChain.then(() => notifyEventInner(event, vars));
+    aggregateChain = run.catch(() => undefined);
+    return run;
+  }
+  return notifyEventInner(event, vars);
+}
+
+async function notifyEventInner(event: NotifyEvent, vars: NotifyVars): Promise<void> {
   try {
     const rule = await prisma.notifyRule.findUnique({ where: { event } });
     if (!rule || !rule.enabled) return;
 
     // system_error 事件不得再派生 system_error（防通知风暴）；失败类事件 10 分钟聚合
     // （聚合条件含未成功记录：SMTP 故障时护栏依然生效）
-    if (event === "system_error" || event === "job_failed" || event === "collect_failed") {
+    if (AGGREGATED_EVENTS.includes(event)) {
       const recent = await prisma.notifyRecord.findFirst({
         where: { event, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } },
       });
@@ -172,15 +182,36 @@ export async function publishRemindScan(): Promise<void> {
     include: { item: true },
   });
   for (const job of jobs) {
-    const event: NotifyEvent =
-      job.channel === "wechat" ? "before_publish_wechat" : job.contentType === "info" ? "before_publish_info" : "before_publish_news";
-    await notifyEvent(event, {
-      title: job.item?.title ?? `发布任务 #${job.id}`,
-      detail: `将于 ${job.scheduledAt?.toISOString().slice(0, 16).replace("T", " ")} 发布到${job.channel === "wechat" ? "公众号" : "官网"}`,
-      link: `${process.env.APP_ORIGIN ?? "https://www.hd1994.com"}/manager/publish-jobs`,
-    });
-    await prisma.publishJob.update({ where: { id: job.id }, data: { notifySentAt: new Date() } });
+    await notifyBeforePublish(job);
   }
+}
+
+function beforePublishEvent(job: Pick<PublishJob, "channel" | "contentType">): NotifyEvent {
+  return job.channel === "wechat" ? "before_publish_wechat" : job.contentType === "info" ? "before_publish_info" : "before_publish_news";
+}
+
+/**
+ * 发布前提醒（单任务）：preNotify 且未提醒 → before_publish_* 事件 + 标记 notifySentAt。
+ * 定时任务由 publishRemindScan 提前量触发；立即发布（scheduledAt=null 或提前量内才被扫到）由执行器在执行前同步调用。
+ */
+export async function notifyBeforePublish(job: PublishJob & { item?: { title: string } | null }): Promise<boolean> {
+  if (!job.preNotify || job.notifySentAt) return false;
+  // 先抢占标记，防 notify.scan 与执行器并发重复提醒
+  const claimed = await prisma.publishJob.updateMany({ where: { id: job.id, notifySentAt: null }, data: { notifySentAt: new Date() } });
+  if (claimed.count === 0) return false;
+  const title =
+    job.item?.title ??
+    (job.itemId ? (await prisma.contentItem.findUnique({ where: { id: job.itemId }, select: { title: true } }))?.title : null) ??
+    `发布任务 #${job.id}`;
+  const when = job.scheduledAt && job.scheduledAt.getTime() > Date.now() ? job.scheduledAt : null;
+  await notifyEvent(beforePublishEvent(job), {
+    title,
+    detail: when
+      ? `将于 ${when.toISOString().slice(0, 16).replace("T", " ")}（UTC）发布到${job.channel === "wechat" ? "公众号" : "官网"}`
+      : `即将立即发布到${job.channel === "wechat" ? "公众号" : "官网"}`,
+    link: await managerLink("publish-jobs"),
+  });
+  return true;
 }
 
 /** llm.balance-check 任务：低于阈值的供应商 → llm_balance_low 事件（每日一轮） */
@@ -195,7 +226,7 @@ export async function llmBalanceCheck(): Promise<void> {
       await notifyEvent("llm_balance_low", {
         title: `模型「${p.name}」余额不足`,
         detail: `当前余额 ${p.balance} ${p.balanceCurrency}，阈值 ${threshold}。请前往后台填报充值后的余额。`,
-        link: `${process.env.APP_ORIGIN ?? "https://www.hd1994.com"}/manager/llm-providers`,
+        link: await managerLink("llm-providers"),
       });
     }
   }
@@ -206,7 +237,29 @@ export async function notifyCollectFailed(sourceName: string, errMsg: string): P
   await notifyEvent("collect_failed", {
     title: `采集源「${sourceName}」执行失败`,
     detail: errMsg,
-    link: `${process.env.APP_ORIGIN ?? "https://www.hd1994.com"}/manager/collect-tasks`,
+    link: await managerLink("collect-tasks"),
+  });
+}
+
+/** 调度任务异常 → job_failed（scheduler 调用；10 分钟聚合） */
+export async function notifyJobFailed(jobName: string, errMsg: string): Promise<void> {
+  await notifyEvent("job_failed", {
+    title: `调度任务「${jobName}」执行失败`,
+    detail: errMsg,
+    link: await managerLink("dashboard"),
+  });
+}
+
+/** API 未捕获异常 → system_error（api-handler onApiError 默认监听调用；10 分钟聚合） */
+export async function notifyApiError(ctx: { error: unknown; method: string; path: string; route?: string; username?: string | null; at: Date }): Promise<void> {
+  const e = ctx.error;
+  const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+  const stack = e instanceof Error && e.stack ? e.stack.split("\n").slice(1, 6).join("\n") : "";
+  await notifyEvent("system_error", {
+    title: `接口异常 ${ctx.method} ${ctx.route ?? ctx.path}`,
+    time: ctx.at.toISOString().slice(0, 19).replace("T", " "),
+    detail: [`路径：${ctx.path}`, `用户：${ctx.username ?? "匿名"}`, `错误：${msg}`, stack].filter(Boolean).join("\n"),
+    link: await managerLink("logs"),
   });
 }
 

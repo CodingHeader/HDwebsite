@@ -1,0 +1,83 @@
+/**
+ * 知识库入库钩子 + 远端同步队列（P06；ADR-025：远端 = Coze 数据集，适配器由 P12 注册）
+ * - ingestCollectItem：采集条目 → 本地 Knowledge（source=collect, syncStatus=pending）+ 回链 CollectItem.knowledgeId
+ *   本地条目立即可被 kb-adapter.searchLocal 检索（官网/公众号 AI 客服兜底轨）
+ * - 队列：Knowledge.syncStatus ∈ {pending, failed} 即待推送；processKbSyncQueue 调用已注册的 KbRemoteAdapter.push
+ *   成功 → synced + externalId + syncedAt（并回写 CollectItem.kbSyncedAt）；失败 → failed + syncErr（下轮重试）
+ * - 未注册适配器：队列保持 pending（不丢），processKbSyncQueue 返回 skipped
+ */
+import { prisma } from "@/lib/prisma";
+import type { CollectItem, Knowledge } from ".prisma/client";
+
+export type KbRemoteAdapter = {
+  name: string;
+  /** 推送（新增或覆盖）一条知识；返回远端文档 id */
+  push: (k: Knowledge) => Promise<{ externalId: string; externalUrl?: string | null }>;
+  /** 可选：远端删除 */
+  remove?: (k: Knowledge) => Promise<void>;
+};
+
+const g = globalThis as unknown as { __hd_kb_remote__?: KbRemoteAdapter | null };
+
+export function registerKbRemoteAdapter(adapter: KbRemoteAdapter | null): void {
+  g.__hd_kb_remote__ = adapter;
+}
+
+export function getKbRemoteAdapter(): KbRemoteAdapter | null {
+  return g.__hd_kb_remote__ ?? null;
+}
+
+/** 采集条目入本地知识库（已有回链则更新内容并重新排队），返回 knowledgeId */
+export async function ingestCollectItem(
+  item: Pick<CollectItem, "id" | "title" | "url" | "contentMd" | "summary" | "knowledgeId">,
+  opts: { tags?: string[] } = {}
+): Promise<number> {
+  const content = item.contentMd || item.summary || item.title;
+  const tags = ["采集", ...(opts.tags ?? [])].join(",");
+  if (item.knowledgeId) {
+    const existing = await prisma.knowledge.findUnique({ where: { id: item.knowledgeId } });
+    if (existing) {
+      await prisma.knowledge.update({
+        where: { id: existing.id },
+        data: { title: item.title, content, syncStatus: "pending", syncErr: null },
+      });
+      return existing.id;
+    }
+  }
+  const k = await prisma.knowledge.create({
+    data: { title: item.title.slice(0, 300), content, tags, source: "collect", externalUrl: item.url, status: "active", syncStatus: "pending" },
+  });
+  await prisma.collectItem.update({ where: { id: item.id }, data: { knowledgeId: k.id, kbSyncedAt: null } });
+  return k.id;
+}
+
+export async function pendingKbSync(take = 100): Promise<Knowledge[]> {
+  return prisma.knowledge.findMany({ where: { syncStatus: { in: ["pending", "failed"] } }, orderBy: { id: "asc" }, take });
+}
+
+export async function processKbSyncQueue(take = 20): Promise<{ synced: number; failed: number; skipped: number; adapter: string | null }> {
+  const adapter = getKbRemoteAdapter();
+  const queue = await pendingKbSync(take);
+  if (!adapter) return { synced: 0, failed: 0, skipped: queue.length, adapter: null };
+  let synced = 0;
+  let failed = 0;
+  for (const k of queue) {
+    try {
+      const r = await adapter.push(k);
+      const now = new Date();
+      await prisma.knowledge.update({
+        where: { id: k.id },
+        data: { syncStatus: "synced", syncErr: null, syncedAt: now, externalId: r.externalId, externalUrl: r.externalUrl ?? k.externalUrl },
+      });
+      await prisma.collectItem.updateMany({ where: { knowledgeId: k.id }, data: { kbSyncedAt: now } });
+      synced++;
+    } catch (err) {
+      await prisma.knowledge.update({
+        where: { id: k.id },
+        data: { syncStatus: "failed", syncErr: (err instanceof Error ? err.message : String(err)).slice(0, 500) },
+      });
+      failed++;
+    }
+  }
+  return { synced, failed, skipped: 0, adapter: adapter.name };
+}

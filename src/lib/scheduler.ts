@@ -111,6 +111,10 @@ export async function scanOnce(now = new Date()): Promise<void> {
       });
     } catch (err) {
       console.error(`[scheduler] 任务 ${job.name} 执行失败：`, err);
+      // P06：任务异常 → job_failed 邮件（动态导入避免与 notify-gateway 循环依赖；提醒失败不影响放锁）
+      await import("@/lib/notify-gateway")
+        .then((m) => m.notifyJobFailed(job.name, err instanceof Error ? err.message : String(err)))
+        .catch(() => undefined);
       // 失败同样推进 lastRunAt：等待下一 cron 窗口重试，避免每分钟热重试
       await prisma.cronJob.update({
         where: { id: job.id },

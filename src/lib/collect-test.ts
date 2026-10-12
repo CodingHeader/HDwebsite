@@ -3,7 +3,7 @@
  */
 import * as cheerio from "cheerio";
 import Parser from "rss-parser";
-import { getSettings } from "@/lib/settings";
+import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
 import type { CollectSource } from ".prisma/client";
 
 export async function fetchTextOnce(url: string): Promise<string> {

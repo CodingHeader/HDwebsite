@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { error, serverError } from "@/lib/api-response";
+import { error } from "@/lib/api-response";
 import { gatewayChatStream, recordGatewayFailure } from "@/lib/llm-gateway";
-import { searchLocal, formatKbContext } from "@/lib/kb-adapter";
+import { buildChatContext, findScene, recordMessage } from "@/lib/chat-service";
+import { withApi } from "@/lib/api-handler";
 import { clientIp } from "@/lib/log";
 import { z } from "zod";
 
@@ -15,20 +16,20 @@ const chatRequestSchema = z.object({
 
 const RATE_LIMIT_PER_MINUTE = 10;
 
-/** POST /api/chat/stream：SSE 流式 AI 客服（公开 + IP 限频 + 敏感词挡板 + 场景装配） */
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return error("请求体不是合法 JSON");
-  }
-  const parsed = chatRequestSchema.safeParse(body);
-  if (!parsed.success) return error(parsed.error.issues[0]?.message ?? "参数错误", 400);
-  const { sessionId, sceneCode, message } = parsed.data;
-  const ip = clientIp(request);
+/** POST /api/chat/stream：SSE 流式 AI 客服（公开 + IP 限频 + 敏感词挡板 + chat-service 场景装配） */
+export const POST = withApi(
+  async ({ request }) => {
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return error("请求体不是合法 JSON");
+    }
+    const parsed = chatRequestSchema.safeParse(body);
+    if (!parsed.success) return error(parsed.error.issues[0]?.message ?? "参数错误", 400);
+    const { sessionId, sceneCode, message } = parsed.data;
+    const ip = clientIp(request);
 
-  try {
     // 限频（SOL-003：默认 10 次/分钟）
     const recent = await prisma.aIChatHistory.count({
       where: { role: "user", ipAddress: ip, createdAt: { gte: new Date(Date.now() - 60_000) } },
@@ -37,55 +38,23 @@ export async function POST(request: Request) {
       return error("提问太频繁，请稍后再试", 400);
     }
 
-    const scene = await prisma.chatScene.findFirst({ where: { code: sceneCode, status: "active" } });
-
     // 敏感词挡板（最小集：提示词注入与违禁引流；M2 按需扩充）
     const banned = ["忽略之前的指令", "ignore previous instructions", "system prompt"];
     if (banned.some((w) => message.toLowerCase().includes(w.toLowerCase()))) {
       return error("消息包含不允许的内容", 400);
     }
 
-    // 会话历史（≤40 条/4000 字收敛入网关，TN-012）
-    const history = await prisma.aIChatHistory.findMany({
-      where: { sessionId },
-      orderBy: { id: "desc" },
-      take: 40,
-    });
-    const trimmed: { role: "user" | "assistant"; content: string }[] = [];
-    let budget = 4000;
-    for (const h of history.reverse()) {
-      if (h.role !== "user" && h.role !== "assistant") continue;
-      const content = h.message.slice(0, Math.max(0, budget));
-      if (!content) break;
-      budget -= content.length;
-      trimmed.unshift({ role: h.role, content });
+    // 场景装配 + 知识检索 + 历史裁剪（chat-service，与公众号共用）
+    const scene = await findScene({ code: sceneCode });
+    const ctx = await buildChatContext({ scene, sessionId, message });
+    if (!ctx.isRetry) {
+      // 重试同一失败问题时不重复写入（ChatWidget 重试去重，P06）
+      await recordMessage({ sessionId, channel: "website", role: "user", message, ipAddress: ip, userAgent: request.headers.get("user-agent") });
     }
 
-    // 知识检索（双轨；场景绑定 tags）
-    let kbContext = "";
-    if (!scene || scene.useKnowledgeBase) {
-      // 公网聊天只走本地兜底检索（Coze 双轨检索留给管理端"检索测试"，避免每条消息多付一次调用与 30s 延迟）
-      const tags = scene?.knowledgeTags?.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
-      kbContext = formatKbContext(await searchLocal(message, { tags }));
-    }
-
-    const systemPrompt = [
-      scene?.systemPrompt ?? "你是弘道教育的客服助手，礼貌、专业、合规，不承诺保过。",
-      kbContext ? `以下是可参考的知识库内容：\n${kbContext}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n\n");
-
-    const userMsg = { role: "user" as const, content: message };
-    await prisma.aIChatHistory.create({
-      data: { sessionId, channel: "website", role: "user", message, ipAddress: ip, userAgent: request.headers.get("user-agent") },
-    });
-
-    const routed = await gatewayChatStream([{ role: "system", content: systemPrompt }, ...trimmed, userMsg]);
+    const routed = await gatewayChatStream(ctx.messages, { preferredProviderId: ctx.preferredProviderId });
     if (!routed.ok) {
-      await prisma.aIChatHistory.create({
-        data: { sessionId, channel: "website", role: "assistant", message: "", model: "gateway", metadata: JSON.stringify({ error: routed.errMsg }) },
-      });
+      await recordMessage({ sessionId, channel: "website", role: "assistant", message: "", model: "gateway", metadata: JSON.stringify({ error: routed.errMsg }) });
       return error(`AI 服务暂时不可用：${routed.errMsg}`, 502);
     }
 
@@ -150,9 +119,6 @@ export async function POST(request: Request) {
         "X-Accel-Buffering": "no",
       },
     });
-  } catch (err) {
-    console.error("[chat/stream] 处理失败：", err);
-    return serverError("会话处理失败");
-  }
-}
-
+  },
+  { route: "chat/stream", errorMessage: "会话处理失败" }
+);

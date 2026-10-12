@@ -71,7 +71,16 @@ export function ChatWidget() {
     if (!retryText) setInput("");
     setError("");
     setLastQuestion(text);
-    setMessages((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
+    setMessages((m) => {
+      // 重试（P06）：复用末尾同一问题气泡，丢弃失败/中断的回答，不重复追加问题
+      if (retryText) {
+        let base = m;
+        while (base.length && base[base.length - 1].role === "assistant") base = base.slice(0, -1);
+        const last = base[base.length - 1];
+        if (last && last.role === "user" && last.content === text) return [...base, { role: "assistant", content: "" }];
+      }
+      return [...m, { role: "user", content: text }, { role: "assistant", content: "" }];
+    });
     setStreaming(true);
     const sessionId = ensureSessionId();
     const controller = new AbortController();

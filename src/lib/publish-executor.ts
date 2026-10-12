@@ -3,17 +3,32 @@
  * draft→(审核略，单级 SuperAdmin 终审在内容态)→scheduled/pending→publishing→published|failed|cancelled
  * website 执行器：ContentItem(markdown) → Article(channel=news|info, contentType=markdown, published)
  * wechat 执行器：委托公众号模块（SOL-006）；凭证未配置 → failed（errMsg 明确，凭证后补即插桩）
+ * P06：迁移按 contracts/events PUBLISH_TRANSITIONS 校验；执行前同步发"发布前提醒"（立即发布任务不再跳过提醒）；
+ *      publish 动作要求内容已审核（approved/published），否则失败（审核门不可经发布任务绕过，ADR-017）
  */
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/slug";
-import { notifyEvent } from "@/lib/notify-gateway";
+import { notifyBeforePublish, notifyEvent } from "@/lib/notify-gateway";
+import { managerLink } from "@/lib/app-origin";
+import { canTransitionPublishJob } from "@/contracts/events";
 import { getWechatAccountSecret, publishDraftToWechat } from "@/lib/wechat";
 import type { PublishJob } from ".prisma/client";
 
 const MAX_ATTEMPTS = 3;
 
 export async function executePublishJob(job: PublishJob): Promise<"published" | "failed"> {
+  if (!canTransitionPublishJob(job.status, "publishing")) {
+    throw new Error(`发布任务 #${job.id} 状态 ${job.status} 不可执行`);
+  }
   try {
+    if (job.action === "publish" && job.itemId) {
+      const item = await prisma.contentItem.findUnique({ where: { id: job.itemId }, select: { status: true } });
+      if (item && item.status !== "approved" && item.status !== "published") {
+        throw new Error(`内容未通过审核（当前 ${item.status}），不能发布`);
+      }
+    }
+    // 发布前提醒：定时任务通常已由 notify.scan 提前发出（notifySentAt 非空则跳过）；立即发布在此同步补发
+    await notifyBeforePublish(job).catch((err) => console.error(`[publish] 任务 #${job.id} 发布前提醒失败：`, err));
     await prisma.publishJob.update({ where: { id: job.id }, data: { status: "publishing", startedAt: new Date() } });
     let result: "published" | "failed";
     if (job.channel === "website") {
@@ -56,7 +71,7 @@ async function markFailed(job: PublishJob, errMsg: string): Promise<void> {
     await notifyEvent("job_failed", {
       title: `发布任务 #${job.id} 失败`,
       detail: errMsg,
-      link: `${process.env.APP_ORIGIN ?? "https://www.hd1994.com"}/manager/publish-jobs`,
+      link: await managerLink("publish-jobs"),
     });
   }
 }

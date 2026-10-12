@@ -6,6 +6,7 @@
  * - 工具族：getRegistry / getGroups / getSettingsByGroup / getSettingDefinition / getDefaultValues / validateSetting
  */
 import type { SettingDefinition } from "@/contracts";
+import { BRAND_DEFAULTS, BRAND_SITE_URL } from "@/config/brand";
 
 type RegistryItem = Omit<SettingDefinition, "group"> & { group: string };
 
@@ -38,6 +39,9 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("welcomeText", "欢迎语", "site", "欢迎来到弘道教育"),
   def("defaultPlaceholderImage", "默认占位图", "site", "/images/placeholder.svg"),
   def("siteFavicon", "站点图标", "site", "/favicon.ico", { isPublic: false }),
+  def("siteUrl", "站点地址", "site", BRAND_SITE_URL, {
+    description: "对外链接（邮件、公众号回复、采集 UA）使用的站点根地址；环境变量 APP_ORIGIN 优先",
+  }),
   // ── topbar 顶栏 ──
   def("topNoticeText", "顶栏公告", "topbar", "2026成人高考火热报名中"),
   def("topNoticePhone", "顶栏电话", "topbar", "132-1945-5550"),
@@ -75,7 +79,7 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   }),
   def("companyVideoUrl", "公司视频地址", "company", ""),
   // ── contact 联系 ──
-  def("contactPhone", "联系电话", "contact", "400-001-5729"),
+  def("contactPhone", "联系电话", "contact", BRAND_DEFAULTS.contactPhone),
   def("contactPhone1", "备用电话", "contact", ""),
   def("contactPhone2", "座机", "contact", "028-6167-5329"),
   def("contactEmail", "联系邮箱", "contact", ""),
@@ -95,9 +99,15 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("emailSecure", "启用 SSL", "email", "true", { type: "boolean", isPublic: false }),
   def("emailUsername", "发件账号", "email", "", { isPublic: false }),
   def("emailPassword", "发件授权码", "email", "", { isPublic: false, isEncrypted: true }),
-  def("emailFrom", "发件人显示", "email", "弘道教育 <noreply@hd1994.com>", { isPublic: false }),
+  def("emailFrom", "发件人显示", "email", BRAND_DEFAULTS.emailFrom, { isPublic: false }),
   // ── wechat-mp 公众号（SOL-006；凭证走 WechatAccount，此处仅全局默认） ──
   def("wechatMpMode", "接入模式", "wechat-mp", "test", { isPublic: false }),
+  def("wechatFallbackReply", "公众号 AI 兜底回复", "wechat-mp", "抱歉，当前咨询繁忙，请拨打 {contactPhone} 或访问官网 {siteUrl} 留言。", {
+    type: "text",
+    isPublic: false,
+    description: "模型不可用时的回复；{contactPhone}/{siteUrl} 会替换为对应设置",
+  }),
+  def("wechatReplyMaxLength", "公众号回复最大字数", "wechat-mp", "600", { type: "number", isPublic: false }),
   // ── collect 采集（SOL-004） ──
   def("collectRateLimitMs", "请求限速（毫秒）", "collect", "2000", { type: "number", isPublic: false }),
   def("collectUserAgent", "采集 UA", "collect", "Mozilla/5.0 (compatible; HDBot/1.0)", {
@@ -119,6 +129,15 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("publishWechatDailyLimit", "公众号每日发布上限", "publish", "20", {
     type: "number",
     isPublic: false,
+  }),
+  def("publishAutoChannels", "审核通过后自动发布渠道", "publish", "website,wechat", {
+    isPublic: false,
+    description: "逗号分隔：website / wechat；留空 = 审核通过后不自动建发布任务。公众号仅在存在启用的服务号时创建",
+  }),
+  def("publishAutoDelayMinutes", "自动发布延迟（分钟）", "publish", "60", {
+    type: "number",
+    isPublic: false,
+    description: "审核通过后延迟多久自动发布；延迟 ≥ 发布前提醒提前量时可先收到提醒邮件再发布",
   }),
 ];
 

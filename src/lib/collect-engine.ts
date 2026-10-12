@@ -3,7 +3,10 @@
  * - 类型：html（cheerio + 每源 CSS 选择器）/ rss（rss-parser）；限速 ≥2s、超时可配
  * - 去重：urlHash（sha1）唯一约束为主；标题相似度（bigram Jaccard ≥0.9）辅助
  * - 图片默认转存本地（Q10-D5）：下载 → uploads + Media 记录，正文链接替换，失败留原链
- * - 产物一律 status=new 待人工审核（RISK-005）；失败 → collect_failed 邮件事件
+ * - 产物默认 status=new 待人工审核（RISK-005）；失败 → collect_failed 邮件事件
+ * - P06：源 autoToKb（默认 true）→ 新条目立即入本地知识库并进入远端同步队列（kb-sync，P12 接 Coze）；
+ *   源 autoApprove（默认 false）→ 视为 SuperAdmin 预授权：直接生成 approved 内容 + OperationLog(review/auto_approve)
+ *   + 按设置自动建发布任务
  */
 import crypto from "node:crypto";
 import * as cheerio from "cheerio";
@@ -12,15 +15,19 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
-import { getSettings } from "@/lib/settings";
+import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
 import { UPLOAD_ROOT } from "@/app/api/upload/route";
+import { ingestCollectItem } from "@/lib/kb-sync";
+import { logOperation } from "@/lib/log";
+import { markdownExcerpt } from "@/lib/markdown";
+import { scheduleAutoPublish } from "@/lib/content-workflow";
+import { appOrigin } from "@/lib/app-origin";
 import type { CollectSource } from ".prisma/client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type ParsedItem = { title: string; url: string; contentMd?: string; publishTime?: Date };
 
-const USER_AGENT_FALLBACK = "Mozilla/5.0 (compatible; HDBot/1.0; +https://www.hd1994.com)";
 
 type ParserRule = {
   listSelector?: string;
@@ -144,7 +151,8 @@ async function transferImagesInMarkdown(md: string, timeoutMs: number, ua: strin
 /** 单源执行：抓列表 → 逐条抓正文 → 去重入库（status=new） */
 export async function runSource(source: CollectSource): Promise<{ newCount: number; skipCount: number; fetched: number; failed: number }> {
   const settings = await getSettings();
-  const ua = settings.collectUserAgent || USER_AGENT_FALLBACK;
+  const origin = await appOrigin();
+  const ua = settings.collectUserAgent || `Mozilla/5.0 (compatible; HDBot/1.0; +${origin})`;
   const timeoutMs = Number(settings.collectTimeoutMs || 15000);
   const rateLimitMs = Number(settings.collectRateLimitMs || 2000);
   const rule = parseRule(source);
@@ -197,7 +205,7 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
     let newCount = 0;
     let skipCount = 0;
     let failed = 0;
-    const appDomain = `https://${process.env.APP_DOMAIN ?? "www.hd1994.com"}`;
+    const appDomain = process.env.APP_DOMAIN ? `https://${process.env.APP_DOMAIN}` : origin;
     for (const item of items) {
       const urlHash = crypto.createHash("sha1").update(item.url).digest("hex");
       const exists = await prisma.collectItem.findUnique({ where: { urlHash } });
@@ -216,7 +224,7 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
         contentMd = await transferImagesInMarkdown(contentMd, timeoutMs, ua, appDomain);
       }
       try {
-        await prisma.collectItem.create({
+        const created = await prisma.collectItem.create({
           data: {
             sourceId: source.id,
             url: item.url,
@@ -228,6 +236,9 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
           },
         });
         newCount++;
+        await afterItemCreated(source, created).catch((err) =>
+          console.error(`[collect] 条目 #${created.id} 入库/自动通过失败：`, err)
+        );
       } catch {
         failed++;
       }
@@ -247,5 +258,51 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
     await prisma.collectTask.update({ where: { id: task.id }, data: { status: "failed", finishedAt: new Date(), errMsg } });
     await prisma.collectSource.update({ where: { id: source.id }, data: { lastRunAt: new Date(), lastStatus: "failed", errMsg } });
     throw err;
+  }
+}
+
+function parseTags(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v.map(String) : [];
+  } catch {
+    return raw.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+  }
+}
+
+/** 新条目后处理：默认入知识库（autoToKb）+ 超管预授权自动通过（autoApprove） */
+async function afterItemCreated(
+  source: CollectSource,
+  created: { id: number; title: string; url: string; contentMd: string | null; summary: string | null; knowledgeId: number | null }
+): Promise<void> {
+  if (source.autoToKb) {
+    await ingestCollectItem(created, { tags: parseTags(source.autoTags) });
+  }
+  if (source.autoApprove) {
+    const contentMd = created.contentMd ?? "";
+    const contentItem = await prisma.$transaction(async (tx) => {
+      const ci = await tx.contentItem.create({
+        data: {
+          title: created.title,
+          contentType: "markdown",
+          content: contentMd || created.title,
+          excerpt: markdownExcerpt(contentMd),
+          source: "collect",
+          collectItemId: created.id,
+          status: "approved",
+        },
+      });
+      await tx.collectItem.update({ where: { id: created.id }, data: { status: "approved" } });
+      return ci;
+    });
+    await logOperation({
+      username: "system",
+      module: "review",
+      action: "auto_approve",
+      title: created.title,
+      after: { collectItemId: created.id, contentItemId: contentItem.id, sourceId: source.id, reason: "CollectSource.autoApprove（SuperAdmin 预授权）" },
+    });
+    await scheduleAutoPublish(contentItem.id);
   }
 }
