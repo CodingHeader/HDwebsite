@@ -101,7 +101,7 @@ export default function ChatHistoryPage() {
           <>
             <select
               aria-label="按渠道筛选"
-              className={`${inputCls} w-auto`}
+              className={`${inputCls.replace("w-full ", "")} w-auto sm:w-32`}
               value={channel}
               onChange={(e) => {
                 setChannel(e.target.value);

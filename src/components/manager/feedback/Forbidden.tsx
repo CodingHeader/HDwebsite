@@ -18,9 +18,8 @@ export function Forbidden({ message }: ForbiddenProps) {
         <ShieldOff className="h-7 w-7" />
       </span>
       <h2 className="mt-5 text-[18px] font-semibold text-mgr-fg">没有访问权限</h2>
-      <p className="mt-1.5 max-w-md text-[13px] text-mgr-muted-fg">
-        {message || "当前账号没有查看此页面的权限。"}如需开通，请联系超级管理员在「角色管理」中授予相应权限。
-      </p>
+      <p className="mt-1.5 max-w-md text-[13px] text-mgr-muted-fg">当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。</p>
+      {message && <p className="mt-1 max-w-md text-[12px] text-mgr-muted-fg/80">{message}</p>}
       <Link href="/manager" className={`${btnCls("secondary")} mt-6`}>
         返回仪表盘
       </Link>
