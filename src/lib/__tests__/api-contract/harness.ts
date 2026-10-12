@@ -8,6 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@libsql/client";
 import { signToken } from "@/lib/jwt";
+import type { PrismaClient } from "@prisma/client";
 
 export async function initTestDb(): Promise<void> {
   const url = process.env.DATABASE_URL;
@@ -44,7 +45,7 @@ type Actor = { id: number; username: string; roleId: number; isSuper: boolean; p
 
 /** 建角色 + 用户，返回 Bearer token */
 export async function createActor(
-  prisma: { role: { create: (a: unknown) => Promise<{ id: number }> }; user: { create: (a: unknown) => Promise<{ id: number }> } },
+  prisma: PrismaClient,
   username: string,
   permissions: string[],
   isSuper = false

@@ -53,7 +53,9 @@ export default function ChatHistoryPage() {
   }, [page, keyword, channel]);
 
   useEffect(() => {
-    void load();
+    (async () => {
+      await load();
+    })();
   }, [load]);
 
   async function openDetail(row: SessionRow) {
