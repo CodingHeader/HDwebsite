@@ -5,7 +5,7 @@ title: 采集的信息、新闻默认作为知识库文件
 status: approved
 owner: 产品所有者
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-12
 ---
 
 # REQ-F-006：采集信息默认入知识库
@@ -77,3 +77,11 @@ CollectItem（去重通过，status=new）自动创建 KnowledgeFile（status=pe
 ## 2026-10-10 决策更新（ADR-020）
 
 采集产物入库方式变更：审核通过的 CollectItem 经 KBAdapter 推送**外部知识库**（pushFile），本地不再生成 KnowledgeFile；外部库不可用时降级为本地 Knowledge 表兜底入库。
+
+---
+
+## 2026-10-12 更新（current-plan M-8、ADR-025）
+
+- "默认入库"口径更正为：采集源开关 `autoToKb`（默认 true）开启时，新采集条目**入库即进入知识库**（不必等待审核或发布，P06）；目标库由采集源指定（默认"采集资讯"库，P12）。
+- 入库形式：本地兜底条目（Knowledge，source=collect）+ 以 `txt` 类型推送到对应 Coze dataset（ADR-025；无 Coze 凭证/权限时仅本地，并在后台提示）。
+- 审核门（ADR-017）仍控制**发布**，不控制入库；审核拒绝的条目同步把对应知识条目置为 inactive（P06 决定并写入证据）。

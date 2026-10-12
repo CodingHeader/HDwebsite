@@ -6,7 +6,7 @@ status: active
 owner: P0 规划轮
 created: 2026-10-12
 updated: 2026-10-12
-related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
+related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, REQ-F-013, ADR-001, ADR-012, ADR-024, ADR-025]
 ---
 
 # main → upgrade 功能对等矩阵（Parity Matrix）
@@ -16,6 +16,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 - 方法：`git ls-tree` 路由/页面/组件/模型清单逐项比对 + 关键文件行数与实现阅读 + 运行时 curl（见 06_validation/evidence/P0-baseline.md）。
 - 状态口径：**present**＝功能与行为在 upgrade 可用；**replaced**＝经 ADR 以新实现替代，功能覆盖；**partial**＝存在但功能缺项或**前台视觉风格与 main 不一致**（用户硬约束：前台风格不得改变）；**missing**＝upgrade 无实现；**dropped-by-ADR**＝经 ADR 裁剪，需用户复核是否仍算"main 功能"。
 - 归属方向：P01~P15（见 04_planning/review-prompts/）。
+- 2026-10-12（P01）更新：用户裁决 U-B2 = 恢复（ADR-024 取代 ADR-012）→ C9/C10 由 dropped-by-ADR 改为 missing 并分派方向；U-B3 = Coze 集成 + Word/Markdown/TXT（ADR-025）→ F6/F7 口径更新；A1 组件数勘误 25→26；E2 增 P11（CLAUDE.md）。
 
 ## 汇总
 
@@ -24,8 +25,8 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 | present | 16（其中 B5 合并 15 个资源族、C1 合并 22 个同名管理页、D1 合并 26 个模型） |
 | replaced | 9 |
 | partial | 21 |
-| missing | 9 |
-| dropped-by-ADR（待复核） | 2 |
+| missing | 11（含 C9/C10，2026-10-12 由 dropped-by-ADR 转入） |
+| dropped-by-ADR | 0（ADR-024 已裁决恢复） |
 | **合计（行）** | **57** |
 
 另：F 节 11 项用户新增需求单列（present 5｜partial 6），不计入上表。
@@ -34,7 +35,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 
 | # | 功能 | main 证据 | upgrade 证据 | 状态 | 方向 |
 | --- | --- | --- | --- | --- | --- |
-| A1 | 首页 11 区块（TopBanner/Banner 轮播/FourCards/TopEntranceSection/StatsBanner/PartnerUniversities/CourseSectionNew/CompanyIntro/NewsCenter/CertificateGallery/CampusSection） | `src/app/(web)/page.tsx`（272 行）+ `src/components/web/*`（25 组件，共 2,861 行） | `src/app/(web)/page.tsx`（201 行内联区块，蓝色渐变 `from-blue-700`，无轮播） | partial（数据在、视觉不同） | P02 |
+| A1 | 首页 11 区块（TopBanner/Banner 轮播/FourCards/TopEntranceSection/StatsBanner/PartnerUniversities/CourseSectionNew/CompanyIntro/NewsCenter/CertificateGallery/CampusSection） | `src/app/(web)/page.tsx`（272 行）+ `src/components/web/*`（26 个组件文件，共 2,861 行；P0 原写 25，P0-verify 勘误） | `src/app/(web)/page.tsx`（201 行内联区块，蓝色渐变 `from-blue-700`，无轮播） | partial（数据在、视觉不同） | P02 |
 | A2 | 站点框架 TopBar/Header/Navbar（多级下拉）/Footer | `components/web/TopBar.tsx`、`Header.tsx`、`Navbar.tsx`(243)、`Navigation.tsx`(271)、`Footer.tsx`(138)；`(web)/layout.tsx` 73 行 | `components/web/SiteChrome.tsx` 68 行，仅 `level: 1` 导航（SiteChrome.tsx:10） | partial | P02 |
 | A3 | 全局设计令牌（品牌红 oklch hue≈27、Geist 字体、sidebar/chart 变量） | `src/app/globals.css` 215 行 | `globals.css` 87 行，`--primary:#1d4ed8`（蓝） | partial | P02 |
 | A4 | 悬浮联系 FloatingContact | 121 行 | 43 行 | partial | P02 |
@@ -66,7 +67,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 | B3 | 文章状态 PATCH（publish/archive，需 article:publish） | `api/articles/[id]` PATCH（:312） | 无 PATCH | partial | P03 |
 | B4 | 新闻 CRUD | `api/news*` | 并入 articles(channel) | replaced（ADR-001） | — |
 | B5 | 轮播/分类/课程/画廊/首页卡片/热门专业/导航/合作院校/服务指南/学员/标签/用户/校区/知识/场景 CRUD（15 族） | `api/<资源>` | 同名（crudGet/crudCreate… 工厂） | present | — |
-| B6 | 校区图片嵌套 `campus/[id]/images[/imageId]` | main 嵌套路由 | 扁平 `/api/campus-images[/id]` | replaced（路径契约变化） | P03 |
+| B6 | 校区图片嵌套 `campus/[id]/images[/imageId]` | main 嵌套路由 | 扁平 `/api/campus-images[/id]` | replaced（路径契约变化；P03 决定保持扁平或补嵌套兼容路由，见 P03 评审 #7） | P03 |
 | B7 | 媒体：列表 GET、上传 POST、改名/分类 PATCH、删除 | `api/media` GET/POST、`[id]` PATCH/DELETE | `api/media` GET、`[id]` GET/DELETE；上传走 `/api/upload` | partial（缺 PATCH） | P03 |
 | B8 | 媒体批量 `media/batch` | `c6ff40b:src/app/api/media/batch/route.ts`（B 仓历史） | 无 | missing | P03 |
 | B9 | AI 配置 `ai-config` CRUD | `api/ai-config*` | `/api/llm/providers*`（+test/balance） | replaced（SOL-003） | — |
@@ -91,8 +92,8 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 | C6 | 富文本编辑器（TipTap：RichTextField/RichTextEditor） | `components/manager/RichTextField.tsx`、`fields/RichTextEditor.tsx`；package.json `@tiptap/*` | SchemaForm `richtext` = 纯 textarea（SchemaForm.tsx:100-105） | partial | P07 |
 | C7 | 图片字段/上传器 ImageField/ImageUploader | 存在 | SchemaForm 内置 image 上传 | present | — |
 | C8 | 分页组件 Pagination | 存在 | CrudPage 内置上一页/下一页 | present | — |
-| C9 | 首页区块配置（block-registry + ContentBlock/PageTemplate/TemplateBlock） | `src/lib/block-registry.ts`(192)；schema 3 模型 | 裁剪 | dropped-by-ADR（ADR-012，待复核） | P01 |
-| C10 | 交互点配置 ElementConfig | schema 模型（src 零引用） | 裁剪 | dropped-by-ADR（ADR-012，待复核） | P01 |
+| C9 | 首页区块配置（block-registry + ContentBlock/PageTemplate/TemplateBlock + Navigation.templateId） | `src/lib/block-registry.ts`(192)；schema 3 模型；seed.ts:451-485（4 模板 + 4 区块，dev.db 同） | 无（ADR-012 裁剪） | missing（ADR-024 裁决恢复，原 dropped-by-ADR） | P04（模型/迁移/seed）/P06（注册表/API/首页组合）/P07（管理页） |
+| C10 | 交互点配置 ElementConfig（含 navigationId 关联） | schema 模型（src 零引用；dev.db 0 行） | 无（ADR-012 裁剪） | missing（ADR-024 裁决恢复，原 dropped-by-ADR） | P04（模型/迁移）/P06（API）/P07（管理页） |
 | C11 | 招生计划/专业管理（B 仓） | `c6ff40b` manager/enrollment-offerings、api/majors | `manager/majors`、`manager/enrollment-offerings` + API | present | — |
 
 ## D. 数据模型
@@ -109,7 +110,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 | # | 功能 | main 证据 | upgrade 证据 | 状态 | 方向 |
 | --- | --- | --- | --- | --- | --- |
 | E1 | Dockerfile / docker-compose / .dockerignore | main 根目录 | 无 | missing | P11 |
-| E2 | 代理规则文件 AGENTS.md / CLAUDE.md | main 根目录 | 无 | missing（治理文档） | P01 |
+| E2 | 代理规则文件 AGENTS.md / CLAUDE.md | main 根目录（CLAUDE.md 内容为 `@AGENTS.md`） | 无（P01 新建 AGENTS.md） | missing（治理文档；AGENTS.md 由 P01 补，CLAUDE.md 由 P11 补后转 present） | P01/P11 |
 | E3 | standalone 启动脚本 start-next.mjs | 存在 | 存在（但 F1/F2 缺陷） | partial | P11 |
 
 ## F. 用户新增基础设计（main 无，upgrade 扩展）
@@ -121,7 +122,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 | F3 | 自动更新/发布官网新闻 | `lib/publish-executor.ts:19`（website 渠道写 Article） | present | — |
 | F4 | 自动发布公众号文章 | `lib/wechat.ts:151 publishDraftToWechat` | present（未经真实凭证联调） | P06 |
 | F5 | 采集默认入知识库 | 仅在审核通过时写 Knowledge（`api/collect-items/[id]/route.ts:47`） | partial | P12 |
-| F6 | 知识库管理（库模型管理/文件管理/其他） | 仅 Knowledge 单表 CRUD + `/api/kb/test`；无"库"实体、无文件上传解析 | partial | P12 |
+| F6 | 知识库管理（库模型管理/文件管理/其他）——2026-10-12：Coze 集成，Word(.docx/.doc)/Markdown/TXT，拒 PDF/图片（ADR-025） | 仅 Knowledge 单表 CRUD + `/api/kb/test`；无"库"实体、无文件上传、无 Coze dataset 同步 | partial | P12 |
 | F7 | 多 LLM 配置 + 知识库/提示词/参数 | LLMProvider（温度/maxTokens/topP）+ ChatScene(systemPrompt/knowledgeTags)；场景不能绑定模型 | partial | P12/P06 |
 | F8 | 官网 AI 客服 | `components/web/ChatWidget.tsx` + `/api/chat/stream` | present | — |
 | F9 | 公众号 AI 客服 | `lib/wechat.ts:111-125` 只调 gatewayChat，不带场景提示词/知识库/历史，电话硬编码 | partial | P06/P12 |
@@ -130,10 +131,10 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, ADR-001, ADR-012]
 
 ## 缺失/部分清单（供各方向 prompt 引用）
 
-**missing（9）**：A18 二级菜单重定向、A19 public 资源、B8 media/batch、B11 chat-history API、B12 logs API、C4 对话日志页、C5 操作日志页、E1 Docker 部署件、E2 AGENTS.md/CLAUDE.md。
+**missing（11）**：A18 二级菜单重定向、A19 public 资源、B8 media/batch、B11 chat-history API、B12 logs API、C4 对话日志页、C5 操作日志页、C9 首页区块配置、C10 ElementConfig、E1 Docker 部署件、E2 AGENTS.md/CLAUDE.md。
 
 **partial（21）**：A1~A16 前台 16 项（风格/功能缩水，A6 报名 AI 咨询页、A7/A8 文章筛选与相关）、A22 设置键、B3 文章状态 PATCH、B7 媒体 PATCH、C6 富文本、E3 启动脚本——以及新增需求 F1/F5/F6/F7/F9/F11（新增需求不计入 57 行对等汇总，单列）。
 
 > 注：partial 计数 = A1~A16(16) + A22 + B3 + B7 + C6 + E3 = 21。
 
-**dropped-by-ADR（2，待用户复核）**：C9 首页区块配置运行时、C10 ElementConfig。用户本轮要求"main 上每个功能都要在 upgrade 存在"，与 ADR-012 的裁剪决定可能冲突 → 登记为 BLOCKING 裁决项 U-B2（见 current-plan §3.4）。
+**dropped-by-ADR（0）**：原 C9 首页区块配置运行时、C10 ElementConfig 两项——2026-10-12 用户裁决 U-B2 = 恢复（ADR-024 取代 ADR-012），已转入 missing 并分派 P04/P06/P07。
