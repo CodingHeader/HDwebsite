@@ -4,7 +4,8 @@ import { getSession } from "@/lib/auth";
 import { error, notFound, serverError, success, validationError } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { applyContentHooks } from "@/lib/markdown";
-import { idParamSchema, articleUpdateSchema } from "@/contracts";
+import { idParamSchema, articleUpdateSchema, articleStatusPatchSchema } from "@/contracts";
+import { parseBody, parseId, withApi } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -169,6 +170,42 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     return serverError("删除文章失败");
   }
 }
+
+/**
+ * PATCH /api/articles/[id]：一键上下线（status: draft/published/archived；article:publish；main parity B3）
+ * 首次发布写 publishedAt；回到草稿清空 publishedAt（与 PUT 口径一致）；记 OperationLog。
+ */
+export const PATCH = withApi<{ id: string }>(
+  async ({ request, params, session }) => {
+    const id = parseId(params.id, "非法的文章 ID");
+    const { status } = await parseBody(request, articleStatusPatchSchema);
+    const existing = await prisma.article.findUnique({ where: { id }, select: { id: true, title: true, status: true, publishedAt: true } });
+    if (!existing) return notFound("文章不存在");
+    const article = await prisma.article.update({
+      where: { id },
+      data: {
+        status,
+        publishedAt:
+          status === "published" && !existing.publishedAt ? new Date() : status === "draft" ? null : undefined,
+      },
+      select: { id: true, title: true, status: true, publishedAt: true, updatedAt: true },
+    });
+    await logOperation({
+      userId: session.id,
+      username: session.username,
+      module: "article",
+      action: "status",
+      title: article.title,
+      before: { id, status: existing.status },
+      after: { id, status: article.status },
+      ip: clientIp(request),
+      userAgent: request.headers.get("user-agent"),
+    });
+    const label = { draft: "已下线（草稿）", published: "已发布", archived: "已归档" }[status];
+    return success(article, `文章${label}`);
+  },
+  { permission: "article:publish", errorMessage: "切换文章状态失败", route: "articles/PATCH:id" }
+);
 
 /** Prisma 已知请求错误 → 400 响应（唯一约束/外键约束等业务性失败） */
 function prismaKnownErrorTo400(err: unknown): Response | null {

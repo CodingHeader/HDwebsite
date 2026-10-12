@@ -51,7 +51,8 @@ export type JwtClaims = z.infer<typeof jwtClaimsSchema>;
 
 /** 权限点全集（含新增模块，SOL-001~006；review:edit 仅 SuperAdmin） */
 export const permissionCatalog = {
-  article: ["list", "create", "edit", "delete"],
+  // article:publish —— 一键上下线（PATCH /api/articles/[id]，main parity B3）
+  article: ["list", "create", "edit", "delete", "publish"],
   category: ["list", "create", "edit", "delete"],
   tag: ["list", "create", "edit", "delete"],
   course: ["list", "create", "edit", "delete"],
@@ -68,14 +69,16 @@ export const permissionCatalog = {
   user: ["list", "create", "edit", "delete"],
   role: ["list", "create", "edit", "delete"],
   setting: ["list", "edit"],
-  log: ["list"],
-  content: ["edit"],
-  collect: ["edit"],
-  publish: ["edit"],
-  kb: ["edit"],
-  llm: ["edit"],
-  notify: ["edit"],
-  wechat: ["edit"],
+  // log:delete —— 删除对话日志会话（P03；比 log:list 更严，查看与删除分权）
+  log: ["list", "delete"],
+  // P03：以路由实际使用为准补齐（crud 工厂按 module:list/create/edit/delete 派生；只新增不改名）
+  content: ["list", "create", "edit", "delete"],
+  collect: ["list", "create", "edit", "delete"],
+  publish: ["list", "create", "edit", "delete"],
+  kb: ["list", "create", "edit", "delete"],
+  llm: ["list", "edit"],
+  notify: ["list", "create", "edit", "delete"],
+  wechat: ["list", "edit"],
   review: ["edit"],
 } as const;
 

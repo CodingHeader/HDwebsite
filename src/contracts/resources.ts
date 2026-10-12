@@ -3,6 +3,7 @@
  * 命名：xxxCreate / xxxUpdate；Update 一律由 Create.partial() 派生（除非需要收窄）。
  */
 import { z } from "zod";
+import { articleStatusSchema } from "./article";
 
 const sortStatus = {
   sort: z.coerce.number().int().min(0).default(0),
@@ -342,3 +343,99 @@ export const providerBalanceSchema = z.object({
 export const providerTestSchema = z.object({
   prompt: z.string().max(500).default("你好，请回复“连通正常”四个字。"),
 });
+
+// ── P03：日志 / 对话日志 / 媒体编辑与批量 / 文章状态切换 ─────────────
+const optionalDate = z.preprocess(
+  (v) => (v === "" || v === null ? undefined : v),
+  z.coerce.date().optional()
+);
+const optionalTrimmed = (max: number) =>
+  z.preprocess((v) => (v === "" ? undefined : v), z.string().trim().max(max).optional());
+
+/** GET /api/logs 查询（操作日志；log:list） */
+export const operationLogQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    keyword: optionalTrimmed(200),
+    module: optionalTrimmed(64),
+    action: optionalTrimmed(64),
+    username: optionalTrimmed(64),
+    startDate: optionalDate,
+    endDate: optionalDate,
+  })
+  .refine((q) => !q.startDate || !q.endDate || q.startDate <= q.endDate, {
+    message: "开始时间不能晚于结束时间",
+    path: ["startDate"],
+  });
+export type OperationLogQuery = z.infer<typeof operationLogQuerySchema>;
+
+/** 对话会话 ID（chat/stream 写入口径：8~64 位） */
+export const chatSessionIdSchema = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(/^[A-Za-z0-9_.:-]+$/, "非法的会话 ID");
+
+/**
+ * GET /api/chat-history 查询（按会话聚合；log:list）
+ * 说明：main 的公开 POST /api/chat-history 不恢复——upgrade 由 /api/chat/stream 在服务端写入
+ * AIChatHistory（replaced 行为，避免前台伪造对话记录）。
+ */
+export const chatHistoryQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    keyword: optionalTrimmed(200),
+    channel: z.preprocess((v) => (v === "" ? undefined : v), z.enum(["website", "wechat"]).optional()),
+    sessionId: z.preprocess((v) => (v === "" ? undefined : v), chatSessionIdSchema.optional()),
+    startDate: optionalDate,
+    endDate: optionalDate,
+  })
+  .refine((q) => !q.startDate || !q.endDate || q.startDate <= q.endDate, {
+    message: "开始时间不能晚于结束时间",
+    path: ["startDate"],
+  });
+export type ChatHistoryQuery = z.infer<typeof chatHistoryQuerySchema>;
+
+/** PATCH /api/media/[id]：改名 / 改分类（media:edit） */
+export const mediaUpdateSchema = z
+  .object({
+    filename: z.string().trim().min(1, "文件名不能为空").max(255).optional(),
+    category: z.string().trim().max(64).nullable().optional(),
+    type: z.enum(["image", "video", "document"]).optional(),
+  })
+  .strict()
+  .refine((v) => Object.keys(v).length > 0, { message: "至少提供一个要修改的字段" });
+export type MediaUpdate = z.infer<typeof mediaUpdateSchema>;
+
+const mediaIds = z
+  .array(z.coerce.number().int().positive())
+  .min(1, "请选择至少 1 个媒体")
+  .max(100, "单次最多操作 100 个媒体");
+
+/** POST /api/media/batch：批量删除（media:delete）/ 批量移动分类（media:edit） */
+export const mediaBatchSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("delete"), ids: mediaIds }),
+  z.object({
+    action: z.literal("move-category"),
+    ids: mediaIds,
+    category: z.string().trim().max(64).nullable(),
+  }),
+]);
+export type MediaBatch = z.infer<typeof mediaBatchSchema>;
+
+/** PATCH /api/articles/[id]：一键上下线（article:publish） */
+export const articleStatusPatchSchema = z
+  .object({ status: articleStatusSchema })
+  .strict();
+export type ArticleStatusPatch = z.infer<typeof articleStatusPatchSchema>;
+
+/** GET /api/navigations?tree=true 查询（前台公开树 / 管理端全量树） */
+export const navigationTreeQuerySchema = z.object({
+  tree: z.literal("true"),
+  level: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().int().min(1).max(3).optional()),
+  status: z.preprocess((v) => (v === "" ? undefined : v), z.enum(["active", "inactive"]).optional()),
+  isVisible: z.preprocess((v) => (v === "" ? undefined : v), z.enum(["true", "false"]).optional()),
+});
+export type NavigationTreeQuery = z.infer<typeof navigationTreeQuerySchema>;
