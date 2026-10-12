@@ -4,6 +4,7 @@
  * 后台布局（P02 设计系统）：登录守卫 + ManagerMenu 表驱动 AppShell。
  * - 根节点 data-theme="manager"：管理端令牌作用域（前台 :root 令牌不受影响）
  * - 守卫与数据源保持不变：未登录 → /manager/login；菜单来自 /api/manager-menus（权限过滤在 API 侧）
+ * - P05：全局挂载 <Toaster/>（成功/失败反馈）与 <ConfirmHost/>（命令式确认/输入对话框，替代原生弹窗）
  */
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -11,6 +12,7 @@ import { useAuthStore } from "@/store/authStore";
 import { managerFetch } from "@/lib/manager-fetch";
 import { AppShell } from "@/components/manager/shell/AppShell";
 import type { MenuNode } from "@/components/manager/shell/types";
+import { ConfirmHost, Toaster, toast } from "@/components/manager/feedback";
 
 function ShellState({ text }: { text: string }) {
   return (
@@ -39,7 +41,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     if (!isAuthenticated) return;
     managerFetch<MenuNode[]>("/api/manager-menus")
       .then(setMenus)
-      .catch(() => undefined);
+      .catch((e: unknown) => toast.error("导航菜单加载失败", e instanceof Error ? e.message : "请刷新页面重试"));
   }, [isAuthenticated]);
 
   const logout = () => {
@@ -67,6 +69,8 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
   return (
     <div data-theme="manager" className="min-h-screen">
       {content}
+      <Toaster />
+      <ConfirmHost />
     </div>
   );
 }

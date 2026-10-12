@@ -2,12 +2,20 @@
 
 /**
  * CrudPage（R2/Q10-D6）：schema 驱动的通用管理页
- * 列表（搜索/分页）+ 新建/编辑弹窗（SchemaForm）+ 删除确认 + 可选只读模式
+ * 列表（搜索/分页）+ 新建/编辑弹窗（SchemaForm + 行内校验）+ 删除确认（ConfirmDialog）+ 可选只读模式
+ * P05 五态：加载=表格骨架 / 空=EmptyState（可直接新建）/ 错误=ErrorState+重试 / 无权限=Forbidden / 成功=Toast
  */
-import { useCallback, useEffect, useState } from "react";
-import { managerFetch } from "@/lib/manager-fetch";
-import { SchemaForm, normalizeFormValues } from "@/components/manager/SchemaForm";
+import { useCallback, useMemo, useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
+import { toastCopy } from "@/contracts/common";
+import { SchemaForm, normalizeFormValues, validateRequired } from "@/components/manager/SchemaForm";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
+import { PageHeader } from "@/components/manager/shell/PageHeader";
+import { FormDialog } from "@/components/manager/FormDialog";
+import { Pagination, tableCls } from "@/components/manager/Pagination";
+import { SearchInput } from "@/components/manager/SearchInput";
+import { Forbidden, TableState, btnCls, confirmDialog, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
 
 export type ColumnSpec = {
   key: string;
@@ -19,6 +27,8 @@ export type ColumnSpec = {
 
 export type CrudPageSpec = {
   title: string;
+  /** 页面副标题（说明本页用途） */
+  description?: string;
   endpoint: string;
   columns: ColumnSpec[];
   fields: FieldSpec[];
@@ -40,59 +50,52 @@ export type RowAction = {
 
 type ListData = { list: Record<string, unknown>[]; pagination: { page: number; limit: number; total: number; totalPages: number } };
 
+const PAGE_SIZE = 10;
+
 export function CrudPage({ spec }: { spec: CrudPageSpec }) {
-  const [data, setData] = useState<ListData | null>(null);
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState("");
-  const [error, setError] = useState("");
+  const kw = keyword ? `&keyword=${encodeURIComponent(keyword)}` : "";
+  const query = useManagerQuery<ListData>(`/api/${spec.endpoint}?page=${page}&limit=${PAGE_SIZE}${kw}`);
+  const { data, error, loading, reload } = query;
+
   const [editing, setEditing] = useState<FormValues | null>(null);
+  const [initial, setInitial] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState("");
+  const [busyRow, setBusyRow] = useState<string | null>(null);
   const [relationOptions, setRelationOptions] = useState<Record<string, { label: string; value: string }[]>>({});
 
-  const load = useCallback(async () => {
-    setError("");
-    try {
-      const kw = keyword ? `&keyword=${encodeURIComponent(keyword)}` : "";
-      const res = await managerFetch<ListData>(`/api/${spec.endpoint}?page=${page}&limit=10${kw}`);
-      setData(res);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
-    }
-  }, [page, keyword, spec.endpoint]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      await load();
-    })();
-    return () => {
-      cancelled = true;
-      void cancelled;
-    };
-  }, [load]);
-
-  async function loadRelations() {
+  const loadRelations = useCallback(async () => {
     if (!spec.relations) return;
     const next: Record<string, { label: string; value: string }[]> = {};
-    for (const [key, rel] of Object.entries(spec.relations)) {
-      try {
-        const res = await managerFetch<ListData>(`/api/${rel.endpoint}?limit=100`);
-        next[key] = res.list.map((r) => ({
-          label: String(r[rel.labelKey] ?? r.id),
-          value: String(r.id),
-        }));
-      } catch {
-        next[key] = [];
-      }
-    }
+    await Promise.all(
+      Object.entries(spec.relations).map(async ([key, rel]) => {
+        try {
+          const res = await managerFetch<ListData>(`/api/${rel.endpoint}?limit=100`);
+          next[key] = res.list.map((r) => ({ label: String(r[rel.labelKey] ?? r.id), value: String(r.id) }));
+        } catch (e) {
+          next[key] = [];
+          toast.error(`「${spec.fields.find((f) => f.key === key)?.label ?? key}」选项加载失败`, errorMessage(e));
+        }
+      })
+    );
     setRelationOptions(next);
+  }, [spec.relations, spec.fields]);
+
+  function startEdit(id: number | null, values: FormValues) {
+    setEditingId(id);
+    setEditing(values);
+    setInitial(JSON.stringify(values));
+    setFieldErrors({});
+    setServerError("");
+    void loadRelations();
   }
 
   function openCreate() {
-    setEditingId(null);
-    setEditing(defaultValues(spec.fields));
-    loadRelations();
+    startEdit(null, defaultValues(spec.fields));
   }
 
   function openEdit(row: Record<string, unknown>) {
@@ -108,24 +111,23 @@ export function CrudPage({ spec }: { spec: CrudPageSpec }) {
         }
       }
     }
-    setEditingId(Number(row.id));
-    setEditing(values);
-    loadRelations();
+    startEdit(Number(row.id), values);
   }
 
   async function save() {
     if (!editing) return;
-    for (const f of spec.fields) {
-      if (f.required) {
-        const v = editing[f.key];
-        if (v === undefined || v === null || v === "") {
-          setError(`请填写「${f.label}」`);
-          return;
-        }
-      }
+    const errs = validateRequired(spec.fields, editing);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setServerError("");
+      // 聚焦首个错误字段
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>('[data-testid="form-dialog"] [aria-invalid="true"]')?.focus();
+      });
+      return;
     }
     setSaving(true);
-    setError("");
+    setServerError("");
     try {
       const body = normalizeFormValues(spec.fields, editing);
       if (editingId) {
@@ -133,152 +135,212 @@ export function CrudPage({ spec }: { spec: CrudPageSpec }) {
       } else {
         await managerFetch(`/api/${spec.endpoint}`, { method: "POST", body: JSON.stringify(body) });
       }
+      toast.success(editingId ? toastCopy.saved : toastCopy.created);
       setEditing(null);
-      load();
+      void reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      const msg = errorMessage(e, "保存失败");
+      setServerError(msg);
+      toast.error("保存失败", msg);
     } finally {
       setSaving(false);
     }
   }
 
   async function remove(row: Record<string, unknown>) {
-    if (!window.confirm("确认删除该条记录？删除后不可恢复。")) return;
+    const name = displayName(row);
+    const ok = await confirmDialog({
+      title: `删除${name ? `「${name}」` : "该条记录"}？`,
+      description: "删除后不可恢复，相关引用可能失效。",
+      confirmText: "删除",
+      danger: true,
+    });
+    if (!ok) return;
+    setBusyRow(String(row.id));
     try {
       await managerFetch(`/api/${spec.endpoint}/${row.id}`, { method: "DELETE" });
-      load();
+      toast.success(toastCopy.deleted);
+      // 删除本页最后一条时回退一页
+      if (data && data.list.length === 1 && page > 1) setPage(page - 1);
+      else void reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "删除失败");
+      toast.fromError(e, "删除失败");
+    } finally {
+      setBusyRow(null);
     }
   }
 
-  const totalPages = data?.pagination.totalPages ?? 0;
+  async function runAction(a: RowAction, row: Record<string, unknown>) {
+    const tip = a.confirm?.(row) ?? null;
+    if (tip) {
+      const ok = await confirmDialog({ title: `${a.label}？`, description: tip, confirmText: a.label, danger: a.danger });
+      if (!ok) return;
+    }
+    setBusyRow(String(row.id));
+    try {
+      await a.run(row, () => void reload(), (msg) => toast.error(`${a.label}失败`, msg));
+    } finally {
+      setBusyRow(null);
+    }
+  }
+
+  const formFields = useMemo(
+    () =>
+      spec.fields.map((f) =>
+        spec.relations && spec.relations[f.key] ? { ...f, type: "select" as const, options: relationOptions[f.key] ?? [] } : f
+      ),
+    [spec.fields, spec.relations, relationOptions]
+  );
+
+  if (isForbidden(error)) return <Forbidden message={error.message} />;
+
+  const colCount = spec.columns.length + (spec.readOnly ? 0 : 1);
+  const list = data?.list ?? [];
+  const dirty = editing !== null && JSON.stringify(editing) !== initial;
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">{spec.title}</h1>
-        <div className="flex items-center gap-2">
-          <input
-            className="rounded-md border border-border px-3 py-2 text-sm"
-            placeholder={spec.searchPlaceholder ?? "搜索…"}
-            value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-              setPage(1);
-            }}
-          />
-          {!spec.readOnly && (
-            <button onClick={openCreate} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-              新建
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={spec.title}
+        description={spec.description}
+        actions={
+          <>
+            <SearchInput
+              value={keyword}
+              placeholder={spec.searchPlaceholder ?? "搜索…"}
+              onChange={(v) => {
+                setKeyword(v);
+                setPage(1);
+              }}
+            />
+            {!spec.readOnly && (
+              <button type="button" onClick={openCreate} className={btnCls("primary")} data-testid="crud-create">
+                <Plus aria-hidden="true" />
+                新建
+              </button>
+            )}
+          </>
+        }
+      />
 
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
-      <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-muted">
+      <div className={tableCls.wrap} aria-busy={loading || query.refreshing}>
+        <table className={tableCls.table}>
+          <thead className={tableCls.thead}>
+            <tr>
               {spec.columns.map((c) => (
-                <th key={c.key} className="px-4 py-3" style={{ width: c.width }}>
+                <th key={c.key} scope="col" className={tableCls.th} style={{ width: c.width }}>
                   {c.label}
                 </th>
               ))}
-              {!spec.readOnly && <th className="px-4 py-3">操作</th>}
+              {!spec.readOnly && (
+                <th scope="col" className={`${tableCls.th} text-right`}>
+                  操作
+                </th>
+              )}
             </tr>
           </thead>
-          <tbody>
-            {data?.list.map((row) => (
-              <tr key={String(row.id)} className="border-b border-border last:border-0">
-                {spec.columns.map((c) => (
-                  <td key={c.key} className="max-w-[320px] px-4 py-3">
-                    <Cell value={row[c.key]} render={c.render} />
-                  </td>
-                ))}
-                {!spec.readOnly && (
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <button onClick={() => openEdit(row)} className="text-primary hover:underline">编辑</button>
-                    {spec.rowActions?.map((a) => (
-                      <button
-                        key={a.label}
-                        className={`ml-3 ${a.danger ? "text-red-600" : "text-muted"} hover:underline`}
-                        onClick={async () => {
-                          const tip = a.confirm?.(row) ?? null;
-                          if (tip && !window.confirm(tip)) return;
-                          await a.run(row, load, setError);
-                        }}
-                      >
-                        {a.label}
-                      </button>
-                    ))}
-                    <button onClick={() => remove(row)} className="ml-3 text-red-600 hover:underline">删除</button>
-                  </td>
-                )}
-              </tr>
-            ))}
-            {data?.list.length === 0 && (
-              <tr>
-                <td colSpan={spec.columns.length + 1} className="px-4 py-10 text-center text-muted">
-                  暂无数据
-                </td>
-              </tr>
-            )}
+          <tbody className={query.refreshing ? "opacity-60 transition-opacity" : undefined}>
+            <TableState
+              columns={colCount}
+              loading={loading}
+              error={error}
+              empty={!!data && list.length === 0}
+              onRetry={reload}
+              emptyTitle={keyword ? `没有找到与「${keyword}」相关的${spec.title.replace(/管理$/, "")}` : "暂无数据"}
+              emptyDescription={keyword ? "换个关键词试试，或清空搜索。" : spec.readOnly ? undefined : "点击「新建」添加第一条记录。"}
+              emptyAction={
+                !keyword && !spec.readOnly ? (
+                  <button type="button" className={btnCls("primary")} onClick={openCreate}>
+                    <Plus aria-hidden="true" />
+                    新建
+                  </button>
+                ) : undefined
+              }
+            />
+            {!error &&
+              list.map((row) => (
+                <tr key={String(row.id)} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
+                  {spec.columns.map((c) => (
+                    <td key={c.key} className={`${tableCls.td} max-w-[320px]`}>
+                      <Cell value={row[c.key]} render={c.render} />
+                    </td>
+                  ))}
+                  {!spec.readOnly && (
+                    <td className={`${tableCls.td} whitespace-nowrap text-right`}>
+                      <div className="inline-flex items-center gap-2">
+                        <button type="button" onClick={() => openEdit(row)} className={linkCls("primary")} aria-label={`编辑 ${displayName(row)}`}>
+                          <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                          编辑
+                        </button>
+                        {spec.rowActions?.map((a) => (
+                          <button
+                            type="button"
+                            key={a.label}
+                            disabled={busyRow === String(row.id)}
+                            className={linkCls(a.danger ? "danger" : "muted")}
+                            onClick={() => void runAction(a, row)}
+                          >
+                            {a.label}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => void remove(row)}
+                          disabled={busyRow === String(row.id)}
+                          className={linkCls("danger")}
+                          aria-label={`删除 ${displayName(row)}`}
+                        >
+                          <Trash2 className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="mt-4 flex gap-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`rounded border px-3 py-1 text-sm ${p === page ? "border-primary text-primary" : "border-border text-muted"}`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+      {data && !error && (
+        <Pagination page={page} totalPages={data.pagination.totalPages} total={data.pagination.total} onChange={setPage} />
       )}
 
-      {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setEditing(null)}>
-          <div
-            className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-lg font-bold">{editingId ? `编辑${spec.title}` : `新建${spec.title}`}</h2>
-            <div className="mt-4">
-              <SchemaForm
-                fields={spec.fields.map((f) =>
-                  spec.relations && spec.relations[f.key]
-                    ? { ...f, type: "select" as const, options: relationOptions[f.key] ?? [] }
-                    : f
-                )}
-                values={editing}
-                onChange={setEditing}
-              />
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setEditing(null)} className="rounded-md border border-border px-4 py-2 text-sm">
-                取消
-              </button>
-              <button
-                onClick={save}
-                disabled={saving}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-              >
-                {saving ? "保存中…" : "保存"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <FormDialog
+        open={editing !== null}
+        title={editingId ? `编辑${spec.title.replace(/管理$/, "")}` : `新建${spec.title.replace(/管理$/, "")}`}
+        onClose={() => setEditing(null)}
+        onSubmit={save}
+        saving={saving}
+        dirty={dirty}
+        serverError={serverError}
+      >
+        {editing && (
+          <SchemaForm
+            fields={formFields}
+            values={editing}
+            onChange={setEditing}
+            errors={fieldErrors}
+            onFieldChange={(key) =>
+              setFieldErrors((prev) => {
+                if (!prev[key]) return prev;
+                const next = { ...prev };
+                delete next[key];
+                return next;
+              })
+            }
+          />
+        )}
+      </FormDialog>
     </div>
   );
+}
+
+function displayName(row: Record<string, unknown>): string {
+  for (const k of ["title", "name", "username", "label", "nickname", "code", "email"]) {
+    if (typeof row[k] === "string" && row[k]) return String(row[k]);
+  }
+  return row.id !== undefined ? `#${row.id}` : "";
 }
 
 function defaultValues(fields: FieldSpec[]): FormValues {
@@ -297,10 +359,19 @@ function defaultValues(fields: FieldSpec[]): FormValues {
 function Cell({ value, render }: { value: unknown; render?: ColumnSpec["render"] }) {
   if (render === "image" && typeof value === "string" && value) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={value} alt="" className="h-10 w-16 rounded object-cover" />;
+    return <img src={value} alt="" className="h-10 w-16 rounded-mgr-control border border-mgr-border object-cover" />;
   }
-  if (render === "boolean") return <span>{value ? "是" : "否"}</span>;
-  if (value === null || value === undefined || value === "") return <span className="text-muted">—</span>;
+  if (render === "boolean")
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[12px] font-medium ${value ? "bg-mgr-primary-soft text-mgr-success" : "bg-mgr-subtle text-mgr-muted-fg"}`}
+        style={value ? { backgroundColor: "color-mix(in oklch, var(--mgr-success) 12%, transparent)" } : undefined}
+      >
+        <span className={`h-1.5 w-1.5 rounded-full ${value ? "bg-mgr-success" : "bg-mgr-muted-fg"}`} aria-hidden="true" />
+        {value ? "是" : "否"}
+      </span>
+    );
+  if (value === null || value === undefined || value === "") return <span className="text-mgr-muted-fg">—</span>;
   const text = typeof value === "object" ? JSON.stringify(value) : String(value);
   return <span title={text}>{text.length > 60 ? `${text.slice(0, 60)}…` : text}</span>;
 }

@@ -6,6 +6,7 @@
  */
 import type { CrudPageSpec, RowAction } from "@/components/manager/CrudPage";
 import { managerFetch } from "@/lib/manager-fetch";
+import { alertDialog, toast } from "@/components/manager/feedback";
 
 const statusField = {
   key: "status",
@@ -24,7 +25,7 @@ async function runSource(row: Record<string, unknown>, reload: () => void, fail:
       `/api/collect-sources/${row.id}/run`,
       { method: "POST", body: "{}" }
     );
-    alert(`执行完成：新增 ${res.newCount} 条，跳过 ${res.skipCount} 条`);
+    toast.success("采集执行完成", `新增 ${res.newCount} 条，跳过 ${res.skipCount} 条；新条目在「采集审核」中待审。`);
     reload();
   } catch (e) {
     fail(e instanceof Error ? e.message : "执行失败");
@@ -37,8 +38,24 @@ async function testSource(row: Record<string, unknown>, _reload: () => void, fai
       `/api/collect-sources/${row.id}/test`,
       { method: "POST", body: "{}" }
     );
-    const lines = res.samples.map((s) => `- ${s.title}`).join("\n");
-    alert(`试抓 ${res.count} 条（不入库）：\n${lines || "（未解析到条目，请检查解析规则）"}`);
+    await alertDialog({
+      title: `试抓结果：解析到 ${res.count} 条`,
+      description:
+        res.samples.length > 0 ? (
+          <div data-testid="collect-test-result">
+            <p>以下为预览（不入库）：</p>
+            <ul className="mt-2 max-h-60 list-disc space-y-1 overflow-y-auto pl-5 text-mgr-fg">
+              {res.samples.map((s) => (
+                <li key={s.url} className="break-all">
+                  {s.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p data-testid="collect-test-result">未解析到条目，请检查列表 URL 与解析规则（listSelector / titleSelector / linkSelector）。</p>
+        ),
+    });
   } catch (e) {
     fail(e instanceof Error ? e.message : "试抓失败");
   }

@@ -69,3 +69,20 @@ export const errorCodes = {
 // ── 通用 ID 路径参数 ────────────────────────────────────────
 
 export const idParamSchema = z.coerce.number().int().positive();
+
+// ── UX 五态（契约⑥，P05）────────────────────────────────────
+// 管理端每个数据视图必须能呈现以下五态之一；组件实现见 src/components/manager/feedback/**。
+
+export const uxStateSchema = z.enum(["loading", "empty", "error", "forbidden", "success"]);
+export type UxState = z.infer<typeof uxStateSchema>;
+
+/** Toast 文案约定：成功用固定短句；失败优先用后端 message，缺省时用下列兜底 */
+export const toastCopy = {
+  saved: "已保存",
+  created: "已创建",
+  deleted: "已删除",
+  updated: "已更新",
+  failed: "操作失败，请稍后重试",
+  network: "网络异常，请检查网络后重试",
+  forbidden: "当前账号没有此操作的权限",
+} as const;
