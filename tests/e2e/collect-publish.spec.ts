@@ -1,7 +1,7 @@
 /**
  * E2E · 内容生产主链（P05）：
  * 新建通知收件人 → 新建采集源（指向 mock 站点）→ 试抓（不入库预览）→ 立即执行（入库待审）
- * → 采集审核"通过"（进入内容中枢）→ 新建发布任务（10 分钟后排期，发布前提醒）
+ * → 采集审核"通过"（进入内容中枢 + 默认已入知识库 + 自动排期发布，P06）→ 新建发布任务（10 分钟后排期，发布前提醒）
  * → notify.scan（每分钟）触发 before_publish_news → 通知记录出现（SMTP 未配置 → skipped）
  */
 import { expect, test } from "@playwright/test";
@@ -84,7 +84,8 @@ test("采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知
   await dlg.getByTestId("form-submit").click();
   await expect(dlg).toBeHidden();
   await expectToast(page, "success", "已创建");
-  await expect(page.getByRole("row").filter({ hasText: MOCK_NEWS[0].title })).toBeVisible();
+  // P06：审核通过后已按设置自动排期 1 个官网任务（publishAutoChannels），此处手动任务为第 2 行
+  await expect(page.getByRole("row").filter({ hasText: MOCK_NEWS[0].title })).toHaveCount(2);
 
   // 7) 通知记录：notify.scan 每分钟运行，最长等待 ~150s
   const token = await apiToken(request);

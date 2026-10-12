@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { recordView } from "@/lib/view-stats";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +58,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     where: { id: articleId },
     data: { viewCount: { increment: 1 } },
   }).catch(() => {});
+  // 按日浏览统计（ADR-026，fire-and-forget）
+  void recordView("article", articleId);
 
   // 获取相关文章
   const relatedArticles = await prisma.article.findMany({

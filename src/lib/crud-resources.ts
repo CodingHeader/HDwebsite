@@ -36,7 +36,7 @@ import {
   pageTemplateCreateSchema,
   templateBlockCreateSchema,
 } from "@/contracts/blocks";
-import { canTransitionContentItem } from "@/contracts/events";
+import { CONTENT_EDITABLE_STATUSES, canTransitionContentItem, contentItemStatusSchema } from "@/contracts/events";
 import { badRequest } from "@/lib/api-handler";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -270,11 +270,16 @@ export const crudSpecs: Record<string, CrudSpec> = {
     createSchema: contentItemCreateSchema,
     beforeCreate: contentItemTags.beforeCreate,
     // P06：状态迁移须合法（contracts/events contentItemStatusTransitions）；approved/published 已在契约层拒绝
+    // 更新契约接受完整状态集（表单回传未改动的 approved/published 不报错），但"变更到"审核/发布态一律拒绝
+    updateSchema: contentItemCreateSchema.extend({ status: contentItemStatusSchema }).partial(),
     beforeUpdate: async (data, existing) => {
       const to = data.status as string | undefined;
       const from = existing.status as string;
-      if (to && to !== from && !canTransitionContentItem(from, to)) {
-        throw badRequest(`内容状态不能从 ${from} 变更为 ${to}`);
+      if (to && to !== from) {
+        if (!(CONTENT_EDITABLE_STATUSES as readonly string[]).includes(to)) {
+          throw badRequest(`不能直接把状态改为 ${to}：审核请用「审核」操作（仅超级管理员），发布请建发布任务`);
+        }
+        if (!canTransitionContentItem(from, to)) throw badRequest(`内容状态不能从 ${from} 变更为 ${to}`);
       }
       return contentItemTags.beforeUpdate(data);
     },

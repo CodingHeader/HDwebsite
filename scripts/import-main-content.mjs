@@ -41,6 +41,8 @@ const KEY_MAP = {
   "seo.title": "seoTitle",
   "seo.keywords": "seoKeywords",
   "seo.description": "seoDescription",
+  "site.icp": "icp",
+  "contact.worktime": "workHours",
 };
 
 // 依赖顺序（父 → 子）；删除时逆序

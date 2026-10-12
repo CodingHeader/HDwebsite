@@ -1,5 +1,5 @@
-import { requireAuth } from "@/lib/api-auth";
-import { error, serverError, success } from "@/lib/api-response";
+import { success } from "@/lib/api-response";
+import { parseBody, withApi } from "@/lib/api-handler";
 import { kbSearch } from "@/lib/kb-adapter";
 import { z } from "zod";
 
@@ -11,15 +11,10 @@ const testSchema = z.object({
 });
 
 /** POST /api/kb/test：检索测试（双轨：本地兜底 + Coze） */
-export async function POST(request: Request) {
-  const guard = await requireAuth(request, "kb:list");
-  if (!guard.ok) return guard.response;
-  let body: unknown;
-  try { body = await request.json(); } catch { return error("请求体不是合法 JSON"); }
-  const parsed = testSchema.safeParse(body);
-  if (!parsed.success) return error(parsed.error.issues[0]?.message ?? "参数错误", 400);
-  try {
-    const result = await kbSearch(parsed.data.query, { tags: parsed.data.tags });
+export const POST = withApi(
+  async ({ request }) => {
+    const input = await parseBody(request, testSchema);
+    const result = await kbSearch(input.query, { tags: input.tags });
     return success(
       {
         local: { hits: result.hits, error: result.localError ?? null },
@@ -27,8 +22,6 @@ export async function POST(request: Request) {
       },
       "检索完成"
     );
-  } catch (err) {
-    console.error("[kb/test] 检索失败：", err);
-    return serverError("检索失败");
-  }
-}
+  },
+  { permission: "kb:list", route: "kb/test", errorMessage: "检索失败" }
+);

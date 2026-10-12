@@ -69,3 +69,27 @@ describe("内容审核门", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("表单回传未改动的审核态", () => {
+  it("approved 内容 PUT {status:approved,title} → 200（状态未变不拦截）", async () => {
+    const row = await prisma.contentItem.create({ data: { title: "已通过稿", content: "正文", status: "approved" } });
+    const res = await itemPUT(req(`/api/content-items/${row.id}`, { method: "PUT", token: EDITOR, body: { status: "approved", title: "已通过稿-改" } }), ctx({ id: String(row.id) }));
+    expect(res.status).toBe(200);
+    const after = await prisma.contentItem.findUnique({ where: { id: row.id } });
+    expect(after?.status).toBe("approved");
+    expect(after?.tags).toBeNull(); // 部分更新不再套用默认值（tags 未发送）
+  });
+  it("PUT 仅改标题不会把状态重置为 draft", async () => {
+    const row = await prisma.contentItem.create({ data: { title: "待审稿2", content: "正文", status: "pending_review" } });
+    await itemPUT(req(`/api/content-items/${row.id}`, { method: "PUT", token: EDITOR, body: { title: "只改标题" } }), ctx({ id: String(row.id) }));
+    expect((await prisma.contentItem.findUnique({ where: { id: row.id } }))?.status).toBe("pending_review");
+  });
+  it("校验错误返回字段级中文说明", async () => {
+    const res = await itemPOST(req(`/api/content-items`, { method: "POST", token: EDITOR, body: { title: "", content: "y", contentType: "pdf" } }), ctx());
+    expect(res.status).toBe(400);
+    const body = await json(res);
+    expect(body.data.fieldErrors.contentType).toBe("取值不在允许范围内");
+    expect(body.data.fieldErrors.title).toBeTruthy();
+    expect(body.message).toMatch(/^参数校验失败/);
+  });
+});
