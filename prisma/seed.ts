@@ -197,6 +197,10 @@ async function seedMenus() {
 }
 
 async function seedFrontNavigation() {
+  // P04 修复：仅在 Navigation 为空时种默认前台导航。
+  // 原实现按 slug upsert，会在已导入 main 导航（slug 体系不同：education/majors/news…）的库上追加 5 条，
+  // 使前台导航溢出、偏离 main 视觉（test:visual 768/375 横向溢出即由此发现）。
+  if ((await prisma.navigation.count()) > 0) return;
   const navs: { slug: string; name: string; link: string; sort: number; level: number }[] = [
     { slug: 'home', name: '首页', link: '/', sort: 1, level: 1 },
     { slug: 'about', name: '关于我们', link: '/about', sort: 2, level: 1 },
@@ -242,6 +246,8 @@ async function seedSettings() {
 }
 
 async function seedCategoriesAndTags() {
+  // P04 修复：示例内容仅种入空表（已导入 main 内容的库上按 slug upsert 会追加示例行，改变前台列表/视觉）
+  if ((await prisma.category.count()) > 0 || (await prisma.tag.count()) > 0) return;
   const cats: { name: string; slug: string; type: string; sort: number }[] = [
     { name: '自考', slug: 'zikao', type: 'course', sort: 1 },
     { name: '成人高考', slug: 'chengkao', type: 'course', sort: 2 },
@@ -263,6 +269,8 @@ async function seedCategoriesAndTags() {
 }
 
 async function seedArticles() {
+  // P04 修复：示例内容仅种入空表（已导入 main 内容的库上按 slug upsert 会追加示例行，改变前台列表/视觉）
+  if ((await prisma.article.count()) > 0) return;
   const admin = await prisma.user.findUnique({ where: { username: 'admin' } });
   const catInfo = await prisma.category.findUnique({ where: { slug: 'kaoshi-zixun' } });
   const catPolicy = await prisma.category.findUnique({ where: { slug: 'zhaosheng-zhengce' } });
@@ -357,6 +365,8 @@ async function seedCronJobs() {
 }
 
 async function seedServiceGuide() {
+  // P04 修复：示例内容仅种入空表（已导入 main 内容的库上按 slug upsert 会追加示例行，改变前台列表/视觉）
+  if ((await prisma.serviceGuide.count()) > 0) return;
   const guides = [
     { slug: 'baoming-liucheng', title: '报名流程', content: '1. 咨询确认层次与专业\n2. 提交报名资料\n3. 签订协议缴费\n4. 复习备考\n5. 现场确认与考试', icon: 'ClipboardList', sort: 1 },
     { slug: 'xuexi-xingshi', title: '学习形式', content: '业余/函授/开放教育，手机 APP + 面授结合，工作学习两不误。', icon: 'BookOpen', sort: 2 },
