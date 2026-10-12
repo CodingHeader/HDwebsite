@@ -68,7 +68,8 @@ export const permissionCatalog = {
   service: ["list", "create", "edit", "delete"],
   user: ["list", "create", "edit", "delete"],
   role: ["list", "create", "edit", "delete"],
-  setting: ["list", "edit"],
+  // setting:create/delete —— AI 场景（chat-scenes，crud 工厂 permission=setting）的新增/删除（P03 补齐）
+  setting: ["list", "create", "edit", "delete"],
   // log:delete —— 删除对话日志会话（P03；比 log:list 更严，查看与删除分权）
   log: ["list", "delete"],
   // P03：以路由实际使用为准补齐（crud 工厂按 module:list/create/edit/delete 派生；只新增不改名）
