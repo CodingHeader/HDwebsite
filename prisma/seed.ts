@@ -6,59 +6,100 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 import * as bcrypt from 'bcryptjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-const adapter = new PrismaLibSql({ url: 'file:./prisma/dev.db' });
+// P04：允许 DATABASE_URL 覆盖（用于在库副本上验证 seed/迁移），默认仍为本地 dev.db
+const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL ?? 'file:./prisma/dev.db' });
 const prisma = new PrismaClient({ adapter });
 
+/**
+ * P04：权限目录断言。seed 以 ts-node(ESM) 运行，无法直接 import src/contracts（无扩展名解析失败），
+ * 故在运行时解析 `src/contracts/auth.ts` 的 permissionCatalog 字面量（唯一源），
+ * 所有角色/菜单权限必须 ∈ 目录，否则 seed 失败（防止 seed 绕过目录写权限，I4）。
+ */
+function loadPermissionCatalog(): Set<string> {
+  const src = readFileSync(join(process.cwd(), 'src/contracts/auth.ts'), 'utf8');
+  const start = src.indexOf('export const permissionCatalog = {');
+  const end = src.indexOf('} as const;', start);
+  if (start < 0 || end < 0) throw new Error('seed: 无法解析 permissionCatalog');
+  const set = new Set<string>();
+  for (const m of src.slice(start, end).matchAll(/^\s*([a-z]+):\s*\[([^\]]*)\]/gm)) {
+    for (const a of m[2].matchAll(/"([a-z]+)"/g)) set.add(`${m[1]}:${a[1]}`);
+  }
+  if (set.size === 0) throw new Error('seed: permissionCatalog 为空');
+  return set;
+}
+const CATALOG = loadPermissionCatalog();
+function assertInCatalog(perms: (string | undefined | null)[], where: string) {
+  const bad = perms.filter((p): p is string => !!p && p !== '*' && !CATALOG.has(p));
+  if (bad.length) throw new Error(`seed: ${where} 含目录外权限 ${bad.join(', ')}`);
+}
+
+/**
+ * 角色 upsert：create 写默认权限；update 只做"并集补齐"（保留后台手工增加的权限，补入新版默认权限），
+ * 结果排序后比较，相同则不写 → 重跑幂等。代价：后台手工移除的默认权限会在重跑 seed 时被补回（见 P04 证据）。
+ */
+async function upsertRole(r: { name: string; slug: string; description: string; permissions: string[]; isSuper: boolean }) {
+  assertInCatalog(r.permissions, `角色 ${r.slug}`);
+  const existing = await prisma.role.findUnique({ where: { slug: r.slug } });
+  if (!existing) {
+    await prisma.role.create({ data: { ...r, permissions: JSON.stringify(r.permissions) } });
+    return;
+  }
+  let current: string[] = [];
+  try { current = JSON.parse(existing.permissions || '[]'); } catch { current = []; }
+  if (current.includes('*')) return;
+  const merged = Array.from(new Set([...current, ...r.permissions])).sort();
+  if (merged.length !== current.length) {
+    await prisma.role.update({ where: { id: existing.id }, data: { permissions: JSON.stringify(merged) } });
+  }
+}
+
 async function seedRoles() {
-  await prisma.role.upsert({
-    where: { slug: 'super-admin' },
-    update: {},
-    create: {
-      name: 'SuperAdmin',
-      slug: 'super-admin',
-      description: '超级管理员（审核权独享，ADR-017）',
-      permissions: JSON.stringify(['*']),
-      isSuper: true,
-    },
+  await upsertRole({
+    name: 'SuperAdmin',
+    slug: 'super-admin',
+    description: '超级管理员（审核权独享，ADR-017）',
+    permissions: ['*'],
+    isSuper: true,
   });
-  await prisma.role.upsert({
-    where: { slug: 'editor' },
-    update: {},
-    create: {
-      name: 'Editor',
-      slug: 'editor',
-      description: '编辑：内容与招生数据维护',
-      permissions: JSON.stringify([
-        'article:list', 'article:create', 'article:edit',
-        'category:list', 'category:create', 'category:edit',
-        'tag:list', 'tag:create', 'tag:edit',
-        'course:list', 'course:create', 'course:edit',
-        'major:list', 'major:create', 'major:edit',
-        'enrollment:list', 'enrollment:create', 'enrollment:edit',
-        'student:list', 'student:edit',
-        'banner:list', 'banner:edit',
-        'media:list', 'media:create',
-        'service:list', 'service:create', 'service:edit',
-        'content:list', 'content:edit',
-      ]),
-      isSuper: false,
-    },
+  await upsertRole({
+    name: 'Editor',
+    slug: 'editor',
+    description: '编辑：内容与招生数据维护',
+    permissions: [
+      'article:list', 'article:create', 'article:edit', 'article:publish',
+      'category:list', 'category:create', 'category:edit',
+      'tag:list', 'tag:create', 'tag:edit',
+      'course:list', 'course:create', 'course:edit',
+      'major:list', 'major:create', 'major:edit',
+      'enrollment:list', 'enrollment:create', 'enrollment:edit',
+      'student:list', 'student:edit',
+      'banner:list', 'banner:edit',
+      'media:list', 'media:create',
+      'service:list', 'service:create', 'service:edit',
+      // P04：P03 补入目录的内容生产链权限（内容中枢/采集/发布/知识库）；系统级（setting/log:delete/llm/wechat/notify）不授予编辑
+      'content:list', 'content:create', 'content:edit', 'content:delete',
+      'collect:list', 'collect:create', 'collect:edit', 'collect:delete',
+      'publish:list', 'publish:create', 'publish:edit',
+      'kb:list', 'kb:create', 'kb:edit', 'kb:delete',
+    ],
+    isSuper: false,
   });
-  await prisma.role.upsert({
-    where: { slug: 'viewer' },
-    update: {},
-    create: {
-      name: 'Viewer',
-      slug: 'viewer',
-      description: '只读',
-      permissions: JSON.stringify([
-        'article:list', 'category:list', 'tag:list', 'course:list',
-        'major:list', 'enrollment:list', 'student:list', 'media:list',
-        'banner:list', 'service:list', 'setting:list', 'log:list',
-      ]),
-      isSuper: false,
-    },
+  await upsertRole({
+    name: 'Viewer',
+    slug: 'viewer',
+    description: '只读',
+    permissions: [
+      'article:list', 'category:list', 'tag:list', 'course:list',
+      'major:list', 'enrollment:list', 'student:list', 'media:list',
+      'banner:list', 'service:list', 'setting:list', 'log:list',
+      // P04：只读角色补齐全部菜单的 list 权限（使每个菜单可见；不含任何写/删）
+      'navigation:list', 'partner:list', 'gallery:list', 'campus:list',
+      'content:list', 'collect:list', 'publish:list', 'kb:list', 'notify:list', 'llm:list', 'wechat:list',
+    ],
+    isSuper: false,
   });
 }
 
@@ -125,7 +166,10 @@ async function seedMenus() {
     { parent: 'group-system', code: 'settings', label: '站点设置', path: '/manager/settings', sort: 3, permission: 'setting:list' },
     { parent: 'group-system', code: 'logs', label: '操作日志', path: '/manager/logs', sort: 4, permission: 'log:list' },
     { parent: 'group-system', code: 'user-actions', label: '行为记录', path: '/manager/user-actions', sort: 5, permission: 'log:list' },
+    // P04：P03 新建页面 /manager/chat-history 的菜单（notify-rules 由 P07 建页时登记）
+    { parent: 'group-system', code: 'chat-history', label: '对话日志', path: '/manager/chat-history', sort: 6, permission: 'log:list' },
   ];
+  assertInCatalog([...top.map((m) => m.permission), ...children.map((c) => c.permission)], '菜单');
 
   for (const m of top) {
     await prisma.managerMenu.upsert({
@@ -414,12 +458,71 @@ async function seedNotifyDefaults() {
   }
 }
 
+/**
+ * ADR-024（取代 ADR-012）：页面模板 / 内容块 / 首页区块配置，按 main@94dbbbb prisma/seed.ts:451-485 恢复。
+ * - main 原 4 模板 + 4 内容块：字段逐字照搬，upsert update:{}（幂等，不覆盖后台修改）。
+ * - 另建 `home` 模板 + 首页 12 区块（code = P02 首页 `data-block` 锚点，顺序 = main 首页实际渲染顺序，默认全部启用）；
+ *   `home-banner` 复用 main 原有内容块行。TemplateBlock 以 (templateId, blockId) 查重后再建，重跑不重复。
+ * - ElementConfig 不种数据（main dev.db 为 0 行）。
+ */
+async function seedTemplatesAndBlocks() {
+  const templateData = [
+    { code: 'list', name: '列表页模板', layout: 'sidebar', contentType: 'article', templateFile: 'app/(web)/templates/list.tsx', isDefault: true },
+    { code: 'article', name: '文章详情页模板', layout: 'sidebar', contentType: 'article', templateFile: 'app/(web)/templates/article.tsx' },
+    { code: 'partner-grid', name: '合作院校网格模板', layout: 'fullwidth', contentType: 'partner', templateFile: 'app/(web)/templates/partner-grid.tsx' },
+    { code: 'course-list', name: '课程列表模板', layout: 'sidebar', contentType: 'course', templateFile: 'app/(web)/templates/course-list.tsx' },
+    { code: 'home', name: '首页模板', description: '首页区块配置（ADR-024）：TemplateBlock.sort 决定顺序，ContentBlock.status 决定启用', layout: 'fullwidth', templateFile: 'app/(web)/page.tsx' },
+  ];
+  for (const t of templateData) {
+    await prisma.pageTemplate.upsert({ where: { code: t.code }, update: {}, create: t });
+  }
+
+  const blockData = [
+    { code: 'home-banner', name: '首页轮播图', type: 'banner', contentType: 'query', query: JSON.stringify({ model: 'Banner', where: { status: 'active' }, orderBy: { sort: 'asc' } }), limit: 5 },
+    { code: 'news-list', name: '新闻列表', type: 'list', contentType: 'query', query: JSON.stringify({ model: 'Article', where: { status: 'published' }, orderBy: { publishedAt: 'desc' } }), limit: 10 },
+    { code: 'sidebar-hot', name: '侧边栏热门文章', type: 'sidebar', contentType: 'query', query: JSON.stringify({ model: 'Article', where: { isHot: true }, take: 10 }), style: JSON.stringify({ bgColor: '#f9f9f9', padding: '15px' }) },
+    { code: 'course-recommend', name: '推荐课程', type: 'grid', contentType: 'query', query: JSON.stringify({ model: 'Course', where: { status: 'active' }, orderBy: { sort: 'asc' } }), limit: 6 },
+    // 首页区块（name/type 取 main src/lib/block-registry.ts，registry 未列出的按组件语义补齐）
+    { code: 'home-cards', name: '四宫格入口', type: 'grid', contentType: 'query' },
+    { code: 'home-topbar', name: '顶部通知栏', type: 'banner', contentType: 'settings' },
+    { code: 'home-entrance', name: '三栏内容区', type: 'list', contentType: 'query' },
+    { code: 'home-stats', name: '统计横幅', type: 'stats', contentType: 'settings' },
+    { code: 'home-partners', name: '合作院校', type: 'grid', contentType: 'query' },
+    { code: 'home-courses', name: '热门课程', type: 'list', contentType: 'query' },
+    { code: 'home-intro', name: '公司简介', type: 'intro', contentType: 'settings' },
+    { code: 'home-news', name: '最新资讯', type: 'list', contentType: 'query' },
+    { code: 'home-certificates', name: '证书风采', type: 'grid', contentType: 'query' },
+    { code: 'home-campus', name: '学院风采', type: 'grid', contentType: 'query' },
+    { code: 'home-cta', name: '报名行动号召', type: 'cta', contentType: 'static' },
+  ];
+  for (const b of blockData) {
+    await prisma.contentBlock.upsert({ where: { code: b.code }, update: {}, create: b });
+  }
+
+  // 首页区块顺序 = src/app/(web)/page.tsx HOME_BLOCK_ORDER（= main 首页实际顺序）
+  const HOME_ORDER = [
+    'home-banner', 'home-cards', 'home-topbar', 'home-entrance', 'home-stats', 'home-partners',
+    'home-courses', 'home-intro', 'home-news', 'home-certificates', 'home-campus', 'home-cta',
+  ];
+  const home = await prisma.pageTemplate.findUnique({ where: { code: 'home' } });
+  if (!home) throw new Error('seed: home 模板缺失');
+  for (const [i, code] of HOME_ORDER.entries()) {
+    const block = await prisma.contentBlock.findUnique({ where: { code } });
+    if (!block) throw new Error(`seed: 内容块缺失 ${code}`);
+    const exists = await prisma.templateBlock.findFirst({ where: { templateId: home.id, blockId: block.id } });
+    if (!exists) {
+      await prisma.templateBlock.create({ data: { templateId: home.id, blockId: block.id, sort: (i + 1) * 10 } });
+    }
+  }
+}
+
 async function main() {
   console.log('seed: 开始写入基线数据…');
   await seedRoles();
   await seedAdmin();
   await seedMenus();
   await seedFrontNavigation();
+  await seedTemplatesAndBlocks();
   await seedSettings();
   await seedCategoriesAndTags();
   await seedArticles();

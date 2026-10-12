@@ -1,0 +1,2 @@
+catalog=96 menus=40 (with path 34) roles=3
+OK: 菜单 path ↔ 页面、菜单权限 ∈ 目录、角色权限 ⊆ 目录 全部一致
