@@ -1,0 +1,143 @@
+
+ RUN  v3.2.7 /workspace/work/HDwebsite
+
+ ❯ src/lib/__tests__/wechat-chat.test.ts (3 tests | 3 skipped) 374ms
+   ↓ 公众号 AI 客服 > 带入场景 systemPrompt、知识上下文、场景模型与会话历史
+   ↓ 公众号 AI 客服 > 模型不可用 → Setting 兜底文案（引用 contactPhone）
+   ↓ 公众号 AI 客服 > src/lib 无硬编码电话/域名
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/block-registry.test.ts [ src/lib/__tests__/block-registry.test.ts ]
+Error: Cannot find module '@/lib/block-registry' imported from '/workspace/work/HDwebsite/src/lib/__tests__/block-registry.test.ts'.
+
+- If you rely on tsconfig.json's "paths" to resolve modules, please install "vite-tsconfig-paths" plugin to handle module resolution.
+- Make sure you don't have relative aliases in your Vitest config. Use absolute paths instead. Read more: https://vitest.dev/guide/common-errors
+ ❯ src/lib/__tests__/block-registry.test.ts:15:1
+     13| import { prisma } from "@/lib/prisma";
+     14| import { cleanupTestDb, createActor, ctx, initTestDb, json, req } from…
+     15| import { DEFAULT_HOME_BLOCK_ORDER, getBlockDefinition, getBlockRegistr…
+       | ^
+     16| import * as blocksList from "@/app/api/content-blocks/route";
+     17| import * as blocksOne from "@/app/api/content-blocks/[id]/route";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/lib/__tests__/collect-autokb.test.ts [ src/lib/__tests__/collect-autokb.test.ts ]
+Error: Cannot find module '@/lib/kb-sync' imported from '/workspace/work/HDwebsite/src/lib/__tests__/collect-autokb.test.ts'.
+
+- If you rely on tsconfig.json's "paths" to resolve modules, please install "vite-tsconfig-paths" plugin to handle module resolution.
+- Make sure you don't have relative aliases in your Vitest config. Use absolute paths instead. Read more: https://vitest.dev/guide/common-errors
+ ❯ src/lib/__tests__/collect-autokb.test.ts:19:1
+     17| import { runSource } from "@/lib/collect-engine";
+     18| import { searchLocal } from "@/lib/kb-adapter";
+     19| import { pendingKbSync, processKbSyncQueue, registerKbRemoteAdapter } …
+       | ^
+     20| 
+     21| let server: http.Server;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/lib/__tests__/content-review.test.ts [ src/lib/__tests__/content-review.test.ts ]
+Error: Cannot find module '@/app/api/content-items/[id]/review/route' imported from '/workspace/work/HDwebsite/src/lib/__tests__/content-review.test.ts'.
+
+- If you rely on tsconfig.json's "paths" to resolve modules, please install "vite-tsconfig-paths" plugin to handle module resolution.
+- Make sure you don't have relative aliases in your Vitest config. Use absolute paths instead. Read more: https://vitest.dev/guide/common-errors
+ ❯ src/lib/__tests__/content-review.test.ts:16:1
+     14| import { PUT as itemPUT } from "@/app/api/content-items/[id]/route";
+     15| import { POST as itemPOST } from "@/app/api/content-items/route";
+     16| import { POST as reviewPOST } from "@/app/api/content-items/[id]/revie…
+       | ^
+     17| 
+     18| let SUPER = "";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/lib/__tests__/notify-before-publish.test.ts [ src/lib/__tests__/notify-before-publish.test.ts ]
+Error: Cannot find module '@/lib/error-notify' imported from '/workspace/work/HDwebsite/src/lib/__tests__/notify-before-publish.test.ts'.
+
+- If you rely on tsconfig.json's "paths" to resolve modules, please install "vite-tsconfig-paths" plugin to handle module resolution.
+- Make sure you don't have relative aliases in your Vitest config. Use absolute paths instead. Read more: https://vitest.dev/guide/common-errors
+ ❯ src/lib/__tests__/notify-before-publish.test.ts:30:1
+     28| import { publishScan } from "@/lib/publish-executor";
+     29| import { llmBalanceCheck } from "@/lib/notify-gateway";
+     30| import { installApiErrorNotifier } from "@/lib/error-notify";
+       | ^
+     31| import { withApi } from "@/lib/api-handler";
+     32| import { registerJob, scanOnce } from "@/lib/scheduler";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/lib/__tests__/publish-state-machine.test.ts [ src/lib/__tests__/publish-state-machine.test.ts ]
+Error: Cannot find module '@/contracts/events' imported from '/workspace/work/HDwebsite/src/lib/__tests__/publish-state-machine.test.ts'.
+
+- If you rely on tsconfig.json's "paths" to resolve modules, please install "vite-tsconfig-paths" plugin to handle module resolution.
+- Make sure you don't have relative aliases in your Vitest config. Use absolute paths instead. Read more: https://vitest.dev/guide/common-errors
+ ❯ src/lib/__tests__/publish-state-machine.test.ts:3:1
+      1| /** P06 评审 #7：发布任务/内容状态机——全部合法与非法迁移 */
+      2| import { describe, expect, it } from "vitest";
+      3| import {
+       | ^
+      4|   PUBLISH_JOB_STATUSES,
+      5|   PUBLISH_TRANSITIONS,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/lib/__tests__/wechat-chat.test.ts [ src/lib/__tests__/wechat-chat.test.ts ]
+PrismaClientValidationError: 
+Invalid `prisma.chatScene.create()` invocation in
+/workspace/work/HDwebsite/src/lib/__tests__/wechat-chat.test.ts:36:40
+
+  33 beforeAll(async () => {
+  34   await initTestDb();
+  35   providerId = (await prisma.lLMProvider.create({ data: { name: "场景模型", endpoint: "http://x", apiKey: "k", model: "m" } })).id;
+→ 36   const scene = await prisma.chatScene.create({
+         data: {
+           code: "wechat",
+           name: "公众号客服",
+           greeting: "你好",
+           systemPrompt: "你是公众号场景客服SCENEPROMPT",
+           knowledgeTags: "报名",
+           llmProviderId: 1,
+           ~~~~~~~~~~~~~
+       ?   description?: String | Null,
+       ?   baseIds?: String | Null,
+       ?   starters?: String | Null,
+       ?   pageTitle?: String | Null,
+       ?   pageSubtitle?: String | Null,
+       ?   headerTip?: String | Null,
+       ?   sidebarTitle?: String | Null,
+       ?   processSteps?: String | Null,
+       ?   promiseList?: String | Null,
+       ?   contactCardTitle?: String | Null,
+       ?   useKnowledgeBase?: Boolean,
+       ?   status?: String,
+       ?   sort?: Int,
+       ?   createdAt?: DateTime,
+       ?   updatedAt?: DateTime,
+       ?   wechatAccounts?: WechatAccountCreateNestedManyWithoutSceneInput
+         }
+       })
+
+Unknown argument `llmProviderId`. Available options are marked with ?.
+ ❯ throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:46:9
+ ❯ vn.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:212:7
+ ❯ vn.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:12
+ ❯ vn.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:12
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:24
+ ❯ src/lib/__tests__/wechat-chat.test.ts:36:17
+     34|   await initTestDb();
+     35|   providerId = (await prisma.lLMProvider.create({ data: { name: "场景模型"…
+     36|   const scene = await prisma.chatScene.create({
+       |                 ^
+     37|     data: { code: "wechat", name: "公众号客服", greeting: "你好", systemPromp…
+     38|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  3 skipped (3)
+   Start at  15:46:20
+   Duration  18.42s (transform 811ms, setup 0ms, collect 404ms, tests 374ms, environment 1ms, prepare 1.70s)
+

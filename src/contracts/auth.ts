@@ -81,6 +81,8 @@ export const permissionCatalog = {
   notify: ["list", "create", "edit", "delete"],
   wechat: ["list", "edit"],
   review: ["edit"],
+  // P06 / ADR-024：首页区块配置（content-blocks/page-templates/template-blocks/element-configs）
+  block: ["list", "create", "edit", "delete"],
 } as const;
 
 export type PermissionAction =

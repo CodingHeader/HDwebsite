@@ -570,11 +570,16 @@ model Knowledge {
   externalUrl String?
   priority    Int     @default(0)
   status      String  @default("active") // active/inactive
+  // P06：远端知识库同步队列（pending → synced | failed；local = 不推送）。适配器由 P12（Coze）注册
+  syncStatus  String  @default("local")
+  syncErr     String?
+  syncedAt    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
+  @@index([syncStatus])
 }
 
 model ChatScene {
@@ -597,6 +602,8 @@ model ChatScene {
   promiseList      String?
   contactCardTitle String?
   useKnowledgeBase Boolean @default(true)
+  // P06：场景专属模型（LLMProvider.id，空 = 网关默认路由）；不建外键以免 SQLite 整表重建
+  llmProviderId    Int?
   status           String  @default("active")
   sort             Int     @default(0)
 
@@ -777,6 +784,9 @@ model CollectSource {
   // JSON 数组：自动标签
   autoTags   String?
   enabled    Boolean   @default(true)
+  // P06：新条目默认入知识库（M-8）；autoApprove = 超管预授权直接通过（ADR-017 附注，默认关）
+  autoToKb    Boolean  @default(true)
+  autoApprove Boolean  @default(false)
   lastRunAt  DateTime?
   lastStatus String?
   errMsg     String?
@@ -824,6 +834,7 @@ model CollectItem {
   publishTime DateTime?
   status      String        @default("new") // new/approved/rejected/imported
   knowledgeId Int? // 本地兜底入库回链（Knowledge.id，ADR-020）
+  kbSyncedAt  DateTime? // P06：远端知识库（Coze，P12）同步完成时间
 
   contentItem ContentItem?
 

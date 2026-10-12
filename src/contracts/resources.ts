@@ -217,6 +217,8 @@ export const chatSceneCreateSchema = z.object({
   baseIds: z.string().max(500).nullable().optional().nullable(),
   starters: z.string().max(2000).nullable().optional().nullable(),
   useKnowledgeBase: z.boolean().default(true),
+  // P06：场景专属模型（空 = 走网关默认路由：isDefault → priority → isFallback）
+  llmProviderId: z.coerce.number().int().positive().nullable().optional(),
   sort: sortStatus.sort,
   status: z.enum(["active", "archived"]).default("active"),
 });
@@ -239,7 +241,11 @@ export const contentItemCreateSchema = z.object({
   coverImage: z.string().max(500).nullable().optional().nullable(),
   tags: z.array(z.string().max(50)).default([]),
   source: z.enum(["manual", "collect"]).default("manual"),
-  status: z.enum(["draft", "pending_review", "approved", "published", "offline"]).default("draft"),
+  // P06 / ADR-017：通用 CRUD 只允许编辑态；approved/rejected 走 POST /api/content-items/[id]/review（review:edit），
+  // published 只由发布执行器写入
+  status: z
+    .enum(["draft", "pending_review", "offline"], { message: "状态只能是 draft/pending_review/offline（审核与发布走专用端点）" })
+    .default("draft"),
 });
 
 // ── 通知（SOL-005） ─────────────────────────────────────────
@@ -270,9 +276,17 @@ export const collectSourceCreateSchema = z.object({
   type: z.enum(["html", "rss"]).default("html"),
   url: z.string().url("URL 格式不正确"),
   parser: z.string().max(2000).nullable().optional().nullable(),
-  cron: z.string().min(5).max(50).default("0 4 * * *"),
+  // 空串 = 仅手动执行（P06：调度器跳过空 cron）
+  cron: z
+    .string()
+    .max(50)
+    .refine((v) => v.trim() === "" || v.trim().split(/\s+/).length >= 5, "Cron 表达式至少 5 段，或留空表示仅手动执行")
+    .default("0 4 * * *"),
   autoTags: z.array(z.string()).default([]),
   enabled: z.boolean().default(true),
+  // P06：新条目默认入知识库（M-8）；autoApprove=超管预授权直接通过（默认关闭，ADR-017 附注）
+  autoToKb: z.boolean().default(true),
+  autoApprove: z.boolean().default(false),
 });
 
 export const collectItemUpdateSchema = z.object({
