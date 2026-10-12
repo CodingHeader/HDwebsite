@@ -1,201 +1,189 @@
+import { Fragment, type ReactNode } from "react";
+import { TopBanner } from "@/components/web/TopBanner";
+import { Banner } from "@/components/web/Banner";
+import { FourCards } from "@/components/web/FourCards";
+import { TopEntranceSection } from "@/components/web/TopEntranceSection";
+import { StatsBanner } from "@/components/web/StatsBanner";
+import { PartnerUniversities } from "@/components/web/PartnerUniversities";
+import { CourseSectionNew } from "@/components/web/CourseSectionNew";
+import { CompanyIntro } from "@/components/web/CompanyIntro";
+import { NewsCenter } from "@/components/web/NewsCenter";
+import { CertificateGallery } from "@/components/web/CertificateGallery";
+import { CampusSection } from "@/components/web/CampusSection";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { getSettings } from "@/lib/settings";
-import { isTruthySetting } from "@/lib/settings-registry";
-import type { Article, HomeCard, HotMajor, Partner, Course, Category, Gallery, Campus } from ".prisma/client";
+import { getHomeData, type HomeData } from "@/components/web/data/home";
 
+// 强制每次请求动态渲染，保证后台 CMS（服务指南/轮播图/热门专业等）改动后前台立即生效
 export const dynamic = "force-dynamic";
 
+/**
+ * 首页区块（ADR-024）：区块数组 → 依次渲染。
+ * - code 与 main `src/lib/block-registry.ts` 命名风格一致（home-xxx），最外层 `data-block` 为稳定锚点；
+ * - 本方向（P02）顺序固定为 main 原样；P06 起由区块配置（PageTemplate/ContentBlock）决定启用与顺序。
+ * - 视觉与 main 逐字一致：包裹层为无样式 div，不改变任何区块的盒模型。
+ */
+const HOME_BLOCK_ORDER = [
+  "home-banner",
+  "home-cards",
+  "home-topbar",
+  "home-entrance",
+  "home-stats",
+  "home-partners",
+  "home-courses",
+  "home-intro",
+  "home-news",
+  "home-certificates",
+  "home-campus",
+  "home-cta",
+] as const;
+
+type HomeBlockCode = (typeof HOME_BLOCK_ORDER)[number];
+
+type HomeBlock = { code: HomeBlockCode; render: (d: HomeData) => ReactNode };
+
+const HOME_BLOCKS: HomeBlock[] = [
+  {
+    // Layer 5: Banner轮播 [005-001~030] 30交互点
+    code: "home-banner",
+    render: (d) => (
+      <div data-block="home-banner">
+        <Banner banners={d.banners} settings={d.bannerSettings} />
+      </div>
+    ),
+  },
+  {
+    // Layer 4: 四宫格入口 [004-001~034] 34交互点
+    code: "home-cards",
+    render: (d) => (
+      <div data-block="home-cards">
+        <FourCards cards={d.homeCards} showOverlay={d.cardShowOverlay} />
+      </div>
+    ),
+  },
+  {
+    // Layer 2.5: 顶部横幅 - 位于四宫格后、三栏入口前
+    code: "home-topbar",
+    render: (d) => (
+      <div data-block="home-topbar">
+        <TopBanner noticeText={d.topNoticeText} noticePhone={d.topNoticePhone} />
+      </div>
+    ),
+  },
+  {
+    // Layer 6: 三栏内容区 [006-001~156] 156交互点
+    code: "home-entrance",
+    render: (d) => (
+      <div data-block="home-entrance">
+        <TopEntranceSection news={d.entranceNews} serviceGuides={d.serviceGuides} />
+      </div>
+    ),
+  },
+  {
+    // 统计横幅
+    code: "home-stats",
+    render: (d) => (
+      <div data-block="home-stats">
+        <StatsBanner years={d.years} graduates={d.graduates} advantages={d.advantages} />
+      </div>
+    ),
+  },
+  {
+    // 招生院校
+    code: "home-partners",
+    render: (d) => (
+      <div data-block="home-partners">
+        <PartnerUniversities partners={d.partners} />
+      </div>
+    ),
+  },
+  {
+    // 热门专业
+    code: "home-courses",
+    render: (d) => (
+      <div data-block="home-courses">
+        <CourseSectionNew hotMajors={d.hotMajors} />
+      </div>
+    ),
+  },
+  {
+    // 公司简介
+    code: "home-intro",
+    render: (d) => (
+      <div data-block="home-intro">
+        <CompanyIntro videoUrl={d.intro.videoUrl} introText={d.intro.introText} slogan={d.intro.slogan} />
+      </div>
+    ),
+  },
+  {
+    // 资讯中心
+    code: "home-news",
+    render: (d) => (
+      <div data-block="home-news">
+        <NewsCenter news={d.centerNews} />
+      </div>
+    ),
+  },
+  {
+    // 证书风采
+    code: "home-certificates",
+    render: (d) => (
+      <div data-block="home-certificates">
+        <CertificateGallery items={d.gallery} placeholderImage={d.placeholderImage} />
+      </div>
+    ),
+  },
+  {
+    // 学院风采
+    code: "home-campus",
+    render: (d) => (
+      <div data-block="home-campus">
+        <CampusSection campuses={d.campuses} placeholderImage={d.placeholderImage} />
+      </div>
+    ),
+  },
+  {
+    // Contact CTA
+    code: "home-cta",
+    render: (d) => (
+      <div data-block="home-cta">
+        <section className="py-16 bg-[#da251d]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              立即开始您的学历提升之旅
+            </h2>
+            <p className="text-white/80 mb-8 max-w-xl mx-auto">
+              咨询热线：{d.ctaPhone}，专业顾问为您提供一对一咨询服务
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/apply">
+                <Button size="lg" variant="secondary" className="bg-white text-[#da251d] hover:bg-gray-100">
+                  在线报名
+                </Button>
+              </Link>
+              <Link href="/courses">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                  了解课程
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+    ),
+  },
+];
+
 export default async function HomePage() {
-  const [settings, banners, cards, hotMajors, courses, articles, partners, gallery, campus] = await Promise.all([
-    getSettings(),
-    prisma.banner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 5 }),
-    prisma.homeCard.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 4 }) as Promise<HomeCard[]>,
-    prisma.hotMajor.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 6 }) as Promise<HotMajor[]>,
-    prisma.course.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 6, include: { category: true } }),
-    prisma.article.findMany({ where: { status: "published" }, orderBy: [{ isTop: "desc" }, { publishedAt: "desc" }], take: 6 }) as Promise<(Article & { category: Category | null })[]>,
-    prisma.partner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 12 }) as Promise<Partner[]>,
-    prisma.gallery.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 6 }) as Promise<Gallery[]>,
-    prisma.campus.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 3, include: { images: { orderBy: { sort: "asc" }, take: 1 } } }) as Promise<(Campus & { images: { image: string }[] })[]>,
-  ]);
+  const data = await getHomeData();
+  const byCode = new Map(HOME_BLOCKS.map((b) => [b.code, b]));
 
   return (
     <div>
-      {/* 轮播/横幅 */}
-      <section className="bg-gradient-to-r from-blue-700 to-blue-500 text-white">
-        <div className="mx-auto max-w-6xl px-4 py-20">
-          <h1 className="text-4xl font-bold">{settings.bannerTitle || "学历提升 一站式服务"}</h1>
-          <p className="mt-4 text-lg opacity-90">{settings.bannerSubtitle || "自考 · 成考 · 开放大学"}</p>
-          {isTruthySetting(settings.bannerShowContent) && (
-            <Link href={settings.bannerBtnLink || "/apply"} className="mt-8 inline-block rounded-md bg-white px-6 py-3 font-semibold text-blue-700 hover:bg-blue-50">
-              {settings.bannerBtnText || "立即咨询"}
-            </Link>
-          )}
-        </div>
-      </section>
-
-      {/* 四宫格 */}
-      {cards.length > 0 && (
-        <section className="mx-auto -mt-8 max-w-6xl px-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {cards.map((c) => (
-              <Link
-                key={c.id}
-                href={c.href ?? "/apply"}
-                className="rounded-lg p-6 text-white shadow-md transition-transform hover:-translate-y-1"
-                style={{ background: c.gradient ?? "#1d4ed8" }}
-              >
-                <p className="text-lg font-bold">{c.title}</p>
-                <p className="mt-1 text-sm opacity-90">{c.subtitle}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 统计 */}
-      <section className="mx-auto max-w-6xl px-4 py-12 text-center">
-        <div className="grid gap-6 sm:grid-cols-3">
-          {(settings.statsText || "11年办学经验|10000+服务学员|98%通过率").split("|").map((item) => (
-            <div key={item}>
-              <p className="text-2xl font-bold text-primary">{item}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 热门专业 */}
-      {hotMajors.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 py-6">
-          <h2 className="text-2xl font-bold">热门专业</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {hotMajors.map((m) => (
-              <Link key={m.id} href={m.majorId ? `/courses` : m.link} className="rounded-lg border border-border bg-card p-5 hover:border-primary">
-                <p className="font-semibold">{m.title}</p>
-                <p className="mt-1 text-sm text-muted">{m.subtitle} · {m.duration}</p>
-                <p className="mt-2 text-sm line-clamp-2 text-muted">{m.description}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 课程 */}
-      {courses.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 py-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">学历提升课程</h2>
-            <Link href="/courses" className="text-sm text-primary hover:underline">查看全部 →</Link>
-          </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((c) => (
-              <Link key={c.id} href={`/courses/${c.id}`} className="rounded-lg border border-border bg-card p-5 hover:border-primary">
-                {c.cover && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.cover} alt={c.title} className="mb-3 h-36 w-full rounded object-cover" loading="lazy" />
-                )}
-                <p className="font-semibold">{c.title}</p>
-                <p className="mt-1 text-sm text-muted">{c.category?.name}</p>
-                <p className="mt-2 text-primary">{c.priceText || (c.price > 0 ? `¥${c.price}` : "咨询报价")}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 资讯 */}
-      <section className="mx-auto max-w-6xl px-4 py-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">最新资讯</h2>
-          <Link href="/articles" className="text-sm text-primary hover:underline">查看全部 →</Link>
-        </div>
-        {articles.length === 0 ? (
-          <p className="mt-6 text-muted">暂无内容</p>
-        ) : (
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((a) => (
-              <li key={a.id} className="rounded-lg border border-border bg-card p-5">
-                <Link href={`/articles/${a.id}`}>
-                  <h3 className="font-semibold hover:text-primary">{a.title}</h3>
-                  <p className="mt-2 text-sm text-muted line-clamp-3">{a.excerpt}</p>
-                  <p className="mt-3 text-xs text-muted">
-                    {a.category?.name}
-                    {a.publishedAt ? ` · ${a.publishedAt.toISOString().slice(0, 10)}` : ""}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* 合作院校 */}
-      {partners.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 py-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">合作院校</h2>
-            <Link href="/partners" className="text-sm text-primary hover:underline">全部院校 →</Link>
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-            {partners.map((p) => (
-              <div key={p.id} className="flex h-20 items-center justify-center rounded-lg border border-border bg-card p-2">
-                {p.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.logo} alt={p.name} className="max-h-full object-contain" loading="lazy" />
-                ) : (
-                  <span className="text-center text-xs text-muted">{p.name}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 证书 + 校区 */}
-      <section className="mx-auto max-w-6xl px-4 py-6">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div>
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">证书风采</h2>
-              <Link href="/gallery" className="text-sm text-primary hover:underline">更多 →</Link>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {gallery.slice(0, 6).map((g) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={g.id} src={g.image} alt={g.title} className="h-24 w-full rounded-lg object-cover" loading="lazy" />
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">校区环境</h2>
-              <Link href="/campus" className="text-sm text-primary hover:underline">更多 →</Link>
-            </div>
-            <div className="mt-4 space-y-3">
-              {campus.map((c) => (
-                <div key={c.id} className="flex items-center gap-4 rounded-lg border border-border bg-card p-3">
-                  {c.images[0] && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.images[0].image} alt={c.name} className="h-16 w-24 rounded object-cover" loading="lazy" />
-                  )}
-                  <div>
-                    <p className="font-semibold">{c.name}</p>
-                    <p className="text-sm text-muted">{c.address}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 公司简介 */}
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        <div className="rounded-xl bg-card p-8">
-          <h2 className="text-2xl font-bold">{settings.companySlogan}</h2>
-          <p className="mt-4 leading-7 text-muted">{settings.companyIntro}</p>
-        </div>
-      </section>
+      {HOME_BLOCK_ORDER.map((code) => {
+        const block = byCode.get(code);
+        return block ? <Fragment key={code}>{block.render(data)}</Fragment> : null;
+      })}
     </div>
   );
 }
