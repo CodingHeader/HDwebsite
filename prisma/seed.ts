@@ -84,6 +84,8 @@ async function seedRoles() {
       'collect:list', 'collect:create', 'collect:edit', 'collect:delete',
       'publish:list', 'publish:create', 'publish:edit',
       'kb:list', 'kb:create', 'kb:edit', 'kb:delete',
+      // P06：首页区块配置（ADR-024）——编辑可调整区块开关/顺序，不可增删区块与模板
+      'block:list', 'block:edit',
     ],
     isSuper: false,
   });
@@ -98,6 +100,7 @@ async function seedRoles() {
       // P04：只读角色补齐全部菜单的 list 权限（使每个菜单可见；不含任何写/删）
       'navigation:list', 'partner:list', 'gallery:list', 'campus:list',
       'content:list', 'collect:list', 'publish:list', 'kb:list', 'notify:list', 'llm:list', 'wechat:list',
+      'block:list',
     ],
     isSuper: false,
   });
@@ -462,7 +465,13 @@ async function seedNotifyDefaults() {
     const existing = await prisma.notifyRule.findUnique({ where: { event } });
     if (!existing) {
       await prisma.notifyRule.create({
-        data: { event, enabled: true, templateId: defaultTemplate.id, recipientGroups: '["publish"]' },
+        // P06：错误/余额/任务失败类提醒同时发给 admin 组（多收件人）；发布前提醒发 publish 组
+        data: {
+          event,
+          enabled: true,
+          templateId: defaultTemplate.id,
+          recipientGroups: ['system_error', 'job_failed', 'llm_balance_low', 'collect_failed'].includes(event) ? '["publish","admin"]' : '["publish"]',
+        },
       });
     }
   }

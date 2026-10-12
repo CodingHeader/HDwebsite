@@ -9,7 +9,8 @@
 import { prisma } from "@/lib/prisma";
 import { created, error, notFound, success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
-import { badRequest, parseBody, parseId, parseQuery, withApi } from "@/lib/api-handler";
+import { ApiHttpError, parseBody, parseId, parseQuery, withApi } from "@/lib/api-handler";
+import { ZodError } from "zod";
 import { listQuerySchema } from "@/contracts";
 import type { z } from "zod";
 import type { Prisma } from ".prisma/client";
@@ -35,10 +36,12 @@ export type CrudSpec = {
   createSchema?: z.ZodObject<z.ZodRawShape>;
   /** 更新 schema（默认 createSchema.partial()） */
   updateSchema?: z.ZodObject<z.ZodRawShape>;
-  /** 创建前钩子（如 slug 生成、密码哈希）；抛错即 400 */
+  /** 创建前钩子（如 slug 生成、密码哈希）；抛 badRequest()/ZodError 即 400，其余异常 500 */
   beforeCreate?: (input: AnyRecord, session: { id: number; username: string }) => Promise<AnyRecord>;
   /** 更新前钩子 */
   beforeUpdate?: (input: AnyRecord, existing: AnyRecord) => Promise<AnyRecord>;
+  /** 列表行收尾（如补关联标题）；在分页查询后执行 */
+  mapList?: (rows: AnyRecord[]) => Promise<AnyRecord[]>;
   /** 创建数据收尾（authorId 等） */
   extraCreate?: (session: { id: number }) => AnyRecord;
   /** 资源中文名（日志与错误文案） */
@@ -89,8 +92,9 @@ export function crudList(spec: CrudSpec) {
         }),
         delegate(spec.model).count({ where }),
       ]);
+      const rows = spec.mapList ? await spec.mapList(list as AnyRecord[]) : list;
       return success(
-        { list, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
+        { list: rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } },
         `获取${spec.label}列表成功`
       );
     },
@@ -146,7 +150,11 @@ export function crudUpdate(spec: CrudSpec) {
       const id = parseId(params.id);
       if (!spec.updateSchema && !spec.createSchema) return error(`${spec.label}不支持更新`, 400);
       const updateSchema = spec.updateSchema ?? spec.createSchema!.partial();
-      const input = await parseBody(request, updateSchema);
+      const raw = await request.clone().json().catch(() => null);
+      const parsedInput = (await parseBody(request, updateSchema)) as AnyRecord;
+      // P06：zod v4 的 partial() 仍会套用字段默认值（如 status→draft、tags→[]），部分更新只保留请求体里出现的键
+      const sentKeys = raw && typeof raw === "object" && !Array.isArray(raw) ? new Set(Object.keys(raw)) : null;
+      const input = sentKeys ? Object.fromEntries(Object.entries(parsedInput).filter(([k]) => sentKeys.has(k))) : parsedInput;
       const existing = await delegate(spec.model).findUnique({ where: { id } });
       if (!existing) return notFound(`${spec.label}不存在`);
       let data = input as AnyRecord;
@@ -202,14 +210,17 @@ export function crudDelete(spec: CrudSpec) {
   );
 }
 
-/** before* 钩子抛出的普通 Error 视为业务校验失败（400，沿用原"抛错即 400"约定） */
+/**
+ * before* 钩子异常映射（P06）：
+ * - ApiHttpError（badRequest 等）/ ZodError → 400（显式业务校验）
+ * - 其余（TypeError、Prisma、未知）原样抛出 → withApi：Prisma 已知码 400/404，其余 500 + onApiError 提醒
+ */
 async function runHook<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (err) {
-    const isPrisma = err instanceof Error && err.name.startsWith("PrismaClient");
-    const hasCode = typeof (err as { code?: unknown })?.code === "string";
-    if (err instanceof Error && !isPrisma && !hasCode) throw badRequest(err.message);
+    if (err instanceof ApiHttpError) throw err;
+    if (err instanceof ZodError) throw new ApiHttpError(400, "参数校验失败", err.issues);
     throw err;
   }
 }

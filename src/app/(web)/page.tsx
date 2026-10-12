@@ -13,6 +13,7 @@ import { CampusSection } from "@/components/web/CampusSection";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getHomeData, type HomeData } from "@/components/web/data/home";
+import { resolveHomeBlocks } from "@/lib/block-registry";
 
 // 强制每次请求动态渲染，保证后台 CMS（服务指南/轮播图/热门专业等）改动后前台立即生效
 export const dynamic = "force-dynamic";
@@ -20,7 +21,8 @@ export const dynamic = "force-dynamic";
 /**
  * 首页区块（ADR-024）：区块数组 → 依次渲染。
  * - code 与 main `src/lib/block-registry.ts` 命名风格一致（home-xxx），最外层 `data-block` 为稳定锚点；
- * - 本方向（P02）顺序固定为 main 原样；P06 起由区块配置（PageTemplate/ContentBlock）决定启用与顺序。
+ * - P06 起由区块配置决定启用与顺序：resolveHomeBlocks() 读 home 模板的 TemplateBlock（无配置回落 main 原样顺序）；
+ *   本文件只做组合（取舍/排序），区块 JSX 与 className 不变。
  * - 视觉与 main 逐字一致：包裹层为无样式 div，不改变任何区块的盒模型。
  */
 const HOME_BLOCK_ORDER = [
@@ -175,12 +177,13 @@ const HOME_BLOCKS: HomeBlock[] = [
 ];
 
 export default async function HomePage() {
-  const data = await getHomeData();
-  const byCode = new Map(HOME_BLOCKS.map((b) => [b.code, b]));
+  const [data, resolved] = await Promise.all([getHomeData(), resolveHomeBlocks()]);
+  const byCode = new Map<string, HomeBlock>(HOME_BLOCKS.map((b) => [b.code, b]));
+  const order = resolved.map((b) => b.code).filter((code) => byCode.has(code));
 
   return (
     <div>
-      {HOME_BLOCK_ORDER.map((code) => {
+      {order.map((code) => {
         const block = byCode.get(code);
         return block ? <Fragment key={code}>{block.render(data)}</Fragment> : null;
       })}

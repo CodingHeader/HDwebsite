@@ -30,6 +30,14 @@ import {
   collectSourceCreateSchema,
   publishJobCreateSchema,
 } from "@/contracts/resources";
+import {
+  contentBlockCreateSchema,
+  elementConfigCreateSchema,
+  pageTemplateCreateSchema,
+  templateBlockCreateSchema,
+} from "@/contracts/blocks";
+import { canTransitionContentItem } from "@/contracts/events";
+import { badRequest } from "@/lib/api-handler";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -56,6 +64,23 @@ function jsonifyArray(keys: string[]) {
     beforeUpdate: async (data: Record<string, unknown>) => conv(data),
   };
 }
+
+/** 对象/数组字段 → JSON 字符串（区块配置等 JSON-in-String 字段；已是字符串的原样保留） */
+function jsonifyFields(keys: string[]) {
+  const conv = (data: Record<string, unknown>) => {
+    for (const k of keys) {
+      const v = data[k];
+      if (v !== null && typeof v === "object") data[k] = JSON.stringify(v);
+    }
+    return data;
+  };
+  return {
+    beforeCreate: async (data: Record<string, unknown>) => conv(data),
+    beforeUpdate: async (data: Record<string, unknown>) => conv(data),
+  };
+}
+
+const contentItemTags = jsonifyArray(["tags"]);
 
 export const crudSpecs: Record<string, CrudSpec> = {
   categories: {
@@ -243,7 +268,16 @@ export const crudSpecs: Record<string, CrudSpec> = {
   },
   'content-items': {
     createSchema: contentItemCreateSchema,
-    ...jsonifyArray(["tags"]),
+    beforeCreate: contentItemTags.beforeCreate,
+    // P06：状态迁移须合法（contracts/events contentItemStatusTransitions）；approved/published 已在契约层拒绝
+    beforeUpdate: async (data, existing) => {
+      const to = data.status as string | undefined;
+      const from = existing.status as string;
+      if (to && to !== from && !canTransitionContentItem(from, to)) {
+        throw badRequest(`内容状态不能从 ${from} 变更为 ${to}`);
+      }
+      return contentItemTags.beforeUpdate(data);
+    },
     extraCreate: (session) => ({ authorId: session.id }),
     model: 'contentItem',
     permission: 'content',
@@ -297,6 +331,10 @@ export const crudSpecs: Record<string, CrudSpec> = {
     searchFields: [],
     filters: { channel: "string", status: "string" },
     orderBy: [{ id: "desc" }],
+    include: { item: { select: { id: true, title: true } } },
+    // P06：列表返回内容标题（无关联内容时回退"发布任务 #id"）
+    mapList: async (rows) =>
+      rows.map((r) => ({ ...r, title: (r.item as { title?: string } | null)?.title ?? `发布任务 #${r.id}` })),
     createSchema: publishJobCreateSchema,
   },
   "notify-records": {
@@ -333,5 +371,50 @@ export const crudSpecs: Record<string, CrudSpec> = {
     orderBy: [{ id: "desc" }],
   },
 };
+
+// ── ADR-024 区块配置（P06） ──
+Object.assign(crudSpecs, {
+  "page-templates": {
+    model: "pageTemplate",
+    permission: "block",
+    label: "页面模板",
+    searchFields: ["code", "name"],
+    filters: { status: "string" },
+    orderBy: [{ id: "asc" }],
+    createSchema: pageTemplateCreateSchema,
+    ...jsonifyFields(["config"]),
+  },
+  "content-blocks": {
+    model: "contentBlock",
+    permission: "block",
+    label: "内容区块",
+    searchFields: ["code", "name"],
+    filters: { status: "string", type: "string" },
+    orderBy: [{ id: "asc" }],
+    createSchema: contentBlockCreateSchema,
+    ...jsonifyFields(["query", "content", "style", "interactions"]),
+  },
+  "template-blocks": {
+    model: "templateBlock",
+    permission: "block",
+    label: "模板区块",
+    searchFields: [],
+    filters: { templateId: "number", blockId: "number" },
+    orderBy: [{ templateId: "asc" }, { sort: "asc" }, { id: "asc" }],
+    include: { block: { select: { id: true, code: true, name: true, status: true } }, template: { select: { id: true, code: true, name: true } } },
+    createSchema: templateBlockCreateSchema,
+    ...jsonifyFields(["config"]),
+  },
+  "element-configs": {
+    model: "elementConfig",
+    permission: "block",
+    label: "元素配置",
+    searchFields: ["elementId", "elementName", "layerName"],
+    filters: { layer: "number", status: "string", navigationId: "number" },
+    orderBy: [{ layer: "asc" }, { sort: "asc" }, { id: "asc" }],
+    createSchema: elementConfigCreateSchema,
+    ...jsonifyFields(["position", "interactions", "normalState", "hoverState", "activeState"]),
+  },
+} satisfies Record<string, CrudSpec>);
 
 export type { CrudSpec };
