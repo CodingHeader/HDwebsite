@@ -17,6 +17,11 @@ secrets/
 prisma/dev.db
 prisma/dev.db-journal
 prisma/dev.db.bak
+# E2E 独立数据库（P05，每次运行重建）
+prisma/e2e.db
+prisma/e2e.db-journal
+prisma/e2e.db-wal
+prisma/e2e.db-shm
 backups/
 
 # 运行时与临时（生命周期：Local/Temporary 绝不入库）

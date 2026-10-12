@@ -51,6 +51,9 @@ export default function ManagerPublishJobsPage() {
   const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(
     `/api/publish-jobs?page=${page}&limit=15${status ? `&status=${status}` : ""}`
   );
+  // 列表接口未 include 关联条目（后端 P06 跟进），前端用内容中枢标题补全显示
+  const itemsQ = useManagerQuery<{ list: { id: number; title: string }[] }>("/api/content-items?limit=100");
+  const titleOf = (j: Job) => j.item?.title ?? itemsQ.data?.list.find((c) => c.id === j.itemId)?.title ?? `#${j.itemId ?? "—"}`;
   const [creating, setCreating] = useState<FormValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -90,7 +93,7 @@ export default function ManagerPublishJobsPage() {
     if (act === "cancel") {
       const ok = await confirmDialog({
         title: `取消发布任务 #${job.id}？`,
-        description: `「${job.item?.title ?? "未关联内容"}」将不会被发布，之后可在列表中点「重试」重新排队。`,
+        description: `「${titleOf(job)}」将不会被发布，之后可在列表中点「重试」重新排队。`,
         confirmText: "取消任务",
         cancelText: "保留",
         danger: true,
@@ -122,6 +125,7 @@ export default function ManagerPublishJobsPage() {
       toast.success(toastCopy.created, creating.scheduledAt ? "已按排期加入队列" : "系统每分钟扫描执行");
       setCreating(null);
       void reload();
+      void itemsQ.reload();
     } catch (e) {
       const msg = errorMessage(e, "创建失败");
       setServerError(msg);
@@ -191,7 +195,7 @@ export default function ManagerPublishJobsPage() {
                 return (
                   <tr key={j.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
                     <td className={`${tableCls.td} max-w-[280px]`}>
-                      <span className="line-clamp-1" title={j.item?.title}>{j.item?.title ?? `#${j.itemId ?? "—"}`}</span>
+                      <span className="line-clamp-1" title={titleOf(j)}>{titleOf(j)}</span>
                     </td>
                     <td className={tableCls.td}>{j.channel === "website" ? "官网" : "公众号"}</td>
                     <td className={tableCls.td}>{ACTIONS[j.action] ?? j.action}</td>

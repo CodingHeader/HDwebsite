@@ -518,9 +518,10 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
       { key: "nickname", label: "昵称" },
       { key: "email", label: "邮箱" },
       { key: "phone", label: "电话" },
-      { key: "roleId", label: "角色 ID", type: "number", required: true },
+      { key: "roleId", label: "角色", type: "select", required: true },
       { key: "isActive", label: "启用", type: "switch" },
     ],
+    relations: { roleId: { endpoint: "roles", labelKey: "name" } },
   },
   roles: {
     title: "角色管理",

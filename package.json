@@ -19,7 +19,8 @@
     "db:seed": "ts-node prisma/seed.ts",
     "prisma.seed": "ts-node prisma/seed.ts",
     "test:visual": "playwright test tests/visual",
-    "visual:reference": "VISUAL_REF=1 playwright test tests/visual --update-snapshots"
+    "visual:reference": "VISUAL_REF=1 playwright test tests/visual --update-snapshots",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

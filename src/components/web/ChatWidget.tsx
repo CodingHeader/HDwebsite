@@ -3,10 +3,26 @@
 /**
  * ChatWidget（SOL-003）：全局可挂载 AI 客服，SSE 流式 + 会话续传（localStorage sessionId）
  * 默认右下角悬浮展开；场景 faq。
+ * P05（仅交互逻辑，样式/className 不变）：
+ * - 会话 id 持久化到 localStorage `hd_chat_session_id`（与 /apply 及 main 同键；兼容旧键 hd_session_id）
+ * - 会话恢复：最近 30 条消息存 localStorage，刷新/重开后恢复
+ * - 停止生成：流式输出中"发送"按钮变为"停止"，中断当前请求并保留已生成内容
+ * - 重试：上次请求失败且输入框为空时，按钮变为"重试"，重新发送上一条提问
  */
 import { useEffect, useRef, useState } from "react";
 
 type Msg = { role: "user" | "assistant"; content: string };
+
+const SESSION_KEY = "hd_chat_session_id";
+const LEGACY_SESSION_KEY = "hd_session_id";
+const HISTORY_KEY = "hd_chat_widget_messages";
+
+function ensureSessionId(): string {
+  let id = localStorage.getItem(SESSION_KEY) ?? localStorage.getItem(LEGACY_SESSION_KEY);
+  if (!id || id.length < 8) id = `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  localStorage.setItem(SESSION_KEY, id);
+  return id;
+}
 
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
@@ -14,25 +30,58 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
+  const [lastQuestion, setLastQuestion] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // 会话恢复：挂载时从 localStorage（外部系统）读取最近消息
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      const saved = raw ? (JSON.parse(raw) as Msg[]) : [];
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 挂载时从外部存储同步一次
+      if (Array.isArray(saved) && saved.length) setMessages(saved.filter((m) => m && typeof m.content === "string" && m.content));
+    } catch {
+      /* 存储损坏时忽略 */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (streaming) return;
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(messages.filter((m) => m.content).slice(-30)));
+    } catch {
+      /* 存储满/隐私模式时忽略 */
+    }
+  }, [messages, streaming]);
 
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, streaming]);
 
-  async function send() {
-    const text = input.trim();
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  function stop() {
+    abortRef.current?.abort();
+  }
+
+  async function send(retryText?: string) {
+    const text = (retryText ?? input).trim();
     if (!text || streaming) return;
-    setInput("");
+    if (!retryText) setInput("");
     setError("");
+    setLastQuestion(text);
     setMessages((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "" }]);
     setStreaming(true);
-    const sessionId = localStorage.getItem("hd_session_id") ?? `c-${Date.now().toString(36)}`;
+    const sessionId = ensureSessionId();
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
       const res = await fetch("/api/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, sceneCode: "faq", message: text }),
+        signal: controller.signal,
       });
       if (!res.ok || !res.body) {
         const errBody = (await res.json().catch(() => null)) as { message?: string } | null;
@@ -71,10 +120,24 @@ export function ChatWidget() {
         }
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "请求失败");
+      if (e instanceof DOMException && e.name === "AbortError") {
+        // 用户主动停止：保留已生成内容，不视为错误
+      } else {
+        setError(e instanceof Error ? e.message : "请求失败");
+      }
     } finally {
+      abortRef.current = null;
       setStreaming(false);
+      // 去掉未生成任何内容的空回复气泡
+      setMessages((m) => (m.length && m[m.length - 1].role === "assistant" && !m[m.length - 1].content ? m.slice(0, -1) : m));
     }
+  }
+
+  const canRetry = !streaming && !!error && !input.trim() && !!lastQuestion;
+  function onPrimary() {
+    if (streaming) stop();
+    else if (canRetry) void send(lastQuestion);
+    else void send();
   }
 
   return (
@@ -104,11 +167,14 @@ export function ChatWidget() {
               value={input}
               placeholder="输入您的问题…"
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) void send();
+                else if (e.key === "Escape") setOpen(false);
+              }}
               disabled={streaming}
             />
-            <button onClick={send} disabled={streaming || !input.trim()} className="rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
-              发送
+            <button onClick={onPrimary} disabled={!streaming && !canRetry && !input.trim()} className="rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+              {streaming ? "停止" : canRetry ? "重试" : "发送"}
             </button>
           </div>
         </div>

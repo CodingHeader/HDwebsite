@@ -372,6 +372,12 @@ function Cell({ value, render }: { value: unknown; render?: ColumnSpec["render"]
       </span>
     );
   if (value === null || value === undefined || value === "") return <span className="text-mgr-muted-fg">—</span>;
+  // 关联对象（如 role: { name }）显示其名称而非 JSON
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const o = value as Record<string, unknown>;
+    const label = o.name ?? o.title ?? o.label ?? o.username;
+    if (typeof label === "string") return <span>{label}</span>;
+  }
   const text = typeof value === "object" ? JSON.stringify(value) : String(value);
   return <span title={text}>{text.length > 60 ? `${text.slice(0, 60)}…` : text}</span>;
 }
