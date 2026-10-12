@@ -80,7 +80,7 @@ export function ChatWidget() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-5 z-40 flex h-[480px] w-[360px] flex-col overflow-hidden rounded-xl border border-border bg-white shadow-2xl">
+        <div data-visual-ignore className="fixed bottom-24 right-5 z-40 flex h-[480px] w-[360px] flex-col overflow-hidden rounded-xl border border-border bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-primary px-4 py-3 text-white">
             <span className="font-semibold">智能客服</span>
             <button onClick={() => setOpen(false)} aria-label="关闭">✕</button>
@@ -115,6 +115,7 @@ export function ChatWidget() {
       )}
       <button
         onClick={() => setOpen((v) => !v)}
+        data-visual-ignore
         className="fixed bottom-6 left-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-purple-600 text-lg text-white shadow-lg"
         aria-label="AI 客服"
       >
