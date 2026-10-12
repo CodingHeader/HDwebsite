@@ -1,0 +1,14 @@
+-- Q1 chat rate limit (src/app/api/chat/stream/route.ts:33-35)
+QUERY PLAN
+`--SEARCH AIChatHistory USING INDEX AIChatHistory_ipAddress_createdAt_idx (ipAddress=? AND createdAt>?)
+-- Q2 logs list module filter (src/app/api/logs/route.ts:30-37)
+QUERY PLAN
+|--SEARCH OperationLog USING INDEX OperationLog_module_createdAt_idx (module=? AND createdAt>?)
+`--USE TEMP B-TREE FOR ORDER BY
+QUERY PLAN
+`--SEARCH OperationLog USING COVERING INDEX OperationLog_module_createdAt_idx (module=? AND createdAt>?)
+-- Q3 collect-items queue (src/app/api/collect-items/route.ts:18-24)
+QUERY PLAN
+`--SEARCH CollectItem USING INDEX CollectItem_status_idx (status=?)
+QUERY PLAN
+`--SEARCH CollectItem USING COVERING INDEX CollectItem_status_idx (status=?)

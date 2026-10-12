@@ -1,0 +1,60 @@
+# migrate on copy of dev.db (/tmp/p04copy.db)
+## row counts before
+AIChatHistory 2
+Article 30
+ArticleTag 0
+Banner 1
+Campus 0
+CampusImage 0
+Category 21
+ChatScene 8
+CollectItem 16
+CollectSource 5
+CollectTask 14
+ContentChannel 0
+ContentItem 0
+Course 6
+CronJob 6
+EnrollmentOffering 0
+Gallery 8
+HomeCard 4
+HotMajor 8
+Knowledge 0
+LLMProvider 0
+LLMUsage 0
+Major 0
+ManagerMenu 39
+Media 113
+Navigation 9
+NotifyRecipient 0
+NotifyRecord 0
+NotifyRule 7
+NotifyTemplate 1
+OperationLog 5
+Partner 8
+PublishJob 0
+Role 3
+ServiceGuide 6
+Setting 35
+Student 0
+Tag 0
+User 1
+UserAction 203
+ViewStats 0
+WechatAccount 0
+## diff before->after (only new empty tables expected)
+11a12
+> ContentBlock 0
+15a17
+> ElementConfig 0
+31a34
+> PageTemplate 0
+38a42
+> TemplateBlock 0
+## Navigation full-row md5 before/after
+3cf4c9e62e4b3d32c8ff8f83b24cbda9  -
+3cf4c9e62e4b3d32c8ff8f83b24cbda9  -
+## integrity_check
+ok
+## prisma migrate diff (db -> schema)
+-- This is an empty migration.

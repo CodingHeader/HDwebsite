@@ -76,24 +76,24 @@ model User {
 // ============================================
 
 model Navigation {
-  id              Int          @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   name            String
-  slug            String       @unique
+  slug            String        @unique
   parentId        Int?
-  parent          Navigation?  @relation("NavTree", fields: [parentId], references: [id])
-  children        Navigation[] @relation("NavTree")
-  level           Int          @default(1)
+  parent          Navigation?   @relation("NavTree", fields: [parentId], references: [id])
+  children        Navigation[]  @relation("NavTree")
+  level           Int           @default(1)
   icon            String?
   link            String?
-  linkType        String       @default("internal") // internal/external/dropdown
-  target          String       @default("_self")
+  linkType        String        @default("internal") // internal/external/dropdown
+  target          String        @default("_self")
   categoryId      Int?
-  category        Category?    @relation(fields: [categoryId], references: [id])
+  category        Category?     @relation(fields: [categoryId], references: [id])
   contentType     String? // news/course/partner/page
-  sort            Int          @default(0)
-  status          String       @default("active")
-  isVisible       Boolean      @default(true)
-  isNav           Boolean      @default(true)
+  sort            Int           @default(0)
+  status          String        @default("active")
+  isVisible       Boolean       @default(true)
+  isNav           Boolean       @default(true)
   // 元数据 JSON（badge/hoverEffect/clickAction/activeIndicator）
   metadata        String?
   hoverEffect     String?
@@ -102,9 +102,15 @@ model Navigation {
   seoTitle        String?
   seoKeywords     String?
   seoDescription  String?
+  // ADR-024：模板关联（main parity C9，仅加法）
+  templateId      Int?
+  template        PageTemplate? @relation(fields: [templateId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // ADR-024：交互点配置反向关联
+  elements ElementConfig[]
 
   @@index([parentId])
   @@index([status])
@@ -551,6 +557,7 @@ model AIChatHistory {
   @@index([sessionId])
   @@index([channel])
   @@index([createdAt])
+  @@index([ipAddress, createdAt]) // P04：限频计数 src/app/api/chat/stream/route.ts:33
 }
 
 model Knowledge {
@@ -656,6 +663,7 @@ model OperationLog {
   @@index([userId])
   @@index([module])
   @@index([createdAt])
+  @@index([module, createdAt]) // P04：日志筛选 src/app/api/logs/route.ts:30
 }
 
 // ============================================
@@ -924,5 +932,135 @@ model WechatAccount {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([status])
+}
+
+// ============================================
+// ADR-024：模板系统 / 交互点配置（按 main@94dbbbb prisma/schema.prisma 原样恢复）
+// ============================================
+
+model PageTemplate {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique // list/article/home/partner-grid
+  name        String // 模板名称
+  description String?
+
+  // 模板配置
+  layout       String  @default("default") // default/sidebar/fullwidth
+  contentType  String? // news/course/partner
+  templateFile String // 模板文件路径
+  thumbnail    String? // 缩略图URL
+
+  // 关联内容块
+  blocks TemplateBlock[]
+
+  // 默认配置
+  config String? // JSON配置
+
+  // 状态
+  status    String  @default("active")
+  isDefault Boolean @default(false)
+
+  // 时间戳
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 反向关联
+  navigations Navigation[]
+
+  // 索引
+  @@index([code])
+  @@index([contentType])
+  @@index([status])
+}
+
+model ContentBlock {
+  id   Int    @id @default(autoincrement())
+  code String @unique // home-banner/news-list/sidebar
+  name String // 内容块名称
+  type String // hero/banner/list/grid/sidebar
+
+  // 内容配置
+  title    String?
+  subtitle String?
+
+  // 数据源
+  contentType String? // static/query/api
+  query       String? // JSON查询条件
+  limit       Int? // 数量限制
+
+  // 内容与样式
+  content String? // JSON内容
+  style   String? // JSON样式
+
+  // 交互配置
+  interactions String? // JSON交互配置
+
+  // 关联
+  templates TemplateBlock[]
+
+  // 状态
+  status String @default("active")
+
+  // 时间戳
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 索引
+  @@index([type])
+  @@index([contentType])
+  @@index([status])
+}
+
+model TemplateBlock {
+  id         Int          @id @default(autoincrement())
+  templateId Int
+  template   PageTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  blockId    Int
+  block      ContentBlock @relation(fields: [blockId], references: [id])
+
+  sort   Int     @default(0)
+  config String? // 特有配置
+
+  @@index([templateId])
+  @@index([blockId])
+  @@index([sort])
+}
+
+model ElementConfig {
+  id          Int    @id @default(autoincrement())
+  elementId   String @unique // 如: "001-001"
+  elementName String
+
+  layer     Int // 1-14
+  layerName String // "TopBar", "Header", etc.
+
+  navigationId Int?
+  navigation   Navigation? @relation(fields: [navigationId], references: [id])
+
+  elementType String? // link/button/card/image/text/icon
+  selector    String? // CSS选择器
+  position    String? // JSON: {x, y, width, height}
+
+  // 交互配置
+  interactions String? // JSON: [{event, action, target}]
+
+  // 状态配置
+  normalState String? // JSON: {color, bgColor, border}
+  hoverState  String? // JSON: {color, bgColor, scale}
+  activeState String? // JSON: {color, bgColor, indicator}
+
+  content String? // 显示内容
+  icon    String? // 图标名称
+
+  status String @default("active")
+  sort   Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([elementId])
+  @@index([layer])
+  @@index([navigationId])
   @@index([status])
 }
