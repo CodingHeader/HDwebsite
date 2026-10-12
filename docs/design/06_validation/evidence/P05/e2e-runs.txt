@@ -1,0 +1,46 @@
+# P05 E2E 运行记录（npm run test:e2e，4 spec / 8 用例）
+## e2e.log
+  ✓  1 tests/e2e/apply-chat.spec.ts:12:5 › 访客在 /apply 发送消息收到 AI 流式回复 (5.5s)
+  ✓  2 tests/e2e/auth.spec.ts:11:5 › 未登录访问后台跳转登录页 (586ms)
+  ✓  3 tests/e2e/auth.spec.ts:17:5 › 错误密码提示，正确密码进入仪表盘 (1.7s)
+  ✓  4 tests/e2e/auth.spec.ts:33:5 › Viewer 访问用户管理渲染 Forbidden 视图 (2.2s)
+  ✓  5 tests/e2e/collect-publish.spec.ts:21:5 › 采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现 (46.2s)
+  ✓  6 tests/e2e/crud-article.spec.ts:16:5 › 文章新建 → 编辑 → 删除 (4.1s)
+  ✓  7 tests/e2e/crud-article.spec.ts:64:5 › 列表接口 500 → ErrorState，点击重试恢复 (1.9s)
+  ✓  8 tests/e2e/crud-article.spec.ts:83:5 › 搜索无结果 → EmptyState (1.9s)
+  8 passed (1.7m)
+EXIT 0
+## e2e-run2.log
+  ✓  1 tests/e2e/apply-chat.spec.ts:12:5 › 访客在 /apply 发送消息收到 AI 流式回复 (5.8s)
+  ✓  2 tests/e2e/auth.spec.ts:11:5 › 未登录访问后台跳转登录页 (683ms)
+  ✓  3 tests/e2e/auth.spec.ts:17:5 › 错误密码提示，正确密码进入仪表盘 (1.6s)
+  ✓  4 tests/e2e/auth.spec.ts:33:5 › Viewer 访问用户管理渲染 Forbidden 视图 (2.0s)
+  ✓  5 tests/e2e/collect-publish.spec.ts:21:5 › 采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现 (46.3s)
+  ✓  6 tests/e2e/crud-article.spec.ts:16:5 › 文章新建 → 编辑 → 删除 (3.7s)
+  ✓  7 tests/e2e/crud-article.spec.ts:67:5 › 列表接口 500 → ErrorState，点击重试恢复 (1.7s)
+  ✓  8 tests/e2e/crud-article.spec.ts:87:5 › 搜索无结果 → EmptyState (1.7s)
+  8 passed (1.5m)
+EXIT 0
+## e2e-run3.log
+  ✓  1 tests/e2e/apply-chat.spec.ts:12:5 › 访客在 /apply 发送消息收到 AI 流式回复 (4.8s)
+  ✓  2 tests/e2e/auth.spec.ts:11:5 › 未登录访问后台跳转登录页 (544ms)
+  ✓  3 tests/e2e/auth.spec.ts:17:5 › 错误密码提示，正确密码进入仪表盘 (1.4s)
+  ✓  4 tests/e2e/auth.spec.ts:33:5 › Viewer 访问用户管理渲染 Forbidden 视图 (2.1s)
+  ✓  5 tests/e2e/collect-publish.spec.ts:21:5 › 采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现 (51.1s)
+  ✓  6 tests/e2e/crud-article.spec.ts:16:5 › 文章新建 → 编辑 → 删除 (3.9s)
+  ✓  7 tests/e2e/crud-article.spec.ts:67:5 › 列表接口 500 → ErrorState，点击重试恢复 (1.8s)
+  ✓  8 tests/e2e/crud-article.spec.ts:87:5 › 搜索无结果 → EmptyState (2.0s)
+  8 passed (1.4m)
+EXIT 0
+## e2e-run4.log
+  ✓  1 tests/e2e/apply-chat.spec.ts:12:5 › 访客在 /apply 发送消息收到 AI 流式回复 (5.4s)
+  ✓  2 tests/e2e/auth.spec.ts:11:5 › 未登录访问后台跳转登录页 (558ms)
+  ✓  3 tests/e2e/auth.spec.ts:17:5 › 错误密码提示，正确密码进入仪表盘 (1.5s)
+  ✓  4 tests/e2e/auth.spec.ts:33:5 › Viewer 访问用户管理渲染 Forbidden 视图 (2.2s)
+  ✓  5 tests/e2e/collect-publish.spec.ts:21:5 › 采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现 (51.0s)
+  ✓  6 tests/e2e/crud-article.spec.ts:16:5 › 文章新建 → 编辑 → 删除 (4.1s)
+  ✓  7 tests/e2e/crud-article.spec.ts:67:5 › 列表接口 500 → ErrorState，点击重试恢复 (1.8s)
+  ✓  8 tests/e2e/crud-article.spec.ts:87:5 › 搜索无结果 → EmptyState (1.9s)
+  8 passed (1.8m)
+
+注：e2e.log 为修复 publish-jobs 标题补全后的首个全绿运行；run2/run3/run4 为其后连续运行（run4 在最终构建后）。更早一次失败运行（选择器歧义 + 列表缺标题）已修复，见 P05-execution.md §1。
