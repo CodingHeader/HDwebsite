@@ -1,10 +1,20 @@
 "use client";
 
-/** 模型供应商：列表 + 优先级/默认/兜底 + 连通性测试 + 余额填报 */
-import { useCallback, useEffect, useState } from "react";
-import { managerFetch } from "@/lib/manager-fetch";
-import { SchemaForm } from "@/components/manager/SchemaForm";
-import type { FieldSpec } from "@/components/manager/SchemaForm";
+/**
+ * 模型供应商：列表 + 优先级/默认/兜底 + 连通性测试 + 余额填报 + 新建/编辑/删除
+ * P05：五态接入；原生 prompt 余额填报 → promptDialog（行内校验）；删除走 ConfirmDialog（补齐 CRUD 的 D）；测试结果 Toast。
+ */
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
+import { toastCopy } from "@/contracts/common";
+import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
+import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
+import { PageHeader } from "@/components/manager/shell/PageHeader";
+import { FormDialog } from "@/components/manager/FormDialog";
+import { StatusBadge } from "@/components/manager/StatusBadge";
+import { tableCls } from "@/components/manager/Pagination";
+import { Forbidden, TableState, btnCls, confirmDialog, linkCls, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Provider = {
   id: number; name: string; kind: string; endpoint: string; model: string; botId: string | null;
@@ -33,169 +43,238 @@ const FIELDS: FieldSpec[] = [
 ];
 
 export default function ManagerLlmProvidersPage() {
-  const [data, setData] = useState<ListData | null>(null);
-  const [page, setPage] = useState(1);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [editing, setEditing] = useState<Record<string, unknown> | null>(null);
+  const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(`/api/llm/providers?page=1&limit=50`);
+  const [editing, setEditing] = useState<FormValues | null>(null);
+  const [initial, setInitial] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [testing, setTesting] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState("");
+  const [busy, setBusy] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setData(await managerFetch<ListData>(`/api/llm/providers?page=${page}&limit=20`));
-      setError("");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
-    }
-  }, [page]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 数据加载发生在 await 之后，属外部系统订阅
-    load();
-  }, [load]);
+  function begin(id: number | null, values: FormValues) {
+    setEditingId(id);
+    setEditing(values);
+    setInitial(JSON.stringify(values));
+    setFieldErrors({});
+    setServerError("");
+  }
 
   async function save() {
     if (!editing) return;
-    setSavingGuard();
+    const required = FIELDS.map((f) => (f.key === "model" && editing.kind === "coze" ? { ...f, required: false } : f));
+    const errs = validateRequired(required, editing);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length) return;
+    setSaving(true);
+    setServerError("");
     try {
       const body = { ...editing };
-      if (typeof body.balanceThreshold === "string") body.balanceThreshold = body.balanceThreshold === "" ? null : Number(body.balanceThreshold);
-      if (typeof body.temperature === "string") body.temperature = Number(body.temperature);
-      if (typeof body.maxTokens === "string") body.maxTokens = Number(body.maxTokens);
-      if (typeof body.priority === "string") body.priority = Number(body.priority);
+      for (const k of ["balanceThreshold", "temperature", "maxTokens", "priority"]) {
+        if (body[k] === "" || body[k] === undefined) body[k] = null;
+        else if (typeof body[k] === "string") body[k] = Number(body[k]);
+      }
+      if (body.temperature === null) delete body.temperature;
+      if (body.maxTokens === null) delete body.maxTokens;
+      if (body.priority === null) delete body.priority;
       if (editingId) {
         await managerFetch(`/api/llm/providers/${editingId}`, { method: "PUT", body: JSON.stringify(body) });
       } else {
         await managerFetch("/api/llm/providers", { method: "POST", body: JSON.stringify(body) });
       }
+      toast.success(editingId ? toastCopy.saved : toastCopy.created, String(body.name));
       setEditing(null);
-      load();
+      void reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      const msg = errorMessage(e, "保存失败");
+      setServerError(msg);
+      toast.error("保存失败", msg);
     } finally {
-      setTesting(null);
+      setSaving(false);
     }
   }
 
-  function setSavingGuard() {
-    /* 占位：保存态由 testing 复用展示 */
-  }
-
   async function test(p: Provider) {
-    setTesting(p.id);
-    setNotice("");
-    setError("");
+    setBusy(p.id);
     try {
       const res = await managerFetch<{ ok: boolean; latencyMs: number; reply?: string; errMsg?: string }>(
         `/api/llm/providers/${p.id}/test`,
         { method: "POST", body: "{}" }
       );
-      setNotice(res.ok ? `「${p.name}」连通正常（${res.latencyMs}ms）：${res.reply ?? ""}` : `「${p.name}」测试失败：${res.errMsg ?? "未知错误"}`);
+      if (res.ok) toast.success(`「${p.name}」连通正常（${res.latencyMs}ms）`, res.reply ? `回复：${res.reply.slice(0, 80)}` : undefined);
+      else toast.error(`「${p.name}」测试失败`, res.errMsg ?? "未知错误");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "测试失败");
+      toast.fromError(e, "测试失败");
     } finally {
-      setTesting(null);
+      setBusy(null);
     }
   }
 
   async function fillBalance(p: Provider) {
-    const raw = window.prompt(`填报「${p.name}」当前余额（${p.balance ?? "暂无"}）：`, p.balance != null ? String(p.balance) : "");
+    const raw = await promptDialog({
+      title: `填报「${p.name}」余额`,
+      description: `当前：${p.balance ?? "未填报"}${p.balanceThreshold != null ? `；低于阈值 ${p.balanceThreshold} 时每日邮件提醒` : ""}`,
+      label: "当前余额",
+      defaultValue: p.balance != null ? String(p.balance) : "",
+      inputMode: "decimal",
+      confirmText: "保存",
+      validate: (v) => {
+        if (v.trim() === "") return "请输入余额";
+        const n = Number(v);
+        return Number.isFinite(n) && n >= 0 ? null : "余额必须是 ≥0 的数字";
+      },
+    });
     if (raw === null) return;
-    const value = Number(raw);
-    if (!Number.isFinite(value) || value < 0) {
-      setError("余额必须是 ≥0 的数字");
-      return;
-    }
+    setBusy(p.id);
     try {
-      await managerFetch(`/api/llm/providers/${p.id}/balance`, {
-        method: "POST",
-        body: JSON.stringify({ balance: value }),
-      });
-      load();
+      await managerFetch(`/api/llm/providers/${p.id}/balance`, { method: "POST", body: JSON.stringify({ balance: Number(raw) }) });
+      toast.success("余额已更新", `${p.name}：${Number(raw)}`);
+      void reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "填报失败");
+      toast.fromError(e, "填报失败");
+    } finally {
+      setBusy(null);
     }
   }
 
+  async function remove(p: Provider) {
+    const ok = await confirmDialog({
+      title: `删除供应商「${p.name}」？`,
+      description: p.isDefault || p.isFallback ? "该供应商是默认/兜底模型，删除后 AI 客服将按优先级改用其他供应商。" : "删除后不可恢复，用量统计将一并移除。",
+      confirmText: "删除",
+      danger: true,
+    });
+    if (!ok) return;
+    setBusy(p.id);
+    try {
+      await managerFetch(`/api/llm/providers/${p.id}`, { method: "DELETE" });
+      toast.success(toastCopy.deleted, p.name);
+      void reload();
+    } catch (e) {
+      toast.fromError(e, "删除失败");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  if (isForbidden(error)) return <Forbidden message={error.message} />;
+  const list = data?.list ?? [];
+  const create = () =>
+    begin(null, { name: "", kind: "openai", endpoint: "", apiKey: "", model: "", temperature: 0.7, maxTokens: 2048, priority: 10, status: "active", isDefault: false, isFallback: false });
+
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">模型供应商</h1>
-        <button
-          onClick={() => {
-            setEditingId(null);
-            setEditing({ kind: "openai", endpoint: "https://api.coze.cn", temperature: 0.7, maxTokens: 2048, priority: 10, status: "active", isDefault: false, isFallback: false });
-          }}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          新建
-        </button>
-      </div>
-      <p className="mt-2 text-sm text-muted">路由规则：默认模型 → 失败按优先级升序 → 全败走兜底模型。类型说明见 ADR-023（Coze）与 SOL-003。</p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      {notice && <p className="mt-3 text-sm text-green-700">{notice}</p>}
-
-      <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-muted">
-              <th className="px-4 py-3">名称</th>
-              <th className="px-4 py-3">类型</th>
-              <th className="px-4 py-3">模型/bot</th>
-              <th className="px-4 py-3">优先级</th>
-              <th className="px-4 py-3">角色</th>
-              <th className="px-4 py-3">余额</th>
-              <th className="px-4 py-3">状态</th>
-              <th className="px-4 py-3">操作</th>
+      <PageHeader
+        title="模型供应商"
+        description="路由规则：默认模型 → 失败按优先级升序 → 全败走兜底模型。"
+        actions={
+          <button type="button" onClick={create} className={btnCls("primary")} data-testid="llm-create">
+            <Plus aria-hidden="true" />
+            新建供应商
+          </button>
+        }
+      />
+      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
+        <table className={tableCls.table}>
+          <thead className={tableCls.thead}>
+            <tr>
+              <th scope="col" className={tableCls.th}>名称</th>
+              <th scope="col" className={tableCls.th}>类型</th>
+              <th scope="col" className={tableCls.th}>模型/bot</th>
+              <th scope="col" className={`${tableCls.th} text-right`}>优先级</th>
+              <th scope="col" className={tableCls.th}>角色</th>
+              <th scope="col" className={tableCls.th}>余额</th>
+              <th scope="col" className={tableCls.th}>状态</th>
+              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
             </tr>
           </thead>
           <tbody>
-            {data?.list.map((p) => (
-              <tr key={p.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3">{p.name}</td>
-                <td className="px-4 py-3">{p.kind === "coze" ? "Coze" : "OpenAI 兼容"}</td>
-                <td className="px-4 py-3">{p.kind === "coze" ? `bot ${p.botId ?? "—"}` : p.model}</td>
-                <td className="px-4 py-3">{p.priority}</td>
-                <td className="px-4 py-3">
-                  {p.isDefault && <span className="mr-1 rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">默认</span>}
-                  {p.isFallback && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-700">兜底</span>}
-                </td>
-                <td className="px-4 py-3">
-                  {p.balance != null ? `${p.balance}${p.balanceThreshold != null && p.balance <= p.balanceThreshold ? " ⚠" : ""}` : "未填报"}
-                </td>
-                <td className="px-4 py-3">{p.status}</td>
-                <td className="whitespace-nowrap px-4 py-3">
-                  <button onClick={() => test(p)} className="text-primary hover:underline">{testing === p.id ? "测试中…" : "测试"}</button>
-                  <button onClick={() => fillBalance(p)} className="ml-3 text-muted hover:underline">余额</button>
-                  <button
-                    onClick={() => {
-                      setEditingId(p.id);
-                      setEditing({ ...p });
-                    }}
-                    className="ml-3 hover:underline"
-                  >
-                    编辑
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {data?.list.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-muted">尚未配置模型供应商，点右上角新建。</td></tr>
-            )}
+            <TableState
+              columns={8}
+              loading={loading}
+              error={error}
+              empty={!!data && list.length === 0}
+              onRetry={reload}
+              emptyTitle="尚未配置模型供应商"
+              emptyDescription="AI 客服需要至少一个启用的供应商才能回复访客。"
+              emptyAction={
+                <button type="button" onClick={create} className={btnCls("primary")}>
+                  <Plus aria-hidden="true" />
+                  新建供应商
+                </button>
+              }
+            />
+            {!error &&
+              list.map((p) => {
+                const low = p.balance != null && p.balanceThreshold != null && p.balance <= p.balanceThreshold;
+                return (
+                  <tr key={p.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
+                    <td className={`${tableCls.td} font-medium`}>{p.name}</td>
+                    <td className={tableCls.td}>{p.kind === "coze" ? "Coze" : "OpenAI 兼容"}</td>
+                    <td className={`${tableCls.td} text-mgr-muted-fg`}>{p.kind === "coze" ? `bot ${p.botId ?? "—"}` : p.model}</td>
+                    <td className={`${tableCls.td} text-right tabular-nums`}>{p.priority}</td>
+                    <td className={tableCls.td}>
+                      <span className="inline-flex gap-1">
+                        {p.isDefault && <span className="rounded-full bg-mgr-primary-soft px-2 py-0.5 text-[11px] font-medium text-mgr-primary">默认</span>}
+                        {p.isFallback && <span className="rounded-full bg-mgr-subtle px-2 py-0.5 text-[11px] font-medium text-mgr-fg">兜底</span>}
+                        {!p.isDefault && !p.isFallback && <span className="text-mgr-muted-fg">—</span>}
+                      </span>
+                    </td>
+                    <td className={`${tableCls.td} tabular-nums`}>
+                      {p.balance != null ? <span className={low ? "font-medium text-mgr-danger" : undefined} title={low ? "低于提醒阈值" : undefined}>{p.balance}{low ? "（偏低）" : ""}</span> : <span className="text-mgr-muted-fg">未填报</span>}
+                    </td>
+                    <td className={tableCls.td}>
+                      <StatusBadge tone={p.status === "active" ? "success" : "muted"}>{p.status === "active" ? "启用" : "停用"}</StatusBadge>
+                    </td>
+                    <td className={`${tableCls.td} whitespace-nowrap text-right`}>
+                      <div className="inline-flex items-center gap-2">
+                        <button type="button" disabled={busy === p.id} onClick={() => void test(p)} className={linkCls("primary")}>
+                          {busy === p.id ? "处理中…" : "测试"}
+                        </button>
+                        <button type="button" disabled={busy === p.id} onClick={() => void fillBalance(p)} className={linkCls("muted")}>
+                          余额
+                        </button>
+                        <button type="button" onClick={() => begin(p.id, { ...p })} className={linkCls("primary")} aria-label={`编辑 ${p.name}`}>
+                          编辑
+                        </button>
+                        <button type="button" disabled={busy === p.id} onClick={() => void remove(p)} className={linkCls("danger")} aria-label={`删除 ${p.name}`}>
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>
 
-      {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setEditing(null)}>
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold">{editingId ? "编辑供应商" : "新建供应商"}</h2>
-            <div><SchemaForm fields={FIELDS} values={editing} onChange={setEditing} /><div className="mt-6 flex justify-end gap-3"><button onClick={() => setEditing(null)} className="rounded-md border border-border px-4 py-2 text-sm">取消</button><button onClick={save} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">保存</button></div></div>
-          </div>
-        </div>
-      )}
+      <FormDialog
+        open={editing !== null}
+        title={editingId ? "编辑供应商" : "新建供应商"}
+        onClose={() => setEditing(null)}
+        onSubmit={save}
+        saving={saving}
+        dirty={editing !== null && JSON.stringify(editing) !== initial}
+        serverError={serverError}
+      >
+        {editing && (
+          <SchemaForm
+            fields={FIELDS}
+            values={editing}
+            onChange={setEditing}
+            errors={fieldErrors}
+            onFieldChange={(k) =>
+              setFieldErrors((p) => {
+                if (!p[k]) return p;
+                const n = { ...p };
+                delete n[k];
+                return n;
+              })
+            }
+          />
+        )}
+      </FormDialog>
     </div>
   );
 }
-

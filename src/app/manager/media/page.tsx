@@ -1,52 +1,58 @@
 "use client";
 
-/** 媒体库：上传 + 网格 + 批量删除 */
-import { useCallback, useEffect, useRef, useState } from "react";
-import { managerFetch } from "@/lib/manager-fetch";
+/**
+ * 媒体库：上传（按钮/拖拽）+ 网格 + 批量删除 + 复制链接
+ * P05：五态接入（骨架/空/错误+重试/无权限）；批量删除走 ConfirmDialog；上传/删除结果 Toast（部分失败逐条说明）。
+ */
+import { useRef, useState } from "react";
+import { Copy, FileText, Trash2, Upload, ImageOff } from "lucide-react";
+import { managerFetch, isForbidden } from "@/lib/manager-fetch";
+import { useAuthStore } from "@/store/authStore";
+import { PageHeader } from "@/components/manager/shell/PageHeader";
+import { Pagination } from "@/components/manager/Pagination";
+import { Bone, EmptyState, ErrorState, Forbidden, btnCls, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type MediaRow = { id: number; url: string; filename: string; mimeType: string; size: number; createdAt: string };
-type ListData = { list: MediaRow[]; pagination: { page: number; totalPages: number } };
+type ListData = { list: MediaRow[]; pagination: { page: number; totalPages: number; total?: number } };
+
+function formatSize(n: number) {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
 
 export default function ManagerMediaPage() {
-  const [data, setData] = useState<ListData | null>(null);
   const [page, setPage] = useState(1);
-  const [error, setError] = useState("");
+  const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(`/api/media?page=${page}&limit=24`);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setData(await managerFetch<ListData>(`/api/media?page=${page}&limit=24`));
-      setError("");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
-    }
-  }, [page]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 数据加载发生在 await 之后，属外部系统订阅
-    load();
-  }, [load]);
-
-  async function upload(files: FileList | null) {
-    if (!files?.length) return;
+  async function upload(files: FileList | File[] | null) {
+    const list = files ? Array.from(files) : [];
+    if (!list.length) return;
     setUploading(true);
-    setError("");
+    const failed: string[] = [];
     try {
-      for (const file of Array.from(files)) {
-        const fd = new FormData();
-        fd.append("file", file);
-        const token = (await import("@/store/authStore")).useAuthStore.getState().token;
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: fd,
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const body = (await res.json()) as { code: number; message: string };
-        if (body.code !== 200) setError(body.message);
+      for (const file of list) {
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          const token = useAuthStore.getState().token;
+          const res = await fetch("/api/upload", { method: "POST", body: fd, headers: token ? { Authorization: `Bearer ${token}` } : {} });
+          const body = (await res.json().catch(() => ({ code: res.status, message: `HTTP ${res.status}` }))) as { code: number; message: string };
+          if (body.code !== 200) failed.push(`${file.name}：${body.message}`);
+        } catch {
+          failed.push(`${file.name}：网络异常`);
+        }
       }
-      load();
+      const ok = list.length - failed.length;
+      if (ok > 0) toast.success(`已上传 ${ok} 个文件`);
+      if (failed.length) toast.error(`${failed.length} 个文件上传失败`, failed.slice(0, 3).join("；"));
+      if (page !== 1) setPage(1);
+      else void reload();
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -55,79 +61,172 @@ export default function ManagerMediaPage() {
 
   async function batchDelete() {
     if (!selected.size) return;
-    if (!window.confirm(`确认删除选中的 ${selected.size} 个文件？`)) return;
-    setError("");
+    const ok = await confirmDialog({
+      title: `删除选中的 ${selected.size} 个文件？`,
+      description: "已在文章、轮播图等处引用的文件删除后将无法显示，且不可恢复。",
+      confirmText: "删除",
+      danger: true,
+    });
+    if (!ok) return;
+    setDeleting(true);
+    let fail = 0;
+    let lastErr = "";
     for (const id of selected) {
       try {
         await managerFetch(`/api/media/${id}`, { method: "DELETE" });
       } catch (e) {
-        setError(e instanceof Error ? e.message : "删除失败");
+        fail++;
+        lastErr = e instanceof Error ? e.message : "删除失败";
       }
     }
+    const done = selected.size - fail;
+    if (done) toast.success(`已删除 ${done} 个文件`);
+    if (fail) toast.error(`${fail} 个文件删除失败`, lastErr);
     setSelected(new Set());
-    load();
+    setDeleting(false);
+    void reload();
   }
 
+  async function copy(url: string) {
+    try {
+      await navigator.clipboard.writeText(new URL(url, window.location.origin).href);
+      toast.success("链接已复制");
+    } catch {
+      toast.error("复制失败，请手动复制", url);
+    }
+  }
+
+  if (isForbidden(error)) return <Forbidden message={error.message} />;
+  const list = data?.list ?? [];
+
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">媒体库</h1>
-        <div className="flex items-center gap-2">
-          {selected.size > 0 && (
-            <button onClick={batchDelete} className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600">
-              删除选中（{selected.size}）
+    <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={(e) => {
+        if (e.currentTarget === e.target) setDragOver(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        void upload(e.dataTransfer.files);
+      }}
+      className="relative"
+    >
+      <PageHeader
+        title="媒体库"
+        description="图片、视频与文档素材；支持拖拽文件到此页面上传。"
+        actions={
+          <>
+            {selected.size > 0 && (
+              <>
+                <button type="button" className={btnCls("ghost")} onClick={() => setSelected(new Set())}>
+                  取消选择
+                </button>
+                <button type="button" onClick={() => void batchDelete()} disabled={deleting} className={btnCls("danger")}>
+                  <Trash2 aria-hidden="true" />
+                  {deleting ? "删除中…" : `删除选中（${selected.size}）`}
+                </button>
+              </>
+            )}
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className={btnCls("primary")}>
+              <Upload aria-hidden="true" />
+              {uploading ? "上传中…" : "上传文件"}
             </button>
-          )}
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-          >
-            {uploading ? "上传中…" : "上传文件"}
-          </button>
-          <input ref={fileRef} type="file" multiple accept="image/*,video/mp4,application/pdf" className="hidden" onChange={(e) => upload(e.target.files)} />
-        </div>
-      </div>
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {data?.list.map((m) => {
-          const isImage = m.mimeType.startsWith("image/");
-          const checked = selected.has(m.id);
-          return (
-            <div key={m.id} className={`rounded-lg border bg-card p-2 ${checked ? "border-primary" : "border-border"}`}>
-              <label className="block cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mb-1"
-                  checked={checked}
-                  onChange={(e) => {
-                    const next = new Set(selected);
-                    if (e.target.checked) next.add(m.id);
-                    else next.delete(m.id);
-                    setSelected(next);
-                  }}
-                />
-                {isImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.url} alt={m.filename} className="h-24 w-full rounded object-cover" />
-                ) : (
-                  <div className="flex h-24 items-center justify-center rounded bg-background text-xs text-muted">{m.mimeType}</div>
-                )}
-                <p className="mt-1 truncate text-xs" title={m.filename}>{m.filename}</p>
-              </label>
-            </div>
-          );
-        })}
-      </div>
-      {data && data.list.length === 0 && <p className="mt-10 text-center text-muted">暂无文件，点右上角上传。</p>}
-      {data && data.pagination.totalPages > 1 && (
-        <div className="mt-4 flex gap-2">
-          {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1).map((p) => (
-            <button key={p} onClick={() => setPage(p)} className={`rounded border px-3 py-1 text-sm ${p === page ? "border-primary text-primary" : "border-border text-muted"}`}>
-              {p}
-            </button>
-          ))}
+            <input
+              ref={fileRef}
+              type="file"
+              multiple
+              aria-label="选择要上传的文件"
+              accept="image/*,video/mp4,application/pdf"
+              className="hidden"
+              onChange={(e) => void upload(e.target.files)}
+            />
+          </>
+        }
+      />
+
+      {dragOver && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-mgr-card border-2 border-dashed border-mgr-primary bg-mgr-primary-soft/80 text-[14px] font-medium text-mgr-primary">
+          松开鼠标上传文件
         </div>
       )}
+
+      {error ? (
+        <div className={cardCls}>
+          <ErrorState message={error.message} onRetry={reload} />
+        </div>
+      ) : loading ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" role="status" aria-busy="true" data-testid="page-skeleton">
+          <span className="sr-only">加载中…</span>
+          {Array.from({ length: 12 }, (_, i) => (
+            <div key={i} className={`${cardCls} p-2`}>
+              <Bone className="h-24 w-full" />
+              <Bone className="mt-2 h-3 w-3/4" />
+            </div>
+          ))}
+        </div>
+      ) : list.length === 0 ? (
+        <div className={cardCls}>
+          <EmptyState
+            title="媒体库还是空的"
+            description="上传图片或文档后，可在文章、轮播图等处引用。"
+            action={
+              <button type="button" onClick={() => fileRef.current?.click()} className={btnCls("primary")}>
+                <Upload aria-hidden="true" />
+                上传文件
+              </button>
+            }
+          />
+        </div>
+      ) : (
+        <ul className={`grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 ${refreshing ? "opacity-60" : ""}`}>
+          {list.map((m) => {
+            const isImage = m.mimeType.startsWith("image/");
+            const checked = selected.has(m.id);
+            return (
+              <li key={m.id} className={`group ${cardCls} relative p-2 transition-colors ${checked ? "border-mgr-primary ring-2 ring-mgr-primary/20" : ""}`}>
+                <label className="block cursor-pointer">
+                  <input
+                    type="checkbox"
+                    aria-label={`选择 ${m.filename}`}
+                    className="absolute left-3 top-3 z-[1] h-4 w-4 accent-[var(--mgr-primary)]"
+                    checked={checked}
+                    onChange={(e) => {
+                      const next = new Set(selected);
+                      if (e.target.checked) next.add(m.id);
+                      else next.delete(m.id);
+                      setSelected(next);
+                    }}
+                  />
+                  {isImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={m.url} alt={m.filename} loading="lazy" className="h-24 w-full rounded-mgr-control bg-mgr-subtle object-cover" />
+                  ) : (
+                    <div className="flex h-24 flex-col items-center justify-center gap-1 rounded-mgr-control bg-mgr-subtle text-[11px] text-mgr-muted-fg">
+                      {m.mimeType ? <FileText className="h-6 w-6" aria-hidden="true" /> : <ImageOff className="h-6 w-6" aria-hidden="true" />}
+                      {m.mimeType}
+                    </div>
+                  )}
+                  <p className="mt-1.5 truncate text-[12px] font-medium" title={m.filename}>{m.filename}</p>
+                  <p className="text-[11px] text-mgr-muted-fg">{formatSize(m.size)}</p>
+                </label>
+                <button
+                  type="button"
+                  aria-label={`复制 ${m.filename} 的链接`}
+                  onClick={() => void copy(m.url)}
+                  className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-mgr-control bg-mgr-surface/90 text-mgr-muted-fg opacity-0 shadow-mgr-sm transition-opacity hover:text-mgr-fg focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {data && !error && list.length > 0 && <Pagination page={page} totalPages={data.pagination.totalPages} total={data.pagination.total} onChange={setPage} />}
     </div>
   );
 }

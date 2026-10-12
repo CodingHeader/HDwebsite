@@ -1,11 +1,20 @@
 "use client";
 
-/** 公众号账号：列表 + 凭证加密 + access_token 测试（凭证后补即插桩，ADR-002/013） */
-import { useCallback, useEffect, useState } from "react";
-import { managerFetch } from "@/lib/manager-fetch";
-import { SchemaForm } from "@/components/manager/SchemaForm";
-import type { FieldSpec } from "@/components/manager/SchemaForm";
-import type { FormValues } from "@/components/manager/SchemaForm";
+/**
+ * 公众号账号：列表 + 凭证加密 + access_token 测试 + 新建/编辑/删除（凭证后补即插桩，ADR-002/013）
+ * P05：五态接入；AI 场景改为下拉；删除走 ConfirmDialog（补齐 CRUD 的 D）；测试结果 Toast。
+ */
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
+import { toastCopy } from "@/contracts/common";
+import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
+import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
+import { PageHeader } from "@/components/manager/shell/PageHeader";
+import { FormDialog } from "@/components/manager/FormDialog";
+import { StatusBadge } from "@/components/manager/StatusBadge";
+import { tableCls } from "@/components/manager/Pagination";
+import { Forbidden, TableState, btnCls, confirmDialog, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Account = {
   id: number; name: string; type: string; appid: string; appSecret: string;
@@ -14,132 +23,222 @@ type Account = {
 };
 type ListData = { list: Account[]; pagination: { page: number; totalPages: number } };
 
-const FIELDS: FieldSpec[] = [
-  { key: "name", label: "账号名称", required: true },
-  {
-    key: "type", label: "类型", type: "select" as const, required: true,
-    options: [{ label: "服务号（认证）", value: "service" }, { label: "订阅号（功能受限）", value: "subscription" }],
-  },
-  { key: "appid", label: "AppID", required: true },
-  { key: "appSecret", label: "AppSecret（保存后脱敏；留****不改）", required: true },
-  { key: "verifyToken", label: "服务器校验 Token" },
-  { key: "encodingAESKey", label: "EncodingAESKey（明文模式可空）" },
-  { key: "sceneId", label: "AI 客服场景 ID（如 faq 的 id）", type: "number" },
-  { key: "aiEnabled", label: "启用 AI 客服", type: "switch" },
-  { key: "freepublishEnabled", label: "启用发布接口", type: "switch" },
-];
-
 export default function ManagerWechatAccountsPage() {
-  const [data, setData] = useState<ListData | null>(null);
-  const [page, setPage] = useState(1);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(`/api/wechat/accounts?page=1&limit=50`);
   const [editing, setEditing] = useState<FormValues | null>(null);
+  const [initial, setInitial] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState("");
+  const [scenes, setScenes] = useState<{ label: string; value: number }[]>([]);
+  const [busy, setBusy] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
+  const fields: FieldSpec[] = [
+    { key: "name", label: "账号名称", required: true },
+    {
+      key: "type", label: "类型", type: "select" as const, required: true,
+      options: [{ label: "服务号（认证）", value: "service" }, { label: "订阅号（功能受限）", value: "subscription" }],
+    },
+    { key: "appid", label: "AppID", required: true },
+    { key: "appSecret", label: editingId ? "AppSecret（留空则不修改）" : "AppSecret（保存后加密脱敏）", required: !editingId },
+    { key: "verifyToken", label: "服务器校验 Token" },
+    { key: "encodingAESKey", label: "EncodingAESKey（明文模式可空）" },
+    { key: "sceneId", label: "AI 客服场景", type: "select", options: scenes },
+    { key: "aiEnabled", label: "启用 AI 客服", type: "switch" },
+    { key: "freepublishEnabled", label: "启用发布接口", type: "switch" },
+  ];
+
+  async function begin(id: number | null, values: FormValues) {
+    setEditingId(id);
+    setEditing(values);
+    setInitial(JSON.stringify(values));
+    setFieldErrors({});
+    setServerError("");
     try {
-      setData(await managerFetch<ListData>(`/api/wechat/accounts?page=${page}&limit=20`));
-      setError("");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      const res = await managerFetch<{ list: { id: number; name: string; code: string }[] }>("/api/chat-scenes?limit=100");
+      setScenes(res.list.map((s) => ({ label: `${s.name}（${s.code}）`, value: s.id })));
+    } catch {
+      setScenes([]);
     }
-  }, [page]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 数据加载发生在 await 之后，属外部系统订阅
-    load();
-  }, [load]);
+  }
 
   async function save() {
     if (!editing) return;
-    setError("");
+    const errs = validateRequired(fields, editing);
+    setFieldErrors(errs);
+    if (Object.keys(errs).length) return;
+    setSaving(true);
+    setServerError("");
     try {
       const body: Record<string, unknown> = { ...editing };
-      if (typeof body.sceneId === "string") body.sceneId = body.sceneId === "" ? null : Number(body.sceneId);
+      if (body.sceneId === "" || body.sceneId === undefined) body.sceneId = null;
+      else if (typeof body.sceneId === "string") body.sceneId = Number(body.sceneId);
       if (editingId) {
         await managerFetch(`/api/wechat/accounts/${editingId}`, { method: "PUT", body: JSON.stringify(body) });
       } else {
         await managerFetch("/api/wechat/accounts", { method: "POST", body: JSON.stringify(body) });
       }
+      toast.success(editingId ? toastCopy.saved : toastCopy.created, String(body.name));
       setEditing(null);
-      load();
+      void reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      const msg = errorMessage(e, "保存失败");
+      setServerError(msg);
+      toast.error("保存失败", msg);
+    } finally {
+      setSaving(false);
     }
   }
 
   async function test(a: Account) {
-    setNotice("");
-    setError("");
+    setBusy(a.id);
     try {
       const res = await managerFetch<{ ok: boolean; message: string }>(`/api/wechat/accounts/${a.id}/test`, { method: "POST", body: "{}" });
-      setNotice(`「${a.name}」${res.message}`);
+      if (res.ok) toast.success(`「${a.name}」连通正常`, res.message);
+      else toast.error(`「${a.name}」测试失败`, res.message);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "测试失败");
+      toast.fromError(e, "测试失败");
+    } finally {
+      setBusy(null);
     }
   }
 
+  async function remove(a: Account) {
+    const ok = await confirmDialog({
+      title: `删除公众号「${a.name}」？`,
+      description: "删除后该公众号的 AI 客服与发布任务将停止工作，凭证不可恢复。",
+      confirmText: "删除",
+      danger: true,
+    });
+    if (!ok) return;
+    setBusy(a.id);
+    try {
+      await managerFetch(`/api/wechat/accounts/${a.id}`, { method: "DELETE" });
+      toast.success(toastCopy.deleted, a.name);
+      void reload();
+    } catch (e) {
+      toast.fromError(e, "删除失败");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  if (isForbidden(error)) return <Forbidden message={error.message} />;
+  const list = data?.list ?? [];
+  const create = () => void begin(null, { name: "", type: "service", appid: "", appSecret: "", sceneId: null, aiEnabled: true, freepublishEnabled: true });
+
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">公众号账号</h1>
-        <button onClick={() => { setEditingId(null); setEditing({ type: "service", aiEnabled: true, freepublishEnabled: true }); }} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-          新建
-        </button>
-      </div>
-      <p className="mt-2 text-sm text-muted">凭证后补即插桩（ADR-002）：未配置/失效时测试会明确报错；回调地址 <code>/api/wechat/callback</code>，启用前需在公众平台完成服务器配置与 IP 白名单。</p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      {notice && <p className="mt-3 text-sm text-green-700">{notice}</p>}
-      <div className="mt-4 overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-muted">
-              <th className="px-4 py-3">名称</th>
-              <th className="px-4 py-3">AppID</th>
-              <th className="px-4 py-3">类型</th>
-              <th className="px-4 py-3">AI 客服</th>
-              <th className="px-4 py-3">状态</th>
-              <th className="px-4 py-3">操作</th>
+      <PageHeader
+        title="公众号账号"
+        description={
+          <>
+            未配置或失效时测试会明确报错；回调地址 <code className="rounded bg-mgr-subtle px-1">/api/wechat/callback</code>，启用前需在公众平台完成服务器配置与 IP 白名单。
+          </>
+        }
+        actions={
+          <button type="button" onClick={create} className={btnCls("primary")}>
+            <Plus aria-hidden="true" />
+            新建账号
+          </button>
+        }
+      />
+      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
+        <table className={tableCls.table}>
+          <thead className={tableCls.thead}>
+            <tr>
+              <th scope="col" className={tableCls.th}>名称</th>
+              <th scope="col" className={tableCls.th}>AppID</th>
+              <th scope="col" className={tableCls.th}>类型</th>
+              <th scope="col" className={tableCls.th}>AI 客服</th>
+              <th scope="col" className={tableCls.th}>状态</th>
+              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
             </tr>
           </thead>
           <tbody>
-            {data?.list.map((a) => (
-              <tr key={a.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3">{a.name}</td>
-                <td className="px-4 py-3">{a.appid}</td>
-                <td className="px-4 py-3">{a.type === "service" ? "服务号" : "订阅号"}</td>
-                <td className="px-4 py-3">{a.aiEnabled ? "开" : "关"}</td>
-                <td className="px-4 py-3">{a.status}</td>
-                <td className="whitespace-nowrap px-4 py-3">
-                  <button onClick={() => test(a)} className="text-primary hover:underline">测试</button>
-                  <button onClick={() => { setEditingId(a.id); setEditing({ ...a, appSecret: a.appSecret.includes("****") || a.appSecret.startsWith("v1:") ? "" : a.appSecret } as FormValues); }} className="ml-3 hover:underline">
-                    编辑
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {data?.list.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-10 text-center text-muted">尚未配置公众号账号。</td></tr>
-            )}
+            <TableState
+              columns={6}
+              loading={loading}
+              error={error}
+              empty={!!data && list.length === 0}
+              onRetry={reload}
+              emptyTitle="尚未配置公众号账号"
+              emptyDescription="添加服务号后即可启用公众号 AI 客服与文章发布。"
+              emptyAction={
+                <button type="button" onClick={create} className={btnCls("primary")}>
+                  <Plus aria-hidden="true" />
+                  新建账号
+                </button>
+              }
+            />
+            {!error &&
+              list.map((a) => (
+                <tr key={a.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
+                  <td className={`${tableCls.td} font-medium`}>{a.name}</td>
+                  <td className={`${tableCls.td} font-mono text-[12px]`}>{a.appid}</td>
+                  <td className={tableCls.td}>{a.type === "service" ? "服务号" : "订阅号"}</td>
+                  <td className={tableCls.td}>
+                    <StatusBadge tone={a.aiEnabled ? "success" : "muted"}>{a.aiEnabled ? `开${a.scene ? ` · ${a.scene.name}` : ""}` : "关"}</StatusBadge>
+                  </td>
+                  <td className={tableCls.td}>
+                    <StatusBadge tone={a.status === "active" ? "success" : "muted"}>{a.status === "active" ? "启用" : a.status}</StatusBadge>
+                  </td>
+                  <td className={`${tableCls.td} whitespace-nowrap text-right`}>
+                    <div className="inline-flex items-center gap-2">
+                      <button type="button" disabled={busy === a.id} onClick={() => void test(a)} className={linkCls("primary")}>
+                        {busy === a.id ? "处理中…" : "测试"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void begin(a.id, {
+                            ...a,
+                            sceneId: a.scene?.id ?? null,
+                            appSecret: a.appSecret.includes("****") || a.appSecret.startsWith("v1:") ? "" : a.appSecret,
+                          } as FormValues)
+                        }
+                        className={linkCls("primary")}
+                      >
+                        编辑
+                      </button>
+                      <button type="button" disabled={busy === a.id} onClick={() => void remove(a)} className={linkCls("danger")}>
+                        删除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setEditing(null)}>
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-card p-6" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold">{editingId ? "编辑账号" : "新建账号"}</h2>
-            <div className="mt-4">
-              <SchemaForm fields={FIELDS.map((f) => (f.key === "appSecret" && editingId ? { ...f, required: false } : f))} values={editing} onChange={setEditing} />
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setEditing(null)} className="rounded-md border border-border px-4 py-2 text-sm">取消</button>
-              <button onClick={save} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">保存</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <FormDialog
+        open={editing !== null}
+        title={editingId ? "编辑公众号账号" : "新建公众号账号"}
+        onClose={() => setEditing(null)}
+        onSubmit={save}
+        saving={saving}
+        dirty={editing !== null && JSON.stringify(editing) !== initial}
+        serverError={serverError}
+      >
+        {editing && (
+          <SchemaForm
+            fields={fields}
+            values={editing}
+            onChange={setEditing}
+            errors={fieldErrors}
+            onFieldChange={(k) =>
+              setFieldErrors((p) => {
+                if (!p[k]) return p;
+                const n = { ...p };
+                delete n[k];
+                return n;
+              })
+            }
+          />
+        )}
+      </FormDialog>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ConfirmDialog（P05 / 替代 window.confirm 与 window.prompt）
+ * ConfirmDialog（P05 / 替代浏览器原生 confirm / prompt 弹窗）
  * - 声明式：<ConfirmDialog open onOpenChange title description onConfirm danger />
  * - 命令式：const ok = await confirmDialog({ title, description, danger: true })；
  *          const v = await promptDialog({ title, label, validate })（null = 取消）
@@ -21,7 +21,7 @@ export interface ConfirmOptions {
   cancelText?: string;
   /** 危险操作：红色确认按钮 + 警示图标，初始焦点落在"取消" */
   danger?: boolean;
-  /** 仅一个"知道了"按钮（信息展示，替代 window.alert） */
+  /** 仅一个"知道了"按钮（信息展示，替代原生 alert 弹窗） */
   hideCancel?: boolean;
 }
 
@@ -158,7 +158,7 @@ export function confirmDialog(opts: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => push({ kind: "confirm", opts, resolve }));
 }
 
-/** 信息对话框（替代 window.alert）：单按钮，关闭即 resolve */
+/** 信息对话框（替代原生 alert 弹窗）：单按钮，关闭即 resolve */
 export function alertDialog(opts: Omit<ConfirmOptions, "hideCancel" | "danger">): Promise<void> {
   return new Promise((resolve) =>
     push({ kind: "confirm", opts: { confirmText: "知道了", ...opts, hideCancel: true }, resolve: () => resolve() })
