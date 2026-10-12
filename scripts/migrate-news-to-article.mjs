@@ -128,8 +128,17 @@ async function dryRun(dbPath) {
   const newsCount = await db.execute("SELECT COUNT(*) AS c FROM News");
   const articleCount = await db.execute("SELECT COUNT(*) AS c FROM Article");
   const sample = await db.execute("SELECT id, title, views, status FROM News ORDER BY id LIMIT 5");
+  // P04：dry-run 先校验目标库是否为 upgrade schema（apply 需 Article.channel/contentType 列）。
+  // main@94dbbbb 原库无这些列 → apply 必失败；main 存量应走 scripts/import-main-content.mjs（News→Article id=100000+News.id）。
+  const cols = (await db.execute("PRAGMA table_info(Article)")).rows.map((r) => String(r.name));
+  const missingCols = ["channel", "contentType"].filter((c) => !cols.includes(c));
+  const ids = (await db.execute("SELECT n.id FROM News n JOIN Article a ON a.id = n.id")).rows.map((r) => Number(r.id));
   const report = {
     mode: "dry-run",
+    schemaReady: missingCols.length === 0,
+    missingArticleColumns: missingCols,
+    idConflicts: ids,
+    wouldInsert: Number(newsCount.rows[0].c) - ids.length,
     sourceDb: dbPath,
     newsTotal: Number(newsCount.rows[0].c),
     articleTotal: Number(articleCount.rows[0].c),

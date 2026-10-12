@@ -1,0 +1,73 @@
+# P04 存量迁移 dry-run（source: git show origin/main:prisma/dev.db > /workspace/work/p04tmp/main.db；md5 与 ../hdw-main/prisma/dev.db 相同 57ee81e3…）
+md5 before: 57ee81e33159592ca22d0f6d51823411
+
+## 1. node scripts/migrate-news-to-article.mjs --db main.db（dry-run）
+{
+ "mode": "dry-run",
+ "schemaReady": false,
+ "missingArticleColumns": [
+  "channel",
+  "contentType"
+ ],
+ "idConflicts": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "wouldInsert": 0,
+ "sourceDb": "/workspace/work/p04tmp/main.db",
+ "newsTotal": 5,
+ "articleTotal": 25,
+ "note": "dry-run 未写入；--apply 执行迁移（自动备份为 .pre-news-migrate）"
+}
+
+## 2. node scripts/migrate-setting-keys.mjs --db main.db（dry-run）
+[dry-run] site.title → siteName：扁平键已存在且值相同
+[dry-run] site.logo → siteLogo：新建扁平键
+[dry-run] contact.phone1 → contactPhone1：扁平键已存在且值相同
+[dry-run] contact.phone2 → contactPhone2：扁平键已存在且值相同
+[dry-run] contact.email → contactEmail：扁平键已存在且值相同
+[dry-run] contact.address → address：扁平键已存在且值相同
+[dry-run] contact.worktime → workHours：新建扁平键
+[dry-run] seo.title → seoTitle：扁平键已存在且值相同
+[dry-run] seo.keywords → seoKeywords：扁平键已存在且值相同
+[dry-run] seo.description → seoDescription：扁平键已存在且值相同
+[dry-run] site.icp → icp：新建扁平键
+ dry-run 检查 11 个键。
+无映射键（保留待人工核对）： site.subtitle, schoolFullName, schoolShortName, schoolSlogan, companyIntro, yearsOfEstablishment, totalGraduates, social.wechat, social.weibo, social.douyin, site.copyright, siteName, siteDescription, companySlogan, welcomeText, footerSlogan, footerDescription, contactPhone, contactPhone1, contactPhone2, contactEmail, address, bannerTitle, bannerSubtitle, bannerBtnText, bannerBtnLink, seoTitle, seoKeywords, seoDescription, topNoticeText, topNoticePhone
+
+md5 after dry-runs: 57ee81e33159592ca22d0f6d51823411（原件未写）
+
+## 3. migrate-setting-keys.mjs --apply 于副本 main-apply-set.db
+Setting before: 42
+迁移 11 个键。
+无映射键（保留待人工核对）： site.subtitle, schoolFullName, schoolShortName, schoolSlogan, companyIntro, yearsOfEstablishment, totalGraduates, social.wechat, social.weibo, social.douyin, site.copyright, siteName, siteDescription, companySlogan, welcomeText, footerSlogan, footerDescription, contactPhone, contactPhone1, contactPhone2, contactEmail, address, bannerTitle, bannerSubtitle, bannerBtnText, bannerBtnLink, seoTitle, seoKeywords, seoDescription, topNoticeText, topNoticePhone
+exit=0
+Setting after: 34；点分键残留: site.copyright,site.subtitle,social.douyin,social.wechat,social.weibo
+新建扁平键: icp=蜀ICP备2026XXXXXX号,siteLogo=/images/logo.png,workHours=周一至周日 9:00-18:00
+
+## 4. News → Article 实际路径：scripts/import-main-content.mjs（P02，upgrade schema 目标库副本 up-copy.db）
+up-copy Article(channel=news, id>=100000) before: 8
+[dry-run] Category      21 行（整表替换）
+[dry-run] Tag           0 行（整表替换）
+[dry-run] Article       30 行（整表替换）
+[dry-run] ArticleTag    0 行（整表替换）
+[dry-run] Banner        1 行（整表替换）
+[dry-run] HomeCard      4 行（整表替换）
+[dry-run] HotMajor      8 行（整表替换）
+[dry-run] Partner       8 行（整表替换）
+[dry-run] Campus        0 行（整表替换）
+[dry-run] CampusImage   0 行（整表替换）
+[dry-run] Gallery       8 行（整表替换）
+[dry-run] ServiceGuide  6 行（整表替换）
+[dry-run] Course        6 行（整表替换）
+[dry-run] Navigation    9 行（整表替换）
+[dry-run] ChatScene     7 个场景（按 code upsert）
+[dry-run] Setting       34 个 key（upsert，旧点分 key 已映射）
+dry-run 结束：未写入。加 --apply 执行。
+apply exit=0
+after: main News=5 → upgrade Article id>=100000 channel=news: 5；main Article=25 → upgrade Article id<100000: 25
+News 标题逐条对账（main News.title 与 upgrade Article.title(id=100000+id) 差集应为空）:
+  diff 为空 ✓
