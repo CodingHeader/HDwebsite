@@ -17,7 +17,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "ts-node prisma/seed.ts",
-    "prisma.seed": "ts-node prisma/seed.ts"
+    "prisma.seed": "ts-node prisma/seed.ts",
+    "test:visual": "playwright test tests/visual",
+    "visual:reference": "VISUAL_REF=1 playwright test tests/visual --update-snapshots"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -56,6 +58,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
