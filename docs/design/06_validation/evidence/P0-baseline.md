@@ -25,7 +25,7 @@ snapshot:
   工作区是否干净: true（P0 执行前后 `git status --short` 均为空；.env.local / prisma/dev.db / backups / *.tsbuildinfo / next-env.d.ts 均被 .gitignore 覆盖）
   文件数:
     upgrade 已跟踪文件: 742（src 195｜docs 111｜prisma 7｜scripts 4｜uploads 413 ≈ 32MB｜根文件 12）
-    upgrade src TS/TSX: 194 个，合计 11,016 行
+    upgrade src TS/TSX: 194 个，合计 11,016 行〔勘误 2026-10-12（P0-verify #2，P01 应用）：`git ls-files src | grep -E '\.(ts|tsx)$' | xargs wc -l` = 10,929 行〕
     main 已跟踪文件: 826（src 182｜public 150｜其余为截图、日志、website_error/ 副本等）
   运行环境: node v22.23.3 / npm 10.9.9（package.json engines 要求 node>=24 → npm ci 报 EBADENGINE 警告，未阻断）
   测试命令: npm run lint｜npm run typecheck｜npm test（vitest run）｜npm run build｜npm run check（= lint+typecheck+build）
@@ -40,7 +40,7 @@ snapshot:
 | 3 | `npm run lint`（eslint） | ✅ exit 0 | 首次 >60s（被 60s 超时截断一次），带缓存重跑 10s | **0 errors / 25 warnings**（未用变量 ×N、无效 eslint-disable ×3：collect-engine.ts:19、crud-resources.ts:34、wechat.ts:17；settings/page.tsx:8、wechat-accounts/page.tsx:34、SchemaForm.tsx:9、crud.ts:14、jobs/backup.ts:33、llm-gateway.ts:96 等） |
 | 4 | `npm run typecheck`（tsc --noEmit） | ✅ exit 0 | 24s | 0 errors |
 | 5 | `npm test`（vitest run） | ✅ exit 0 | 14s | **6 files / 33 tests passed / 0 failed**（markdown 10、settings-registry 6、scheduler-cron 6、auth-permission 4、crypto 4、slug 3）；无组件测试、无 API 集成测试、无 E2E |
-| 6 | `npm run build`（next build，Turbopack） | ✅ exit 0 | 92s | 37 个静态生成页；路由：前台 15 + API 89 + manager 35 + robots/sitemap；1 条 Turbopack 警告（experimental `cssChunking` 不被识别：`⨯ cssChunking`） |
+| 6 | `npm run build`（next build，Turbopack） | ✅ exit 0 | 92s〔单次测量；P0-verify 复跑编译阶段 119s，波动 ≈90~120s〕 | 37 个静态生成页；路由：前台 15 + API 89 + manager 35〔勘误 2026-10-12（P0-verify #1）：实测 API 87（route.ts 87 个）+ manager 34（page.tsx 34 个）〕 + robots/sitemap；1 条 Turbopack 警告（experimental `cssChunking` 不被识别：`⨯ cssChunking`） |
 | 7 | `npx prisma migrate deploy` | ✅ | — | 4 个迁移全部应用（20261011052216_init / partner_int_id / course_sort / llm_kind_botid） |
 | 8 | `npx prisma db seed` | ✅ | — | 管理员 admin/admin123、菜单、5 个采集源（提示 cce.scu.edu.cn 为 JS 渲染站） |
 | 9 | `PORT=6789 node scripts/start-next.mjs`（= npm start） | ⚠️ 见下 | 启动前**每次重建**约 90s | 见 §3 发现 F1/F2 |
@@ -70,7 +70,7 @@ snapshot:
 | 首页 JS（全部 `<script src>` gzip 合计） | 字节 | 191,180 B | — |
 | 后台 `/manager` JS（gzip 合计） | 字节 | **393,828 B**（疑因 `import * as Lucide`，manager/layout.tsx:9） | — |
 | 首页 HTML | 字节 | 21,098 B | — |
-| 构建时长 | 秒 | 92s | — |
+| 构建时长 | 秒 | 92s（单次；复跑 119s，波动区间 ≈90~120s，P0-verify #5） | — |
 
 限制：沙箱单机、seed 数据量小、无网络节流；数值仅作"同环境对比"的基线，不代表生产。
 

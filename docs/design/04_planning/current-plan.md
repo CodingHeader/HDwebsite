@@ -6,7 +6,7 @@ status: active
 owner: 产品所有者
 created: 2026-10-10
 updated: 2026-10-12
-related: [PARITY-MATRIX, EVD-P0-BASELINE, PLAN-MASTER]
+related: [PARITY-MATRIX, EVD-P0-BASELINE, PLAN-MASTER, REQ-F-013, REQ-F-014, REQ-F-015, ADR-024, ADR-025]
 ---
 
 # 当前轮计划：main → upgrade 全量审阅·优化·重构（P0~P15）
@@ -15,6 +15,16 @@ related: [PARITY-MATRIX, EVD-P0-BASELINE, PLAN-MASTER]
 > 本轮输入（用户原意）：学习 main，审阅—优化—重构全部内容到 upgrade，不计代价；main 上的每个功能都必须在 upgrade 存在，main 缺的按需求在 upgrade 扩展；**用户端（web）UI 风格不得改变**；管理端（manager）UI 顶级设计、极度友好。
 > 执行顺序（用户指定）：P01 需求 → P02 前端 → P03 后端 → P04 数据 → P05 交互 → P06 逻辑 → P07 组件 → P08 复用 → P09 拓展 → P10 性能 → P11 配置 → P12 知识库 → P13 响应 → P14 存储 → P15 资源。每个方向一份可执行提示词：`04_planning/review-prompts/P01-需求.md … P15-资源.md`。
 > 历史轮次记录（2026-10-10 ~ 10-11）完整保留于文末附录 A。
+
+### 2026-10-12 用户裁决（P01 落盘；有约束力，优先于本文件其他段落中的旧表述）
+
+| # | 裁决 | 落点 | 关闭/影响 |
+| --- | --- | --- | --- |
+| D1 | 公开站点（web）沿用 main 原有的**红色横幅轮播**风格，外观不变 | REQ-F-014；P02 visual 门禁 | K2 定稿 |
+| D2 | "main 上每个功能都要在 upgrade 存在"再次确认；**首页区块配置 + ElementConfig 恢复**，取代 ADR-012 | REQ-F-013；ADR-024；parity C9/C10 → missing（P04/P06/P07） | K1、U-B2 关闭 |
+| D3 | 知识库通过 **Coze** 集成；文件类型仅 **Word（.docx/.doc）+ Markdown + TXT**，**不要 PDF、不要图片** | ADR-025；REQ-F-007 更新；P12 重写 | K4、U-B3 关闭 |
+| D4 | 微信公众号与 SMTP 凭证不提供 | 完整实现 + mock 测试，真实联调标 UNKNOWN（M-9/M-12 公众号部分、M-13 真实发信） | U-B1、U-B4 关闭（取方案 B） |
+| D5 | 管理端顶级设计、极度友好 | REQ-F-015 | — |
 
 ---
 
@@ -28,10 +38,10 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 工作区是否干净: true（P0 前后 git status 为空）
 需求文档清单: docs/design/02_requirements/**（REQ-F-001~012、REQ-NF-001~004、REQ-C-001~003、inbox 1、product-requirements、backlog；均在 8af8bfb/8ea4155/5b72fb7 期间最后修改，2026-10-10~12）
   + 本轮新增: 02_requirements/parity-matrix.md
-代码文件数: upgrade 已跟踪 742（src 195，TS/TSX 194 个共 11,016 行；uploads 413 个≈32MB）
+代码文件数: upgrade 已跟踪 742（src 195，TS/TSX 194 个共 10,929 行〔P0 原写 11,016，P0-verify 以 `git ls-files src | grep -E '\.(ts|tsx)$' | xargs wc -l` 复算勘误〕；uploads 413 个≈32MB）
 测试命令: npm run lint｜npm run typecheck｜npm test｜npm run build（npm run check = lint+typecheck+build）
 运行环境: node v22.23.3（engines 要求 >=24，EBADENGINE 警告）/ npm 10.9.9 / Prisma Client 7.10.0
-基线结果: lint 0 error/25 warning｜typecheck 0 error｜vitest 6 文件 33/33 通过｜build 通过（92s）——明细见 06_validation/evidence/P0-baseline.md
+基线结果: lint 0 error/25 warning｜typecheck 0 error｜vitest 6 文件 33/33 通过｜build 通过（单次测量 92s；P0-verify 复跑编译阶段 119s，构建耗时随环境波动约 90~120s，仅作参考）——明细见 06_validation/evidence/P0-baseline.md
 ```
 
 ## 2. 事实基线
@@ -39,7 +49,7 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 ### 2.1 已确认事实（有代码/运行证据）
 
 1. 技术栈（package.json）：Next 16.2.1 / React 19.2.4 / Prisma 7（libsql 适配器，SQLite）/ Tailwind v4 / zod 4 / zustand 5 / vitest 3；`@base-ui/react`、`@radix-ui/react-dialog`、`@radix-ui/react-label` 已安装但 **src 零引用**；无 `src/components/ui/`、无 `lib/utils.ts`（cn）；无 TipTap。
-2. 路由（build 输出）：前台 15（/、about、apply、articles、articles/[id]、campus、contact、courses、courses/[id]、gallery、learning、partners、party、services/[slug] + not-found）+ API 89 + manager 35 + robots/sitemap。
+2. 路由（build 输出）：前台 15（/、about、apply、articles、articles/[id]、campus、contact、courses、courses/[id]、gallery、learning、partners、party、services/[slug] + not-found）+ API 87（route.ts 87 个）+ manager 34（page.tsx 34 个）+ robots/sitemap。（P0 原写 API 89 + manager 35，P0-verify 以 build 输出与 `find` 复算勘误。）
 3. 数据：schema 42 模型；迁移 4 个（20261011052216_init → partner_int_id → course_sort → llm_kind_botid）；seed 幂等，默认 admin/admin123。
 4. 契约唯一源：`src/contracts/*.ts`（zod：common/auth/article/setting/user-action/resources）；统一响应包 `src/lib/api-response.ts`；通用 CRUD 工厂 `src/lib/crud.ts` + 规格表 `src/lib/crud-resources.ts`；管理端列/表单规格另在 `src/components/manager/crud-specs.tsx`（583 行，**第二源**）。
 5. 调度：`src/instrumentation.ts` 启动进程内调度，`src/lib/jobs/index.ts:11-50` 注册 backup / collect.run / publish.scan / notify.scan / retry.failed / llm.balance-check。
@@ -57,9 +67,9 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 
 | # | 文档说法 | 代码事实 | 处置方向 |
 | --- | --- | --- | --- |
-| I1 | master-plan §3 M-1：A 仓前台路由/后台页面/API "全部重建且行为对齐" | chat-history / logs 的 API 与页面缺失；前台 16 个页面视觉与 main 不同（parity-matrix A1~A16） | P01/P02/P03 |
+| I1 | master-plan §3 M-1：A 仓前台路由/后台页面/API "全部重建且行为对齐" | chat-history / logs 的 API 与页面缺失；前台 16 个页面视觉与 main 不同（parity-matrix A1~A16） | P01（已在 master-plan 加更正块，2026-10-12）/P02/P03 |
 | I2 | README §2 技术栈含 "TipTap / shadcn" | upgrade 无 TipTap、无 components/ui | P07 |
-| I3 | master-plan §1 称 hdwebsite_0429（B 仓）= c6ff40b | GitHub `main` HEAD = 94dbbbb 为 A 仓口径（32 模型、无 Major）；c6ff40b 仅为 main 首提交 | P01（更正口径） |
+| I3 | master-plan §1 称 hdwebsite_0429（B 仓）= c6ff40b | GitHub `main` HEAD = 94dbbbb 为 A 仓口径（32 模型、无 Major）；c6ff40b 仅为 main 首提交 | P01（已更正，2026-10-12） |
 | I4 | 菜单 seed 与路由使用 `kb:list/llm:list/collect:list/notify:list/wechat:list/publish:list/content:list`（seed.ts:112-122；api/kb/test/route.ts:15 等） | `permissionCatalog` 仅定义这些模块的 `edit`（contracts/auth.ts:73-79）→ 角色无法被授予 list 权限，非 SuperAdmin 看不到 AI/通知菜单 | P03/P04 |
 | I5 | seed 菜单登记 `/manager/logs`（seed.ts:126） | 页面不存在（404） | P03 |
 | I6 | REQ-F-006"采集默认入知识库" | 仅在审核通过时写 Knowledge（api/collect-items/[id]/route.ts:47） | P06/P12 |
@@ -68,7 +78,7 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 | I9 | `.env.example`：复制为 .env.local 即可 | standalone 生产启动不加载 .env.local（P0-baseline F1） | P11 |
 | I10 | master-plan §11 构建 ≈40s | 本机实测 92s（环境不同，仅记录） | P10 |
 | I11 | 注释称"预留/后续切片注册"（next.config.ts:28；jobs/index.ts:3-6） | 已实现 | P08（清理注释） |
-| I12 | product-requirements §4"前台 13 类页面" | main 前台 15 路由 + news 2 个重定向页 | P01 |
+| I12 | product-requirements §4"前台 13 类页面" | main 前台 15 路由 + news 2 个重定向页 | P01（已更正，2026-10-12） |
 | I13 | REQ-F-011 五类事件含"错误" | `system_error` 只在通知自身失败时派生（notify-gateway.ts:136-137），API/调度异常未接入 | P06 |
 | I14 | 14-存储设计 §4/§S1：每日备份 dev.db + uploads、上传迁独立 uploads 目录 | standalone 运行时 `process.chdir(.next/standalone)`（server.js:6），`UPLOAD_ROOT`/`backups` 基于 cwd（upload/route.ts:25、jobs/backup.ts:45）→ 写入构建目录，重建即清空（P0 实测首启备份在重建后消失） | P14 |
 
@@ -95,19 +105,19 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 
 | ID | 需求 | 可验证表述 |
 | --- | --- | --- |
-| M-1 | main 功能全量对等 | `parity-matrix.md` 中 missing=0、partial=0（dropped-by-ADR 项按 U-B2 裁决结果处理） |
-| M-2 | 用户端 UI 风格不变 | 同一 seed 数据下，upgrade 15 个前台路由在 1440/768/375 三个宽度的 Playwright 截图与 main 对应路由像素差 ≤ 1%（`maxDiffPixelRatio: 0.01`），且 DOM 主要区块（data-testid）一致 |
-| M-3 | 管理端顶级设计 | /manager 全部页面只用 `src/components/ui/**` 与 `src/components/manager/**` 共享组件；`grep -rn "window.confirm\|alert(" src/app/manager src/components/manager` 为 0；axe 扫描 serious/critical = 0；有 375px 可用布局 |
+| M-1 | main 功能全量对等（REQ-F-013） | `parity-matrix.md` 中 missing=0、partial=0、dropped-by-ADR=0（U-B2 已裁决恢复：C9/C10 须达 present，ADR-024） |
+| M-2 | 用户端 UI 风格不变——main 原有红色横幅轮播风格（REQ-F-014，D1） | 同一 seed 数据下，upgrade 15 个前台路由在 1440/768/375 三个宽度的 Playwright 截图与 main 对应路由像素差 ≤ 1%（`maxDiffPixelRatio: 0.01`），且 DOM 主要区块（data-testid）一致 |
+| M-3 | 管理端顶级设计（REQ-F-015） | /manager 全部页面只用 `src/components/ui/**` 与 `src/components/manager/**` 共享组件；`grep -rn "window.confirm\|alert(" src/app/manager src/components/manager` 为 0；axe 扫描 serious/critical = 0；有 375px 可用布局 |
 | M-4 | 完整 CRUD | 每个可写资源（crud-resources 中有 createSchema 者 + 特殊页资源）均有 list/get/create/update/delete 契约测试，且未登录 401、无权限 403 用例通过 |
-| M-5 | 全动态数据 | 前台与后台展示数据全部来自 DB/Setting；`grep` 硬编码电话/品牌文案（如 wechat.ts:121 `400-001-5729`）为 0 |
+| M-5 | 全动态数据 | 前台与后台展示数据全部来自 DB/Setting；`grep` 硬编码电话/品牌文案（如 wechat.ts:118 `400-001-5729`，域名在 :119）为 0 |
 | M-6 | 交互可用 | Playwright E2E：登录→新建/编辑/删除→采集试抓→审核→排期发布→通知记录 全链路通过 |
 | M-7 | 可配置自动采集 | 采集源 CRUD + cron 可改 + 试抓/立即执行；`collect.run` 按 cron 运行并留 CollectTask 记录 |
 | M-8 | 采集默认入知识库 | 新采集条目在源开关 `autoToKb=true`（默认）时，入库后即在知识库可检索（不必等待发布） |
-| M-9 | 自动发布官网新闻与公众号文章 | PublishJob 到点执行：website 写 Article(published)；wechat 走草稿→发布接口（mock 适配器测试通过；真实凭证见 U-B1） |
-| M-10 | 知识库管理（库/文件/条目/检索测试） | 管理端可增删改查知识库、上传文件生成条目、按库检索测试（文件格式范围见 U-B3） |
+| M-9 | 自动发布官网新闻与公众号文章 | PublishJob 到点执行：website 写 Article(published)；wechat 走草稿→发布接口（mock 适配器测试通过；无凭证，真实联调 UNKNOWN，D4） |
+| M-10 | 知识库管理（库/文件/条目/检索测试；Coze 集成，ADR-025） | 管理端可增删改查知识库（映射 Coze dataset）、上传 Word(.docx/.doc)/Markdown/TXT 文件同步到 Coze 并生成本地兜底条目、上传 PDF 或图片被拒（400）、按库检索测试（Coze 真实联调 UNKNOWN，mock 契约测试） |
 | M-11 | 多模型 + 知识库 + 提示词 + 参数 | 每个对话场景可绑定：模型优先级列表（缺省走全局 default→priority→fallback）、知识库集合、系统提示词、温度/maxTokens/topP |
 | M-12 | 官网与公众号 AI 客服 | 两渠道使用同一场景配置（提示词+知识库+模型路由），公众号回复不含硬编码文案 |
-| M-13 | 多收件人邮件提醒 | 发布前（news/info/wechat）、LLM 余额低、错误（API 500 / 任务失败 / 采集失败）三类事件均按规则发给多名收件人并留 NotifyRecord |
+| M-13 | 多收件人邮件提醒 | 发布前（news/info/wechat）、LLM 余额低、错误（API 500 / 任务失败 / 采集失败）三类事件均按规则发给多名收件人并留 NotifyRecord（无 SMTP 凭证：jsonTransport 测试，真实发信 UNKNOWN，D4） |
 | M-14 | 敏感凭据加密 | apiKey/appSecret/SMTP 密码加密落库、接口脱敏；`git grep` 无明文密钥 |
 
 **SHOULD**：性能不劣于 P0 基线（§11）；SEO 三件套保持；后台响应式；备份可恢复；文档与代码一致。
@@ -118,23 +128,34 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 
 | # | 冲突 | 处置 |
 | --- | --- | --- |
-| K1 | "main 每个功能都要在" vs ADR-012 裁剪 block-registry/ContentBlock/PageTemplate/TemplateBlock/ElementConfig | 不静默决定 → U-B2 |
-| K2 | "前台风格不变" vs upgrade 现有前台（已重写为蓝色简化版） | 以用户本轮硬约束为准：P02 以 main 视觉为唯一标准恢复；与 ADR 无冲突（ADR-001 仅换数据源/路由，视觉不变） |
+| K1 | "main 每个功能都要在" vs ADR-012 裁剪 block-registry/ContentBlock/PageTemplate/TemplateBlock/ElementConfig | **已裁决（2026-10-12，D2）**：恢复，ADR-024 取代 ADR-012 |
+| K2 | "前台风格不变" vs upgrade 现有前台（已重写为蓝色简化版） | 以用户本轮硬约束为准：P02 以 main 视觉（红色横幅轮播，D1）为唯一标准恢复；与 ADR 无冲突（ADR-001 仅换数据源/路由，视觉不变） |
 | K3 | "余额低提醒" vs ADR-005 人工填报余额 | NON_BLOCKING：保持人工填报 + 阈值提醒；供应商支持余额 API 时可选自动查询（COULD） |
-| K4 | REQ-F-007"库/文件管理" vs ADR-020/023 外部知识库（Coze）优先 | U-B3（条件方案见 3.4） |
+| K4 | REQ-F-007"库/文件管理" vs ADR-020/023 外部知识库（Coze）优先 | **已裁决（2026-10-12，D3）**：Coze 集成（库↔dataset、文件↔document）+ 本地兜底；Word/Markdown/TXT，拒 PDF/图片（ADR-025） |
 | K5 | "自动发布" vs ADR-017 人工审核 + ADR-008 发布前仅通知 | NON_BLOCKING 假设 A-3：审核门保留；"自动"= 审核通过后按排期自动执行；采集源可选 `autoApprove`（默认 false） |
 | K6 | engines node>=24 vs 当前环境 node 22 | NON_BLOCKING：CI/验证仍用 node 22 跑通即可，生产按 24；P11 记录 |
 
 ### 3.4 未知登记册
 
-**BLOCKING（需人裁决；均给出条件方案，不停摆）**
+**BLOCKING（需人裁决）——2026-10-12 全部已裁决，当前无未决 BLOCKING 项**
 
-| ID | 未知 | 分叉点 | 条件方案 A | 条件方案 B | 共同部分（可先做） | 需裁决变量 |
-| --- | --- | --- | --- | --- | --- | --- |
-| U-B1 | 微信公众号真实凭证（AppID/AppSecret/IP 白名单/服务器 Token） | P06 公众号发布与客服的验收方式 | 有凭证：真实草稿+发布+客服消息联调留证 | 无凭证：mock 适配器契约测试 + 沙箱号（若有）；M-9/M-12 的公众号部分标 UNKNOWN | 适配器接口、mock、场景化回复逻辑 | 是否提供凭证、何时 |
-| U-B2 | ADR-012 裁剪的"首页区块配置运行时 + ElementConfig"是否仍算必须对等的 main 功能 | P04 数据模型、P02 首页渲染方式 | 恢复：首页区块可开关/排序（以 Setting 分组 + 区块注册表实现，不复活 4 张表，除非用户要求） | 维持裁剪：parity 标记为"用户确认放弃" | 首页按 main 原样渲染（P02） | 恢复/放弃；若恢复是否要求原表结构 |
-| U-B3 | 知识库形态与文件格式 | P12 迁移内容与依赖 | 本地优先：新增 KnowledgeBase/KnowledgeFile，支持 md/txt/html（零新依赖），Coze 为可选同步 | 外部优先：仅管理 Coze 数据集映射 + 本地兜底条目 | 知识库/条目管理页、场景绑定、检索测试 | 选 A/B；是否需要 docx/pdf（需新增解析依赖） |
-| U-B4 | SMTP 真实凭证 | P06 邮件验收 | 有凭证：真实发信留证 | 无凭证：nodemailer stream/jsonTransport 测试 + NotifyRecord 断言 | 规则/模板/收件人/事件接线 | 是否提供 |
+| ID | 未知 | 裁决（2026-10-12） | 落点 | 残留 UNKNOWN |
+| --- | --- | --- | --- | --- |
+| U-B1 | 微信公众号真实凭证（AppID/AppSecret/IP 白名单/服务器 Token） | 不提供 → 原方案 B：完整实现 + mock 适配器契约测试 | P06/P09 | M-9/M-12 的公众号真实联调 = UNKNOWN |
+| U-B2 | ADR-012 裁剪的"首页区块配置运行时 + ElementConfig"是否仍算必须对等的 main 功能 | **恢复**（原方案 A，且恢复 main 原表结构：PageTemplate/ContentBlock/TemplateBlock/ElementConfig + Navigation.templateId），ADR-024 取代 ADR-012 | P02（锚点）/P04（迁移+seed）/P06（注册表+API+首页组合）/P07（管理页） | 无 |
+| U-B3 | 知识库形态与文件格式 | **Coze 集成**（原方案 B 口径：库↔Coze dataset、文件↔Coze document，本地兜底条目保留）；文件类型仅 Word(.docx/.doc)、Markdown(.md/.markdown)、TXT；**拒绝 PDF 与图片**（ADR-025） | P12（主）/P06/P09/P14 | Coze dataset 真实联调 = UNKNOWN（本仓无凭证）；Coze 单文件上限待核实 |
+| U-B4 | SMTP 真实凭证 | 不提供 → 原方案 B：nodemailer jsonTransport/stream 测试 + NotifyRecord 断言 | P06 | 真实发信 = UNKNOWN |
+
+<details><summary>P0 原始条件方案（历史，保留备查）</summary>
+
+| ID | 条件方案 A | 条件方案 B | 共同部分 |
+| --- | --- | --- | --- |
+| U-B1 | 有凭证：真实草稿+发布+客服消息联调留证 | 无凭证：mock 适配器契约测试 + 沙箱号（若有） | 适配器接口、mock、场景化回复逻辑 |
+| U-B2 | 恢复：首页区块可开关/排序（以 Setting 分组 + 区块注册表实现，不复活 4 张表，除非用户要求） | 维持裁剪：parity 标记为"用户确认放弃" | 首页按 main 原样渲染（P02） |
+| U-B3 | 本地优先：新增 KnowledgeBase/KnowledgeFile，支持 md/txt/html，Coze 为可选同步 | 外部优先：仅管理 Coze 数据集映射 + 本地兜底条目 | 知识库/条目管理页、场景绑定、检索测试 |
+| U-B4 | 有凭证：真实发信留证 | 无凭证：jsonTransport 测试 + NotifyRecord 断言 | 规则/模板/收件人/事件接线 |
+
+</details>
 
 **NON_BLOCKING（带假设推进，任务卡中显式标注）**
 
@@ -144,7 +165,7 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 | A-2 | 截图差异阈值 | `maxDiffPixelRatio 0.01`、动画禁用、字体本地化；依据 M-2 需机器可校验 |
 | A-3 | "自动发布"语义 | 见 K5 |
 | A-4 | 管理端品牌色 | 沿用 main 品牌红（globals.css `--color-brand-600 oklch(0.505 0.213 27.5)`）作为强调色，中性灰为主（依据：统一风格） |
-| A-5 | 新增依赖 | 允许：`@playwright/test`（main 曾用）、`@tiptap/*`（main 曾用，恢复富文本）、`@axe-core/playwright`（a11y 验收）；其余新依赖需在任务卡中说明理由 |
+| A-5 | 新增依赖 | 允许：`@playwright/test`（main 曾用）、`@tiptap/*`（main 曾用，恢复富文本）、`@axe-core/playwright`（a11y 验收）；2026-10-12 补充：docx 解析库 1 个（ADR-025，P12 说明体积与安全影响）；其余新依赖需在任务卡中说明理由 |
 | A-6 | node 版本 | 见 K6 |
 | A-7 | 低余额阈值缺省 | 沿用 Setting `llmBalanceThreshold`（registry 现值），后台可改 |
 
@@ -152,8 +173,8 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 
 - 隐含：上线前改默认管理员密码；JWT_SECRET/ENCRYPTION_KEY 生产必须注入；采集需遵守 robots 与限频（collectRateLimitMs 已有）；所有前台改动不得破坏 SEO（sitemap/robots/metadata）。
 - 前置：P02 视觉对比需要 main 可运行 + Playwright 浏览器可安装（若沙箱无法下载浏览器 → 任务卡升级条件）。
-- 歧义："知识库模型管理"可指"知识库实体管理"或"嵌入模型管理" → 按 U-B3 方案 A 解释为知识库实体；嵌入模型属 ADR-016 二期（COULD）。
-- 边界条件：SQLite 并发写（调度 + 请求）、公众号 5s 被动回复限制、SSE 断流、采集站点 JS 渲染（cce.scu.edu.cn）、上传超 20MB。
+- 歧义："知识库模型管理"可指"知识库实体管理"或"嵌入模型管理" → 解释为知识库实体（2026-10-12 起 = Coze dataset 映射，ADR-025）；嵌入模型属 ADR-016 二期（COULD）。
+- 边界条件：SQLite 并发写（调度 + 请求）、公众号 5s 被动回复限制、SSE 断流、采集站点 JS 渲染（cce.scu.edu.cn）、上传超 20MB；知识库上传 PDF/图片必须被拒、Markdown 以 txt 上传 Coze、Coze 每次 ≤10 文件（ADR-025）。
 - 模块依赖：采集→知识库→发布→通知；场景→模型网关→知识库；公众号→场景。
 
 ## 4. 契约冻结包（六份；唯一源 = `src/contracts/**` zod）
@@ -162,14 +183,14 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 
 | # | 契约 | 现状（代码） | 本轮缺口 → 负责方向 |
 | --- | --- | --- | --- |
-| ① API | 信封 `{code,data,message}`（contracts/common.ts + lib/api-response.ts）；分页 `{list,pagination:{page,limit,total,totalPages}}`；资源请求 Schema 在 contracts/resources.ts | 新增 logs/chat-history/media PATCH+batch/article status 契约（P03）；管理端列/表单规格从契约派生（P08）；SSE 事件格式入契约（P13） |
+| ① API | 信封 `{code,data,message}`（contracts/common.ts + lib/api-response.ts）；分页 `{list,pagination:{page,limit,total,totalPages}}`；资源请求 Schema 在 contracts/resources.ts | 新增 logs/chat-history/media PATCH+batch/article status 契约（P03）；blocks 契约 content-blocks/page-templates/template-blocks/element-configs（P06，ADR-024）；知识库/文件 Coze 契约与文件类型白名单（P12，ADR-025）；管理端列/表单规格从契约派生（P08）；SSE 事件格式入契约（P13） |
 | ② Errors | code ∈ {200,400,401,403,404,500}（+502 AI 上游，实测存在）；zod 首条中文 | 冻结错误码枚举含 409（重复）/422?（不新增，统一 400）/429（限频，现返回 400，chat/stream/route.ts:37）/502；前端统一 toast 展示（P13 + P05） |
 | ③ Identity | Int 用户 ID；SuperAdmin/Editor/Viewer；JWT claims `{uid,username,roleId,isSuper,permissions[]}`；权限点 `module:action` | 补齐 catalog 缺失的 `*:list`（I4，P03）；review:edit 仅 SuperAdmin 在 content-items 状态迁移中强制（I7，P06）；前台零写权限（仅 apply/chat/user-actions 公开写） |
 | ④ Resources | `/uploads/:path*` → `/api/file/:path*`；类型白名单 + 20MB；缩略图 thumb/small/medium | 运行时上传移出 git（P14）；public 静态资源原样恢复（P02）；资源引用完整性检查脚本（P15） |
 | ⑤ Events | CronJob 任务名 6 个；NotifyEvent 7 个（notify-gateway.ts:14-21） | 新增事件仅允许：`api_error`（或复用 system_error，P06 决定并写入 contracts）；事件名枚举移入 contracts（P06） |
 | ⑥ UX States | 空/加载/错误/无权限/成功五态（master-plan §4⑥） | 管理端五态组件化（EmptyState/Skeleton/ErrorState/Forbidden/Toast，P07），全部页面接入（P05）；前台五态保持 main 现状（不改风格） |
 
-契约自检（§4.4）：前端可凭 contracts 写调用层 ✅（manager-fetch + zod 类型）；后端可凭 contracts 实现 ✅；数据端可凭 contracts 设计表 ⚠️（P12 新实体待 U-B3）；错误码覆盖已知失败 ⚠️（429 现映射为 400，P13 修正）；越权路径已禁止 ⚠️（I4/I7 待 P03/P06 修复）。**⚠️ 项为已登记缺口，由对应方向在改代码前先补契约。**
+契约自检（§4.4）：前端可凭 contracts 写调用层 ✅（manager-fetch + zod 类型）；后端可凭 contracts 实现 ✅；数据端可凭 contracts 设计表 ⚠️（P12 新实体按 ADR-025 由 P12 先补契约；ADR-024 恢复模型以 main schema 为准）；错误码覆盖已知失败 ⚠️（429 现映射为 400，P13 修正）；越权路径已禁止 ⚠️（I4/I7 待 P03/P06 修复）。**⚠️ 项为已登记缺口，由对应方向在改代码前先补契约。**
 
 ## 5. 数据模型基线（含迁移版本号编排）
 
@@ -178,9 +199,9 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 
 | 顺序 | 方向 | 迁移名（建议） | 内容（提议，进入方向后按契约最终确定） |
 | --- | --- | --- | --- |
-| 5 | P04 数据 | `p04_data_integrity` | AIChatHistory `@@index([ipAddress, createdAt])`（限频查询，chat/stream/route.ts:33）；OperationLog `@@index([module, createdAt])`；其他按 P04 查询路径审计结果 |
+| 5 | P04 数据 | `p04_data_integrity` | AIChatHistory `@@index([ipAddress, createdAt])`（限频查询，chat/stream/route.ts:33）；OperationLog `@@index([module, createdAt])`；其他按 P04 查询路径审计结果；**ADR-024 恢复**：`PageTemplate`、`ContentBlock`、`TemplateBlock`、`ElementConfig` 四表（字段按 main schema）+ `Navigation.templateId Int?`（仅加法，不改既有列） |
 | 6 | P06 逻辑 | `p06_collect_kb_review` | CollectSource `autoToKb Boolean @default(true)`、`autoApprove Boolean @default(false)`；CollectItem 入库时间戳 |
-| 7 | P12 知识库 | `p12_knowledge_base` | U-B3=A：`KnowledgeBase`、`KnowledgeFile`、`Knowledge.baseId`；`ChatScene` 绑定 `knowledgeBaseIds`、`providerIds`(优先级 JSON)、`temperature/maxTokens/topP` 覆盖值 |
+| 7 | P12 知识库 | `p12_knowledge_base` | ADR-025（Coze 集成）：`KnowledgeBase`（含 `cozeDatasetId`/同步状态）、`KnowledgeFile`（含 `ext`∈docx/doc/md/txt、`cozeDocumentId`/`cozeStatus`/进度/`localParse`）、`Knowledge.baseId/fileId/chunkIndex`；`ChatScene` 绑定 `knowledgeBaseIds`、`providerIds`(优先级 JSON)、`temperature/maxTokens/topP` 覆盖值；`CollectSource.knowledgeBaseId` |
 | — | 其余方向 | 禁止新增迁移 | 需改表 → 先提交 ADR，由下一个有迁移权的方向合并 |
 
 - 存量数据迁移：`scripts/migrate-news-to-article.mjs`、`scripts/migrate-setting-keys.mjs` 在 P04 以 main 自带 `prisma/dev.db` 的副本做 dry-run 并留证（不改 main）。
@@ -195,15 +216,15 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 | P01 | 需求 | 需求基线与对等清单定稿、AGENTS.md 规则就位（文档刀，无代码） | 冻结范围，后续所有验收引用 |
 | P02 | 前端 | 访客看到与 main 一致的前台（15 路由截图对比通过）+ 新后台外壳（AppShell/登录/主题） | 风格冻结是最高风险约束，越早锁定越好；后台外壳解锁 P05/P07 |
 | P03 | 后端 | 操作日志、对话日志可在后台查看；媒体可改名/批量；文章可一键上下线；权限点可授予 | 补齐 main 缺失 API（M-1） |
-| P04 | 数据 | 权限/菜单/seed 一致；限频与日志查询走索引；存量迁移 dry-run 报告 | 为 P06/P12 迁移铺路 |
+| P04 | 数据 | 权限/菜单/seed 一致；限频与日志查询走索引；存量迁移 dry-run 报告；首页区块/模板/交互点 4 表恢复并种入 main 原数据（ADR-024） | 为 P06/P12 迁移铺路 |
 | P05 | 交互 | 全后台五态 + toast/确认对话框；报名页 AI 咨询交互与 main 一致；E2E 主路径通过 | 依赖 P02 外壳 |
-| P06 | 逻辑 | 审核门强制、采集默认入库、错误邮件、公众号客服按场景回答 | 依赖 P03 契约与 P04 数据 |
-| P07 | 组件 | 全部管理页迁移到设计系统组件（DataTable/表单字段/TipTap/通知规则页） | 依赖 P02 令牌、P05 状态规范 |
+| P06 | 逻辑 | 审核门强制、采集默认入库、错误邮件、公众号客服按场景回答；区块注册表 + blocks API，首页按区块配置渲染（默认复现 main） | 依赖 P03 契约与 P04 数据 |
+| P07 | 组件 | 全部管理页迁移到设计系统组件（DataTable/表单字段/TipTap/通知规则页）；新增首页区块配置/页面模板/交互点配置管理页 | 依赖 P02 令牌、P05 状态规范、P06 blocks API |
 | P08 | 复用 | 管理端规格单源派生自契约，删除重复定义 | 依赖 P07 组件稳定 |
 | P09 | 拓展 | 渠道/模型/采集解析/通知 适配器注册表（仅对已有 ≥2 实现处） | 依赖 P06/P08 |
 | P10 | 性能 | 后台 JS、启动重建、首页缓存等指标较 §11 基线下降 | 规划总指令：有基线才能优化 |
-| P11 | 配置 | 生产启动读 env、设置键与重定向对等、Docker 件恢复 | — |
-| P12 | 知识库 | 知识库/文件管理 + 场景绑定库/模型/参数，官网与公众号共用 | 依赖 P06 入库逻辑、U-B3 |
+| P11 | 配置 | 生产启动读 env、设置键与重定向对等、Docker 件恢复、根目录 CLAUDE.md | — |
+| P12 | 知识库 | Coze 知识库集成（库↔dataset、文件↔document，Word/MD/TXT，拒 PDF/图片）+ 本地兜底 + 场景绑定库/模型/参数，官网与公众号共用 | 依赖 P06 入库逻辑；ADR-025 |
 | P13 | 响应 | 全部路由信封/错误码/SSE 事件符合契约（契约测试） | 收口 |
 | P14 | 存储 | uploads 移出 git、备份保留策略、孤儿文件清理 | — |
 | P15 | 资源 | 资源引用完整性、配额/限频生效、闲置依赖清理 | 收口 |
@@ -222,12 +243,12 @@ git_commit: 5b72fb73d8bb87ff44ab7c932b4ae265d4d09709
 | P04 | review-prompts/P04-数据.md | 数据一致性：权限/菜单/seed、索引、存量迁移 dry-run、迁移 p04 |
 | P05 | review-prompts/P05-交互.md | 全后台五态与反馈组件化接入、报名页 AI 咨询交互对等、E2E 主路径 |
 | P06 | review-prompts/P06-逻辑.md | 审核门、采集默认入库、错误提醒、公众号场景化客服、发布状态机测试 |
-| P07 | review-prompts/P07-组件.md | 顶级管理端组件库与全部管理页迁移，恢复富文本，补通知规则页 |
+| P07 | review-prompts/P07-组件.md | 顶级管理端组件库与全部管理页迁移，恢复富文本，补通知规则页与区块/模板/交互点配置页 |
 | P08 | review-prompts/P08-复用.md | 管理端规格从 zod 契约单源派生，消除重复 DTO/工具 |
 | P09 | review-prompts/P09-拓展.md | 为已有多实现的渠道/模型/解析/通知抽注册表接口 |
 | P10 | review-prompts/P10-性能.md | 以 P0 基线为准降低后台包体、启动重建与前台缓存开销 |
 | P11 | review-prompts/P11-配置.md | 生产 env 加载、设置键与重定向对等、Docker 与启动脚本修复 |
-| P12 | review-prompts/P12-知识库.md | 知识库/文件管理与场景绑定库+模型+提示词+参数，两渠道共用 |
+| P12 | review-prompts/P12-知识库.md | Coze 知识库集成（Word/MD/TXT，拒 PDF/图片）与场景绑定库+模型+提示词+参数，两渠道共用 |
 | P13 | review-prompts/P13-响应.md | 响应/错误码/SSE 契约全覆盖契约测试，后台响应式核验 |
 | P14 | review-prompts/P14-存储.md | 运行时文件移出 git、备份与孤儿清理、存储路径统一 |
 | P15 | review-prompts/P15-资源.md | 资源引用完整性、LLM 配额限频生效、闲置依赖与杂项清理 |
@@ -240,10 +261,11 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
   P02(AppShell/令牌) → P05(五态接入)、P07(组件库)
   P03(契约: logs/chat-history/权限目录) → P04(seed/菜单一致)、P06
   P04(迁移 p04) → P06(迁移 p06) → P12(迁移 p12)        ← 迁移串行链
+  P02(data-block 锚点) → P04(区块 4 表 + seed) → P06(block-registry + API + 首页组合) → P07(区块/模板/交互点管理页)   ← ADR-024 链
   P06(入库逻辑) → P12(知识库实体)
   P07(组件) → P08(单源派生)
   §11 基线 → P10
-关键路径：P01→P02→P05→P06→P07→P08→P12→P13（P02 前台恢复工作量最大，P12 受 U-B3 影响）
+关键路径：P01→P02→P05→P06→P07→P08→P12→P13（P02 前台恢复工作量最大；P12 按 ADR-025 Coze 集成）
 可并行组：无（编排要求串行 + 每阶段独立验证）
 环检测：无环（线性链 + 前向硬依赖）
 ```
@@ -254,7 +276,7 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | --- | --- | --- |
 | `docs/design/**` | 全部（仅追加本方向证据/ADR；P01 可改需求文档） | 禁止改他方向证据 |
 | `AGENTS.md`（新建） | P01 | — |
-| `src/app/(web)/**`、`src/components/web/**`、`public/**` | P02（主）；P05 仅 apply/ChatWidget 交互；P10 仅缓存指令 | 风格冻结：P02 之后改动必须保持截图对比通过 |
+| `src/app/(web)/**`、`src/components/web/**`、`public/**` | P02（主）；P05 仅 apply/ChatWidget 交互；P06 仅 `src/app/(web)/page.tsx` 的区块取舍/排序组合层（ADR-024）；P10 仅缓存指令 | 风格冻结：P02 之后改动必须保持截图对比通过 |
 | `src/app/globals.css` | P02 | 后续方向禁止改 web 令牌；管理端令牌限 `[data-theme="manager"]` 作用域 |
 | `src/app/manager/layout.tsx`、`src/components/manager/shell/**` | P02 | — |
 | `src/components/ui/**`、`src/components/manager/**`（除 shell） | P07（主）；P05 状态组件；P08 规格派生 | — |
@@ -262,8 +284,8 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | `src/contracts/**` | P03、P06、P08、P12、P13（各自卡内列明） | 串行 |
 | `src/app/api/**`、`src/lib/**`（业务） | P03、P06、P08、P09、P10、P11、P12、P13、P14、P15（各卡"允许修改"精确到文件） | 串行 |
 | `prisma/schema.prisma`、`prisma/migrations/**` | 仅 P04、P06、P12 | §5 编排 |
-| `prisma/seed.ts` | P04（主）、P12 | — |
-| `scripts/**`、`next.config.ts`、`package.json`、`.gitignore`、Docker 件 | P11（主）；P02 加 playwright；P07 加 tiptap；P14 改 .gitignore；P15 删闲置依赖 | — |
+| `prisma/seed.ts` | P04（主，含 ADR-024 默认区块）、P06（NotifyRule/Setting）、P07（菜单）、P12 | — |
+| `scripts/**`、`next.config.ts`、`package.json`、`.gitignore`、Docker 件、根目录 `CLAUDE.md` | P11（主）；P02 加 playwright；P07 加 tiptap；P12 加 docx 解析依赖；P14 改 .gitignore；P15 删闲置依赖 | — |
 | `tests/e2e/**`、`playwright.config.ts`、`src/**/__tests__/**` | 创建该测试的方向 | — |
 
 重叠检查：同一路径的多个写入方向在时间上严格串行（§8），无同时写入 → 无冲突。
@@ -285,7 +307,7 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | P09 | 1 | 0 | 0 | 1 | 0 | 架构接口（opus） |
 | P10 | 1 | 0 | 1 | 0 | 0 | — |
 | P11 | 1 | 0 | 1 | 0 | 0 | — |
-| P12 | 1 | 0 | 1 | 1 | 0 | 新实体+契约（opus）；U-B3 若推翻 ADR-020 → fable 1 次 |
+| P12 | 1 | 0 | 1 | 1 | 0 | 新实体+契约+Coze 适配（opus）；ADR-025 与 ADR-020/023 一致，无需 fable |
 | P13 | 1 | 0 | 1 | 0 | 0 | — |
 | P14 | 1 | 0 | 1 | 0 | 0 | — |
 | P15 | 1 | 1 | 1 | 0 | 0 | 清理类 haiku |
@@ -301,7 +323,7 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | 管理员进入后台 | `/manager` JS gzip 合计 | 393,828 B | 后台首屏可交互时间 |
 | 管理员看列表 | `/api/articles?page=1` TTFB（冷/热） | 22ms / 9–13ms | 列表首屏数据 |
 | 运维重启服务 | `npm start` 到 Ready | ≈90s+（每次重建，F2） | 发布/故障恢复停机时长 |
-| 构建 | `npm run build` | 92s | 仅参考，不作优化目标 |
+| 构建 | `npm run build` | 92s（单次；P0-verify 复跑编译 119s，波动 ≈90~120s） | 仅参考，不作优化目标 |
 
 纪律：P10 只能针对上表有基线的指标立项；P02 恢复 main 前台后须重测首页两项（风格恢复可能改变包体，作为新基线，不视为回退）。
 
@@ -315,12 +337,14 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | R-P2 | 管理端令牌污染前台 | 前台截图 diff 回升 | 管理端令牌仅在 `[data-theme="manager"]` 作用域；P02 之后每方向都跑前台截图 |
 | R-P3 | 沙箱无法安装 Playwright 浏览器 | `npx playwright install` 失败 | 升级条件：改用系统 chromium 路径或在可联网环境执行，验证记 UNKNOWN 不记 PASS |
 | R-P4 | 迁移顺序被打乱 | 非 P04/P06/P12 出现迁移 | 守卫：验证命令检查 `git diff --name-only` 中 migrations 路径归属 |
-| R-P5 | 无凭证导致公众号/邮件仅 mock 验证 | U-B1/U-B4 未答复 | 契约测试 + 显式 UNKNOWN |
+| R-P5 | 无凭证导致公众号/邮件/Coze 知识库仅 mock 验证 | 用户确认不提供（D4）；Coze 本仓无 dataset 凭证 | 契约测试 + 显式 UNKNOWN |
 | R-P6 | uploads 移出 git 造成现有图片丢失 | 前台/后台图片 404 | P14 先导出到运行时目录并写迁移说明，再 `git rm --cached` |
 | R-P7 | SQLite 写并发（调度+请求） | SQLITE_BUSY | 短事务；P04 审 busy_timeout |
+| R-P8 | 恢复的首页区块配置默认值与 main 不一致或被误改（ADR-024） | visual diff 回升 | 默认复现 main + visual 门禁 + 管理页"恢复默认" |
+| R-P9 | Coze 限制：md 不被接受（按 txt）、单文件上限未知、PAT 约 30 天有效、需 createDocument 权限（ADR-025） | Coze 非 0 code / document status=9 | 单模块封装 + 权限提示 + 本地兜底 |
 
 **未决问题（NON_BLOCKING）**：A-1~A-7（§3.4）。
-**待裁决（BLOCKING）**：U-B1 微信凭证；U-B2 ADR-012 裁剪项是否恢复；U-B3 知识库形态与文件格式；U-B4 SMTP 凭证。
+**待裁决（BLOCKING）**：无（2026-10-12 用户已裁决 U-B1~U-B4，见 §3.4 与文首"用户裁决"表）。残留 UNKNOWN：微信/SMTP/Coze 真实联调。
 
 ## 13. 落盘清单（P0 写入）
 
@@ -330,6 +354,7 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | `docs/design/04_planning/review-prompts/P01-需求.md` … `P15-资源.md` | 15 份方向评审与可执行提示词（任务卡） |
 | `docs/design/06_validation/evidence/P0-baseline.md` | 事实基线命令与输出摘要、基线指标首次测量 |
 | `docs/design/02_requirements/parity-matrix.md` | main→upgrade 功能对等矩阵（57 行 + 新增需求 11 项） |
+| P01 追加（2026-10-12） | REQ-F-013/014/015、ADR-024（取代 ADR-012）、ADR-025（Coze 知识库 + 文件类型）、根目录 `AGENTS.md`、product-requirements §1/§4/§6.1、backlog 本轮待办、assumptions A-1~A-7、risks R-P1~R-P9、master-plan 取代指引；P02~P15 提示词按裁决更新；证据 `06_validation/evidence/P01-execution.md` |
 
 适配说明：规划总指令 §11 落盘根为 `docs/`，本项目文档根为 `docs/design/`（README §0 既定），故路径整体加 `design/` 前缀；`review-prompts/`、`parity-matrix.md`、`P0-baseline.md` 为编排要求的额外产物。P0 未修改任何业务代码、测试代码或配置。
 
@@ -343,7 +368,7 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 | 未伪造需求或方案 | ✅ | 每项附代码或文档证据 |
 | 六份契约齐全、机器可校验 | ⚠️ | 唯一源 zod 已存在；§4 列出 5 处缺口由 P03/P06/P08/P12/P13 先补契约后编码 |
 | 唯一源、无多源并存 | ⚠️ | crud-specs.tsx 为第二源（已登记，P08 消除） |
-| 三方可凭契约开工 | ⚠️ | P12 新实体待 U-B3 |
+| 三方可凭契约开工 | ⚠️ | P12 新实体由 P12 按 ADR-025 先补契约（U-B3 已裁决） |
 | 错误码覆盖失败路径 | ⚠️ | 429→400 映射待 P13 |
 | 管理端越权路径禁止 | ⚠️ | I4/I7 待 P03/P06 |
 | 垂直切片、可独立演示/验收 | ✅ | §6，每刀含可演示行为 |
@@ -371,7 +396,7 @@ P0 ─> P01 ─> P02 ─> P03 ─> P04 ─> P05 ─> P06 ─> P07 ─> P08 ─> 
 
 ## 16. 建议的第一刀与启动顺序
 
-1. 用户裁决 U-B2、U-B3（不阻塞 P01~P05 开工；P12 前必须答复），并告知 U-B1/U-B4 凭证计划。
+1. ~~用户裁决 U-B2、U-B3，并告知 U-B1/U-B4 凭证计划~~ —— 2026-10-12 已全部裁决（文首"用户裁决"表）。
 2. 执行 P01（文档刀）→ 独立验证 PASS。
 3. 执行 P02：先跑 main 生成参照截图 → 移植前台 → 截图对比通过 → 再做管理端 AppShell/令牌。这是首个代码刀，也是风险最高的一刀。
 4. 之后按 P03…P15 顺序，每方向：执行提示词 → 提交 → 独立验证（只看 diff + 运行结果，输出 PASS/FAIL/UNKNOWN）→ 下一方向。
