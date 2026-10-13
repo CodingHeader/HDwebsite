@@ -115,6 +115,17 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   }),
   def("collectTimeoutMs", "请求超时（毫秒）", "collect", "15000", { type: "number", isPublic: false }),
   def("collectDefaultKnowledge", "默认入知识库", "collect", "true", { type: "boolean", isPublic: false }),
+  // ── kb 知识库（ADR-025 / C-04：Coze 同步所用 Provider 与 space） ──
+  def("kbCozeProviderId", "知识库同步 Provider", "kb", "", {
+    type: "number",
+    isPublic: false,
+    description: "指向 kind=coze 的 LLMProvider（其 apiKey 即 Coze PAT）；留空则知识库同步不可用，本地兜底检索仍生效",
+  }),
+  def("kbCozeSpaceId", "Coze 空间 ID（space_id）", "kb", "", {
+    isPublic: false,
+    isEncrypted: true,
+    description: "Coze space_id（创建 dataset 必需）；加密存储、任何接口只回脱敏值（REQ-NF-002）",
+  }),
   // ── llm 网关（SOL-003） ──
   def("llmTimeoutMs", "模型调用超时（毫秒）", "llm", "30000", { type: "number", isPublic: false }),
   def("llmBalanceThreshold", "余额提醒阈值", "llm", "100", { type: "number", isPublic: false }),

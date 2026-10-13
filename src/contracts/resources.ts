@@ -4,6 +4,7 @@
  */
 import { z } from "zod";
 import { articleStatusSchema } from "./article";
+import { channelKindSchema, collectTypeSchema, llmKindSchema } from "./kinds";
 
 const sortStatus = {
   sort: z.coerce.number().int().min(0).default(0),
@@ -207,21 +208,33 @@ export const roleCreateSchema = z.object({
 });
 
 // ── AI 场景 / 本地知识库 ─────────────────────────────────────
-export const chatSceneCreateSchema = z.object({
-  code: z.string().min(1).max(50).regex(/^[a-z0-9一-龥-]*$/, "code 仅允许小写字母数字与连字符"),
-  name: z.string().min(1).max(50),
-  description: z.string().max(200).nullable().optional().nullable(),
-  greeting: z.string().min(1).max(500),
-  systemPrompt: z.string().min(1).max(5000),
-  knowledgeTags: z.string().max(500).nullable().optional().nullable(),
-  baseIds: z.string().max(500).nullable().optional().nullable(),
-  starters: z.string().max(2000).nullable().optional().nullable(),
-  useKnowledgeBase: z.boolean().default(true),
-  // P06：场景专属模型（空 = 走网关默认路由：isDefault → priority → isFallback）
-  llmProviderId: z.coerce.number().int().positive().nullable().optional(),
-  sort: sortStatus.sort,
-  status: z.enum(["active", "archived"]).default("active"),
-});
+export const chatSceneCreateSchema = z
+  .object({
+    code: z.string().min(1).max(50).regex(/^[a-z0-9一-龥-]*$/, "code 仅允许小写字母数字与连字符"),
+    name: z.string().min(1).max(50),
+    description: z.string().max(200).nullable().optional().nullable(),
+    greeting: z.string().min(1).max(500),
+    systemPrompt: z.string().min(1).max(5000),
+    knowledgeTags: z.string().max(500).nullable().optional().nullable(),
+    starters: z.string().max(2000).nullable().optional().nullable(),
+    useKnowledgeBase: z.boolean().default(true),
+    // P06：场景专属模型（空 = 走网关默认路由：isDefault → priority → isFallback）
+    llmProviderId: z.coerce.number().int().positive().nullable().optional(),
+    sort: sortStatus.sort,
+    status: z.enum(["active", "archived"]).default("active"),
+  })
+  // W0-05（02-契约冻结包 §W0-05）：场景知识库绑定与推理参数
+  .extend({
+    // K11：复用**已有列** baseIds（原为死字段）。存储格式统一为 JSON 数组串 "[1,2]"；
+    // 请求接受 int 数组或 JSON 数组串，由 crud-resources 的 jsonifyFields 序列化（C-07）；
+    // 旧的逗号分隔文本由读取方兼容解析（C-07），管理表单改为多选（E-01）。
+    baseIds: z.union([z.array(z.coerce.number().int().positive()).max(20), z.string().max(500)]).nullable().optional(),
+    // K12：非空时**优先于** llmProviderId；同 baseIds 约定（JSON 数组串存储）
+    providerIds: z.union([z.array(z.coerce.number().int().positive()).max(10), z.string().max(200)]).nullable().optional(),
+    temperature: z.coerce.number().min(0).max(2).nullable().optional(),
+    maxTokens: z.coerce.number().int().min(1).max(32000).nullable().optional(),
+    topP: z.coerce.number().min(0).max(1).nullable().optional(),
+  });
 
 export const knowledgeCreateSchema = z.object({
   title: z.string().min(1).max(200),
@@ -256,11 +269,22 @@ export const recipientCreateSchema = z.object({
   enabled: z.boolean().default(true),
 });
 
-export const notifyRuleUpdateSchema = z.object({
-  enabled: z.boolean().nullable().optional(),
-  templateId: z.coerce.number().int().positive().nullable().optional(),
-  recipientGroups: z.array(z.string()).nullable().optional(),
-});
+export const notifyRuleUpdateSchema = z
+  .object({
+    enabled: z.boolean().nullable().optional(),
+    templateId: z.coerce.number().int().positive().nullable().optional(),
+    recipientGroups: z.array(z.string()).nullable().optional(),
+  })
+  // W0-05：静默时段（E-02 表单 + B-06 生效逻辑共用；DB 列 NotifyRule.quietHours 已存在）
+  .extend({
+    quietHours: z
+      .object({
+        start: z.string().regex(/^\d{2}:\d{2}$/, "开始时间格式应为 HH:mm"),
+        end: z.string().regex(/^\d{2}:\d{2}$/, "结束时间格式应为 HH:mm"),
+      })
+      .nullable()
+      .optional(),
+  });
 
 export const notifyTemplateCreateSchema = z.object({
   name: z.string().min(1).max(50),
@@ -271,23 +295,28 @@ export const notifyTemplateCreateSchema = z.object({
 });
 
 // ── 采集源（SOL-004） ────────────────────────────────────────
-export const collectSourceCreateSchema = z.object({
-  name: z.string().min(1).max(100),
-  type: z.enum(["html", "rss"]).default("html"),
-  url: z.string().url("URL 格式不正确"),
-  parser: z.string().max(2000).nullable().optional().nullable(),
-  // 空串 = 仅手动执行（P06：调度器跳过空 cron）
-  cron: z
-    .string()
-    .max(50)
-    .refine((v) => v.trim() === "" || v.trim().split(/\s+/).length >= 5, "Cron 表达式至少 5 段，或留空表示仅手动执行")
-    .default("0 4 * * *"),
-  autoTags: z.array(z.string()).default([]),
-  enabled: z.boolean().default(true),
-  // P06：新条目默认入知识库（M-8）；autoApprove=超管预授权直接通过（默认关闭，ADR-017 附注）
-  autoToKb: z.boolean().default(true),
-  autoApprove: z.boolean().default(false),
-});
+export const collectSourceCreateSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    type: collectTypeSchema.default("html"),
+    url: z.string().url("URL 格式不正确"),
+    parser: z.string().max(2000).nullable().optional().nullable(),
+    // 空串 = 仅手动执行（P06：调度器跳过空 cron）
+    cron: z
+      .string()
+      .max(50)
+      .refine((v) => v.trim() === "" || v.trim().split(/\s+/).length >= 5, "Cron 表达式至少 5 段，或留空表示仅手动执行")
+      .default("0 4 * * *"),
+    autoTags: z.array(z.string()).default([]),
+    enabled: z.boolean().default(true),
+    // P06：新条目默认入知识库（M-8）；autoApprove=超管预授权直接通过（默认关闭，ADR-017 附注）
+    autoToKb: z.boolean().default(true),
+    autoApprove: z.boolean().default(false),
+  })
+  // W0-05：采集目标库（空 = 默认「采集资讯」库；ADR-025 §6）
+  .extend({
+    knowledgeBaseId: z.coerce.number().int().positive().nullable().optional(),
+  });
 
 export const collectItemUpdateSchema = z.object({
   status: z.enum(["approved", "rejected", "imported"]).nullable().optional(),
@@ -300,7 +329,7 @@ export const collectItemUpdateSchema = z.object({
 export const publishJobCreateSchema = z.object({
   itemId: z.coerce.number().int().positive().nullable().optional(),
   contentType: z.enum(["article", "info", "service_guide", "wechat"]).default("article"),
-  channel: z.enum(["website", "wechat"]).default("website"),
+  channel: channelKindSchema.default("website"),
   accountId: z.coerce.number().int().positive().nullable().optional(),
   action: z.enum(["publish", "update", "offline"]).default("publish"),
   scheduledAt: z.string().datetime({ offset: true }).nullable().optional(),
@@ -328,7 +357,7 @@ export const wechatAccountUpdateSchema = wechatAccountCreateSchema.partial().ext
 // ── LLM Provider（SOL-003） ──────────────────────────────────
 export const llmProviderCreateSchema = z.object({
   name: z.string().min(1).max(100),
-  kind: z.enum(["openai", "coze"]).default("openai"),
+  kind: llmKindSchema.default("openai"),
   endpoint: z.string().url("端点必须是 URL"),
   apiKey: z.string().min(1).max(500),
   botId: z.string().max(64).nullable().optional().nullable(),
@@ -401,7 +430,7 @@ export const chatHistoryQuerySchema = z
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(20),
     keyword: optionalTrimmed(200),
-    channel: z.preprocess((v) => (v === "" ? undefined : v), z.enum(["website", "wechat"]).optional()),
+    channel: z.preprocess((v) => (v === "" ? undefined : v), channelKindSchema.optional()),
     sessionId: z.preprocess((v) => (v === "" ? undefined : v), chatSessionIdSchema.optional()),
     startDate: optionalDate,
     endDate: optionalDate,

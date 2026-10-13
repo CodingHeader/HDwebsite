@@ -16,13 +16,13 @@ describe("设置注册表（ADR-009）", () => {
 
   it("分组包含新增配置组", () => {
     const groups = getGroups();
-    for (const g of ["site", "contact", "seo", "email", "collect", "llm", "notify", "publish"]) {
+    for (const g of ["site", "contact", "seo", "email", "collect", "kb", "llm", "notify", "publish"]) {
       expect(groups).toContain(g);
     }
   });
 
   it("凭证类字段必须 isEncrypted + 非公开", () => {
-    for (const key of ["emailPassword"]) {
+    for (const key of ["emailPassword", "kbCozeSpaceId"]) {
       const def = getSettingDefinition(key);
       expect(def?.isEncrypted).toBe(true);
       expect(def?.isPublic).toBe(false);

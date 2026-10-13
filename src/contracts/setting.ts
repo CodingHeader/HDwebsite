@@ -14,7 +14,7 @@ export const settingsUpdateSchema = z.record(
 );
 export type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>;
 
-/** Registry 分组（后台设置页按分组渲染 SchemaForm） */
+/** Registry 分组（后台设置页按分组渲染 SchemaForm；W0-05 新增 "kb"） */
 export const settingGroups = [
   "site",
   "topbar",
@@ -29,6 +29,7 @@ export const settingGroups = [
   "email",
   "wechat-mp",
   "collect",
+  "kb",
   "llm",
   "notify",
   "publish",

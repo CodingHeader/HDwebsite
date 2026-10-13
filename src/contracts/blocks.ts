@@ -78,3 +78,29 @@ export const blockListFilterSchema = z.object({
   templateId: z.coerce.number().int().positive().optional(),
   layer: z.coerce.number().int().optional(),
 });
+
+// ── W0-05：区块注册表 DTO（E-03 首页区块配置页 ↔ GET /api/home-blocks/registry）────
+/** 注册表一项 = 一个可插入首页的区块（`code` 来自 `src/config/block-defs.ts` 的 `BLOCK_REGISTRY`） */
+export const blockRegistryItemSchema = z.object({
+  code: z.string(),
+  name: z.string(),
+  defaultOrder: z.number().int(),
+  fields: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      type: z.string(),
+    })
+  ),
+});
+export type BlockRegistryItem = z.infer<typeof blockRegistryItemSchema>;
+
+/** GET /api/home-blocks/registry 响应 data */
+export const blockRegistryResponseSchema = z.array(blockRegistryItemSchema);
+
+/** POST /api/home-blocks/reset 请求体（`confirm: true` 为破坏性操作显式确认；block:edit） */
+export const homeBlocksResetRequestSchema = z.object({
+  templateCode: z.string().default("home"),
+  confirm: z.literal(true),
+});
+export type HomeBlocksResetRequest = z.infer<typeof homeBlocksResetRequestSchema>;
