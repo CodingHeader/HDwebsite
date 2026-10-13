@@ -16,6 +16,10 @@ related: [PARITY-MATRIX, EVD-P0-BASELINE, PLAN-MASTER, REQ-F-013, REQ-F-014, REQ
 > 执行顺序（用户指定）：P01 需求 → P02 前端 → P03 后端 → P04 数据 → P05 交互 → P06 逻辑 → P07 组件 → P08 复用 → P09 拓展 → P10 性能 → P11 配置 → P12 知识库 → P13 响应 → P14 存储 → P15 资源。每个方向一份可执行提示词：`04_planning/review-prompts/P01-需求.md … P15-资源.md`。
 > 历史轮次记录（2026-10-10 ~ 10-11）完整保留于文末附录 A。
 
+### 2026-10-13 用户裁决（D6~D11，并行编排；规划包已入库）
+
+并行规划包入库于 `docs/design/04_planning/parallel-w1/`（60 张原子任务卡）。编排改为 **Wave 0 串行冻结 → Wave 1 两条执行线并行（`lane/ui`、`lane/backend`）→ Wave 2 集成与终审**；D8 之前 AGENTS.md §4“方向全部串行”的表述由 W0-01 修订。裁决：**D6** 保留 400 错误体 `data.fieldErrors`（不改 `details`）；**D7** `created()` 维持业务 code 200 / HTTP 201；**D8** Wave 0 独立校验 PASS 后推送 `upgrade` 与 tag `w1-base`，Wave 1 各线只推自己的 lane 分支；**D9** 保留前台死组件 `ApplyForm` 及其依赖；**D11** 执行者 **2 名**（X = A→E + 主持 Wave 2；Y = Wave 0 + B→C→D，约 36.5 人天）；**D10**（/manager 包体目标）留待 W2-04 再问。
+
 ### 2026-10-12 用户裁决（P01 落盘；有约束力，优先于本文件其他段落中的旧表述）
 
 | # | 裁决 | 落点 | 关闭/影响 |

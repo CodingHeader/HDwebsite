@@ -1,0 +1,1820 @@
+# 执行者 Y 完整提示词：契约与后端平台线（Wave 0 契约员 → B API 平台 → C AI 与知识库 → D 运维 → Wave 2 依赖与性能）
+
+> 本文件可单独下发，自带全部任务卡、所有权、验收与验证规程。规划包同目录的 `tasks/*.md` 是同一份数据的分卡版本，两者一致；若与仓库真实代码冲突，以命令结果为准并停止汇报。
+
+## 角色与使命
+
+你是 **执行者 Y**，一人承担四个角色，按时间顺序：
+1. **Wave 0 契约员**（唯一写入者）：把 upgrade 从 `bb2c0e5` 推进到可并行的冻结点 tag `w1-base`。你产出的契约、唯一迁移 p12、共享模块签名、一次性加齐的依赖，是两条线唯一的共享物——错一处两条线都返工。
+2. **后端平台执行者**（Wave 1，分支 `lane/backend`）：B 把手写路由迁入 withApi、发布渠道注册表、通知可靠性；C 让知识库真正可用（Word/MD/TXT 进、PDF/图片拒）、Coze 后端、场景多模型、SSE、配额；D 让启动快、env 可校验、设置对等、前台缓存、存储根迁出构建目录、运行时文件迁出 git、采集可扩展。
+3. **X 的独立验证者**：验证 X 的每个工作包，包括 A-07 检查点；Wave 2 做终审验证。
+4. **Wave 2 收尾执行者**（分支 `w2/backend`）：依赖收口、资源/根目录守卫、性能复测。
+
+**规模**：Wave 0 8 张卡 5 人天；B 6 张 5.25 人天 + C 9 张 10 人天 + D 12 张 9.25 人天 = 24.5 人天；Wave 2 3 张。全项目计划约 **36.5 人天**：第 0~5 天 Wave 0 → 约第 5~29.5 天 B+C+D → Wave 2 配合 X。
+
+**你必须守住的三条底线**：前台视觉与 `origin/main@94dbbbb` 逐像素一致（visual 46/46）；Wave 0 之后契约/迁移/依赖/测试配置冻结，你也不能“顺手”改；知识库只收 `.docx/.doc/.md/.markdown/.txt`，严禁引入 PDF/图片解析或 OCR。
+
+## 项目事实快照（2026-10-13 实测；开工后以你自己的命令结果为准）
+
+- 仓库：`https://github.com/CodingHeader/HDwebsite`（公开）。前台视觉标准 = `origin/main@94dbbbb`（红色横幅轮播）。
+- 开发基线：`upgrade@bb2c0e51364aca4608d2a5832e31462b9c54ccf8`。P0~P06 已完成：visual 46/46、E2E 8/8、vitest 17 文件 210 测试。
+- 基线门禁：`npm ci`、`npx prisma generate`、`npm run lint`（0 error / 21 warning）、`npm run typecheck`、`npm test`、`npm run build`（约 77s）全部 exit 0。
+- 管理端：`/manager` 36 页 = 25 个 CrudPage 规格页 + 1 个 content-hub 包装页 + 10 个特殊页；页面层原生控件 46 处；`@radix-ui` 仍被 7 个文件引用。
+- API：24 个路由未走 withApi/CRUD，另 2 个混合文件；错误码只有 200/400/401/403/404/500（限流目前返回 400，503 不存在）。
+- 知识库：P06 已有 `kb-sync.ts` 注册入口但未注册 Coze；`ChatScene.baseIds` 字段已存在但后端未读取。
+- 存储：standalone 构建后 `.next/standalone/uploads` ≈ 32M，运行后增至 ≈ 45M / 526 文件——运行时写进了构建目录。
+- 性能基线：首页 JS gzip 227,007 B；`/manager` 345,853 B；`/manager/articles` 352,019 B；standalone Ready 7.3s；首页热 TTFB ≈ 33~42ms；文章列表 API TTFB ≈ 20~31ms。
+- 已定裁决：D6 保留 `data.fieldErrors`；D7 `created()` 业务 code 200 / HTTP 201；D8 Wave 0 通过后推送 upgrade 与 tag `w1-base`；D9 保留前台死组件 `ApplyForm` 及其依赖；D11 执行者 2 名（X、Y）。
+
+## 团队与协作方式（两人都按这一节执行）
+
+| | 执行者 X（管理端 UI 线） | 执行者 Y（契约与后端平台线） |
+|---|---|---|
+| Wave 0 | 逐卡独立验证 Y 的 W0 提交，W0-08 给最终 PASS/FAIL | 契约员：W0-01~W0-08，直接提交在 upgrade |
+| Wave 1 | 分支 `lane/ui`：A → A-07 检查点 → E → A-08 | 分支 `lane/backend`：B → C → D |
+| 交叉验证 | 验证 Y 的每个工作包 | 验证 X 的每个工作包（含 A-07 检查点） |
+| Wave 2 | 集成者：W2-01、W2-02、W2-08、W2-05、W2-06、W2-07 推送打包 | 分支 `w2/backend`：W2-03、W2-09、W2-04；做 W2-07 终审验证 |
+
+1. **没有实时通信**。两人之间只有三种共享物：git 远端（分支与 tag）、本规划包、由用户转交的《验证请求》/《验证报告》文本。
+2. **验证请求**（执行者在一个工作包完成、推送分支后发出，交用户转给对方）：
+```text
+验证请求 <线>/<工作包>
+分支：<lane/ui | lane/backend | upgrade>　起点..终点：<commit>..<commit>
+卡号：<列表>（验收标准与命令见我的提示词“任务卡”节，对方提示词里也有同一份规划包 tasks/）
+已跑：lint/typecheck/test/build（exit 码）、visual、e2e、本卡命令
+已知 UNKNOWN：<条目与原因>
+```
+3. **验证报告**由验证者按本提示词“独立验证者职责”节产出，交用户转回；被验证方把它原样提交进自己证据目录（`docs(<卡号>): verify report`）。验证者**不往对方分支提交**。
+4. **等验证时不空等**：继续做依赖已满足的下一张卡。必须等 PASS 才能继续的硬闸门只有三个：`w1-base`（W0-08）、`w1-ui-kit`（A-07，挡 E-05/E-06）、Wave 2 进入条件。
+5. 同一卡连续 2 次验证 FAIL → 熔断：停止改代码，写失败分析，交用户裁决。
+6. 两人都需要改同一冻结面（契约、迁移、依赖、配置）→ 写《契约变更请求》交用户裁决；批准后由 Y 在 upgrade 上做最小提交并打 `w1-base-ccr-<n>`，双方 `git merge --no-ff` 该 tag。
+
+## 阶段 0：Wave 0 契约员（直接提交在 upgrade）
+
+```bash
+git clone https://github.com/CodingHeader/HDwebsite.git && cd HDwebsite
+git fetch --all --tags
+git checkout upgrade && git log -1 --format=%H   # 必须是 bb2c0e51364aca4608d2a5832e31462b9c54ccf8，否则停止并汇报
+npm ci && npx prisma generate
+cp .env.example .env.local   # 只填测试用随机 JWT_SECRET（≥32 位）；不得提交
+npm run lint && npm run typecheck && npm test && npm run build   # 先确认起点全绿，否则停止并汇报
+```
+
+必读（按顺序）：`AGENTS.md` → 规划包 `00-规划快照与事实基线.md`、`01-需求基线复核.md`、`02-契约冻结包.md`、`03-数据模型与迁移编排.md`、`07-所有权矩阵.md`、`11-验收与审查规程.md` → 审计证据 `evidence/B-domain-审计.md`、`evidence/C-ops-审计.md`。
+
+**Wave 0 特别规则**
+
+- 你直接在 `upgrade` 上提交，**严格按 W0-01 → W0-08 串行**，每张卡一个或数个提交。
+- W0-02 与 W0-03 必须“零行为变化”：只搬迁/新增，不替换任何调用方（替换是各线的任务）。
+- W0-04/W0-05 的目标形态已写在 `02-契约冻结包.md`（字段名、取值、中文文案都已定）。你只能补注释与类型导出；发现目标形态与真实代码冲突 → 停止并汇报，不得自行改语义。
+- W0-06 迁移：`--create-only` 生成后逐行审，出现 DROP / RedefineTables / `INSERT INTO "new_` 就改 schema 去掉 relation；在 p06 状态库副本上验证行数、integrity_check、foreign_key_check，rollback 可逆。
+- W0-07 一次性加入全部新依赖（TipTap 8 包 ^3.22.4、mammoth、jsdom、@testing-library/react、@testing-library/dom、@axe-core/playwright），Wave 1 期间任何线不再动依赖。
+- W0-08：独立验证者 PASS 后打 `git tag w1-base`，**推送 upgrade 与 tag**（用户 2026-10-13 裁决 D8；凭据按安全铁律由用户本机配置）。
+- 每张 W0 卡完成即推送 upgrade 并向 X 发验证请求（起点为上一张卡的终点）；X 判 PASS 才进入下一张依赖它的卡。
+- 你在 Wave 0 的所有权：各 W0 卡“允许修改”所列路径（含 `src/contracts/**`、`prisma/**`、`package.json`、`vitest.config.ts`、`AGENTS.md`、`docs/design/**` 等）；**`w1-base` 打出后全部收回**。
+
+| 序 | 卡号 | 任务 | 依赖 | 档位 | 人天 |
+|---|---|---|---|---|---|
+| 1 | W0-01 | 并行编排规则落盘（AGENTS.md §4 修订、P07~P15 提示词标注被取代、计划包入库） | — | haiku | 0.25 |
+| 2 | W0-02 | 切分 crud-resources.ts 为按域文件、拆出客户端安全的 block-defs | W0-01 | sonnect | 0.5 |
+| 3 | W0-03 | 新增 json-field / http-client / cache-tags / storage 接口模块（默认实现=现有行为） | W0-02 | sonnect | 0.5 |
+| 4 | W0-04 | 契约②错误码与错误体冻结 + manager-fetch 透传 fieldErrors | W0-03 | opus | 1.0 |
+| 5 | W0-05 | 领域契约冻结：chat SSE、kinds、kb、notify quietHours、场景绑定、采集目标库、区块注册表 DTO、kbCoze 设置键 | W0-04 | opus | 1.0 |
+| 6 | W0-06 | 迁移 p12_knowledge_base + 回滚脚本 + 默认库种子 | W0-05 | opus | 1.0 |
+| 7 | W0-07 | 一次性加入 W1 全部新依赖并配置测试收集 | W0-06 | sonnect | 0.25 |
+| 8 | W0-08 | Wave 0 门禁、独立校验、打冻结标签并分发 | W0-07 | opus | 0.5 |
+
+### Wave 0 任务卡
+
+#### W0-01　并行编排规则落盘（AGENTS.md §4 修订、P07~P15 提示词标注被取代、计划包入库）
+
+- **工作包 / 切片**：WP0.1 规则与计划落盘　/　S0 治理刀
+- **来源需求**：用户 2026-10-13 指令（3~5 并行）；REQ-F-013；规划总指令 §7/§8
+- **目标**：仓库内规则与本规划一致：AGENTS.md 允许 W1 两条执行线并行且写明冻结面；P07~P15 提示词文首加“已由 parallel-w1 取代”指引
+- **输入**：本规划包全部文件；AGENTS.md；docs/design/04_planning/current-plan.md
+- **依赖**：—　**档位**：haiku（复制与模板化文字）　**规模**：小（<2h，单独提交）（计划 0.25 人天）
+- **输出（新增/修改）**：
+  - docs/design/04_planning/parallel-w1/**（本包原样复制）
+  - AGENTS.md（§4、§5、§8）
+  - docs/design/04_planning/review-prompts/P07~P15（仅文首插入取代说明）
+  - docs/design/04_planning/current-plan.md（文首追加 2026-10-13 裁决行）
+  - docs/design/03_solution/decisions/ADR-027-并行编排与契约冻结.md
+- **执行步骤**：
+  1. 复制规划包到 docs/design/04_planning/parallel-w1/
+  2. AGENTS.md §4 改为：Wave0 串行冻结 → Wave1 两条执行线并行（所有权矩阵）→ Wave2 集成；“推送只在 Final”改为：W0 独立校验 PASS 后推送 upgrade 与 tag w1-base，各线只推自己的 lane 分支（用户 2026-10-13 裁决 D8）；执行者 2 名（D11）
+  3. P07~P15 每份提示词文首插入 3 行取代说明，正文不删
+  4. 写 ADR-027（决策、备选=继续串行、后果=冻结面与契约变更请求流程）
+  5. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  6. 提交：`git commit -m "<feat|fix|test|docs>(W0-01): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -c "parallel-w1" AGENTS.md` ≥ 1
+  - `for f in docs/design/04_planning/review-prompts/P0[7-9]*.md docs/design/04_planning/review-prompts/P1*.md; do grep -q "已由 parallel-w1 取代" "$f" || exit 1; done` exit 0
+  - `git show --name-only --format= <W0-01 的提交>` 只含 AGENTS.md 与 docs/design/**（W0-01 单独提交，不与 W0-02 同批）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+git show --name-only --format= HEAD | grep -vE '^(AGENTS.md|docs/design/)' && exit 1 || echo ok
+```
+- **允许修改**：
+  - AGENTS.md
+  - docs/design/**
+- **升级/熔断**：AGENTS.md 规则与用户裁决冲突时 → opus；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-01/`
+
+#### W0-02　切分 crud-resources.ts 为按域文件、拆出客户端安全的 block-defs
+
+- **工作包 / 切片**：WP0.2 无行为变化的结构切分　/　S0 治理刀
+- **来源需求**：并行纪律（所有权不相交）；ADR-024；A-ui §0.2-b
+- **目标**：crud-resources 按 system/content/site/collect/media/kb-ai 六个文件导出，index 聚合后 crudSpecs 键集合与切分前完全相同；BLOCK_REGISTRY 纯数据移至 src/config/block-defs.ts（不 import prisma）
+- **输入**：src/lib/crud-resources.ts（440 行）；src/lib/block-registry.ts:10（import prisma）
+- **依赖**：W0-01　**档位**：sonnect（机械搬迁，有快照守卫）　**规模**：小~中（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - src/lib/crud-resources/{index,system,content,site,collect,media,kb-ai}.ts（新）
+  - src/lib/crud-resources.ts → 仅 `export * from "./crud-resources/index"`
+  - src/config/block-defs.ts（新）
+  - src/lib/block-registry.ts（改为从 block-defs 引入）
+  - src/lib/__tests__/w0-structure.test.ts（新）
+- **执行步骤**：
+  1. 切分前导出 `Object.keys(crudSpecs).sort()` 快照写入测试
+  2. 按域移动 spec（只剪切粘贴，不改内容）
+  3. 抽出 BLOCK_REGISTRY 的 code/name/fields/默认顺序到 block-defs.ts
+  4. 跑全量门禁 + visual
+  5. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  6. 提交：`git commit -m "<feat|fix|test|docs>(W0-02): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - w0-structure.test.ts：每个按域文件导出的键集合 ⊇ 切分前快照（只断言“不丢”，允许各线新增资源）；该测试文件 W1 归 B 线维护
+  - `grep -n prisma src/config/block-defs.ts` 为空
+  - 既有 210 例单测全部通过
+  - visual 46/46
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:visual
+```
+- **允许修改**：
+  - src/lib/crud-resources.ts
+  - src/lib/crud-resources/**
+  - src/config/block-defs.ts
+  - src/lib/block-registry.ts
+  - src/lib/__tests__/w0-structure.test.ts
+- **升级/熔断**：快照不一致且两次无法定位 → opus；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-02/`
+
+#### W0-03　新增 json-field / http-client / cache-tags / storage 接口模块（默认实现=现有行为）
+
+- **工作包 / 切片**：WP0.3 共享基座模块　/　S0 治理刀
+- **来源需求**：P08 目标 2；P10 写后失效；P14 存储根；规划总指令 §7.3（共享可变状态先冻结接口）
+- **目标**：四个模块的导出签名冻结且有单测；W0 默认实现零行为变化：uploadsDir()=<cwd>/uploads、backupsDir()=<cwd>/backups、kbDir()=<cwd>/data/kb、dataDir()=<cwd>/data（D-09 改为 DATA_DIR 实现）
+- **输入**：A-ui §2.1-#3/#4；C-ops §3；B-domain §3.5
+- **依赖**：W0-02　**档位**：sonnect（小模块+单测）　**规模**：中（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - src/lib/json-field.ts：parseJsonField<T>(s,fallback)、stringifyJsonField(v)
+  - src/lib/http-client.ts：httpFetch(url,{timeoutMs,retries,headers,logTag})、HttpError
+  - src/lib/cache-tags.ts：WEB_TAGS 常量 + invalidateWebContent(tags[])（W0 实现 = 调 revalidateTag，try/catch 静默）
+  - src/lib/storage.ts：dataDir()/uploadsDir()/backupsDir()/kbDir()/resolveInside(root,rel)
+  - src/lib/__tests__/w0-shared.test.ts
+- **执行步骤**：
+  1. 写先失败测试（json 往返/坏 JSON 回落；http 超时与重试 mock；resolveInside 拒绝 ../ 与绝对路径）
+  2. 实现最小代码
+  3. 不替换任何调用方（替换由各线完成）
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(W0-03): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - w0-shared.test.ts 全绿
+  - `grep -rn "json-field\|http-client\|cache-tags\|lib/storage" src --include=*.ts -l` 只命中新文件与测试
+  - 全量门禁通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/json-field.ts
+  - src/lib/http-client.ts
+  - src/lib/cache-tags.ts
+  - src/lib/storage.ts
+  - src/lib/__tests__/w0-shared.test.ts
+- **升级/熔断**：签名争议 → opus 仲裁并写入 ADR-027；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-03/`
+
+#### W0-04　契约②错误码与错误体冻结 + manager-fetch 透传 fieldErrors
+
+- **工作包 / 切片**：WP0.4 契约冻结　/　S0 治理刀
+- **来源需求**：P13 目标 1；REQ-NF-001；P06 已交付 data.fieldErrors；A-ui §0.2-d
+- **目标**：code 枚举 = {200,400,401,403,404,409,429,500,502,503}；api-response 提供 conflict/tooManyRequests/badGateway/serviceUnavailable；ApiHttpError 支持 409/429/502/503；400 继续使用 data.fieldErrors；created() 维持 code 200 + HTTP 201；managerFetch 抛出的 ApiError 带 fieldErrors 并按 409/429/502/503 给中文文案
+- **输入**：src/contracts/common.ts:14-21,60-67；src/lib/api-response.ts；src/lib/api-handler.ts:24-33,161-169；src/lib/manager-fetch.ts:39-75
+- **依赖**：W0-03　**档位**：opus（冻结契约语义，影响两条执行线）　**规模**：中（0.5~1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/contracts/common.ts
+  - src/lib/api-response.ts
+  - src/lib/api-handler.ts（仅 ApiHttpError 与 P2002→409 映射）
+  - src/lib/manager-fetch.ts
+  - src/components/manager/SchemaForm.tsx（仅 FieldSpec 增 visibleTo?: "super" 及隐藏逻辑，isSuper 取自现有会话；无现成来源则读 /api/auth/me）
+  - src/lib/__tests__/w0-errors.test.ts
+  - docs/design/03_solution/decisions/ADR-028-响应与错误体口径.md
+- **执行步骤**：
+  1. 写 ADR-028：保留 data.fieldErrors（P06 已交付、前端将读取）；created() 维持 code 200（manager-fetch.ts:73 `body.code !== 200` 即抛错，改 code 会让全部创建操作在管理端报错）；P2002→409
+  2. 扩枚举与工厂，补测试
+  3. manager-fetch：ApiError.fieldErrors；409/429/502/503 文案进 common.ts toastCopy
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(W0-04): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - w0-errors.test.ts：每个新工厂 HTTP 与 code 一致（created 除外并有断言）
+  - withApi 内抛 ApiHttpError(429) → HTTP 429 且 code 429
+  - P2002 → 409（既有 p03/with-api 测试若断言 400 则同步改并在 ADR 记录）
+  - managerFetch mock 400 带 fieldErrors → err.fieldErrors 深相等
+  - FieldSpec.visibleTo="super" 的字段对非超管不渲染（组件或 e2e 断言）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/contracts/common.ts
+  - src/lib/api-response.ts
+  - src/lib/api-handler.ts
+  - src/lib/manager-fetch.ts
+  - src/components/manager/SchemaForm.tsx
+  - src/lib/__tests__/w0-errors.test.ts
+  - src/lib/__tests__/api-contract/with-api.test.ts
+  - docs/design/03_solution/decisions/ADR-028-*.md
+- **假设**：A-W0-1：保留 data.fieldErrors 不改为 details（K9，默认值，待用户确认 D6）；A-W0-2：created() code=200/HTTP=201（K10，待用户确认 D7）
+- **升级/熔断**：改 P2002→409 导致 e2e 断言变化 → 在 ADR 写明并同步测试，仍失败 → fable 裁决；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-04/`
+
+#### W0-05　领域契约冻结：chat SSE、kinds、kb、notify quietHours、场景绑定、采集目标库、区块注册表 DTO、kbCoze 设置键
+
+- **工作包 / 切片**：WP0.4 契约冻结　/　S0 治理刀
+- **来源需求**：P09 目标；P12 目标 1/2/5/6/7；P13 目标 2；P07 #5/#7；ADR-024；ADR-025
+- **目标**：五条执行线所需的全部 DTO/枚举一次性落入 src/contracts/**（zod 唯一源），之后冻结
+- **输入**：B-domain §1.2/§3.2；A-ui §1.1-#5/#7；src/contracts/resources.ts:217,220,259-263,274-290；ADR-025
+- **依赖**：W0-04　**档位**：opus（冻结两条执行线共享 DTO）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/contracts/chat.ts（chatRequestSchema、chatSseEventSchema=meta|delta|done|error 判别联合）
+  - src/contracts/kinds.ts（CHANNEL_KINDS/LLM_KINDS/COLLECT_TYPES/KB_BACKENDS + 中文 label）
+  - src/contracts/kb.ts（KB_FILE_EXTS=docx|doc|md|markdown|txt、KB_MAX_FILE_BYTES=10MB、COZE_FILE_TYPE_MAP md/markdown→txt、knowledgeBase/knowledgeFile create/update、kbSearchRequest{query,tags?,baseIds?,topK?}（保留现有 tags 与中文提示）、KB_REJECT_MESSAGE 中文文案）
+  - src/contracts/resources.ts（notifyRule +quietHours；chatScene +providerIds/temperature/maxTokens/topP，baseIds 与 providerIds 接受 int 数组或 JSON 数组串、统一存为 JSON 数组串（旧的逗号分隔值由 C-07 读取时兼容）；collectSource +knowledgeBaseId；4 处枚举（:276、:303、:331、:404）改为从 kinds 派生）
+  - src/contracts/blocks.ts（blockRegistryItem DTO、homeBlocksResetRequest）
+  - src/contracts/index.ts
+  - src/lib/settings-registry.ts（仅新增 kbCozeProviderId、kbCozeSpaceId〔secret〕两键）
+  - src/lib/__tests__/w0-contracts.test.ts
+- **执行步骤**：
+  1. 逐项写 zod + 中文错误文案
+  2. 枚举改派生后跑全量测试确认零回归
+  3. 测试：每个 schema 合法/非法样例；KB 拒绝 pdf/png 扩展名；providerIds 去重与上限 10
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(W0-05): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - w0-contracts.test.ts 全绿
+  - `grep -rn 'z.enum(\["website","wechat"\])\|z.enum(\["openai","coze"\])\|z.enum(\["html","rss"\])' src/contracts` 为空
+  - 契约自检 4 问（前端/后端/数据/错误码）在 ADR-027 附录逐条回答为“是”
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/contracts/**
+  - src/lib/settings-registry.ts
+  - src/lib/__tests__/w0-contracts.test.ts
+  - src/lib/__tests__/settings-registry.test.ts
+- **升级/熔断**：某线需要的字段无法确定 → 标 BLOCKING 并上报，不得猜；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-05/`
+
+#### W0-06　迁移 p12_knowledge_base + 回滚脚本 + 默认库种子
+
+- **工作包 / 切片**：WP0.5 唯一迁移 p12　/　S0 治理刀
+- **来源需求**：P12 目标 1/5/6；ADR-025；current-plan §5（p12 为第 7 位，最后一个迁移）
+- **目标**：新增 KnowledgeBase、KnowledgeFile 两表；Knowledge +baseId/fileId/chunkIndex；ChatScene +providerIds/temperature/maxTokens/topP；CollectSource +knowledgeBaseId；全部 Int? 无外键、仅 CREATE TABLE/ADD COLUMN/CREATE INDEX；seed 幂等创建“通用知识”“采集资讯”两库并回填 Knowledge.baseId
+- **输入**：prisma/schema.prisma:563-614,776-801；P06 迁移审阅做法（P06-verify §3）
+- **依赖**：W0-05　**档位**：opus（不可逆数据变更）　**规模**：中（0.5~1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - prisma/schema.prisma
+  - prisma/migrations/<ts>_p12_knowledge_base/migration.sql
+  - prisma/rollback/p12.sql
+  - prisma/seed.ts（仅默认库与回填段）
+  - docs/design/06_validation/evidence/W0/migration-review.md
+- **执行步骤**：
+  1. `npx prisma migrate dev --create-only --name p12_knowledge_base` 生成后逐行审，出现 RedefineTables/DROP 即改 schema 去掉 relation
+  2. 在 p06 状态库副本上 deploy：行数不变、integrity_check=ok、foreign_key_check 空
+  3. rollback 后 schema 与 p06 逐对象全等，再 deploy 可重放
+  4. seed 两次幂等
+  5. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  6. 提交：`git commit -m "<feat|fix|test|docs>(W0-06): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -ciE 'DROP|RedefineTables|INSERT INTO "new_' prisma/migrations/*p12*/migration.sql` = 0
+  - `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` 为空迁移
+  - 副本行数对比表写入证据
+  - seed 连跑两次 KnowledgeBase 行数 = 2
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - prisma/schema.prisma
+  - prisma/migrations/**（仅新增 p12）
+  - prisma/rollback/p12.sql
+  - prisma/seed.ts
+  - docs/design/06_validation/evidence/W0/**
+- **升级/熔断**：必须加外键才能满足需求 → fable 裁决是否接受整表重建；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-06/`
+
+#### W0-07　一次性加入 W1 全部新依赖并配置测试收集
+
+- **工作包 / 切片**：WP0.6 依赖与测试基建一次性到位　/　S0 治理刀
+- **来源需求**：P07 TipTap/a11y；P12 docx 解析；P13 tests/contract；假设 A-5
+- **目标**：W1 期间任何线都不需要再改 package.json 依赖与 vitest/playwright 配置
+- **输入**：origin/main package.json:49-56（@tiptap/* ^3.22.4）；A-ui §1.2；B-domain §1.3-#6
+- **依赖**：W0-06　**档位**：sonnect（依赖安装与配置）　**规模**：小（<2h，与 W0-08 同批）（计划 0.25 人天）
+- **输出（新增/修改）**：
+  - package.json/package-lock.json：+@tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-link @tiptap/extension-placeholder @tiptap/extension-text-align @tiptap/extension-underline（^3.22.4）、+mammoth、devDeps +jsdom +@testing-library/react +@testing-library/dom +@axe-core/playwright
+  - vitest.config.ts：include 增加 src/**/__tests__/**/*.test.tsx 与 tests/contract/**/*.test.ts；组件测试用文件头 `// @vitest-environment jsdom`
+  - tests/e2e/global-setup.ts 与 tests/e2e/fixtures/env.ts：预置 ENCRYPTION_KEY、APP_ORIGIN、DATA_DIR（临时目录）、HOSTNAME 的测试值，使 D-03 的生产启动校验在 e2e 下通过
+  - tests/a11y/playwright.config.ts（复用 e2e 的 webServer 设置）
+  - docs/design/06_validation/evidence/W0/deps.md（每个包的体积、许可证、用途、引入线）
+- **执行步骤**：
+  1. npm i 指定版本；记录 `npm ls` 关键行
+  2. 写 1 个 jsdom 冒烟测试与 1 个 tests/contract 占位测试验证收集
+  3. 全量门禁 + build
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(W0-07): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `node -e "const p=require('./package.json');const d={...p.dependencies,...p.devDependencies};['@tiptap/react','mammoth','jsdom','@axe-core/playwright','@testing-library/react'].forEach(k=>{if(!d[k])process.exit(1)})"` exit 0
+  - jsdom 冒烟测试被 vitest 收集并通过
+  - build 通过；/manager 包体未变（新依赖尚未被引用）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - package.json
+  - package-lock.json
+  - vitest.config.ts
+  - tests/a11y/playwright.config.ts
+  - tests/e2e/global-setup.ts
+  - tests/e2e/fixtures/env.ts
+  - docs/design/06_validation/evidence/W0/**
+- **升级/熔断**：TipTap 3 与 React 19 peer 冲突 → 上报，parity C6 保持 partial，不得静默降级；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-07/`
+
+#### W0-08　Wave 0 门禁、独立校验、打冻结标签并分发
+
+- **工作包 / 切片**：WP0.7 冻结与分发　/　S0 治理刀
+- **来源需求**：规划总指令 §9.2/§9.3
+- **目标**：独立验证者给出 PASS；upgrade 上打 tag w1-base；五条线从该 tag 建分支
+- **输入**：W0-01~07 全部提交
+- **依赖**：W0-07　**档位**：opus（冻结点 review）　**规模**：小（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - docs/design/06_validation/evidence/W0/W0-verify.md
+  - git tag w1-base
+- **执行步骤**：
+  1. 跑全量门禁 + visual + e2e
+  2. 独立验证者只看 `git diff bb2c0e5..HEAD` 与命令结果，输出 PASS/FAIL/UNKNOWN
+  3. PASS 后 `git tag w1-base` 并推送 upgrade 与 tag（D8 已裁决）
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(W0-08): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - W0-verify.md 结论 PASS
+  - `git diff --name-only bb2c0e5..w1-base` 不含前台路径（src/app/(web)、src/components/web、public、globals.css）
+  - visual 46/46、e2e 8/8
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:visual
+npm run test:e2e
+```
+- **允许修改**：
+  - docs/design/06_validation/evidence/W0/**
+- **升级/熔断**：连续 2 次 FAIL → 熔断，重写对应 W0 卡；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W0/W0-08/`
+
+**Wave 0 退出**：X 给出 W0-08 PASS → `git tag w1-base && git push origin upgrade w1-base` → 自查 remote URL 不含凭据。
+
+## 阶段 1：Wave 1 启动
+
+```bash
+git fetch --all --tags && git checkout -b lane/backend w1-base
+npm ci && npx prisma generate && npm run lint && npm run typecheck && npm test && npm run build
+```
+
+## 你的所有权（Wave 1 只能写这些路径；与 X 零重叠，已机械校验）
+
+**执行线 B API 与响应平台**
+- `src/lib/settings.ts`
+- `src/lib/api-handler.ts`
+- `src/lib/api-response.ts`
+- `src/lib/auth.ts`
+- `src/lib/api-auth.ts`
+- `src/lib/wechat.ts`
+- `src/lib/notify-gateway.ts`
+- `src/lib/publish-executor.ts`
+- `src/lib/content-workflow.ts`
+- `src/lib/channels/**`
+- `src/app/api/route.ts`
+- `src/app/api/apply/**`
+- `src/app/api/articles/**`
+- `src/app/api/auth/**`
+- `src/app/api/health/**`
+- `src/app/api/users/**`
+- `src/app/api/roles/**`
+- `src/app/api/settings/**`
+- `src/app/api/manager-menus/**`
+- `src/app/api/manager/**`
+- `src/app/api/user-actions/**`
+- `src/app/api/wechat/**`
+- `src/app/api/publish-jobs/**`
+- `src/app/api/notify-*/**`
+- `src/app/api/content-items/**`
+- `src/app/api/logs/**`
+- `src/lib/crud-resources/system.ts`
+- `src/lib/crud-resources/content.ts`
+- `src/lib/__tests__/lane-b/**`
+- `src/lib/__tests__/api-contract/**`
+- `src/lib/__tests__/notify-before-publish.test.ts`
+- `src/lib/__tests__/publish-state-machine.test.ts`
+- `src/lib/__tests__/content-review.test.ts`
+- `src/lib/__tests__/auth-permission.test.ts`
+- `src/lib/__tests__/wechat-chat.test.ts`
+- `tests/e2e/b-*.spec.ts`
+- `src/lib/__tests__/w0-structure.test.ts`
+- `docs/design/06_validation/evidence/W1-B/**`
+- `docs/design/03_solution/decisions/ADR-030-*.md`
+
+**执行线 C AI 与知识库**
+- `src/lib/llm/**`
+- `src/lib/llm-gateway.ts`
+- `src/lib/coze.ts`
+- `src/lib/kb/**`
+- `src/lib/kb-adapter.ts`
+- `src/lib/kb-sync.ts`
+- `src/lib/chat-service.ts`
+- `src/app/api/llm/**`
+- `src/app/api/kb/**`
+- `src/app/api/knowledge/**`
+- `src/app/api/knowledge-bases/**`
+- `src/app/api/knowledge-files/**`
+- `src/app/api/chat-scenes/**`
+- `src/app/api/chat/**`
+- `src/app/api/chat-history/**`
+- `src/components/web/ChatWidget.tsx`
+- `src/lib/crud-resources/kb-ai.ts`
+- `src/lib/__tests__/lane-c/**`
+- `src/lib/__tests__/collect-autokb.test.ts`
+- `src/lib/__tests__/p06-followups.test.ts`
+- `tests/e2e/c-*.spec.ts`
+- `docs/design/06_validation/evidence/W1-C/**`
+- `docs/design/03_solution/decisions/ADR-029-*.md`
+
+**执行线 D 运维·性能·配置·存储·资源**
+- `scripts/**`
+- `next.config.ts`
+- `src/instrumentation.ts`
+- `src/lib/env.ts`
+- `src/lib/storage.ts`
+- `src/lib/cache-tags.ts`
+- `src/lib/jobs/**`
+- `src/lib/crud.ts`
+- `src/lib/collect-engine.ts`
+- `src/lib/collect-test.ts`
+- `src/lib/collect/**`
+- `src/lib/block-registry.ts`
+- `src/lib/settings-registry.ts`
+- `src/lib/scheduler.ts`
+- `src/config/**`
+- `src/app/api/upload/**`
+- `src/app/api/file/**`
+- `src/app/api/media/**`
+- `src/app/api/collect-sources/**`
+- `src/app/api/collect-items/**`
+- `src/app/api/collect-tasks/**`
+- `src/lib/crud-resources/site.ts`
+- `src/lib/crud-resources/collect.ts`
+- `src/lib/crud-resources/media.ts`
+- `src/app/(web)/**`
+- `src/components/web/Footer.tsx`
+- `src/components/web/data/**`
+- `src/app/robots.ts`
+- `src/app/sitemap.ts`
+- `Dockerfile`
+- `docker-compose.yml`
+- `.dockerignore`
+- `CLAUDE.md`
+- `.env.example`
+- `.gitignore`
+- `.tmp-pa.html`
+- `uploads/**`
+- `src/lib/__tests__/lane-d/**`
+- `src/lib/__tests__/scheduler-cron.test.ts`
+- `src/lib/__tests__/settings-registry.test.ts`
+- `src/lib/__tests__/block-registry.test.ts`
+- `src/lib/__tests__/sqlite-busy-timeout.test.ts`
+- `src/lib/__tests__/view-stats.test.ts`
+- `tests/e2e/d-*.spec.ts`
+- `docs/design/06_validation/evidence/W1-D/**`
+- `docs/design/03_solution/decisions/ADR-031-*.md`
+- `docs/design/03_solution/decisions/ADR-032-*.md`
+
+**越界检查（每次提交验证请求前自己先跑）**：
+```bash
+git log --first-parent --no-merges --name-only --format= w1-base..HEAD | sort -u
+```
+输出的每个文件都必须落在下面“你的所有权”内（执行线 B API 与响应平台 ∪ 执行线 C AI 与知识库 ∪ 执行线 D 运维·性能·配置·存储·资源）；并且同一张卡的提交只碰该卡“允许修改”的路径（段与段之间不得混提交，例如 C 卡的提交不能改 D 段的文件）。
+
+## 段 B：API 与响应平台（6 张，5.25 人天）
+
+**执行线 B API 与响应平台 的特别规则**
+
+- 迁移路由时**响应形状与状态码不得改变**（除 W0 已冻结的错误码语义）。每迁一个路由，先写 401/403/400/200 用例（复用 `src/lib/__tests__/api-contract/harness.ts`），迁移后用例不改即通过。
+- `getSettings` 保留为 @deprecated 别名，前台 9 个文件零改动。
+- 写操作后的前台失效只调用 W0 冻结的 `invalidateWebContent([WEB_TAGS.x])`，不自己实现缓存（cache-tags.ts 归 D 线）。
+- B-06 需要 `notify.scan` 调用 `flushDeferred()`：`src/lib/jobs/**` 归 D 段：B-06 只导出函数并单测直接调用；注册到 `notify.scan` 由 W2-08 统一做（不要在 D 段顺手改，避免越界口径混乱）。
+- 全路由契约测试（tests/contract）与 ESLint 边界规则属于“守卫”，按规划总指令 §8.1 不与实现并行，放在 Wave 2（W2-02、W2-08）；你在 B-03 把协议例外清单写入 `evidence/W1-B/non-json-routes.md`，供 W2-02 使用。
+- `src/lib/__tests__/w0-structure.test.ts` 在 Wave 1 归你维护（它只断言资源键“不丢”，其他线新增资源不会让它失败）。
+
+| 序 | 卡号 | 任务 | 依赖 | 档位 | 人天 |
+|---|---|---|---|---|---|
+| 1 | B-01 | settings 读取分为 getPublicSettings / getAllSettings（getSettings 保留为已弃用别名） | W0-08 | sonnect | 0.25 |
+| 2 | B-02 | withApi 迁移 A：后台路由（users×2、roles×2、settings×3、manager-menus、wechat/accounts×2、articles/[id] 的 GET/PUT/DELETE） | B-01 | sonnect | 1.5 |
+| 3 | B-04 | B 线自有文件改用 http-client 与 json-field（wechat、notify-gateway、auth） | B-01 | sonnect | 0.5 |
+| 4 | B-03 | withApi 迁移 B：apply、articles 列表、auth×4、user-actions、api 根；非 JSON 例外清单 | B-02 | sonnect | 1.0 |
+| 5 | B-05 | PublishChannel 注册表（website/wechat）+ 发布后写失效 | B-04 | opus | 1.0 |
+| 6 | B-06 | 通知：静默时段生效、去重跨进程原子化并细化键、邮件堆栈脱敏、notify-rules PATCH 接收 quietHours | B-04 | sonnect | 1.0 |
+
+工作包与验证节奏：B-01+B-04（公共工具收敛）→ B-02、B-03（路由统一包装，各发一次）→ B-05（发布渠道注册表）→ B-06（通知可靠性）。
+
+### 段 B 任务卡
+
+#### B-01　settings 读取分为 getPublicSettings / getAllSettings（getSettings 保留为已弃用别名）
+
+- **工作包 / 切片**：WPB.1 公共工具收敛　/　S-B1 设置读取单一语义
+- **来源需求**：P08 #5（3 处 `getAllSettings as getSettings` 同名不同义）
+- **目标**：两个新名字语义清晰；前台 9 个文件零改动；B 线自有文件改用新名
+- **输入**：src/lib/settings.ts:16,33
+- **依赖**：W0-08　**档位**：sonnect（小重构）　**规模**：小（<2h，与 B-05 同批）（计划 0.25 人天）
+- **输出（新增/修改）**：
+  - src/lib/settings.ts
+  - src/lib/__tests__/lane-b/settings.test.ts
+- **执行步骤**：
+  1. 新增导出 + @deprecated 注释
+  2. wechat/callback 删除未用 settings 变量（P06-verify:93）
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(B-01): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - lane-b/settings.test.ts：公开读取不含 isPublic=false 键，全量读取包含
+  - visual 46/46（前台未改文件）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:visual
+```
+- **允许修改**：
+  - src/lib/settings.ts
+  - src/lib/__tests__/lane-b/**
+  - src/app/api/settings/**
+  - src/app/api/wechat/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-B/B-01/`
+
+#### B-02　withApi 迁移 A：后台路由（users×2、roles×2、settings×3、manager-menus、wechat/accounts×2、articles/[id] 的 GET/PUT/DELETE）
+
+- **工作包 / 切片**：WPB.2 路由统一包装　/　S-B2 后台路由统一信封与异常告警
+- **来源需求**：P08 #6；P06-verify 承接（未走 withApi 的异常不发 system_error）
+- **目标**：上述路由全部经 withApi（鉴权/parseBody/错误映射/system_error），对外信封与状态码不变；roles 的 JSON.parse 改 json-field
+- **输入**：A-ui §2.3 清单与行数
+- **依赖**：B-01　**档位**：sonnect（模式化迁移）　**规模**：大（1.5 天）（计划 1.5 人天）
+- **输出（新增/修改）**：
+  - 对应 route.ts
+  - src/lib/__tests__/lane-b/routes-admin.test.ts
+- **执行步骤**：
+  1. 每迁一个路由先写 401/403/400/200 契约用例（复用 api-contract/harness.ts）
+  2. 迁移后用例不变即通过
+  3. settings PUT 成功后调用 invalidateWebContent([WEB_TAGS.settings])
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(B-02): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rLE "withApi|crudList|crudCreate|crudGet|crudUpdate|crudDelete" src/app/api/{users,roles,settings,manager-menus,wechat/accounts} --include=route.ts` 为空
+  - articles/[id]/route.ts 中不存在未包装的 export async function
+  - routes-admin.test.ts 全绿；e2e auth/crud-article 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:e2e
+```
+- **允许修改**：
+  - src/app/api/users/**
+  - src/app/api/roles/**
+  - src/app/api/settings/**
+  - src/app/api/manager-menus/**
+  - src/app/api/wechat/**
+  - src/app/api/articles/**
+  - src/lib/__tests__/lane-b/**
+  - src/lib/__tests__/api-contract/**
+- **升级/熔断**：某路由响应形状被前台依赖且迁移后变化 → 停止该路由并上报；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-B/B-02/`
+
+#### B-04　B 线自有文件改用 http-client 与 json-field（wechat、notify-gateway、auth）
+
+- **工作包 / 切片**：WPB.1 公共工具收敛　/　S-B4 外呼与 JSON 统一
+- **来源需求**：P08 目标 2；A-ui §2.1-#3/#4
+- **目标**：wechat.ts 6 处 AbortSignal.timeout 改 httpFetch；auth.ts、notify-gateway.ts、wechat.ts 的 DB JSON 解析改 parseJsonField
+- **输入**：A-ui §2.1-#3 文件:行清单
+- **依赖**：B-01　**档位**：sonnect（替换）　**规模**：小（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - src/lib/{wechat,notify-gateway,auth}.ts
+- **执行步骤**：
+  1. 替换 + 既有 wechat-chat/notify 测试回归
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(B-04): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -n "AbortSignal.timeout\|JSON.parse" src/lib/wechat.ts src/lib/notify-gateway.ts src/lib/auth.ts` 为空
+  - wechat-chat.test.ts、notify-before-publish.test.ts 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/wechat.ts
+  - src/lib/notify-gateway.ts
+  - src/lib/auth.ts
+  - src/lib/__tests__/lane-b/**
+  - src/lib/__tests__/wechat-chat.test.ts
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-B/B-04/`
+
+#### B-03　withApi 迁移 B：apply、articles 列表、auth×4、user-actions、api 根；非 JSON 例外清单
+
+- **工作包 / 切片**：WPB.2 路由统一包装　/　S-B3 公开与认证路由统一
+- **来源需求**：P08 #6；P13 #3/#4
+- **目标**：仅剩协议例外（file、health、wechat/callback 的 XML/echostr）未走 withApi，并登记在证据 non-json-routes.md（W2-02 写入 tests/contract/rules.ts）；api 根改用 success()
+- **输入**：A-ui §2.3；B-domain §1.3-#3/#4
+- **依赖**：B-02　**档位**：sonnect（模式化迁移）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - 对应 route.ts
+  - docs/design/06_validation/evidence/W1-B/non-json-routes.md（协议例外清单与理由，W2-02 写入守卫）
+- **执行步骤**：
+  1. auth 路由保留 cookie 设置行为
+  2. apply 保留限流与中文文案
+  3. 例外清单附理由
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(B-03): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rLE "withApi|crudList|crudCreate|crudGet|crudUpdate|crudDelete" src/app/api --include=route.ts` 只剩例外清单内文件（另含 D/C 线负责的 upload、llm/providers，见其卡）
+  - `grep -rn "NextResponse.json(" src/app/api | grep -v api-response` 为空
+  - e2e auth/apply-chat 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:e2e
+```
+- **允许修改**：
+  - src/app/api/apply/**
+  - src/app/api/articles/**
+  - src/app/api/auth/**
+  - src/app/api/user-actions/**
+  - src/app/api/route.ts
+  - src/app/api/health/**
+  - src/app/api/wechat/**
+  - src/lib/__tests__/lane-b/**
+  - docs/design/06_validation/evidence/W1-B/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-B/B-03/`
+
+#### B-05　PublishChannel 注册表（website/wechat）+ 发布后写失效
+
+- **工作包 / 切片**：WPB.3 发布渠道注册表　/　S-B5 发布渠道可扩展
+- **来源需求**：P09 目标（发布渠道部分）；P10 写后失效
+- **目标**：publish-executor 只做状态机/审核门/提醒/退避，渠道实现 src/lib/channels/{website,wechat}.ts 经 getChannel(kind) 调用；网站发布成功后 invalidateWebContent([WEB_TAGS.articles, WEB_TAGS.home])；content-workflow 用 CHANNEL_KINDS
+- **输入**：B-domain §2.1（publish-executor.ts:19-55,79-170）
+- **依赖**：B-04　**档位**：opus（架构接口（opus 券）+ sonnect 实现）　**规模**：中（0.5~1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/channels/**
+  - src/lib/publish-executor.ts
+  - src/lib/content-workflow.ts
+  - docs/design/03_solution/decisions/ADR-030-发布渠道注册表.md
+- **执行步骤**：
+  1. 先写 registries 测试（未知 kind → 明确错误）
+  2. 搬迁实现，行为等价
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(B-05): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -n 'channel === "' src/lib/publish-executor.ts src/lib/content-workflow.ts` 为空
+  - publish-state-machine/notify-before-publish/content-review 测试通过
+  - e2e collect-publish 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:e2e
+```
+- **允许修改**：
+  - src/lib/channels/**
+  - src/lib/publish-executor.ts
+  - src/lib/content-workflow.ts
+  - src/lib/__tests__/lane-b/**
+  - src/lib/__tests__/publish-state-machine.test.ts
+  - src/lib/__tests__/notify-before-publish.test.ts
+  - src/lib/__tests__/content-review.test.ts
+  - docs/design/03_solution/decisions/ADR-030-*.md
+- **升级/熔断**：行为差异无法用现有测试定位 → 补测试后再继续；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-B/B-05/`
+
+#### B-06　通知：静默时段生效、去重跨进程原子化并细化键、邮件堆栈脱敏、notify-rules PATCH 接收 quietHours
+
+- **工作包 / 切片**：WPB.4 通知可靠性　/　S-B6 提醒更可靠
+- **来源需求**：REQ-F-011；M-13；P06-verify:90（堆栈未脱敏；去重的串行化仅进程内）
+- **目标**：静默时段内事件只记录 NotifyRecord(status=deferred) 不发信、时段结束后补发；去重现状已按 NotifyRecord 查库（notify-gateway.ts:59-63），但串行化只在进程内（:39-48），两进程并发可能都通过检查 → 改为原子判定（单条 SQL 条件插入或唯一去重键列复用），并把去重键细化为 event + 路由/任务名 + 10 分钟窗；不得重写已有去重逻辑以外的部分；邮件正文中的 token/key/password 形态字串替换为 ***
+- **输入**：src/lib/notify-gateway.ts:39-48,59-63；schema.prisma:876 quietHours；W0-05 契约
+- **依赖**：B-04　**档位**：sonnect（业务逻辑+测试）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/notify-gateway.ts
+  - src/app/api/notify-rules/**
+  - src/lib/__tests__/lane-b/notify.test.ts
+- **执行步骤**：
+  1. 静默时段按 Asia/Shanghai 解释
+  2. 补发由已有 notify.scan 任务调用（jobs 属 D 线：只调用 notify-gateway 导出的 flushDeferred，若 jobs/index.ts 未注册 → 契约变更请求给 D 线，W2 合并）
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(B-06): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - notify.test.ts：静默内不发、结束后补发；两个模拟进程 5 次异常只生成 1 条 system_error；正文不含 'hunter2'
+  - PATCH quietHours 后 GET 回读一致
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/notify-gateway.ts
+  - src/app/api/notify-*/**
+  - src/lib/__tests__/lane-b/**
+  - src/lib/__tests__/notify-before-publish.test.ts
+- **升级/熔断**：需要新表/新列 → 停止（迁移已冻结），改用 NotifyRecord 现有列；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-B/B-06/`
+
+## 段 C：AI 与知识库（9 张，10 人天）
+
+**执行线 C AI 与知识库 的特别规则**
+
+- 知识库上传白名单只有 `.docx/.doc/.md/.markdown/.txt`；扩展名 + MIME + 文件头三重校验；**严禁**引入任何 PDF/图片解析或 OCR 依赖，严禁放宽白名单（ADR-025，用户裁决 D3）。
+- 只有一个知识库注册表：P06 的 `registerKbRemoteAdapter` 保留导出名，作为新注册表的薄包装；Coze 后端在模块加载时自注册，**不改 `src/instrumentation.ts`**（D 线所有——也是你自己的 D 段，但必须在 D 段的卡里改，不得混进 C 卡的提交）。
+- 采集入库不改 `collect-engine.ts`（D 线所有——也是你自己的 D 段，但必须在 D 段的卡里改，不得混进 C 卡的提交）：`ingestCollectItem` 内部读取 `CollectSource.knowledgeBaseId`。
+- `ChatWidget.tsx` 只允许替换 SSE 解析逻辑（约 :89-131），JSX 与 className 不动，visual 46/46。
+- 场景模型顺序：`providerIds` 非空 → 否则 `llmProviderId` → 否则全局 default→priority→fallback（K12），测试要覆盖回落。
+- 日界一律 Asia/Shanghai；Coze 真实联调无凭证 → mock 测试，验收记 UNKNOWN。实现 Coze 接口前先核对 docs.coze.cn 当前文档，把 URL 与访问日期写入证据。
+
+| 序 | 卡号 | 任务 | 依赖 | 档位 | 人天 |
+|---|---|---|---|---|---|
+| 1 | C-01 | LLMProviderAdapter 注册表（openai/coze）+ providers 路由 withApi + 测试端点复用适配器 | W0-08 | opus | 1.0 |
+| 2 | C-03 | 知识库文件管线纯函数：类型三重校验、docx 解析、切分 | W0-08 | sonnect | 1.0 |
+| 3 | C-02 | KnowledgeBackend 接口与注册表，合并 P06 的 KbRemoteAdapter | C-01 | sonnect | 1.0 |
+| 4 | C-04 | Coze 知识库客户端：建库/推文档(≤10/批)/进度/删除 + 错误映射 + 自注册 | C-02, C-03 | sonnect | 1.5 |
+| 5 | C-05 | 本地检索：按库过滤 + bigram/关键词/标题加权打分 + LIKE 预筛 ≤500 + 命中率基线 | C-02 | sonnect | 1.0 |
+| 6 | C-06 | 知识库 API：库 CRUD+同步、文件上传(≤10MB 三重校验)/列表/删除/重解析/进度、kb/test 扩 baseIds/topK | C-04, C-05 | sonnect | 2.0 |
+| 7 | C-07 | 场景绑定 providerIds/参数/baseIds；chat/stream 用 SSE 契约与 429；ChatWidget 仅解析改 safeParse | C-01, C-05 | sonnect | 1.0 |
+| 8 | C-08 | 采集→目标库：ingestCollectItem 读取 CollectSource.knowledgeBaseId（默认“采集资讯”）并推送 Coze(txt) | C-04 | sonnect | 0.5 |
+| 9 | C-09 | LLM dailyQuota / rateLimit 生效，全部超限返回 503 | C-07 | sonnect | 1.0 |
+
+工作包与验证节奏：C-01+C-02（注册表）→ C-03（文件管线）→ C-04（Coze）→ C-05（本地检索）→ C-06（知识库 API）→ C-07（场景与 SSE）→ C-08（采集入库）→ C-09（配额）。
+
+### 段 C 任务卡
+
+#### C-01　LLMProviderAdapter 注册表（openai/coze）+ providers 路由 withApi + 测试端点复用适配器
+
+- **工作包 / 切片**：WPC.1 LLM 适配器注册表　/　S-C1 模型供应商可扩展
+- **来源需求**：P09 目标（LLM 部分）；P08 #6（llm/providers×3 未包装）
+- **目标**：llm-gateway 只保留路由/熔断/统计；`kind === "coze"` 分支在 src/lib 与 src/app/api 中为 0；providers 三路由走 withApi；coze/llm-gateway 改用 http-client
+- **输入**：B-domain §2.2；llm-gateway.ts:79-123,156,194；providers/[id]/test/route.ts:33-53；kb-adapter.ts:86
+- **依赖**：W0-08　**档位**：opus（架构接口（opus 券））　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/llm/{types,registry,openai,coze}.ts
+  - src/lib/llm-gateway.ts
+  - src/lib/coze.ts
+  - src/app/api/llm/**
+  - src/lib/kb-adapter.ts（仅 :86）
+  - docs/design/03_solution/decisions/ADR-029-LLM与知识库适配器注册表.md
+- **执行步骤**：
+  1. 先写 registries 测试
+  2. 搬迁实现 + 去掉 `getAllSettings as getSettings` 别名
+  3. providers 路由迁 withApi，密钥脱敏不变
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(C-01): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rn 'kind === "coze"' src/lib src/app/api` 为空
+  - `grep -n "AbortSignal.timeout" src/lib/coze.ts src/lib/llm-gateway.ts src/app/api/llm -r` 为空
+  - wechat-chat、p06-followups 测试通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/llm/**
+  - src/lib/llm-gateway.ts
+  - src/lib/coze.ts
+  - src/app/api/llm/**
+  - src/lib/kb-adapter.ts
+  - src/lib/__tests__/lane-c/**
+  - docs/design/03_solution/decisions/ADR-029-*.md
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-01/`
+
+#### C-03　知识库文件管线纯函数：类型三重校验、docx 解析、切分
+
+- **工作包 / 切片**：WPC.3 文件管线　/　S-C3 上传文件可解析
+- **来源需求**：ADR-025 §2/§4；M-10
+- **目标**：扩展名+MIME+文件头三重校验，PDF(%PDF)与 PNG/JPEG/GIF/WEBP/BMP 文件头一律拒绝；docx 经 mammoth 转纯文本；.doc 无纯 JS 解析 → localParse=skipped；切分 ≤800 字、重叠 100 字
+- **输入**：W0-05 kb 契约；W0-07 mammoth
+- **依赖**：W0-08　**档位**：sonnect（纯函数）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/kb/{filetype,parse,chunk}.ts
+  - src/lib/__tests__/lane-c/kb-file.test.ts（含 fixtures：最小 docx、伪装成 .txt 的 PDF、伪装成 .md 的 PNG）
+- **执行步骤**：
+  1. fixtures 在测试中用 Buffer 构造，不提交二进制大文件
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(C-03): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - kb-file.test.ts：伪装文件全部被拒且返回 KB_REJECT_MESSAGE；docx 抽出预期文本；切分边界与重叠正确
+  - `grep -rnE "pdf-parse|pdfjs|tesseract" package.json src/lib/kb` 为空
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-c/kb-file.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/kb/**
+  - src/lib/__tests__/lane-c/**
+- **升级/熔断**：mammoth 在 Node 22/24 报错 → 上报，docx 本地解析标 skipped（与 .doc 同处理），不换 PDF/OCR 库；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-03/`
+
+#### C-02　KnowledgeBackend 接口与注册表，合并 P06 的 KbRemoteAdapter
+
+- **工作包 / 切片**：WPC.2 知识库后端注册表　/　S-C2 知识库后端可扩展
+- **来源需求**：P09 目标（KB 部分）；P06-execution §8；B-domain §3.4
+- **目标**：KnowledgeBackend = search/pushDocument/removeDocument/getDocumentStatus/pushEntry，纯 DTO；registerKbRemoteAdapter 保留导出名作为薄包装；只有一个注册表
+- **输入**：kb-sync.ts:12-28；kb-adapter.ts:28,84,106
+- **依赖**：C-01　**档位**：sonnect（接口抽取）　**规模**：中（0.5~1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/kb/{types,registry,local}.ts
+  - src/lib/kb-adapter.ts（门面）
+  - src/lib/kb-sync.ts
+- **执行步骤**：
+  1. 接口写入 ADR-029
+  2. local 后端包裹现有 searchLocal（行为不变）
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(C-02): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - collect-autokb.test.ts 不改断言即通过
+  - `grep -rn "registerKbRemoteAdapter\|registerKnowledgeBackend" src/lib` 只有一个注册表实现
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/kb/**
+  - src/lib/kb-adapter.ts
+  - src/lib/kb-sync.ts
+  - src/lib/__tests__/lane-c/**
+  - src/lib/__tests__/collect-autokb.test.ts
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-02/`
+
+#### C-04　Coze 知识库客户端：建库/推文档(≤10/批)/进度/删除 + 错误映射 + 自注册
+
+- **工作包 / 切片**：WPC.4 Coze 知识库　/　S-C4 文件同步到 Coze
+- **来源需求**：ADR-025 §3/§6/§7；R-P9
+- **目标**：POST {apiBase}/open_api/knowledge/document/create（Authorization: Bearer、Agw-Js-Conv: str、chunk_strategy 必传、format_type 0）；md/markdown → txt；4013 等权限错误 → 中文提示；后端在模块加载时 registerKnowledgeBackend('coze')，不改 instrumentation
+- **输入**：ADR-025；src/lib/coze.ts:19 headers；settings kbCozeProviderId/kbCozeSpaceId
+- **依赖**：C-02, C-03　**档位**：sonnect（适配器实现）　**规模**：中（1~1.5 天）（计划 1.5 人天）
+- **输出（新增/修改）**：
+  - src/lib/kb/coze.ts
+  - src/lib/coze.ts（抽请求工具）
+  - src/lib/__tests__/lane-c/kb-coze.test.ts
+- **执行步骤**：
+  1. 实现前在 docs.coze.cn 核对当前接口并把 URL 与访问日期写进证据
+  2. fetch 可注入，全部用 mock 测试
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(C-04): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - kb-coze.test.ts：URL/Header/body 正确；11 个文件分 2 批；md→txt；4013 → 权限中文提示
+  - 无凭证时 processKbSyncQueue 记录原因而非抛错
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-c/kb-coze.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/kb/**
+  - src/lib/coze.ts
+  - src/lib/kb-sync.ts
+  - src/lib/__tests__/lane-c/**
+- **假设**：Coze 真实联调 = UNKNOWN（无凭证，D4/R-P5）
+- **升级/熔断**：Coze 文档与 ADR-025 记录不一致 → 以官方文档为准，写入证据并告知用户与 X更新 ADR-025；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-04/`
+
+#### C-05　本地检索：按库过滤 + bigram/关键词/标题加权打分 + LIKE 预筛 ≤500 + 命中率基线
+
+- **工作包 / 切片**：WPC.5 本地检索　/　S-C5 本地兜底检索更准
+- **来源需求**：P12 目标 4；M-10
+- **目标**：20 条中文问答 fixture 上 Top-3 命中率有前后对比数字（先测现状为基线，再改）；无基线不得声称提升
+- **输入**：kb-adapter.ts:28-75（take:50、已有 bigram）
+- **依赖**：C-02　**档位**：sonnect（算法+测试）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/kb/local.ts
+  - src/lib/__tests__/lane-c/kb-search.test.ts
+  - src/lib/__tests__/lane-c/fixtures/kb-qa.json
+  - docs/design/06_validation/evidence/W1-C/kb-search-baseline.md
+- **执行步骤**：
+  1. 先跑旧算法记录命中率
+  2. 实现新算法
+  3. 记录新命中率
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(C-05): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - kb-search.test.ts 通过且断言新命中率 ≥ 旧命中率
+  - 证据含两次数字与 fixture 来源说明
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-c/kb-search.test.ts
+```
+- **允许修改**：
+  - src/lib/kb/**
+  - src/lib/kb-adapter.ts
+  - src/lib/__tests__/lane-c/**
+  - docs/design/06_validation/evidence/W1-C/**
+- **升级/熔断**：新算法低于旧 → 保留旧算法并上报；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-05/`
+
+#### C-06　知识库 API：库 CRUD+同步、文件上传(≤10MB 三重校验)/列表/删除/重解析/进度、kb/test 扩 baseIds/topK
+
+- **工作包 / 切片**：WPC.6 知识库 API　/　S-C6 库与文件可管理
+- **来源需求**：REQ-F-007；M-10；ADR-025 §2/§8
+- **目标**：上传 .pdf/.png/.jpg → 400 + KB_REJECT_MESSAGE；.md/.txt/.docx → 200 且 chunkCount>0；文件落 storage.kbDir()，不经 /api/file 公开；删除库/文件级联清理本地条目与磁盘文件并请求 Coze 删除
+- **输入**：W0-05 kb 契约；W0-03 storage.kbDir()；crud-resources/kb-ai.ts
+- **依赖**：C-04, C-05　**档位**：sonnect（API 实现）　**规模**：大（1.5~2 天）（计划 2.0 人天）
+- **输出（新增/修改）**：
+  - src/app/api/knowledge-bases/**
+  - src/app/api/knowledge-files/**
+  - src/app/api/kb/test/route.ts
+  - src/lib/crud-resources/kb-ai.ts
+  - src/lib/__tests__/lane-c/kb-api.test.ts
+- **执行步骤**：
+  1. 全部路由 withApi；kb/test 内联 schema 移除，改用 contracts/kb.ts
+  2. 用 api-contract harness 写路由测试
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(C-06): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - kb-api.test.ts：上述 400/200/级联/401/403 用例全绿
+  - `grep -n "z.object" src/app/api/kb/test/route.ts` 为空
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-c/kb-api.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/app/api/knowledge-bases/**
+  - src/app/api/knowledge-files/**
+  - src/app/api/kb/**
+  - src/app/api/knowledge/**
+  - src/lib/crud-resources/kb-ai.ts
+  - src/lib/kb/**
+  - src/lib/__tests__/lane-c/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-06/`
+
+#### C-07　场景绑定 providerIds/参数/baseIds；chat/stream 用 SSE 契约与 429；ChatWidget 仅解析改 safeParse
+
+- **工作包 / 切片**：WPC.7 场景装配与流式　/　S-C7 场景可绑定模型/参数/知识库
+- **来源需求**：M-11/M-12；P13 目标 2；K12（providerIds > llmProviderId > 全局）
+- **目标**：场景 [B,A] → B 优先、B 失败回落 A、再回落全局 fallback；官网与公众号 messages 全等；限频返回 HTTP 429/code 429；SSE 事件由 chatSseEventSchema 构造与解析；Coze 路径显式拼接 system 与最近历史为首条 user 前缀（写入 ADR-029）
+- **输入**：chat-service.ts:62-126；chat/stream/route.ts:11-15,37-39,62-96；ChatWidget.tsx:105-128；llm-gateway.ts:107,197
+- **依赖**：C-01, C-05　**档位**：sonnect（业务装配）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/chat-service.ts
+  - src/lib/llm-gateway.ts
+  - src/app/api/chat/stream/route.ts
+  - src/components/web/ChatWidget.tsx（仅 :89-131 解析逻辑）
+  - src/lib/__tests__/lane-c/chat-scene.test.ts
+- **执行步骤**：
+  1. 先写场景路由测试
+  2. 改装配与透传
+  3. ChatWidget 只替换解析函数
+  4. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  5. 提交：`git commit -m "<feat|fix|test|docs>(C-07): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - chat-scene.test.ts 全绿（优先级、回落、两渠道 messages 全等、第 11 次请求 429、baseIds/providerIds 的 JSON 数组串与旧逗号文本都能解析）
+  - ChatWidget 解析单测：同一流内出现两条 error 事件（route.ts 的 catch 与 finally 都可能发）时只显示一条提示且不抛错
+  - e2e apply-chat 通过
+  - visual 46/46
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-c/chat-scene.test.ts
+npm run test:e2e
+npm run test:visual
+```
+- **允许修改**：
+  - src/lib/chat-service.ts
+  - src/lib/llm-gateway.ts
+  - src/lib/llm/**
+  - src/app/api/chat/**
+  - src/components/web/ChatWidget.tsx
+  - src/lib/crud-resources/kb-ai.ts
+  - src/lib/__tests__/lane-c/**
+- **本卡额外禁止**：
+  - ChatWidget.tsx 的 JSX 与 className（visual 门禁）
+- **升级/熔断**：Coze bot 侧必须配置提示词才能生效 → 标 UNKNOWN 并在后台提示；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-07/`
+
+#### C-08　采集→目标库：ingestCollectItem 读取 CollectSource.knowledgeBaseId（默认“采集资讯”）并推送 Coze(txt)
+
+- **工作包 / 切片**：WPC.8 采集入库　/　S-C8 采集内容进指定库并推送
+- **来源需求**：REQ-F-006；M-8；ADR-025 §6
+- **目标**：不改 collect-engine.ts（D 线所有）即可让新采集条目带 baseId 并进入推送队列
+- **输入**：kb-sync.ts:31-83
+- **依赖**：C-04　**档位**：sonnect（小改动）　**规模**：小（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - src/lib/kb-sync.ts
+  - src/lib/__tests__/collect-autokb.test.ts（扩展断言）
+- **执行步骤**：
+  1. ingestCollectItem 内部查 source.knowledgeBaseId
+  2. mock Coze 断言收到 txt
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(C-08): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - collect-autokb.test.ts：条目 baseId = 源指定库或默认库；mock Coze 收到 file_type=txt
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/collect-autokb.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/kb-sync.ts
+  - src/lib/kb/**
+  - src/lib/__tests__/collect-autokb.test.ts
+  - src/lib/__tests__/lane-c/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-08/`
+
+#### C-09　LLM dailyQuota / rateLimit 生效，全部超限返回 503
+
+- **工作包 / 切片**：WPC.9 配额与限频　/　S-C9 模型用量受控
+- **来源需求**：P15 目标 2；REQ-NF-001
+- **目标**：当日（Asia/Shanghai 日界）LLMUsage.calls ≥ dailyQuota 的供应商被跳过；进程内每分钟滑窗 rateLimit；全部超限 → serviceUnavailable(503)；跳过原因记录
+- **输入**：schema.prisma:507-508；llm-gateway.ts:54-77（日期用 UTC，需改口径）
+- **依赖**：C-07　**档位**：sonnect（逻辑+测试）　**规模**：中（0.5~1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/llm/limits.ts
+  - src/lib/llm-gateway.ts
+  - src/app/api/chat/stream/route.ts（503 映射）
+  - src/lib/__tests__/lane-c/llm-limits.test.ts
+- **执行步骤**：
+  1. 日界口径写入 ADR-029
+  2. 测试用假时钟
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(C-09): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - llm-limits.test.ts：配额满跳到下一个；滑窗第 N+1 次跳过；全部超限 503；北京时间 00:00 重置
+  - `grep -n "dailyQuota\|rateLimit" src/lib/llm/limits.ts src/lib/llm-gateway.ts` ≥ 2 处
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-c/llm-limits.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/llm/**
+  - src/lib/llm-gateway.ts
+  - src/app/api/chat/**
+  - src/lib/__tests__/lane-c/**
+- **升级/熔断**：改日界影响既有熔断统计 → 两者同口径并在 ADR 记录；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-C/C-09/`
+
+## 段 D：运维·性能·配置·存储·资源（12 张，9.25 人天）
+
+**执行线 D 运维·性能·配置·存储·资源 的特别规则**
+
+- **先测量再优化**：D-01 的 before.json 是 D-06 与 W2-04 的唯一基数（参考 `09-基线指标.md`，偏差 >15% 要说明）。
+- 前台文件（`src/app/(web)/**`、`Footer.tsx`、`components/web/data/**`、robots、sitemap）你只能做三类改动：`dynamic/revalidate` 导出与数据函数调用、缓存包装与查询并行化、兜底字面量 → `BRAND_DEFAULTS`。JSX 与 className 不动，每次都跑 visual。
+- `storage.ts` / `cache-tags.ts` 的**导出签名**在 W0 冻结（B、C 线在调用），你只改实现。
+- 迁出 uploads 前先导出、计数与 `git ls-files uploads` 一致才 `git rm -r --cached`，磁盘文件不删。`public/uploads/202604/**` 的 20 个文件默认保留。
+- `package.json`（含 scripts）在 Wave 1 冻结；check-assets/check-root 脚本接入与依赖删除在 Wave 2（W2-09、W2-03）。
+- Docker 不可用时 D-08 的构建验收记 UNKNOWN。
+- **D-01 的基线必须在 `w1-base` 上测**，不能在已含 B、C 改动的 HEAD 上测：
+```bash
+git worktree add ../hd-baseline w1-base && cd ../hd-baseline && npm ci && npx prisma generate
+node <你在 lane/backend 写好的 scripts/measure-baseline.mjs 的路径> --out before.json   # 脚本先在 lane/backend 提交，再拷到 worktree 运行
+cd - && git worktree remove ../hd-baseline
+```
+  before.json 与规划基线（首页 227,007 B、/manager 345,853 B、Ready 7.3s、TTFB 33~42ms）偏差 >15% 要在证据里解释。
+
+| 序 | 卡号 | 任务 | 依赖 | 档位 | 人天 |
+|---|---|---|---|---|---|
+| 1 | D-01 | scripts/measure-baseline.mjs + 在 w1-base 上测 before.json | W0-08 | sonnect | 0.5 |
+| 2 | D-02 | start-next：不再因数据库写入重建；按优先级加载 env 文件 | D-01 | sonnect | 0.5 |
+| 3 | D-03 | src/lib/env.ts 集中校验 + instrumentation 启动校验 + .env.example 对齐 | D-02 | sonnect | 0.5 |
+| 4 | D-04 | 设置键对等 16 键 + 默认值单一来源 + 修正 3 个不存在的默认资源路径 | W0-08 | sonnect | 1.0 |
+| 5 | D-05 | 前台电话/域名兜底统一读 BRAND_DEFAULTS（仅替换字面量） | D-04 | sonnect | 0.25 |
+| 6 | D-06 | 前台缓存：去掉 (web) 的 force-dynamic，首页数据与区块配置 unstable_cache + 标签失效 | D-01 | sonnect | 2.0 |
+| 7 | D-07 | next.config 清理（cssChunking、过期注释）+ redirects 回归测试 + jobs 注释 | D-02 | haiku | 0.25 |
+| 8 | D-08 | Docker 部署件 + CLAUDE.md | D-03 | sonnect | 0.5 |
+| 9 | D-09 | storage.ts 正式实现 DATA_DIR；upload/file/collect-engine/backup 改用；standalone 不再携带 uploads | D-03 | sonnect | 1.0 |
+| 10 | D-10 | 备份含 uploads 与 kb；运行时文件迁出 git（导出→.gitignore→git rm --cached） | D-09 | sonnect | 1.0 |
+| 11 | D-11 | 删除媒体清理文件（单删/批删含缩略图）+ 孤儿扫描脚本 | D-09 | sonnect | 0.75 |
+| 12 | D-12 | CollectParser 注册表（html/rss）+ 采集图片流式限长、白名单单一来源 + http-client/json-field | D-09 | sonnect | 1.0 |
+
+工作包与验证节奏：D-01（基线）→ D-02+D-03（启动与环境）→ D-04+D-05（设置对等）→ D-06（前台缓存，必跑 visual）→ D-07+D-08（配置收尾、Docker）→ D-09（存储根）→ D-10+D-11（备份、迁出 git、媒体清理）→ D-12（采集）。
+
+### 段 D 任务卡
+
+#### D-01　scripts/measure-baseline.mjs + 在 w1-base 上测 before.json
+
+- **工作包 / 切片**：WPD.1 基线测量　/　S-D1 性能可测量
+- **来源需求**：规划总指令 §9.1（无基线禁止优化）；P10
+- **目标**：一条命令输出 homeJsGzip、managerJsGzip、managerArticlesJsGzip、homeTtfbColdMs/WarmMs、apiArticlesTtfbMs、startToReadyMs（standalone server.js 与 npm start 两种）
+- **输入**：本规划 08-基线指标.md 的手工测量方法与数值
+- **依赖**：W0-08　**档位**：sonnect（脚本）　**规模**：中（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - scripts/measure-baseline.mjs
+  - docs/design/06_validation/evidence/W1-D/before.json
+- **执行步骤**：
+  1. 脚本自带临时库（DATABASE_URL 指向 tmp）与临时 JWT_SECRET，不写仓库
+  2. 与 08-基线指标.md 数值对照，偏差 >15% 需说明
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-01): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `node scripts/measure-baseline.mjs --out docs/design/06_validation/evidence/W1-D/before.json` exit 0
+  - JSON 含上述 8 个键
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+node scripts/measure-baseline.mjs --out /tmp/b.json && node -e "const b=require('/tmp/b.json');['homeJsGzip','managerJsGzip','startToReadyMs'].forEach(k=>{if(!(k in b))process.exit(1)})"
+```
+- **允许修改**：
+  - scripts/**
+  - docs/design/06_validation/evidence/W1-D/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-01/`
+
+#### D-02　start-next：不再因数据库写入重建；按优先级加载 env 文件
+
+- **工作包 / 切片**：WPD.2 启动与环境　/　S-D2 重启快且读得到 env
+- **来源需求**：P10 目标 2；P11 目标 1；I9；P0-baseline F1/F2
+- **目标**：只监视 src、public、prisma/schema.prisma、prisma/migrations、package*.json、next.config.ts、tsconfig.json；启动前用 @next/env loadEnvConfig 加载 .env.production.local > .env.local > .env.production > .env；已构建未改源码时 npm start → Ready ≤ 10s
+- **输入**：start-next.mjs:21-30,45-48,98-103；start-next-utils.mjs:4-24
+- **依赖**：D-01　**档位**：sonnect（脚本）　**规模**：中（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - scripts/start-next.mjs
+  - scripts/start-next-utils.mjs
+  - src/lib/__tests__/lane-d/start-next-utils.test.ts
+- **执行步骤**：
+  1. 抽纯函数 needsRebuild(entries, buildId)
+  2. 单测：touch prisma/dev.db 不触发；改 schema 触发
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-02): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - start-next-utils.test.ts 通过
+  - 实测：仅有 .env.local（含 JWT_SECRET）时 POST /api/auth/login 200；touch prisma/dev.db 后 npm start 日志无 next build 且 Ready ≤10s（写入证据）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-d/start-next-utils.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - scripts/**
+  - src/lib/__tests__/lane-d/**
+- **升级/熔断**：@next/env 在 standalone 不可用 → 在 start-next 内解析 env 文件（不新增依赖）；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-02/`
+
+#### D-03　src/lib/env.ts 集中校验 + instrumentation 启动校验 + .env.example 对齐
+
+- **工作包 / 切片**：WPD.2 启动与环境　/　S-D2 重启快且读得到 env
+- **来源需求**：P11 目标；REQ-NF-002；C-ops §2（CRON_SECRET 0 引用）
+- **目标**：JWT_SECRET/ENCRYPTION_KEY ≥32、DATABASE_URL、APP_ORIGIN、DATA_DIR、HOSTNAME/PORT 由 zod 校验；生产缺失即退出并打印键名（不打印值）；CRON_SECRET 从 .env.example 移除并在 ADR-031 记录（无调用方）
+- **输入**：jwt.ts:9-14；crypto.ts:10-15；instrumentation.ts:5-10
+- **依赖**：D-02　**档位**：sonnect（配置）　**规模**：小（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - src/lib/env.ts
+  - src/instrumentation.ts
+  - .env.example
+  - src/lib/__tests__/lane-d/env.test.ts
+- **执行步骤**：
+  1. env.ts 不在 import 时抛错（测试与构建期安全），由 instrumentation 调用 assertProductionEnv()
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(D-03): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - env.test.ts：缺键 → 列出键名；值不出现在错误信息
+  - `grep -n CRON_SECRET .env.example` 为空
+  - `npm run test:e2e` 仍全绿（W0-07 已为 e2e 预置所需变量；若仍缺 → CCR 给 E 线）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-d/env.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:e2e
+```
+- **允许修改**：
+  - src/lib/env.ts
+  - src/instrumentation.ts
+  - .env.example
+  - src/lib/__tests__/lane-d/**
+  - docs/design/03_solution/decisions/ADR-031-*.md
+- **假设**：A-D-1：CRON_SECRET 为死键，删除（若用户需要外部 cron 触发 → 新需求另立）
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-03/`
+
+#### D-04　设置键对等 16 键 + 默认值单一来源 + 修正 3 个不存在的默认资源路径
+
+- **工作包 / 切片**：WPD.3 设置对等　/　S-D3 设置键与 main 对等
+- **来源需求**：REQ-F-013 parity A22；P11 #4；C-ops §4-#1
+- **目标**：registry 补 advantage1~4、banner*×6、card*Subtitle×3、homeCards、siteLogoIcon、statsLabel；前台冻结默认值以 setting-defaults.ts 为准、registry 从其导入（单一来源）；placeholder.svg/favicon.ico/banner-bg.jpg 默认值改为仓库内存在的文件
+- **输入**：settings-registry.ts:36-49；src/components/web/data/setting-defaults.ts；scripts/migrate-setting-keys.mjs:13-31
+- **依赖**：W0-08　**档位**：sonnect（对等补齐）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/settings-registry.ts
+  - src/components/web/data/setting-defaults.ts（仅导出形态，不改值）
+  - scripts/migrate-setting-keys.mjs
+  - src/lib/__tests__/settings-registry.test.ts
+  - src/lib/__tests__/lane-d/settings-parity.test.ts
+- **执行步骤**：
+  1. settings-parity fixture = main 的键清单（从 origin/main 提取，写入 fixture）
+  2. 默认资源路径存在性断言
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-04): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - settings-parity.test.ts：main 键全部存在；每个 /images/* 默认值文件存在
+  - visual 46/46
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:visual
+```
+- **允许修改**：
+  - src/lib/settings-registry.ts
+  - src/components/web/data/**
+  - scripts/**
+  - src/lib/__tests__/settings-registry.test.ts
+  - src/lib/__tests__/lane-d/**
+- **升级/熔断**：某 main 键语义不明 → 列入证据待确认，不臆造默认值；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-04/`
+
+#### D-05　前台电话/域名兜底统一读 BRAND_DEFAULTS（仅替换字面量）
+
+- **工作包 / 切片**：WPD.3 设置对等　/　S-D4 前台无硬编码品牌
+- **来源需求**：M-5；P06-verify:91；K13
+- **目标**：除 src/config/brand.ts 与 setting-defaults.ts 外 src 中无 400-001-5729 / 132-1945-5550 / hd1994 字面量（共 3 组，现 400 号与域名 13 处/11 文件，132 号 16 处/9 文件，执行前重新盘点）；不改 JSX 结构与 className
+- **输入**：C-ops §2 的 13 处/11 文件清单
+- **依赖**：D-04　**档位**：sonnect（字面量替换）　**规模**：小（<2h，与 D-04 同批）（计划 0.25 人天）
+- **输出（新增/修改）**：
+  - src/app/(web)/{about,campus,contact,courses/[id]}/page.tsx
+  - src/components/web/Footer.tsx
+  - src/components/web/data/home.ts
+  - src/app/robots.ts
+  - src/app/sitemap.ts
+- **执行步骤**：
+  1. 逐文件替换 + 每文件 diff 自查只含字面量与 import
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(D-05): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rnE "400-001-5729|132-1945-5550|hd1994" src --exclude-dir=__tests__ | grep -v "src/config/brand.ts\|setting-defaults.ts"` 为空
+  - visual 46/46
+  - 人工审 `git diff w1-base -- 'src/app/(web)' src/components/web src/app/robots.ts src/app/sitemap.ts`：每个文件只有兜底字面量所在行被替换，外加至多 1 行 import；无 JSX 结构或 className 变化
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run test:visual
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/app/(web)/**
+  - src/components/web/Footer.tsx
+  - src/components/web/data/**
+  - src/app/robots.ts
+  - src/app/sitemap.ts
+- **本卡额外禁止**：
+  - 上述文件中除兜底字面量与 import 外的任何改动
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-05/`
+
+#### D-06　前台缓存：去掉 (web) 的 force-dynamic，首页数据与区块配置 unstable_cache + 标签失效
+
+- **工作包 / 切片**：WPD.4 前台缓存　/　S-D5 首页更快且改动 5 秒可见
+- **来源需求**：P10 目标 3；ADR-024（区块配置随首页缓存）
+- **目标**：getHomeData 与 resolveHomeBlocks 以 WEB_TAGS 缓存；cache-tags 正式实现；crud 工厂写操作按资源映射失效；后台改动后前台 ≤5s 可见（e2e）；首页热 TTFB 不劣于 before.json
+- **输入**：C-ops §1-#3（11 处 force-dynamic、home.ts:95-123 三批串行、layout.tsx:13）
+- **依赖**：D-01　**档位**：sonnect（缓存实现（opus 券 1 次审查））　**规模**：大（1.5~2 天）（计划 2.0 人天）
+- **输出（新增/修改）**：
+  - src/app/(web)/**（仅 dynamic/revalidate 导出与数据函数调用）
+  - src/components/web/data/home.ts（仅缓存包装与查询并行化）
+  - src/lib/block-registry.ts
+  - src/lib/cache-tags.ts
+  - src/lib/crud.ts
+  - tests/e2e/d-cache.spec.ts
+- **执行步骤**：
+  1. 资源→标签映射表放 cache-tags.ts
+  2. e2e：后台改 Banner 标题 → 5 秒内前台可见
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-06): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rn "force-dynamic" "src/app/(web)"` 仅剩证据中列明理由的页（如 apply）
+  - d-cache.spec.ts 通过
+  - visual 46/46
+  - after.json 首页热 TTFB ≤ before ×1.1
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx playwright test -c tests/e2e/playwright.config.ts tests/e2e/d-cache.spec.ts
+npm run test:visual
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/app/(web)/**
+  - src/components/web/data/**
+  - src/lib/block-registry.ts
+  - src/lib/cache-tags.ts
+  - src/lib/crud.ts
+  - src/lib/crud-resources/site.ts
+  - tests/e2e/d-*.spec.ts
+  - src/lib/__tests__/lane-d/**
+  - src/lib/__tests__/block-registry.test.ts
+- **本卡额外禁止**：
+  - (web) 页面 JSX/className
+- **升级/熔断**：缓存导致后台改动前台不可见两轮未修 → 回退该页为动态并上报；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-06/`
+
+#### D-07　next.config 清理（cssChunking、过期注释）+ redirects 回归测试 + jobs 注释
+
+- **工作包 / 切片**：WPD.5 配置收尾　/　S-D6 部署件齐全
+- **来源需求**：P11 #6；P08 #7；I11
+- **目标**：构建无 cssChunking 告警；29 条 redirects 有测试守住与 main 一致
+- **输入**：next.config.ts:9-12,28；jobs/index.ts:3-6
+- **依赖**：D-02　**档位**：haiku（清理）　**规模**：小（<2h，与 D-08 同批）（计划 0.25 人天）
+- **输出（新增/修改）**：
+  - next.config.ts
+  - src/lib/jobs/index.ts（仅注释）
+  - src/lib/__tests__/lane-d/redirects.test.ts
+- **执行步骤**：
+  1. redirects 测试读取 next.config 与 fixture（从 origin/main 提取）逐条比对
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(D-07): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - redirects.test.ts 通过
+  - `npm run build 2>&1 | grep -ci cssChunking` = 0
+  - `grep -n "当前为预留\|后续切片注册" next.config.ts src/lib/jobs/index.ts` 为空
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - next.config.ts
+  - src/lib/jobs/**
+  - src/lib/__tests__/lane-d/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-07/`
+
+#### D-08　Docker 部署件 + CLAUDE.md
+
+- **工作包 / 切片**：WPD.5 配置收尾　/　S-D6 部署件齐全
+- **来源需求**：parity E1/E2；REQ-NF-004
+- **目标**：Dockerfile（node 24、standalone、非 root）、docker-compose.yml（卷：DATA_DIR、数据库）、.dockerignore、CLAUDE.md（内容 @AGENTS.md）；健康检查打 /api/health
+- **输入**：origin/main 的 Dockerfile/Dockerfile.dev/docker-compose.yml/.dockerignore/CLAUDE.md
+- **依赖**：D-03　**档位**：sonnect（部署件）　**规模**：小（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - Dockerfile
+  - docker-compose.yml
+  - .dockerignore
+  - CLAUDE.md
+- **执行步骤**：
+  1. 以 main 为蓝本改 standalone 与 DATA_DIR
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(D-08): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `test -f CLAUDE.md && test -f Dockerfile`
+  - `command -v docker && docker build -t hdwebsite:w1 .` 成功；无 docker → 标 UNKNOWN（不计 PASS）
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+command -v docker && docker build -t hdwebsite:w1 . || echo UNKNOWN
+```
+- **允许修改**：
+  - Dockerfile
+  - docker-compose.yml
+  - .dockerignore
+  - CLAUDE.md
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-08/`
+
+#### D-09　storage.ts 正式实现 DATA_DIR；upload/file/collect-engine/backup 改用；standalone 不再携带 uploads
+
+- **工作包 / 切片**：WPD.6 存储根　/　S-D7 上传与备份不再写进构建目录
+- **来源需求**：P14 目标 1；I14（已复测：构建后 .next/standalone/uploads=32M，运行后增至 45M/526 个文件——运行时写入构建目录；server.js:6 chdir）
+- **目标**：所有上传/备份/知识库文件路径与 cwd 无关；collect-engine 不再 import '@/app/api/upload/route'；upload 路由迁 withApi；outputFileTracingExcludes 排除 uploads
+- **输入**：upload/route.ts:25；file/[...path]/route.ts:7,22-26；collect-engine.ts:19,113-122；backup.ts:45
+- **依赖**：D-03　**档位**：sonnect（存储改造（opus 券审查））　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/storage.ts
+  - src/app/api/upload/**
+  - src/app/api/file/**
+  - src/lib/collect-engine.ts（仅路径）
+  - src/lib/jobs/backup.ts（仅路径）
+  - next.config.ts（仅 tracing 排除）
+  - src/lib/__tests__/lane-d/storage.test.ts
+- **执行步骤**：
+  1. storage.test.ts 含 chdir 用例与穿越用例
+  2. build 后检查 standalone 目录
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-09): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rn 'process.cwd(), "uploads"\|process.cwd(), "backups"' src` 为空
+  - `grep -rn "@/app/" src/lib` 为空
+  - `npm run build && test ! -d .next/standalone/uploads`
+  - storage.test.ts 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-d/storage.test.ts
+npm run build && test ! -d .next/standalone/uploads
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/storage.ts
+  - src/app/api/upload/**
+  - src/app/api/file/**
+  - src/lib/collect-engine.ts
+  - src/lib/jobs/**
+  - next.config.ts
+  - src/lib/env.ts
+  - .env.example
+  - src/lib/__tests__/lane-d/**
+  - docs/design/03_solution/decisions/ADR-031-*.md
+- **升级/熔断**：tracing 排除后运行时找不到文件 → 回退排除项并上报；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-09/`
+
+#### D-10　备份含 uploads 与 kb；运行时文件迁出 git（导出→.gitignore→git rm --cached）
+
+- **工作包 / 切片**：WPD.6 存储根　/　S-D8 数据可备份可迁出
+- **来源需求**：P14 目标 2/3/5；R-P6
+- **目标**：备份产物含 db + uploads + kb（tar.gz），保留 14 份；仓库 git ls-files uploads = 0 且磁盘文件保留；public/uploads 20 个文件处置写入证据（默认保留，因前台可能引用）
+- **输入**：backup.ts:11,33-62；C-ops §3（413 文件，32M）
+- **依赖**：D-09　**档位**：sonnect（脚本+测试）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/jobs/backup.ts
+  - scripts/migrate-uploads-to-data-dir.mjs
+  - .gitignore
+  - uploads/**（仅 git rm --cached）
+  - src/lib/__tests__/lane-d/backup.test.ts
+- **执行步骤**：
+  1. 迁移脚本 dry-run 默认，报告计数
+  2. 计数与 git ls-files 一致才执行 git rm --cached
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-10): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - 迁移脚本报告 413
+  - `test "$(git ls-files uploads | wc -l)" -eq 0`
+  - backup.test.ts：归档含三类、第 15 份删除最旧
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-d/backup.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/jobs/**
+  - scripts/**
+  - .gitignore
+  - uploads/**
+  - src/lib/__tests__/lane-d/**
+- **升级/熔断**：计数不一致 → 停止，不执行 git rm --cached；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-10/`
+
+#### D-11　删除媒体清理文件（单删/批删含缩略图）+ 孤儿扫描脚本
+
+- **工作包 / 切片**：WPD.6 存储根　/　S-D8 数据可备份可迁出
+- **来源需求**：P14 目标 4；C-ops §3-#4
+- **目标**：crud.ts 新增 afterDelete 钩子；media 单删与 /api/media/batch 删除对应原图与 thumb/small/medium；scan-orphan-uploads.mjs 默认 dry-run
+- **输入**：media/[id]/route.ts:13；media/batch/route.ts:31-32；crud.ts:41,43
+- **依赖**：D-09　**档位**：sonnect（逻辑）　**规模**：中（0.75 天）（计划 0.75 人天）
+- **输出（新增/修改）**：
+  - src/lib/crud.ts
+  - src/lib/crud-resources/media.ts
+  - src/app/api/media/**
+  - scripts/scan-orphan-uploads.mjs
+  - src/lib/__tests__/lane-d/media-delete.test.ts
+- **执行步骤**：
+  1. 钩子失败不回滚 DB 删除，只记日志
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(D-11): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - media-delete.test.ts：单删/批删后 4 个文件均不存在
+  - `node scripts/scan-orphan-uploads.mjs; echo $?` = 0
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-d/media-delete.test.ts
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/crud.ts
+  - src/lib/crud-resources/media.ts
+  - src/app/api/media/**
+  - src/lib/storage.ts
+  - scripts/**
+  - src/lib/__tests__/lane-d/**
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-11/`
+
+#### D-12　CollectParser 注册表（html/rss）+ 采集图片流式限长、白名单单一来源 + http-client/json-field
+
+- **工作包 / 切片**：WPD.7 采集　/　S-D9 采集可扩展且图片受控
+- **来源需求**：P09 目标（采集部分）；P15 目标 4
+- **目标**：collect-engine 与 collect-test 都经 getParser(type)；图片读取超过上限立即中止；上传与采集共用 storage.ts 的类型白名单与上限常量
+- **输入**：collect-engine.ts:102-202；collect-test.ts:37；upload/route.ts:16-24
+- **依赖**：D-09　**档位**：sonnect（搬迁）　**规模**：中（1 天）（计划 1.0 人天）
+- **输出（新增/修改）**：
+  - src/lib/collect/**
+  - src/lib/collect-engine.ts
+  - src/lib/collect-test.ts
+  - src/lib/storage.ts（常量）
+  - src/app/api/upload/route.ts（引用常量）
+  - docs/design/03_solution/decisions/ADR-032-采集解析注册表.md
+  - src/lib/__tests__/lane-d/collect.test.ts
+- **执行步骤**：
+  1. 先写测试（rss/html fixture、超大图片中止）
+  2. 搬迁
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(D-12): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -rn 'type === "rss"' src/lib` 为空
+  - `grep -c "image/jpeg" src/lib/collect-engine.ts src/app/api/upload/route.ts` 均为 0
+  - collect-autokb（C 线文件，只读回归）与 e2e collect-publish 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npx vitest run src/lib/__tests__/lane-d/collect.test.ts
+npm run test:e2e
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - src/lib/collect/**
+  - src/lib/collect-engine.ts
+  - src/lib/collect-test.ts
+  - src/lib/storage.ts
+  - src/app/api/upload/**
+  - src/app/api/collect-*/**
+  - src/lib/crud-resources/collect.ts
+  - src/lib/__tests__/lane-d/**
+  - docs/design/03_solution/decisions/ADR-032-*.md
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W1-D/D-12/`
+
+## Wave 1 结束条件（你这一侧）
+
+- B、C、D 全部卡的验证报告为 PASS（UNKNOWN 仅限 Coze/微信/SMTP 无凭证联调、无 docker、Playwright 依赖装不上，并写明原因），已提交进 `evidence/W1-B/`、`evidence/W1-C/`、`evidence/W1-D/`。
+- `lane/backend` 已推送；越界检查通过；GATE、visual 46/46、e2e 全绿；`git ls-files uploads` 为 0；知识库上传 PDF/图片 400 用例在列且通过。
+
+## 阶段 2：Wave 2（X 主持，你负责依赖、守卫脚本、性能与终审验证）
+
+1. 等 X 完成 W2-01 并推送合并后的 upgrade：`git fetch && git checkout -b w2/backend origin/upgrade`。
+2. 按顺序做 W2-03 → W2-09 → W2-04（卡见下），每张完成推送 `w2/backend` 并向 X 发验证请求；X 验证 PASS 后由 X 合并。
+3. W2-07：X 完成 W2-06 后，你在新的干净克隆上对 `bb2c0e5..upgrade` 做独立终审（按“独立验证者职责”），额外检查：前台 `git diff origin/main -- src/components/web 'src/app/(web)' public` 只含四类已登记差异；parity-matrix missing+partial = 0 或逐条有理由；MUST 14 条有结论。结论写成《验证报告》交用户转给 X，标题 `W2 final-verify`。
+
+### Wave 2 任务卡（你负责的部分）
+
+#### W2-03　依赖删除与归类（Y 在 w2/backend 执行，X 验证后合并）
+
+- **工作包 / 切片**：WP2.3 依赖收口　/　S-W 集成
+- **来源需求**：P15 目标 3；P07 #6
+- **目标**：删除 @radix-ui/react-dialog、@radix-ui/react-label；@types/nodemailer 移入 devDependencies；react-hook-form/@hookform/resolvers 按 D9 裁决处理（默认保留）
+- **输入**：A-06 结果；C-ops §4 依赖表
+- **依赖**：W2-01　**档位**：haiku（依赖整理）　**规模**：小（<2h）（计划 0.25 人天）
+- **输出（新增/修改）**：
+  - package.json
+  - package-lock.json
+- **执行步骤**：
+  1. npm uninstall/npm i -D
+  2. 全量门禁
+  3. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  4. 提交：`git commit -m "<feat|fix|test|docs>(W2-03): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `grep -n "@radix-ui" package.json` 为空
+  - `node -e "process.exit(require('./package.json').dependencies['@types/nodemailer']?1:0)"`
+  - build + visual 通过
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:visual
+```
+- **允许修改**：
+  - package.json
+  - package-lock.json
+  - src/components/web/ApplyForm.tsx（仅当 D9=删除）
+- **升级/熔断**：—；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W2/W2-03/`
+
+#### W2-09　check-assets + check-root + 删除 .tmp-pa.html + 接入 npm run check
+
+- **工作包 / 切片**：WP2.2 守卫建设（Guard，不与实现并行）　/　S-W 集成
+- **来源需求**：P15 目标 1/3；规划总指令 §9.4（根目录污染检查）
+- **目标**：源码、Setting 默认值、DB 内容中的 /images/*、/uploads/* 引用全部存在（含 public/uploads 来源）；根目录白名单守卫；package.json 仅改 scripts 字段
+- **输入**：C-ops §4（14 个根文件、两份 playwright 配置）
+- **依赖**：W2-03　**档位**：sonnect（脚本）　**规模**：中（0.75 天）（计划 0.75 人天）
+- **输出（新增/修改）**：
+  - scripts/check-assets.mjs
+  - scripts/check-root.mjs
+  - .tmp-pa.html（删除）
+  - package.json（仅 scripts.check / scripts.check:assets / scripts.check:root）
+- **执行步骤**：
+  1. DB 扫描用临时库或 DATABASE_URL
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(W2-09): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - `node scripts/check-assets.mjs && node scripts/check-root.mjs && test ! -e .tmp-pa.html`
+  - 本卡提交中 package-lock.json 无变化
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+node scripts/check-assets.mjs && node scripts/check-root.mjs
+npm run lint && npm run typecheck && npm test && npm run build
+```
+- **允许修改**：
+  - scripts/**
+  - .tmp-pa.html
+  - package.json（仅 scripts 字段）
+  - docs/design/06_validation/evidence/W2/**
+- **升级/熔断**：发现 main 视觉依赖文件缺失 → 从 origin/main 恢复（属前台资源，需在证据列明），不得用占位图；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W2/W2-09/`
+
+#### W2-04　after.json 复测与目标判定（Y 在 w2/backend 执行，X 验证后合并）
+
+- **工作包 / 切片**：WP2.4 性能复测　/　S-W 集成
+- **来源需求**：P10 目标；§11 基线
+- **目标**：/manager JS gzip ≤ before ×0.6 或证据说明差距来源与下一步；npm start Ready ≤10s；首页热 TTFB ≤ before ×1.1
+- **输入**：D-01 before.json
+- **依赖**：W2-03　**档位**：sonnect（测量）　**规模**：小（0.5 天）（计划 0.5 人天）
+- **输出（新增/修改）**：
+  - docs/design/06_validation/evidence/W2/after.json
+  - docs/design/06_validation/evidence/W2/perf-compare.md
+- **执行步骤**：
+  1. 同环境测三次取中位数
+  2. 跑本卡验证命令与通用门禁，把命令、exit code、关键输出写入证据目录
+  3. 提交：`git commit -m "<feat|fix|test|docs>(W2-04): <摘要>"`（只含允许路径）
+- **验收标准**（全部满足；最后两条对每张卡都适用）：
+  - perf-compare.md 每项给出 PASS/FAIL 与数字
+  - 通用门禁 `npm run lint && npm run typecheck && npm test && npm run build` 全部 exit 0
+  - `git log --first-parent --no-merges --name-only --format= <本卡起点>..HEAD | sort -u` 全部落在本卡“允许修改”内
+- **验证命令**：
+```bash
+node scripts/measure-baseline.mjs --out docs/design/06_validation/evidence/W2/after.json
+```
+- **允许修改**：
+  - docs/design/06_validation/evidence/W2/**
+  - src/app/manager/**（仅 import 方式，需 E 线负责人确认）
+- **升级/熔断**：/manager 未达 -40% → opus 判定是否下调目标（须用户批准）；同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析交用户裁决
+- **证据目录**：`docs/design/06_validation/evidence/W2/W2-04/`
+
+## 独立验证者职责（验证对方时切换到这个角色；用新的干净克隆，不在自己的工作目录里验证）
+
+### 角色
+
+你是独立验证者。你只看两样东西：**代码差异**（`git diff <起点>..<终点>`）与**你自己跑出来的命令结果**。执行者的汇报、自述、截图说明一律不作为证据。你不改业务代码，不写长篇解释；每条验收只输出 PASS / FAIL / UNKNOWN 与一行依据。
+
+### 输入（来自对方的《验证请求》）
+
+- 仓库与分支：`https://github.com/CodingHeader/HDwebsite`，分支 `<lane 分支或 upgrade>`
+- 起点..终点 commit
+- 要验收的任务卡：规划包 `tasks/<卡号>.md`（只以卡内“验收标准”“验证命令”“允许修改”为准）
+
+### 步骤
+
+```bash
+git clone https://github.com/CodingHeader/HDwebsite.git hd-verify && cd hd-verify
+git fetch --all --tags && git checkout <终点 commit>
+npm ci && npx prisma generate
+# 本地 .env.local 只放一次性随机 JWT_SECRET（≥32 位），验证结束删除
+```
+
+1. **路径检查（先做，失败即整卡 FAIL）**：`git log --first-parent --no-merges --name-only --format= <起点>..<终点> | sort -u` 列出的每个文件都必须匹配卡的“允许修改”（只看该线自己的非合并提交；合并进来的已批准 CCR 不计入）；并且不得出现 `src/contracts/**`、`prisma/schema.prisma`、`prisma/migrations/**`、`package.json`、`package-lock.json`（Wave 0 与 W2-03/W2-09 除外）。
+2. **密钥扫描**：`git diff <起点>..<终点> | grep -nE "sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_|-----BEGIN [A-Z ]*PRIVATE KEY"` 必须为空；diff 中不得出现 `.env`、`*.db`、`backups/`、`data/`。
+3. **逐条执行卡内验证命令**，记录 exit code 与关键输出行（不超过 3 行）。
+4. **回归**：`npm run lint && npm run typecheck && npm test && npm run build`；diff 触及前台引用文件（`src/app/(web)/**`、`src/components/web/**`、`src/components/ui/**`、`public/**`、`globals.css`）→ `npm run test:visual` 必须 46/46；触及页面或 `src/app/api/**` → `npm run test:e2e`。
+5. **抽查反例**（至少 2 条，自己设计）：例如未登录访问新端点应 401、非超管操作应 403、上传 `.pdf` 应 400、改一个后台字段后前台 5 秒内可见。
+6. 结束后：`git status` 必须干净；删除 `.env.local` 与临时库。
+
+### 判定规则
+
+- PASS：命令 exit 0 且输出满足条目。
+- FAIL：命令非 0、输出不满足、路径越界、出现密钥、或卡内验收无法执行而执行者未说明。
+- UNKNOWN：仅限客观无法执行（无凭证的真实联调、机器无 docker、Playwright 系统依赖装不上），必须写明原因；UNKNOWN 不等于 PASS。
+- 整卡结论：任一 FAIL → FAIL；无 FAIL 且有 UNKNOWN → “PASS（含 UNKNOWN 项 n 条）”，由用户决定是否放行。
+
+### 输出（写入 `docs/design/06_validation/evidence/<目录>/<卡号>-verify.md`，或作为《验证报告》文本交用户转回）
+
+```text
+<卡号> 独立验证  起点..终点：<a>..<b>  时间：<UTC+8>
+结论：PASS | FAIL | PASS（含 UNKNOWN n 条）
+| # | 验收条目 | 命令 | exit | 结果 | 依据（≤1 行） |
+路径检查：PASS/FAIL（越界文件列表）
+密钥扫描：PASS/FAIL
+回归：lint/typecheck/test/build/visual/e2e 各自结果
+反例抽查：2 条及结果
+```
+
+### 安全铁律
+
+不在任何输出中写出 token、密码、API key 的值；不推送；不修改远端。
+
+
+**你验证 X 时额外关注**：`src/components/ui/{button,input,textarea,label}.tsx` 的 `git diff --stat w1-base` 必须为空；页面层原生控件严格正则 `<(table|input|select|button|textarea)\b` 在 `src/app/manager/**` 命中数只降不升；`/manager` 首屏 JS gzip 相对 w1-base 增长 ≤ 2%；现有 data-testid 与 `getByRole("button",{name:"试抓"})` 等 E2E 选择器未改即通过。A-07 检查点验证范围是 `w1-base..lane/ui`，PASS 后 X 才打 `w1-ui-kit`。
+
+## 通用纪律
+
+- 仓库 `https://github.com/CodingHeader/HDwebsite`，前台视觉标准 = `origin/main@94dbbbb`（红色横幅轮播）。改动任何被前台引用的文件后必须跑 `npm run test:visual` 且 46/46。
+- 先读 `AGENTS.md`（尤其 §3 前台风格冻结、§5 禁止事项），再读本线任务卡；Next.js 16 有破坏性变更，写代码前读 `node_modules/next/dist/docs/` 对应章节。
+- **冻结面（Wave 1 全程只读）**：`src/contracts/**`、`prisma/schema.prisma` 与迁移、`package.json` 依赖段与锁文件、`vitest.config.ts`、全部 playwright 配置、其他线拥有的文件。需要改 → 停止该子项，写《契约变更请求》（`11-验收与审查规程.md` §4），继续做不受影响的卡。
+- 小而聚焦的提交，信息前缀 `feat(<卡号>)` / `fix(<卡号>)` / `test(<卡号>)` / `docs(<卡号>)`；不改全局 git config。
+- 每张卡结束必跑：`npm run lint && npm run typecheck && npm test && npm run build`（全部 exit 0）。
+- 熔断：同一卡连续 2 次独立验收 FAIL → 停止改代码，写失败分析，交用户裁决。
+- 环境：node 22 可用（engines >=24 的警告可忽略）；Playwright 缺系统库时 `sudo npx playwright install-deps chromium`，装不上就把相关验收记为 UNKNOWN，绝不记 PASS。本地需 `.env.local`（`JWT_SECRET` ≥32 位随机串，参照 `.env.example`）。
+
+## 开工前的深度分析（必须写进证据目录的 `analysis.md`，每个工作包一次）
+
+1. **5W1H 发散**：What（本卡要求什么、代码已有什么、缺什么、哪些只是别人声明未被证明）；Why（直接原因与根因，只改表面会留下什么）；Where/When（文件:行、执行阶段、必须先于/后于哪些卡）；Who（本线负责什么、哪些要别的线或集成者配合）；How（定位→方案→实现→验证→证据）；What if（配置缺失、依赖不可用、字段变化、端口占用、他线未完成、测试过但运行失败、前提不成立时怎么办）。
+2. **苏格拉底追问**：每个重要结论回答——凭什么？证据是否来自 `w1-base` 之后的真实代码？有无反证？是否把现象当根因？漏了哪些异常路径？前提不成立还成立吗？还要跑什么命令确认？
+3. **双向钢人论证**：为关键方案写最强支持理由与最强反对理由，标明哪些反对已被证据排除、哪些仍成立、哪些转交后续卡。
+4. **终稿**：结论 + 代码证据 + 命令证据 + 前提 + 局限 + 未验证项 + 风险 + 下一步；无法确认的写 `已确认 / 部分确认 / 证据不足 / 待其他员工完成 / 存在缺陷 / 需要返工 / 暂不执行` 之一。
+禁止根据猜测补全关键事实；禁止“最佳实践”“行业惯例”代替本项目证据；禁止“绝对正确”“一定成功”。
+
+## 安全铁律（不可违反）
+
+1. 不在聊天、日志、文件名、计划、证据、提交信息中明文出现私钥、token、密码、API key 的值；提到时只写“推送凭据”“访问令牌”等泛称。
+2. **推送凭据由用户在本机配置**（credential helper 或权限 600 的 `~/.git-credentials`）；你不接触、不搜索、不打印凭据，也不要求用户把凭据发给你。没有可用凭据就不推送，在汇报里写明。推送后若使用了临时凭据文件立即删除；remote URL 不得含凭据：`git remote get-url origin | grep -qE 'https://[^/]*@' && echo 含凭据 || echo 干净`（SSH 地址 git@github.com 属正常）。
+3. 不提交 `.env*`、`prisma/*.db`、`backups/`、`data/`、运行时上传、任何密钥；本地 `.env.local` 只放测试用随机值。
+4. 不读取、不迁移凭据类文件（如 main 的 `website_error/.token.txt`）。
+
+## 汇报格式
+
+```text
+Y / <W0|段 B|C|D|W2> / <工作包> 汇报
+- 起点..终点：<commit>..<commit>（分支 upgrade / lane/backend / w2/backend）
+- 完成的卡：<卡号>
+- 逐条验收：| 卡号 | 验收条目 | 命令 | exit | 自测结果 | 证据路径 |
+- 越界检查：是/否（否则列出文件）
+- 契约变更请求：<编号或“无”>
+- 未验证项与原因（Coze/微信/SMTP/docker 等）：
+- 给 X 或用户的事项：
+```
+汇报只写可复现事实；PASS 由验证者给出，不由你自己宣布。

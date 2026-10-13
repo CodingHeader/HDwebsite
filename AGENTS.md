@@ -38,13 +38,15 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 - 只在当前方向提示词"允许修改"路径内写入；必须越界时在证据中写明文件与理由。
 - 契约唯一源 `src/contracts/**`（zod）：改代码前先补本方向契约；禁止在路由/组件内重复定义 DTO。
 - **迁移只允许 P04（`p04_data_integrity`）、P06（`p06_collect_kb_review`）、P12（`p12_knowledge_base`）各新增 1 个**，按顺序串行；其他方向需改表 → 写 ADR 并停止该子项。已有迁移目录不得修改。
-- 方向全部串行执行，每个方向经独立验证（PASS/FAIL/UNKNOWN）后才进入下一方向。
+- **编排（2026-10-13 用户裁决 D11=2 名执行者）**：Wave 0（W0-01~W0-08）在 `upgrade` 上**串行冻结**，产出 tag `w1-base`；Wave 1 **两条执行线并行**（所有权矩阵见 `04_planning/parallel-w1/07-所有权矩阵.md`，重叠 0、越权 0）；Wave 2 集成与终审。规划包入库于 `docs/design/04_planning/parallel-w1/`。
+- **冻结面**：`w1-base` 之后 `src/contracts/**`、`prisma/schema.prisma` 与迁移、依赖（`package.json`/锁文件）、`vitest.config.ts`/Playwright 配置全部只读；任何线需要改动 → 停止该子项并写《契约变更请求》（`04_planning/parallel-w1/11-验收与审查规程.md` §4），批准后由契约员在 `upgrade` 上最小提交并打 `w1-base-ccr-<n>`。
+- **所有权不相交**：各线只在自己 lane 分支的"允许修改"路径内写入；越界即 FAIL。两条线的唯一共享物是 tag `w1-base` 上冻结的契约、迁移、依赖与本规划包。
 
 ## 5. 禁止事项
 
 - 改变前台视觉风格；把管理端令牌写到全局作用域。
 - 提交 `.env*`、`prisma/dev.db`、`backups/`、运行时上传文件、任何密钥；把 token 写进 remote URL、文件、日志或输出。
-- 未经独立验证即推送；方向内 `git push`（推送只在 Final 阶段）。
+- 未经独立验证即推送。**推送规则（2026-10-13 用户裁决 D8）**：Wave 0 的 W0-08 经独立验证 PASS 后，推送 `upgrade` 与 tag `w1-base`；Wave 1 期间各线只推自己的 lane 分支（`lane/ui`、`lane/backend`），`upgrade` 只由集成者在 Wave 2 推送。
 - 引入 Redis/MQ/无头浏览器/独立 worker（REQ-C-003）；群发接口。
 - 并行修改 `src/contracts/**` 或同一迁移。
 - 读取或迁移凭据类文件（如 main 的 `website_error/.token.txt`）。
@@ -80,4 +82,5 @@ npm run test:e2e           # P05 起（如该方向提示词要求）
 
 - 小而聚焦的提交，信息前缀 `feat(PXX)` / `fix(PXX)` / `docs(PXX)`；提交作者不改全局 git config。
 - 证据写入 `docs/design/06_validation/evidence/PXX-execution.md`（分析 5W1H 简版、改动文件、验收逐条结果与命令输出摘要、UNKNOWN 及原因、后续方向待办）。
+- 并行编排期间（2026-10-13 起）证据目录按波次/执行线分桶：Wave 0 → `evidence/W0/<卡号>/`；Wave 1 → `evidence/W1-B/<卡号>/`、`evidence/W1-C/…`、`evidence/W1-D/…`、`evidence/W1-A/…`、`evidence/W1-E/…`；Wave 2 → `evidence/W2/`。独立验证报告 `<卡号>-verify.md` 由被验证方原样提交进自己的证据目录（`docs(<卡号>): verify report`）。
 - 熔断：同一件事失败两次即停止并上报；同一方向连续 2 次独立验证 FAIL → 停止改代码，改写提示词/升级档位/标 blocked。
