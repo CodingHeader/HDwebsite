@@ -38,7 +38,7 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 - 只在当前方向提示词"允许修改"路径内写入；必须越界时在证据中写明文件与理由。
 - 契约唯一源 `src/contracts/**`（zod）：改代码前先补本方向契约；禁止在路由/组件内重复定义 DTO。
 - **迁移只允许 P04（`p04_data_integrity`）、P06（`p06_collect_kb_review`）、P12（`p12_knowledge_base`）各新增 1 个**，按顺序串行；其他方向需改表 → 写 ADR 并停止该子项。已有迁移目录不得修改。
-- **编排（2026-10-13 用户裁决 D11=2 名执行者）**：Wave 0（W0-01~W0-08）在 `upgrade` 上**串行冻结**，产出 tag `w1-base`；Wave 1 **两条执行线并行**（所有权矩阵见 `04_planning/parallel-w1/07-所有权矩阵.md`，重叠 0、越权 0）；Wave 2 集成与终审。规划包入库于 `docs/design/04_planning/parallel-w1/`。
+- **编排（2026-10-13 用户裁决 D11=2 名执行者）**：Wave 0（W0-01~W0-08）在 `upgrade` 上**串行冻结**，产出 tag `w1-base`；Wave 1 **五条 lane 并行**（所有权矩阵见 `04_planning/parallel-w1/07-所有权矩阵.md`，重叠 0、越权 0），由 **2 名执行者**承载：X = `lane/ui`（A→E）、Y = `lane/backend`（B→C→D）；Wave 2 集成与终审。规划包入库于 `docs/design/04_planning/parallel-w1/`。
 - **冻结面**：`w1-base` 之后 `src/contracts/**`、`prisma/schema.prisma` 与迁移、依赖（`package.json`/锁文件）、`vitest.config.ts`/Playwright 配置全部只读；任何线需要改动 → 停止该子项并写《契约变更请求》（`04_planning/parallel-w1/11-验收与审查规程.md` §4），批准后由契约员在 `upgrade` 上最小提交并打 `w1-base-ccr-<n>`。
 - **所有权不相交**：各线只在自己 lane 分支的"允许修改"路径内写入；越界即 FAIL。两条线的唯一共享物是 tag `w1-base` 上冻结的契约、迁移、依赖与本规划包。
 
