@@ -5,14 +5,25 @@
  * - 鉴权：permission 为字符串 → requireAuth(request, permission)；auth:"optional" → 解析会话但不强制；
  *   默认（未给 permission 且未设 auth）为公开路由。
  * - 解析：handler 内用 parseBody / parseQuery / parseId（失败抛 ApiHttpError → 契约 400）。
- * - 异常：ApiHttpError → 对应契约响应；Prisma P2002/P2003 → 400；其余未捕获异常 →
- *   onApiError 钩子（默认 console.error + notify-gateway system_error 多收件人邮件，P06）→ serverError()。
+ * - 异常：ApiHttpError → 对应契约响应（400/401/403/404/409/429/502/503，ADR-028）；Prisma P2002 → 409、P2003 → 400；
+ *   其余未捕获异常 → onApiError 钩子（默认 console.error + notify-gateway system_error 多收件人邮件，P06）→ serverError()。
  * 响应信封始终是 { code, data, message }（src/contracts/common.ts）。
  */
 import type { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { getSession } from "@/lib/auth";
-import { error, forbidden, notFound, serverError, unauthorized, validationError } from "@/lib/api-response";
+import {
+  badGateway,
+  conflict,
+  error,
+  forbidden,
+  notFound,
+  serverError,
+  serviceUnavailable,
+  tooManyRequests,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
 import { idParamSchema } from "@/contracts";
 import type { SessionUser } from "@/contracts";
 
@@ -20,11 +31,14 @@ import type { SessionUser } from "@/contracts";
 
 type Issue = { message: string; path?: (string | number | symbol)[] };
 
+/** 可抛出的契约错误状态（ADR-028；W1 各线一致使用） */
+export type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 429 | 502 | 503;
+
 /** 业务可预期错误：在 handler 内 throw，即返回对应契约响应（不触发 onApiError） */
 export class ApiHttpError extends Error {
-  readonly status: 400 | 401 | 403 | 404;
+  readonly status: ApiErrorStatus;
   readonly issues?: Issue[];
-  constructor(status: 400 | 401 | 403 | 404, message: string, issues?: Issue[]) {
+  constructor(status: ApiErrorStatus, message: string, issues?: Issue[]) {
     super(message);
     this.name = "ApiHttpError";
     this.status = status;
@@ -161,10 +175,15 @@ function toErrorResponse(err: unknown, request: Request, session: SessionUser | 
     if (err.status === 400) return err.issues?.length ? validationError(err.issues) : error(err.message, 400);
     if (err.status === 401) return unauthorized(err.message);
     if (err.status === 403) return forbidden(err.message);
-    return notFound(err.message);
+    if (err.status === 404) return notFound(err.message);
+    if (err.status === 409) return conflict(err.message);
+    if (err.status === 429) return tooManyRequests(err.message);
+    if (err.status === 502) return badGateway(err.message);
+    return serviceUnavailable(err.message);
   }
   const code = typeof err === "object" && err !== null ? (err as { code?: unknown }).code : undefined;
-  if (code === "P2002") return error(options.conflictMessage?.unique ?? "数据已存在（唯一字段冲突）", 400);
+  // ADR-028：P2002 唯一冲突 → 409（原 400）
+  if (code === "P2002") return conflict(options.conflictMessage?.unique ?? "数据已存在（唯一字段冲突）");
   if (code === "P2003") return error(options.conflictMessage?.foreignKey ?? "关联数据不存在或存在关联数据", 400);
   if (code === "P2025") return notFound("资源不存在");
   emitApiError({

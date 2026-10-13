@@ -5,10 +5,12 @@
  * 基础类型：text/textarea/number/switch/select/date；高级类型：image/upload/tags/markdown/richtext
  * 受控表单 + 必填校验（行内错误 errors[key]，aria-invalid + aria-describedby）；image 字段内置"上传→回填 URL"。
  * P05：样式迁到 mgr-* 令牌；label 与控件以 htmlFor/id 关联（可点击聚焦、读屏可读、E2E getByLabel 可定位）。
+ * W0-04（ADR-028）：`FieldSpec.visibleTo === "super"` 的字段对非超管整块不渲染，且不参与必填校验。
  */
 import { useId, useRef, useState } from "react";
 import { toast } from "@/components/manager/feedback/toast";
 import { inputCls as baseInputCls } from "@/components/manager/feedback/styles";
+import { useAuthStore } from "@/store/authStore";
 
 export type FieldType =
   | "text" | "textarea" | "number" | "switch" | "select" | "date"
@@ -24,14 +26,24 @@ export type FieldSpec = {
   colSpan?: 1 | 2;
   /** tags 字段提交时按逗号拆分为数组 */
   rows?: number;
+  /** 可见性：`"super"` = 仅超级管理员可见/可编辑（非超管整块不渲染，ADR-028） */
+  visibleTo?: "super";
 };
 
 export type FormValues = Record<string, unknown>;
 
-/** 必填校验：返回 { fieldKey: 错误文案 }，空对象表示通过 */
-export function validateRequired(fields: FieldSpec[], values: FormValues): Record<string, string> {
+/**
+ * 按可见性过滤字段（ADR-028）：`visibleTo: "super"` 的字段在非超管下整块不渲染。
+ * 供 SchemaForm 与调用方的校验共用（避免"隐藏字段仍触发必填错误"）。
+ */
+export function visibleFields(fields: FieldSpec[], isSuper: boolean): FieldSpec[] {
+  return fields.filter((f) => f.visibleTo !== "super" || isSuper);
+}
+
+/** 必填校验：返回 { fieldKey: 错误文案 }，空对象表示通过（`isSuper` 默认 true，保持既有调用方行为） */
+export function validateRequired(fields: FieldSpec[], values: FormValues, isSuper = true): Record<string, string> {
   const errors: Record<string, string> = {};
-  for (const f of fields) {
+  for (const f of visibleFields(fields, isSuper)) {
     if (!f.required) continue;
     const v = values[f.key];
     const empty =
@@ -56,6 +68,8 @@ export function SchemaForm({
   /** 字段被修改时回调（调用方据此清除该字段错误） */
   onFieldChange?: (key: string) => void;
 }) {
+  const isSuper = useAuthStore((s) => s.user?.role.isSuper ?? false);
+  const shown = visibleFields(fields, isSuper);
   const uid = useId();
   const set = (key: string, value: unknown) => {
     onFieldChange?.(key);
@@ -69,7 +83,7 @@ export function SchemaForm({
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const token = (await import("@/store/authStore")).useAuthStore.getState().token;
+      const token = useAuthStore.getState().token;
       const res = await fetch("/api/upload", {
         method: "POST",
         body: fd,
@@ -89,7 +103,7 @@ export function SchemaForm({
 
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
-      {fields.map((f) => {
+      {shown.map((f) => {
         const type = f.type ?? "text";
         const span = f.colSpan === 2 || type === "markdown" || type === "richtext" ? "sm:col-span-2" : "sm:col-span-1";
         const id = `${uid}-${f.key}`;

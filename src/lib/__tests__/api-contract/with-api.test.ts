@@ -64,11 +64,12 @@ describe("withApi", () => {
     off();
   });
 
-  it("Prisma 唯一冲突 P2002 → 400", async () => {
+  it("Prisma 唯一冲突 P2002 → 409（ADR-028，原 400）", async () => {
     const res = await withApi(async () => {
       throw Object.assign(new Error("dup"), { code: "P2002" });
     })(new Request("http://localhost/x"), ctx);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe(409);
   });
 
   it("permission 给出时无 token → 401", async () => {

@@ -5,7 +5,7 @@
  * 规则：
  * - 后端路由校验、前端表单校验、类型推导一律从本目录导入，禁止在他处重复定义 DTO。
  * - 字段命名 camelCase；时间格式 ISO 8601 字符串；分页 page/limit/total/totalPages。
- * - 错误契约：ApiResponse code 200/400/401/403/404/500，data 失败时为 null。
+ * - 错误契约：ApiResponse code 200/400/401/403/404/409/429/500/502/503，data 失败时为 null（ADR-028）。
  */
 import { z } from "zod";
 
@@ -17,7 +17,11 @@ export const apiResponseCodeSchema = z.union([
   z.literal(401),
   z.literal(403),
   z.literal(404),
+  z.literal(409),
+  z.literal(429),
   z.literal(500),
+  z.literal(502),
+  z.literal(503),
 ]);
 
 // data 形态由各接口泛型指定；此处仅约束信封
@@ -63,7 +67,11 @@ export const errorCodes = {
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
+  CONFLICT: 409,
+  TOO_MANY_REQUESTS: 429,
   SERVER_ERROR: 500,
+  BAD_GATEWAY: 502,
+  SERVICE_UNAVAILABLE: 503,
 } as const;
 
 // ── 通用 ID 路径参数 ────────────────────────────────────────
@@ -85,4 +93,9 @@ export const toastCopy = {
   failed: "操作失败，请稍后重试",
   network: "网络异常，请检查网络后重试",
   forbidden: "当前账号没有此操作的权限",
+  // ── ADR-028 扩增（W0-04）──
+  conflict: "数据已存在或已被他人修改，请刷新后重试",
+  tooManyRequests: "操作太频繁，请稍后再试",
+  badGateway: "上游服务暂时不可用，请稍后重试",
+  serviceUnavailable: "服务繁忙或额度已用尽，请稍后再试",
 } as const;

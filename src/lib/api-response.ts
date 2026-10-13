@@ -3,6 +3,7 @@
  * HTTP 状态码与业务 code 并行设置；data 失败时为 null。
  */
 import { NextResponse } from "next/server";
+import { toastCopy } from "@/contracts/common";
 import type { ApiEnvelope } from "@/contracts";
 
 function build<T>(code: number, data: T, message: string, status: number) {
@@ -35,6 +36,29 @@ export function notFound(message = "资源不存在") {
 
 export function serverError(message = "服务器错误") {
   return build(500, null, message, 500);
+}
+
+// ── ADR-028 扩增错误码（W0-04）：409 / 429 / 502 / 503 ────────
+// 默认文案取 `toastCopy`（契约②前端展示口径的单一来源）
+
+/** 409：唯一约束冲突（Prisma P2002） */
+export function conflict(message: string = toastCopy.conflict) {
+  return build(409, null, message, 409);
+}
+
+/** 429：限频（如 AI 咨询每 IP 每分钟 10 次） */
+export function tooManyRequests(message: string = toastCopy.tooManyRequests) {
+  return build(429, null, message, 429);
+}
+
+/** 502：上游失败（LLM / 微信 / 采集源） */
+export function badGateway(message: string = toastCopy.badGateway) {
+  return build(502, null, message, 502);
+}
+
+/** 503：全部模型额度/限频用尽 */
+export function serviceUnavailable(message: string = toastCopy.serviceUnavailable) {
+  return build(503, null, message, 503);
 }
 
 const ZOD_DEFAULT = /^(Invalid|Expected|Too (small|big)|Unrecognized|Required)/i;

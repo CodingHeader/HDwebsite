@@ -4,17 +4,43 @@
  * 后台 fetch：统一解包 ApiResponse 信封（契约②前端侧唯一实现）
  * - 401：清除会话并跳登录
  * - 403：抛 ForbiddenError（页面据此渲染 <Forbidden/>，契约⑥）
+ * - 400：`data.fieldErrors` 透传到 `ApiError.fieldErrors`（表单逐项标红，P06）
+ * - 409/429/502/503：抛 ApiError，文案取 `toastCopy`（ADR-028）
  * - 网络失败 / 非 JSON 响应（如 502 网关页）：抛 ApiError(0 | status, 可读文案)，页面渲染 ErrorState + 重试
  */
 import { useAuthStore } from "@/store/authStore";
 import { toastCopy } from "@/contracts/common";
 
+/** 契约②：错误码 → 中文展示文案（ADR-028；这些码的后端错误体为 null，文案以前端为准） */
+const CODE_COPY: Record<number, string> = {
+  403: toastCopy.forbidden,
+  409: toastCopy.conflict,
+  429: toastCopy.tooManyRequests,
+  502: toastCopy.badGateway,
+  503: toastCopy.serviceUnavailable,
+};
+
+/** 从信封 `data` 中提取 `{ fieldErrors }`（400 校验失败的字段级错误） */
+function extractFieldErrors(data: unknown): Record<string, string> | undefined {
+  if (!data || typeof data !== "object") return undefined;
+  const raw = (data as { fieldErrors?: unknown }).fieldErrors;
+  if (!raw || typeof raw !== "object") return undefined;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === "string") out[k] = v;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 export class ApiError extends Error {
   code: number;
-  constructor(code: number, message: string) {
+  /** 400 校验失败的字段级错误（`data.fieldErrors`），供表单逐项标红 */
+  fieldErrors?: Record<string, string>;
+  constructor(code: number, message: string, fieldErrors?: Record<string, string>) {
     super(message);
     this.name = "ApiError";
     this.code = code;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -62,14 +88,17 @@ export async function managerFetch<T>(
     }
     throw new ApiError(401, "登录已过期，请重新登录");
   }
-  let body: { code: number; data: T; message: string } | null = null;
+  let body: { code: number; data: unknown; message: string } | null = null;
   try {
-    body = (await res.json()) as { code: number; data: T; message: string };
+    body = (await res.json()) as { code: number; data: unknown; message: string };
   } catch {
     body = null;
   }
   if (res.status === 403 || body?.code === 403) throw new ForbiddenError(body?.message);
   if (!body) throw new ApiError(res.status || 500, `服务器异常（HTTP ${res.status}），请稍后重试`);
-  if (body.code !== 200) throw new ApiError(body.code, body.message || "请求失败");
-  return body.data;
+  if (body.code !== 200) {
+    const message = CODE_COPY[body.code] ?? (body.message || toastCopy.failed);
+    throw new ApiError(body.code, message, extractFieldErrors(body.data));
+  }
+  return body.data as T;
 }
