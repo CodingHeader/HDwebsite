@@ -574,12 +574,84 @@ model Knowledge {
   syncStatus  String  @default("local")
   syncErr     String?
   syncedAt    DateTime?
+  // W0-06 / P12：本地兜底条目所属库、来源文件与切片序号（均无外键，避免 SQLite 整表重建）
+  baseId      Int?
+  fileId      Int?
+  chunkIndex  Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([syncStatus])
+  @@index([baseId, status])
+  @@index([fileId])
+}
+
+// ============================================
+// 二点五、知识库（ADR-020 本地兜底 + ADR-025 Coze 集成，W0-06 落表）
+// ============================================
+
+model KnowledgeBase {
+  id            Int       @id @default(autoincrement())
+  name          String
+  code          String    @unique // seed 用 general / collect
+  description   String?
+  /** 绑定已有 Coze dataset；空 = 未绑定（等待 C-04 创建/同步） */
+  cozeDatasetId String?
+  /** local/pending/synced/failed（与 Knowledge.syncStatus 同口径） */
+  syncStatus    String    @default("local")
+  syncErr       String?
+  isDefault     Boolean   @default(false)
+  status        String    @default("active") // active/inactive
+  sort          Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cozeDatasetId])
+  @@index([status])
+}
+
+model KnowledgeFile {
+  id             Int       @id @default(autoincrement())
+  /** 所属库（无外键，避免 SQLite 整表重建） */
+  baseId         Int
+  filename       String
+  /** docx/doc/md/markdown/txt（契约 kb.ts KB_FILE_EXTS 白名单） */
+  ext            String
+  mimeType       String
+  /** 字节 */
+  size           Int
+  /** 去重主键之一（同一库内 sha256 唯一） */
+  sha256         String
+  /** 相对 DATA_DIR/kb 的存储路径 */
+  storagePath    String
+  /** pending/ok/skipped/failed */
+  localParse     String    @default("pending")
+  /** 本地条目数（Knowledge 回链 fileId 计数） */
+  chunkCount     Int       @default(0)
+  cozeDocumentId String?
+  /** 0 处理中 / 1 完成 / 9 失败（Coze document_infos[].status） */
+  cozeStatus     Int?
+  cozeProgress   Int?
+  /** 采集条目回链（无外键；V0.3 增补 G10） */
+  collectItemId  Int?
+  /** V0.3 增补 G9：软删除回收站 */
+  deletedAt      DateTime?
+  errMsg         String?
+  /** JSON 数组串，默认 "[]"（V0.3 增补） */
+  tags           String    @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([baseId, sha256])
+  @@index([baseId])
+  @@index([cozeDocumentId])
+  @@index([collectItemId])
+  @@index([deletedAt])
+  @@index([baseId, deletedAt])
 }
 
 model ChatScene {
@@ -590,7 +662,7 @@ model ChatScene {
   greeting         String
   systemPrompt     String
   knowledgeTags    String? // 逗号分隔（库内过滤）
-  // JSON 数组：绑定的本地知识库 id 列表（ADR-020 兜底双轨）
+  // JSON 数组：绑定的本地知识库 id 列表（ADR-020 兜底双轨 / K11 真正生效）
   baseIds          String?
   // JSON（开场问题，原 starters 死字段 → R0 接线或移除）
   starters         String?
@@ -604,6 +676,12 @@ model ChatScene {
   useKnowledgeBase Boolean @default(true)
   // P06：场景专属模型（LLMProvider.id，空 = 网关默认路由）；不建外键以免 SQLite 整表重建
   llmProviderId    Int?
+  // W0-06 / K12：场景内模型优先级（JSON 数组串），非空时优先于 llmProviderId
+  providerIds      String?
+  // W0-06：覆盖 LLMProvider 参数（空 = 用供应商默认值）
+  temperature      Float?
+  maxTokens        Int?
+  topP             Float?
   status           String  @default("active")
   sort             Int     @default(0)
 
@@ -787,6 +865,8 @@ model CollectSource {
   // P06：新条目默认入知识库（M-8）；autoApprove = 超管预授权直接通过（ADR-017 附注，默认关）
   autoToKb    Boolean  @default(true)
   autoApprove Boolean  @default(false)
+  // W0-06：采集条目默认落入的知识库（空 = 用 seed 的 `collect` 采集资讯库）；无外键
+  knowledgeBaseId Int?
   lastRunAt  DateTime?
   lastStatus String?
   errMsg     String?

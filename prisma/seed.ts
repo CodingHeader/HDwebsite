@@ -383,6 +383,28 @@ async function seedServiceGuide() {
   }
 }
 
+async function seedKnowledgeBases() {
+  // W0-06 / P12：默认知识库种子（ADR-020 本地兜底 + ADR-025 Coze 集成）。
+  // upsert update:{} 幂等，不覆盖手工修改；Knowledge.baseId 只回填空行。
+  const bases = [
+    { name: '通用知识', code: 'general', description: '站点问答通用知识库（招生政策、院校动态、常见问题）', isDefault: true, sort: 1 },
+    { name: '采集资讯', code: 'collect', description: '内容采集自动入库的知识库（CollectSource 未指定库时的默认落点）', isDefault: false, sort: 2 },
+  ];
+  for (const b of bases) {
+    await prisma.knowledgeBase.upsert({ where: { code: b.code }, update: {}, create: b });
+    console.log('seed: 知识库已就绪 — ' + b.name + ' (' + b.code + ')');
+  }
+  const general = await prisma.knowledgeBase.findUnique({ where: { code: 'general' } });
+  const collect = await prisma.knowledgeBase.findUnique({ where: { code: 'collect' } });
+  if (!general || !collect) throw new Error('seed: 默认知识库缺失（general/collect）');
+  const pending = await prisma.knowledge.findMany({ where: { baseId: null } });
+  for (const k of pending) {
+    const target = k.source === 'collect' ? collect.id : general.id;
+    await prisma.knowledge.update({ where: { id: k.id }, data: { baseId: target } });
+    console.log('seed: Knowledge#' + k.id + ' → 知识库 ' + (k.source === 'collect' ? 'collect' : 'general'));
+  }
+}
+
 async function seedCollectSources() {
   // 采集源（用户 2026-10-11 指定 + 强关联补选；URL 已核实真实可达；选择器可经"试抓预览"校准）
   const sources: { name: string; type: 'html' | 'rss'; url: string; parser: string; autoTags: string[]; cron: string }[] = [
@@ -545,6 +567,7 @@ async function main() {
   await seedSettings();
   await seedCategoriesAndTags();
   await seedArticles();
+  await seedKnowledgeBases();
   await seedChatScenes();
   await seedCronJobs();
   await seedServiceGuide();
