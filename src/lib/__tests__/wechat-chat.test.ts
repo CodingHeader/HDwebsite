@@ -3,6 +3,8 @@
  * 兜底文案来自 Setting（wechatFallbackReply，电话引用 contactPhone），src/lib 无硬编码电话/域名。
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 
 const calls = vi.hoisted(() => {
   const tmp = process.env.TMPDIR || "/tmp";
@@ -22,10 +24,40 @@ vi.mock("@/lib/llm-gateway", async (orig) => {
   };
 });
 
-import { execSync } from "node:child_process";
 import { prisma } from "@/lib/prisma";
 import { cleanupTestDb, initTestDb } from "./api-contract/harness";
 import { answerWechatText } from "@/lib/wechat";
+
+/**
+ * W0-09（DEF-X-01a）：替代 POSIX 依赖的命令行 grep。
+ * 原 `grep -rn "<pattern>" src/lib || true` 依赖 POSIX shell，Windows（PowerShell/cmd）无 grep。
+ * 此处用 node:fs 递归遍历 src/lib（同 grep 语义：递归、逐行匹配、输出 path:line: content），
+ * 未匹配返回 ""，与原 `|| true` + `expect(out.trim()).toBe("")` 断言语义等价。
+ */
+function assertNoSrcLibMatch(patternText: string): string {
+  const escaped = patternText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(escaped);
+  const root = join(process.cwd(), "src/lib");
+  const hits: string[] = [];
+  const walk = (dir: string) => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      const lines = readFileSync(full, "utf8").split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        re.lastIndex = 0;
+        if (re.test(lines[i])) {
+          hits.push(`${relative(process.cwd(), full).split(sep).join("/")}:${i + 1}: ${lines[i]}`);
+        }
+      }
+    }
+  };
+  walk(root);
+  return hits.join("\n");
+}
 
 let accountId = 0;
 let providerId = 0;
@@ -75,8 +107,8 @@ describe("公众号 AI 客服", () => {
   });
 
   it("src/lib 无硬编码电话/域名", () => {
-    const pattern = ["400-001-" + "5729", "hd1994" + ".com"].join("\\|");
-    const out = execSync(`grep -rn "${pattern}" src/lib || true`, { encoding: "utf8" });
-    expect(out.trim()).toBe("");
+    // W0-09：替代 POSIX 命令 grep（Windows PowerShell/cmd 无 grep，原实现不具可移植性）
+    const pattern = ["400-001-" + "5729", "hd1994" + ".com"].join("|");
+    expect(assertNoSrcLibMatch(pattern)).toBe("");
   });
 });

@@ -77,8 +77,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // W0-09（DEF-X-01a）：Windows 下 libsql 关闭连接后文件句柄延迟释放——
+  // 实测 close() 后立即/50/100/200/500/1000ms rmSync 均抛 EPERM（p04-busy-*/probe-libsql-*/probe-d-*）。
+  // 与 api-contract/harness 的 cleanupTestDb 保持一致：删除失败可安全忽略（临时目录在 OS tmp 下兜底清理），
+  // 但不得把失败抛出成 suite 级 FAIL（原实现导致 Failed Suites 1/1，Tests 全通过仍判失败）。
   await a?.$disconnect();
-  rmSync(dir, { recursive: true, force: true });
+  try {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  } catch {
+    // 已知：Windows 句柄延迟释放；不阻塞断言结果
+  }
 });
 
 describe("SQLite busy_timeout（RISK-007）", () => {
