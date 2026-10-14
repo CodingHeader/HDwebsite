@@ -8,7 +8,7 @@
  * 页面骨架（P05/P07 使用）：PageHeader → 筛选栏 → 内容（DataTable/表单/卡片）→ 分页。
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/manager/ui/dialog-primitive";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";

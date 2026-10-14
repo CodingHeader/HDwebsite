@@ -2,6 +2,8 @@
  * 管理端反馈/表单基础样式（P05）：统一按钮、输入框类名，全部基于 P02 的 mgr-* 令牌。
  * P07 将把它们提升为标准组件（Button/Input），此处仅保证 P05 页面视觉一致。
  */
+import { buttonClass } from "@/components/manager/ui/button-class";
+
 export const btn = {
   base: "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-mgr-control px-3.5 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-60 [&_svg]:h-4 [&_svg]:w-4",
   primary: "bg-mgr-primary text-mgr-primary-fg shadow-mgr-sm hover:bg-mgr-primary-hover",
@@ -11,8 +13,9 @@ export const btn = {
   sm: "h-8 px-2.5 text-[12px]",
 } as const;
 
+/** P07：与标准 Button 组件共用同一套类名（buttonClass），确保命令式弹窗与页面按钮一致 */
 export function btnCls(variant: "primary" | "secondary" | "danger" | "ghost" = "secondary", size?: "sm") {
-  return `${btn.base} ${btn[variant]}${size === "sm" ? ` ${btn.sm}` : ""}`;
+  return buttonClass(variant, size === "sm" ? "sm" : "md");
 }
 
 /** 行内文字操作（表格操作列） */

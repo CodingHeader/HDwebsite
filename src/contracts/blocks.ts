@@ -80,7 +80,7 @@ export const blockListFilterSchema = z.object({
 });
 
 // ── W0-05：区块注册表 DTO（E-03 首页区块配置页 ↔ GET /api/home-blocks/registry）────
-/** 注册表一项 = 一个可插入首页的区块（`code` 来自 `src/config/block-defs.ts` 的 `BLOCK_REGISTRY`） */
+/** 注册表一项 = 一个可插入首页的区块（`code` 来自 `src/lib/block-registry-defs.ts` 的 `BLOCK_REGISTRY`） */
 export const blockRegistryItemSchema = z.object({
   code: z.string(),
   name: z.string(),

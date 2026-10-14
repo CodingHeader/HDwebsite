@@ -1,8 +1,8 @@
 /**
  * Block Registry —— 首页区块配置解析中心（ADR-024）。
  *
- * - 纯数据（注册表/字段/默认顺序/只读查询）已迁至 `src/config/block-defs.ts`（W0-02），本文件只保留
- *   需要 prisma 的 `resolveHomeBlocks()` 与配套工具，并 `export *` 保持既有导出面不变。
+ * - 纯数据（注册表/字段/默认顺序/只读查询）已迁至 `src/lib/block-registry-defs.ts`（P07 拆出；与 W0-02 的 `src/config/block-defs.ts` 内容一致），
+ *   本文件只保留需要 prisma 的 `resolveHomeBlocks()` 与配套工具，并 `export *` 保持既有导出面不变。
  * - resolveHomeBlocks()：读 `home` 页面模板的 TemplateBlock（启用/顺序/特有配置）合并注册表默认值；
  *   DB 无模板/模板停用/模板下无已知区块 → 回落 main 默认顺序（公开页外观不变）。
  * - 启用判定：ContentBlock.status === "active" 且 TemplateBlock.config.enabled !== false；未知 code 忽略。
@@ -13,9 +13,9 @@ import {
   getBlockDefinition,
   getBlockDefaultProps,
   type BlockDefinition,
-} from "@/config/block-defs";
+} from "@/lib/block-registry-defs";
 
-export * from "@/config/block-defs";
+export * from "@/lib/block-registry-defs";
 
 export type ResolvedBlock = { code: string; definition: BlockDefinition; props: Record<string, unknown> };
 

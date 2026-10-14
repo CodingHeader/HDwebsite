@@ -1,5 +1,5 @@
 /**
- * W0-02 结构守卫：crud-resources 按域切分后键集合"不丢、不重"；block-defs 保持纯数据（零数据库依赖）。
+ * W0-02 结构守卫：crud-resources 按域切分后键集合"不丢、不重"；区块注册表定义保持纯数据（零数据库依赖，唯一源 `src/lib/block-registry-defs.ts`，P07 拆分；W0-02 的 `src/config/block-defs.ts` 因内容一致已删除以避免双源）。
  * 维护线：Wave 1 起归 B 线（API 与响应平台）；只断言"不丢"，允许各线新增资源。
  */
 import fs from "node:fs";
@@ -12,7 +12,7 @@ import { siteSpecs } from "@/lib/crud-resources/site";
 import { collectSpecs } from "@/lib/crud-resources/collect";
 import { mediaSpecs } from "@/lib/crud-resources/media";
 import { kbAiSpecs } from "@/lib/crud-resources/kb-ai";
-import { BLOCK_REGISTRY, DEFAULT_HOME_BLOCK_ORDER } from "@/config/block-defs";
+import { BLOCK_REGISTRY, DEFAULT_HOME_BLOCK_ORDER } from "@/lib/block-registry-defs";
 
 /** 切分前（W0-02 之前）crudSpecs 的键快照：31 键，此后只允许新增，不允许丢失。 */
 const PRE_SPLIT_KEYS = [
@@ -98,9 +98,9 @@ describe("W0-02 crud-resources 结构", () => {
   });
 });
 
-describe("W0-02 block-defs 纯数据", () => {
-  it("block-defs.ts 不含任何数据库客户端引用", () => {
-    const file = path.resolve(process.cwd(), "src/config/block-defs.ts");
+describe("W0-02 区块注册表定义纯数据（唯一源 src/lib/block-registry-defs.ts）", () => {
+  it("block-registry-defs.ts 不含任何数据库客户端引用", () => {
+    const file = path.resolve(process.cwd(), "src/lib/block-registry-defs.ts");
     const src = fs.readFileSync(file, "utf8");
     expect(src).not.toMatch(/prisma/i);
   });

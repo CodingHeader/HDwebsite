@@ -20,21 +20,9 @@ const CODE_COPY: Record<number, string> = {
   503: toastCopy.serviceUnavailable,
 };
 
-/** 从信封 `data` 中提取 `{ fieldErrors }`（400 校验失败的字段级错误） */
-function extractFieldErrors(data: unknown): Record<string, string> | undefined {
-  if (!data || typeof data !== "object") return undefined;
-  const raw = (data as { fieldErrors?: unknown }).fieldErrors;
-  if (!raw || typeof raw !== "object") return undefined;
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof v === "string") out[k] = v;
-  }
-  return Object.keys(out).length ? out : undefined;
-}
-
 export class ApiError extends Error {
   code: number;
-  /** 400 校验失败的字段级错误（`data.fieldErrors`），供表单逐项标红 */
+  /** 400 参数校验失败时后端返回的字段级错误（data.fieldErrors，契约②/P06；P07 表单逐项标红） */
   fieldErrors?: Record<string, string>;
   constructor(code: number, message: string, fieldErrors?: Record<string, string>) {
     super(message);
@@ -97,8 +85,10 @@ export async function managerFetch<T>(
   if (res.status === 403 || body?.code === 403) throw new ForbiddenError(body?.message);
   if (!body) throw new ApiError(res.status || 500, `服务器异常（HTTP ${res.status}），请稍后重试`);
   if (body.code !== 200) {
+    // 契约②（ADR-028）：409/429/502/503 的后端错误体为 null，前端用 CODE_COPY 给可读文案；其余保留后端 message
     const message = CODE_COPY[body.code] ?? (body.message || toastCopy.failed);
-    throw new ApiError(body.code, message, extractFieldErrors(body.data));
+    const fe = (body.data as { fieldErrors?: Record<string, string> } | null)?.fieldErrors;
+    throw new ApiError(body.code, message, fe && typeof fe === "object" ? fe : undefined);
   }
   return body.data as T;
 }

@@ -2,14 +2,15 @@
 
 /**
  * FormDialog（P05）：新建/编辑表单弹窗
- * - Radix Dialog：焦点陷阱、Esc 关闭、遮罩关闭；有未保存修改时关闭前二次确认（防误丢）
+ * - base-ui Dialog：焦点陷阱、Esc 关闭、遮罩关闭；有未保存修改时关闭前二次确认（防误丢）
  * - <form> 提交：输入框内 Enter 提交；textarea 内 Ctrl/⌘+Enter 提交
  * - serverError：后端返回的失败原因在弹窗顶部以 alert 呈现（同时由调用方 toast）
  */
 import type { ReactNode } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/manager/ui/dialog-primitive";
 import { AlertCircle, X } from "lucide-react";
-import { btnCls } from "@/components/manager/feedback/styles";
+import { Button } from "@/components/manager/ui/button";
+import { Kbd } from "@/components/manager/ui/misc";
 import { confirmDialog } from "@/components/manager/feedback/ConfirmDialog";
 
 interface FormDialogProps {
@@ -22,7 +23,7 @@ interface FormDialogProps {
   dirty?: boolean;
   submitText?: string;
   serverError?: string;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
   children: ReactNode;
 }
 
@@ -61,7 +62,7 @@ export function FormDialog({
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px]" />
           <Dialog.Content
             data-testid="form-dialog"
-            className={`fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100vh-48px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-mgr-dialog border border-mgr-border bg-mgr-surface text-mgr-fg shadow-mgr-lg outline-none ${size === "lg" ? "max-w-2xl" : "max-w-lg"}`}
+            className={`fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-24px)] w-[calc(100vw-24px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-mgr-dialog border border-mgr-border bg-mgr-surface text-mgr-fg shadow-mgr-lg outline-none ${size === "xl" ? "max-w-4xl" : size === "lg" ? "max-w-2xl" : "max-w-lg"}`}
           >
             <form
               noValidate
@@ -77,7 +78,7 @@ export function FormDialog({
                 }
               }}
             >
-              <div className="flex items-start justify-between gap-4 border-b border-mgr-border px-6 py-4">
+              <div className="flex items-start justify-between gap-4 border-b border-mgr-border px-5 py-4 sm:px-6">
                 <div className="min-w-0">
                   <Dialog.Title className="text-[16px] font-semibold leading-6">{title}</Dialog.Title>
                   <Dialog.Description className={description ? "mt-0.5 text-[12px] text-mgr-muted-fg" : "sr-only"}>
@@ -93,7 +94,7 @@ export function FormDialog({
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
                 {serverError && (
                   <div
                     role="alert"
@@ -106,19 +107,17 @@ export function FormDialog({
                 )}
                 {children}
               </div>
-              <div className="flex items-center justify-between gap-3 border-t border-mgr-border px-6 py-3.5">
+              <div className="flex items-center justify-between gap-3 border-t border-mgr-border px-5 py-3.5 sm:px-6">
                 <span className="hidden text-[12px] text-mgr-muted-fg sm:inline">
-                  <kbd className="rounded border border-mgr-border bg-mgr-subtle px-1 font-sans">Ctrl</kbd> +{" "}
-                  <kbd className="rounded border border-mgr-border bg-mgr-subtle px-1 font-sans">Enter</kbd> 保存 ·{" "}
-                  <kbd className="rounded border border-mgr-border bg-mgr-subtle px-1 font-sans">Esc</kbd> 关闭
+                  <Kbd>Ctrl</Kbd> + <Kbd>Enter</Kbd> 保存 · <Kbd>Esc</Kbd> 关闭
                 </span>
                 <div className="ml-auto flex gap-2">
-                  <button type="button" className={btnCls("secondary")} onClick={() => void requestClose()} disabled={saving}>
+                  <Button variant="secondary" onClick={() => void requestClose()} disabled={saving}>
                     取消
-                  </button>
-                  <button type="submit" data-testid="form-submit" className={btnCls("primary")} disabled={saving}>
+                  </Button>
+                  <Button type="submit" variant="primary" data-testid="form-submit" disabled={saving}>
                     {saving ? "保存中…" : submitText}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </form>

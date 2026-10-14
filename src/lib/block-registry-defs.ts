@@ -1,9 +1,7 @@
 /**
- * Block Registry 定义（W0-02 自 src/lib/block-registry.ts 抽出）——首页 12 个区块的**纯数据**：
- * code/name/type/description/dataSource/fields/defaultProps/order，以及 main 原始顺序与只读查询函数。
- * 本文件不得引入任何数据库客户端依赖（保持可被客户端组件与管理端表单直接引用）；需要读库的解析逻辑留在 src/lib/block-registry.ts。
+ * 区块注册表定义（纯数据，无数据库依赖；P07 从 block-registry.ts 拆出，供管理端「首页区块」页在客户端读取字段定义与 main 默认顺序）。
+ * 运行时解析（resolveHomeBlocks）仍在 block-registry.ts，并从这里重新导出全部定义，原有导入路径不变。
  */
-
 export type BlockType = "hero" | "banner" | "stats" | "intro" | "list" | "grid" | "cta" | "sidebar";
 export type DataSourceType = "static" | "query" | "api" | "settings";
 
@@ -117,3 +115,4 @@ export function getBlockDefinition(code: string): BlockDefinition | undefined {
 export function getBlockDefaultProps(code: string): Record<string, unknown> {
   return { ...(getBlockDefinition(code)?.defaultProps ?? {}) };
 }
+

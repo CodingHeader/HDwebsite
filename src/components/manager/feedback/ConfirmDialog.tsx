@@ -6,11 +6,11 @@
  * - 命令式：const ok = await confirmDialog({ title, description, danger: true })；
  *          const v = await promptDialog({ title, label, validate })（null = 取消）
  *   命令式调用由 layout 中挂载的 <ConfirmHost/> 渲染（单实例队列）。
- * 键盘：Enter 确认（焦点默认落在"取消"以防误删时，需 Tab 到确认或直接点击）、Esc 取消；焦点陷阱由 Radix Dialog 提供。
+ * 键盘：Enter 确认（焦点默认落在"取消"以防误删时，需 Tab 到确认或直接点击）、Esc 取消；焦点陷阱由 base-ui Dialog 提供。
  * onConfirm 返回 Promise 时按钮显示"处理中…"并禁用，失败保持对话框打开。
  */
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/manager/ui/dialog-primitive";
 import { AlertTriangle, HelpCircle, Info } from "lucide-react";
 import { btnCls, inputCls } from "./styles";
 
@@ -67,12 +67,7 @@ export function ConfirmDialog({
           <Dialog.Content
             role="alertdialog"
             data-testid="confirm-dialog"
-            onOpenAutoFocus={(e) => {
-              if (danger && cancelRef.current) {
-                e.preventDefault();
-                cancelRef.current.focus();
-              }
-            }}
+            initialFocus={danger ? cancelRef : undefined}
             className="fixed left-1/2 top-1/2 z-[60] w-[min(440px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 rounded-mgr-dialog border border-mgr-border bg-mgr-surface p-6 text-mgr-fg shadow-mgr-lg outline-none"
           >
             <form
@@ -91,7 +86,7 @@ export function ConfirmDialog({
                 <div className="min-w-0 flex-1">
                   <Dialog.Title className="text-[16px] font-semibold leading-6">{title}</Dialog.Title>
                   {description ? (
-                    <Dialog.Description asChild>
+                    <Dialog.Description>
                       <div className="mt-1.5 text-[13px] leading-5 text-mgr-muted-fg">{description}</div>
                     </Dialog.Description>
                   ) : (
