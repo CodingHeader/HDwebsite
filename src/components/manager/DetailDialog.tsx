@@ -2,7 +2,7 @@
 
 /** DetailDialog（P05）：只读详情弹窗（Radix：焦点陷阱/Esc/遮罩关闭），可选底部操作区 */
 import type { ReactNode } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/manager/ui/dialog-primitive";
 import { X } from "lucide-react";
 
 interface DetailDialogProps {
@@ -27,9 +27,7 @@ export function DetailDialog({ open, onClose, title, description, footer, childr
             <div className="flex items-start justify-between gap-4 border-b border-mgr-border px-6 py-4">
               <div className="min-w-0">
                 <Dialog.Title className="text-[16px] font-semibold leading-6">{title}</Dialog.Title>
-                <Dialog.Description asChild>
-                  <div className={description ? "mt-0.5 text-[12px] text-mgr-muted-fg" : "sr-only"}>{description ?? title}</div>
-                </Dialog.Description>
+                <Dialog.Description className={description ? "mt-0.5 text-[12px] text-mgr-muted-fg" : "sr-only"}>{description ?? title}</Dialog.Description>
               </div>
               <Dialog.Close
                 aria-label="关闭"

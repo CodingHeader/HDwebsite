@@ -11,10 +11,13 @@ import { toastCopy } from "@/contracts/common";
 
 export class ApiError extends Error {
   code: number;
-  constructor(code: number, message: string) {
+  /** 400 参数校验失败时后端返回的字段级错误（data.fieldErrors，P06 契约；P07 表单逐项标红） */
+  fieldErrors?: Record<string, string>;
+  constructor(code: number, message: string, fieldErrors?: Record<string, string>) {
     super(message);
     this.name = "ApiError";
     this.code = code;
+    this.fieldErrors = fieldErrors;
   }
 }
 
@@ -70,6 +73,9 @@ export async function managerFetch<T>(
   }
   if (res.status === 403 || body?.code === 403) throw new ForbiddenError(body?.message);
   if (!body) throw new ApiError(res.status || 500, `服务器异常（HTTP ${res.status}），请稍后重试`);
-  if (body.code !== 200) throw new ApiError(body.code, body.message || "请求失败");
+  if (body.code !== 200) {
+    const fe = (body.data as { fieldErrors?: Record<string, string> } | null)?.fieldErrors;
+    throw new ApiError(body.code, body.message || "请求失败", fe && typeof fe === "object" ? fe : undefined);
+  }
   return body.data;
 }

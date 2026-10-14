@@ -6,7 +6,7 @@
  */
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import * as Dialog from "@radix-ui/react-dialog";
+import * as Dialog from "@/components/manager/ui/dialog-primitive";
 import { CornerDownLeft, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MenuIcon } from "./MenuIcon";

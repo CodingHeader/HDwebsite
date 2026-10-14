@@ -8,6 +8,7 @@ interface PaginationProps {
   totalPages: number;
   total?: number;
   onChange: (page: number) => void;
+  className?: string;
 }
 
 function windowPages(page: number, totalPages: number): (number | "…")[] {
@@ -25,9 +26,9 @@ function windowPages(page: number, totalPages: number): (number | "…")[] {
 const itemCls =
   "inline-flex h-8 min-w-8 items-center justify-center rounded-mgr-control px-2 text-[13px] tabular-nums transition-colors disabled:pointer-events-none disabled:opacity-40";
 
-export function Pagination({ page, totalPages, total, onChange }: PaginationProps) {
+export function Pagination({ page, totalPages, total, onChange, className = "mt-4" }: PaginationProps) {
   return (
-    <nav aria-label="分页" className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[13px] text-mgr-muted-fg">
+    <nav aria-label="分页" className={`${className} flex flex-wrap items-center justify-between gap-3 text-[13px] text-mgr-muted-fg`}>
       <span>{total !== undefined ? `共 ${total} 条` : ""}{totalPages > 1 ? ` · 第 ${page}/${totalPages} 页` : ""}</span>
       {totalPages > 1 && (
         <div className="flex items-center gap-1">
