@@ -10,11 +10,11 @@
 
 | 验收条目 | 结果 | 依据 |
 |---|---|---|
-| W0-08 目标：独立验证者给出 PASS | **UNKNOWN** | visual 官方输出 **45/46（唯一失败 courses@375，确定性 0.02 文字级差异，留 A/E 线）**，e2e 8/8 待 Hark Linux 回传，见 §3、§5 |
+| W0-08 目标：独立验证者给出 PASS | **UNKNOWN** | visual 官方输出 **45/46（唯一失败 courses@375，确定性 0.02 文字级差异，留 A/E 线）**；e2e **8/8 PASS（Linux Docker 容器，真实官方输出）**；仅剩 courses@375 一项未闭环，见 §3、§5 |
 | AC1 `git diff --name-only bb2c0e5..HEAD` 不含前台路径 | **PASS** | 匹配 `^src/app/\(web\)|^src/components/web|^public/|^src/app/globals.css` 的文件数 = **0** |
-| AC2 通用门禁 lint/typecheck/test/build 全 exit 0 | **PASS** | `lint EXIT=0`、`typecheck EXIT=0`、`test EXIT=0`（23 文件/303 测试）、`build EXIT=0`（见 §4） |
+| AC2 通用门禁 lint/typecheck/test/build 全 exit 0 | **PASS** | 最终 HEAD 复跑 `ALL=0,0,0,0`（23 文件/303 测试全过），见 §4 |
 | AC3 visual 46/46 | **45/46（真实官方输出）** | 参照图经用户批准从 main:6790 重新生成后官方 runner 跑通：**45 passed / 1 failed / 1.3m**；唯一失败 courses@375（确定性 0.02，文字级渲染差异，留 A/E 线），见 §3 |
-| AC4 e2e 8/8 | **待回传** | `w0/staging` 已推送（SHA=`0cc257d`=SHA_GATE，一致 ✅），等 Hark 在 Linux 执行 `npm ci && npm run build && npm run test:e2e` 回传 8/8 日志 |
+| AC4 e2e 8/8 | **PASS（真实官方输出）** | Linux Docker 容器（playwright:v1.59.1-noble，node v24.14.1）对 SHA_GATE 精确树：**8 passed (1.2m)**，容器适配已登记，见 §5 |
 | 越界检查：`git log --first-parent --no-merges --name-only` | **PASS（偏差经用户批准）** | 参照图重新生成经用户裁决批准（`approve_regen_reference`），32 张参照图随本卡提交入 upgrade 作为 Wave 1 新基线，详见 `reference-deviation.md`，见 §6 |
 
 ---
@@ -91,10 +91,23 @@ $ git diff --name-only bb2c0e5..HEAD | grep -cE "^src/app/\(web\)|^src/component
 | `npm test` | **0** | 23 文件 / **303 测试全通过**（vitest run，Duration 46.55s） |
 | `npm run build` | **0** | `✓ Compiled successfully in 4.4s`，`✓ Generating static pages using 27 workers (39/39)` |
 
-## 5. e2e —— 待回传（已交 Linux，D16/D17）
+## 5. e2e —— PASS 8/8（Linux Docker 容器，真实官方输出，2026-10-15 17:14）
 
-- Windows 不跑 e2e（D16 裁决）：`next.config.ts:7` 与 `scripts/start-next.mjs:20` 有意在 win32 关闭 standalone，e2e global-setup 三处不兼容 Windows，改 next.config.ts 也解决不了（17 号文档 §1 F1-F5）。
-- **已推送 `w0/staging`（SHA=`0cc257d`=SHA_GATE，一致 ✅）**，等 Hark 在 Linux 执行 `npm ci && npm run build && npm run test:e2e` 回传 8/8 日志（D17）。回传后本节更新为真实结果。
+- Windows 不跑 e2e（D16 裁决）：`next.config.ts:7` 与 `scripts/start-next.mjs:20` 有意在 win32 关闭 standalone，e2e global-setup 三处不兼容 Windows（17 号文档 §1 F1-F5）。
+- **Linux 环境**：Docker 容器 `mcr.microsoft.com/playwright:v1.59.1-noble`（与 `@playwright/test` 1.59.1 精确匹配，node v24.14.1）；被测树 = `git archive 0cc257d`（SHA_GATE 精确树内容，与 visual 输出同一 SHA）。
+- 容器内链路：`npm ci`（866 包/41s，registry=npmmirror）→ `npx prisma generate` → `npm run build`（EXIT=0）→ `npm run test:e2e` → **8 passed (1.2m)**：
+  1. 访客在 /apply 发送消息收到 AI 流式回复 ✅
+  2. 未登录访问后台跳转登录页 ✅
+  3. 错误密码提示，正确密码进入仪表盘 ✅
+  4. Viewer 访问用户管理渲染 Forbidden 视图 ✅
+  5. 采集源试抓→执行→审核通过→建发布任务→通知记录出现 ✅
+  6. 文章新建→编辑→删除 ✅
+  7. 列表接口 500→ErrorState，点击重试恢复 ✅
+  8. 搜索无结果→EmptyState ✅
+- **容器环境适配（均已登记，不改任何项目文件）**：
+  - Docker Desktop 向容器注入 `HTTP_PROXY=http://127.0.0.1:10809`（宿主侧地址，容器内不可达）→ 用 `-e HTTP_PROXY=http://host.docker.internal:10808` 覆盖（已验证可达）；
+  - registry=npmmirror（与宿主 .npmrc 同款）。
+- **AC4 判 PASS（8/8）**。原始输出：`e2e-linux.log`（gitignored，留磁盘）。
 
 ---
 
@@ -109,16 +122,15 @@ $ git diff --name-only bb2c0e5..HEAD | grep -cE "^src/app/\(web\)|^src/component
 ## 7. 结论
 
 - **AC1 前台路径未变**：PASS（`git diff bb2c0e5..HEAD` 前台命中 0）
-- **AC2 通用门禁 4/4**：PASS（同一 SHA `0cc257d`，全部 exit 0）
+- **AC2 通用门禁 4/4**：PASS（最终 HEAD 复跑 ALL=0,0,0,0）
 - **AC3 visual 46/46**：**45/46（真实官方输出）**——参照图经用户批准重新生成后，唯一失败 courses@375（确定性 0.02 文字级渲染差异，留 A/E 线）；挂起根因（busy 文件阻塞 outputDir）已确认并用 `--output` 绕过
-- **AC4 e2e 8/8**：待回传（`w0/staging` 已推送，SHA 一致，等 Hark Linux 结果）
+- **AC4 e2e 8/8**：**PASS（真实官方输出）**——Linux Docker 容器对 SHA_GATE 精确树 8 passed (1.2m)
 - **越界检查**：PASS（参照图重生成偏差经用户批准并登记，`reference-deviation.md`）
 
-**综合判定：UNKNOWN（AC3 45/46 + AC4 待回传），不得打 tag w1-base，不得推送 upgrade。**
+**综合判定：UNKNOWN（仅剩 AC3 的 courses@375 一项），不得打 tag w1-base，不得推送 upgrade。**
 
 需在以下条件满足后再打 tag：
-1. courses@375 差异由 A/E 线处理后官方 visual 46/46（或用户裁决以 45/46 + 已登记偏差放行）。
-2. Hark 在 Linux 回传 e2e 8/8 日志（SHA=`0cc257d`）。
+1. courses@375 差异由 A/E 线处理后官方 visual 46/46（**或用户裁决以 45/46 + 已登记偏差放行**）。
 
 ---
 
@@ -126,6 +138,5 @@ $ git diff --name-only bb2c0e5..HEAD | grep -cE "^src/app/\(web\)|^src/component
 
 - [ ] courses@375 文字级渲染差异（留 A/E 线处理；证据齐备：确定性 0.02、全页文字级、DOM 结构一致）
 - [ ] A/E 线处理后官方 visual 46/46（或用户裁决放行）
-- [ ] Hark Linux e2e 8/8 回传（w0/staging 已推送）
 - [ ] `git tag w1-base`（等上述闭环）
 - [ ] push upgrade 与 tag（需用户批准，D8）
