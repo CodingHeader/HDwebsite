@@ -10,7 +10,7 @@
 
 | 验收条目 | 结果 | 依据 |
 |---|---|---|
-| W0-08 目标：独立验证者给出 PASS | **UNKNOWN** | visual 官方输出 **45/46（唯一失败 courses@375，确定性 0.02 文字级差异，留 A/E 线）**；e2e **8/8 PASS（Linux Docker 容器，真实官方输出）**；仅剩 courses@375 一项未闭环，见 §3、§5 |
+| W0-08 目标：独立验证者给出 PASS | **PASS（用户裁决放行）** | visual 45/46（唯一失败 courses@375，确定性 0.02 文字级差异，留 A/E 线）经用户裁决以已登记偏差放行（decision_4b29a1c644844f4389a07bc6cd3c9eff）；e2e **8/8 PASS（Linux Docker 容器，真实官方输出）**；见 §3、§5、§7 |
 | AC1 `git diff --name-only bb2c0e5..HEAD` 不含前台路径 | **PASS** | 匹配 `^src/app/\(web\)|^src/components/web|^public/|^src/app/globals.css` 的文件数 = **0** |
 | AC2 通用门禁 lint/typecheck/test/build 全 exit 0 | **PASS** | 最终 HEAD 复跑 `ALL=0,0,0,0`（23 文件/303 测试全过），见 §4 |
 | AC3 visual 46/46 | **45/46（真实官方输出）** | 参照图经用户批准从 main:6790 重新生成后官方 runner 跑通：**45 passed / 1 failed / 1.3m**；唯一失败 courses@375（确定性 0.02，文字级渲染差异，留 A/E 线），见 §3 |
@@ -123,20 +123,19 @@ $ git diff --name-only bb2c0e5..HEAD | grep -cE "^src/app/\(web\)|^src/component
 
 - **AC1 前台路径未变**：PASS（`git diff bb2c0e5..HEAD` 前台命中 0）
 - **AC2 通用门禁 4/4**：PASS（最终 HEAD 复跑 ALL=0,0,0,0）
-- **AC3 visual 46/46**：**45/46（真实官方输出）**——参照图经用户批准重新生成后，唯一失败 courses@375（确定性 0.02 文字级渲染差异，留 A/E 线）；挂起根因（busy 文件阻塞 outputDir）已确认并用 `--output` 绕过
+- **AC3 visual 46/46**：**45/46（真实官方输出）→ 用户裁决放行**——参照图经用户批准重新生成后，唯一失败 courses@375（确定性 0.02 文字级渲染差异）按 W0-08 步骤 2 留 A/E 线处理；偏差已登记（`reference-deviation.md`）
 - **AC4 e2e 8/8**：**PASS（真实官方输出）**——Linux Docker 容器对 SHA_GATE 精确树 8 passed (1.2m)
 - **越界检查**：PASS（参照图重生成偏差经用户批准并登记，`reference-deviation.md`）
 
-**综合判定：UNKNOWN（仅剩 AC3 的 courses@375 一项），不得打 tag w1-base，不得推送 upgrade。**
+**综合判定：PASS（用户裁决放行，request_id=decision_4b29a1c644844f4389a07bc6cd3c9eff，2026-10-15）**
 
-需在以下条件满足后再打 tag：
-1. courses@375 差异由 A/E 线处理后官方 visual 46/46（**或用户裁决以 45/46 + 已登记偏差放行**）。
+> 放行条件与记录：唯一未闭环项 courses@375（确定性 0.02 文字级渲染差异，证据齐备：全页文字级、DOM 结构一致、两站互拍 0.13%）经用户裁决以"已登记偏差放行"，留 A/E 线处理（本卡不改页面）。W0-08 步骤 2 原文即规定"courses@375 的真实差异记入证据，留给 A/E 线处理；本卡不改页面"，本判定与该规定一致。
+>
+> 据此执行 `git tag w1-base`（D8 已裁决）；push upgrade 与 tag 经用户另行批准后执行。
 
 ---
 
-## 8. 未完成项
+## 8. 未完成项（移交后续线）
 
-- [ ] courses@375 文字级渲染差异（留 A/E 线处理；证据齐备：确定性 0.02、全页文字级、DOM 结构一致）
-- [ ] A/E 线处理后官方 visual 46/46（或用户裁决放行）
-- [ ] `git tag w1-base`（等上述闭环）
-- [ ] push upgrade 与 tag（需用户批准，D8）
+- [ ] courses@375 文字级渲染差异（留 A/E 线处理；证据齐备：确定性 0.02、全页文字级、DOM 结构一致）——Wave 1 期间修复后 official visual 应达 46/46
+- [ ] push upgrade 与 tag w1-base（需用户批准，D8）
