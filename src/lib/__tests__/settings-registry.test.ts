@@ -39,4 +39,33 @@ describe("设置注册表（ADR-009）", () => {
   it("默认值含品牌基准（ADR-010：弘道教育）", () => {
     expect(getDefaultValues().siteName).toBe("弘道教育");
   });
+
+  // ── CCR-1（W0-10）：chatGuard 三键（REQ-F-009；扁平 key，JSON 数组串存储）──
+  it("CCR-1 chatGuard 三键存在且默认值固定", () => {
+    const rateLimit = getSettingDefinition("chatGuardRateLimitPerMin");
+    expect(rateLimit).toBeDefined();
+    expect(rateLimit?.group).toBe("llm");
+    expect(rateLimit?.type).toBe("number");
+    expect(rateLimit?.defaultValue).toBe("20");
+    expect(rateLimit?.isPublic).toBe(false);
+
+    for (const key of ["chatGuardSensitiveWords", "chatGuardBlacklist"]) {
+      const d = getSettingDefinition(key);
+      expect(d, `键 ${key} 应存在`).toBeDefined();
+      expect(d?.group).toBe("llm");
+      expect(d?.defaultValue).toBe("[]"); // JSON 数组串（jsonifyFields 接线，C-07 同款）
+      expect(d?.isPublic).toBe(false);
+    }
+  });
+
+  it("CCR-1 无点分键（chatGuard 系列禁止点分形式，ADR-009）", () => {
+    const bad = SETTINGS_REGISTRY.filter((d) => /^chatGuard\./.test(d.key));
+    expect(bad).toHaveLength(0);
+  });
+
+  it("CCR-1 GROUP_LABELS 含 kb 分组（definitions route 驱动设置页）", () => {
+    const groups = getGroups();
+    expect(groups).toContain("kb");
+    expect(groups).toContain("llm");
+  });
 });
