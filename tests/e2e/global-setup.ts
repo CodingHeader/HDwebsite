@@ -157,8 +157,10 @@ async function prepareAccountsAndStates(): Promise<void> {
   });
   if (createRes.status !== 200) {
     const body = (await createRes.json().catch(() => ({}))) as { message?: string };
-    // 幂等：已存在（400/409）放行；其他错误抛出
-    if (!/已存在|exists/i.test(body.message ?? "") && createRes.status !== 409) {
+    // 幂等（W0-13 修正）：创建成功（200/201，如"创建用户成功"）或已存在（400/409 带"已存在"）均放行；仅其他错误抛出
+    const created = createRes.status === 201 || /成功/i.test(body.message ?? "");
+    const exists = createRes.status === 409 || /已存在|exists/i.test(body.message ?? "");
+    if (!created && !exists) {
       throw new Error(`创建 ${VIEWER.username} 失败：${body.message ?? createRes.status}`);
     }
   }
