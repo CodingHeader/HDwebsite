@@ -38,7 +38,7 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 - 只在当前方向提示词"允许修改"路径内写入；必须越界时在证据中写明文件与理由。
 - 契约唯一源 `src/contracts/**`（zod）：改代码前先补本方向契约；禁止在路由/组件内重复定义 DTO。
 - **迁移只允许 P04（`p04_data_integrity`）、P06（`p06_collect_kb_review`）、P12（`p12_knowledge_base`）各新增 1 个**，按顺序串行；其他方向需改表 → 写 ADR 并停止该子项。已有迁移目录不得修改。
-- **编排（2026-10-13 用户裁决 D11=2 名执行者）**：Wave 0（W0-01~W0-08）在 `upgrade` 上**串行冻结**，产出 tag `w1-base`；Wave 1 **五条 lane 并行**（所有权矩阵见 `04_planning/parallel-w1/07-所有权矩阵.md`，重叠 0、越权 0），由 **2 名执行者**承载：X = `lane/ui`（A→E）、Y = `lane/backend`（B→C→D）；Wave 2 集成与终审。规划包入库于 `docs/design/04_planning/parallel-w1/`。
+- **编排（V0.6，2026-10-16）**：Wave 0（W0-01~W0-09，tag `w1-base`=0cb699b）已完成；Wave 0.6（W0-10~W0-13）在 `w0/*` 分支补齐冻结面并由集成者合入 `upgrade`，产出 tag `w1-base-ccr-1`；Wave 1 **五条 lane 并行**，一律从 `w1-base-ccr-1` 建分支：`lane/a-manager-ui`、`lane/e-manager-pages`、`lane/b-api-platform`、`lane/c-ai-kb`、`lane/d-ops`（所有权矩阵见 `docs/V0.6-20261016/07-所有权矩阵.md`，重叠 0、越权 0）；分工 Hark=A+E+W0-13+Wave 2 集成终审，P1=W0-10+B，P2=C，P3=W0-11/12+D+Wave 2 后端段。当前规划入口：`docs/V0.6-20261016/README.md`（历史包 `04_planning/parallel-w1/`、`docs/V0.5-20261015/` 仅供追溯）。
 - **冻结面**：`w1-base` 之后 `src/contracts/**`、`prisma/schema.prisma` 与迁移、依赖（`package.json`/锁文件）、`vitest.config.ts`/Playwright 配置全部只读；任何线需要改动 → 停止该子项并写《契约变更请求》（`04_planning/parallel-w1/11-验收与审查规程.md` §4），批准后由契约员在 `upgrade` 上最小提交并打 `w1-base-ccr-<n>`。
 - **所有权不相交**：各线只在自己 lane 分支的"允许修改"路径内写入；越界即 FAIL。两条线的唯一共享物是 tag `w1-base` 上冻结的契约、迁移、依赖与本规划包。
 
@@ -46,7 +46,7 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 
 - 改变前台视觉风格；把管理端令牌写到全局作用域。
 - 提交 `.env*`、`prisma/dev.db`、`backups/`、运行时上传文件、任何密钥；把 token 写进 remote URL、文件、日志或输出。
-- 未经独立验证即推送。**推送规则（2026-10-13 用户裁决 D8）**：Wave 0 的 W0-08 经独立验证 PASS 后，推送 `upgrade` 与 tag `w1-base`；Wave 1 期间各线只推自己的 lane 分支（`lane/ui`、`lane/backend`），`upgrade` 只由集成者在 Wave 2 推送。
+- 未经独立验证即推送。**推送规则（D8，V0.6 更新）**：W0-13 独立验证 PASS 后推送 `upgrade` 与 tag `w1-base-ccr-1`；Wave 1 期间各线只推自己的 lane 分支，`upgrade` 只由集成者在 Wave 2 推送。**禁止跨线大提交直接进 `upgrade`**：任何跨所有权的改动必须走 lane 分支 + 独立验证（827646b 教训）。
 - 引入 Redis/MQ/无头浏览器/独立 worker（REQ-C-003）；群发接口。
 - 并行修改 `src/contracts/**` 或同一迁移。
 - 读取或迁移凭据类文件（如 main 的 `website_error/.token.txt`）。
