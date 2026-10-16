@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "docs/**",
     ".local/**",
+    // CCR-1（W0-11）：.cache 是运行时产物（e2e/visual 的日志、截图、storageState 与临时脚本），
+    // 不忽略会导致 lint 计数随缓存内容漂移（W0-08 记 26 条 vs 干净树 18 条）
+    ".cache/**",
   ]),
 ]);
 

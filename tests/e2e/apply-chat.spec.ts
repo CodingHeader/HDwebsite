@@ -5,13 +5,15 @@
  */
 import { expect, test } from "@playwright/test";
 import { MOCK_BASE_URL, MOCK_REPLY } from "./fixtures/env";
-import { api, apiToken, dialog, expectToast, loginUI } from "./fixtures/helpers";
+import { api, adminState, dialog, expectToast, pageToken } from "./fixtures/helpers";
 
 const PROVIDER = `E2E Mock LLM ${Date.now()}`;
 
+// CCR-1（W0-11）：storageState 注入登录态，本用例不再调用登录接口
+test.use({ storageState: adminState() });
+
 test("访客在 /apply 发送消息收到 AI 流式回复", async ({ page, browser, request }) => {
   // 1) 后台配置供应商（UI，覆盖模型供应商新建表单）
-  await loginUI(page);
   await page.goto("/manager/llm-providers");
   await page.getByTestId("llm-create").click();
   const dlg = dialog(page);
@@ -48,8 +50,8 @@ test("访客在 /apply 发送消息收到 AI 流式回复", async ({ page, brows
   expect(sessionId, "会话 id 应持久化到 localStorage").toBeTruthy();
   await ctx.close();
 
-  // 3) 服务端已持久化（对话日志可查）
-  const token = await apiToken(request);
+  // 3) 服务端已持久化（对话日志可查）；token 从页面 localStorage 读取（CCR-1，不调登录接口）
+  const token = await pageToken(page);
   const detail = await api<{ messages: { role: string; message: string }[] }>(
     request, token, "GET", `/api/chat-history/${encodeURIComponent(sessionId!)}`
   );

@@ -3,15 +3,14 @@
  * 另覆盖：接口 500 → ErrorState + 重试恢复；空搜索 → EmptyState。
  */
 import { expect, test } from "@playwright/test";
-import { dialog, evidenceShot, expectToast, loginUI } from "./fixtures/helpers";
+import { dialog, evidenceShot, expectToast, adminState } from "./fixtures/helpers";
 
 const TITLE = `E2E 文章 ${Date.now()}`;
 const EDITED = `${TITLE}（已编辑）`;
 const BODY = "# E2E 正文\n\n这是端到端测试写入的 Markdown 正文。";
 
-test.beforeEach(async ({ page }) => {
-  await loginUI(page);
-});
+// CCR-1（W0-11）：storageState 注入登录态（globalSetup 一次登录），beforeEach 不再调用登录接口
+test.use({ storageState: adminState() });
 
 test("文章新建 → 编辑 → 删除", async ({ page }) => {
   await page.goto("/manager/articles");
