@@ -1,0 +1,945 @@
+[
+ {
+  "res": "categories",
+  "schema": "categoryCreateSchema",
+  "spec_fields": [
+   "name",
+   "slug",
+   "type",
+   "image",
+   "parentId",
+   "sort",
+   "isNav",
+   "isVisible",
+   "description"
+  ],
+  "spec_cols": [
+   "name",
+   "slug",
+   "type",
+   "sort",
+   "isVisible"
+  ],
+  "contract_keys": [
+   "name",
+   "slug",
+   "description",
+   "image",
+   "parentId",
+   "type",
+   "sort",
+   "isNav",
+   "isVisible"
+  ],
+  "search": [
+   "name",
+   "slug"
+  ],
+  "filters": [
+   "type"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 9
+ },
+ {
+  "res": "tags",
+  "schema": "tagCreateSchema",
+  "spec_fields": [
+   "name",
+   "slug"
+  ],
+  "spec_cols": [
+   "name",
+   "slug"
+  ],
+  "contract_keys": [
+   "name",
+   "slug"
+  ],
+  "search": [
+   "name",
+   "slug"
+  ],
+  "filters": [],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 2
+ },
+ {
+  "res": "courses",
+  "schema": "courseCreateSchema",
+  "spec_fields": [
+   "title",
+   "categoryId",
+   "majorId",
+   "price",
+   "priceText",
+   "duration",
+   "cover",
+   "sort",
+   "status",
+   "description",
+   "outline"
+  ],
+  "spec_cols": [
+   "title",
+   "category",
+   "priceText",
+   "price",
+   "cover",
+   "status"
+  ],
+  "contract_keys": [
+   "title",
+   "description",
+   "price",
+   "priceText",
+   "duration",
+   "outline",
+   "cover",
+   "categoryId",
+   "majorId",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "title",
+   "description"
+  ],
+  "filters": [
+   "categoryId",
+   "majorId",
+   "status"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 11
+ },
+ {
+  "res": "majors",
+  "schema": "majorCreateSchema",
+  "spec_fields": [
+   "name",
+   "slug",
+   "categoryId",
+   "duration",
+   "cover",
+   "sort",
+   "status",
+   "description"
+  ],
+  "spec_cols": [
+   "name",
+   "slug",
+   "category",
+   "duration",
+   "status"
+  ],
+  "contract_keys": [
+   "name",
+   "slug",
+   "description",
+   "duration",
+   "cover",
+   "categoryId",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "name",
+   "slug"
+  ],
+  "filters": [
+   "categoryId",
+   "status"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 8
+ },
+ {
+  "res": "enrollment-offerings",
+  "schema": "offeringCreateSchema",
+  "spec_fields": [
+   "majorId",
+   "partnerId",
+   "sourceBatch",
+   "educationType",
+   "level",
+   "majorCode",
+   "studyForm",
+   "yearTuition",
+   "totalTuition",
+   "hasPrice",
+   "sort",
+   "status",
+   "feeDetail",
+   "extraFeeNote"
+  ],
+  "spec_cols": [
+   "major",
+   "partner",
+   "sourceBatch",
+   "educationType",
+   "yearTuition",
+   "status"
+  ],
+  "contract_keys": [
+   "majorId",
+   "partnerId",
+   "sourceBatch",
+   "educationType",
+   "level",
+   "majorCode",
+   "studyForm",
+   "yearTuition",
+   "totalTuition",
+   "feeDetail",
+   "extraFeeNote",
+   "hasPrice",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "sourceBatch",
+   "educationType",
+   "studyForm"
+  ],
+  "filters": [
+   "majorId",
+   "partnerId",
+   "status"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 14
+ },
+ {
+  "res": "students",
+  "schema": "studentCreateSchema",
+  "spec_fields": [
+   "name",
+   "phone",
+   "courseId",
+   "status",
+   "message"
+  ],
+  "spec_cols": [
+   "name",
+   "phone",
+   "course",
+   "status",
+   "createdAt"
+  ],
+  "contract_keys": [
+   "name",
+   "phone",
+   "courseId",
+   "message",
+   "status"
+  ],
+  "search": [
+   "name",
+   "phone",
+   "message"
+  ],
+  "filters": [
+   "courseId",
+   "status"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 5
+ },
+ {
+  "res": "partners",
+  "schema": "partnerCreateSchema",
+  "spec_fields": [
+   "name",
+   "logo",
+   "website",
+   "sort"
+  ],
+  "spec_cols": [
+   "logo",
+   "name",
+   "website",
+   "sort"
+  ],
+  "contract_keys": [
+   "name",
+   "logo",
+   "website",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "name"
+  ],
+  "filters": [],
+  "only_contract": [
+   "status"
+  ],
+  "only_form": [],
+  "overlap": 4
+ },
+ {
+  "res": "campus",
+  "schema": "campusCreateSchema",
+  "spec_fields": [
+   "name",
+   "address",
+   "sort"
+  ],
+  "spec_cols": [
+   "name",
+   "address",
+   "sort"
+  ],
+  "contract_keys": [
+   "name",
+   "address",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "name",
+   "address"
+  ],
+  "filters": [],
+  "only_contract": [
+   "status"
+  ],
+  "only_form": [],
+  "overlap": 3
+ },
+ {
+  "res": "gallery",
+  "schema": "galleryCreateSchema",
+  "spec_fields": [
+   "title",
+   "image",
+   "category",
+   "sort",
+   "status"
+  ],
+  "spec_cols": [
+   "image",
+   "title",
+   "category",
+   "sort"
+  ],
+  "contract_keys": [
+   "title",
+   "image",
+   "category",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "title"
+  ],
+  "filters": [
+   "category"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 5
+ },
+ {
+  "res": "banners",
+  "schema": "bannerCreateSchema",
+  "spec_fields": [
+   "image",
+   "link",
+   "sort"
+  ],
+  "spec_cols": [
+   "image",
+   "link",
+   "sort"
+  ],
+  "contract_keys": [
+   "image",
+   "link",
+   "sort",
+   "status"
+  ],
+  "search": [],
+  "filters": [],
+  "only_contract": [
+   "status"
+  ],
+  "only_form": [],
+  "overlap": 3
+ },
+ {
+  "res": "home-cards",
+  "schema": "homeCardCreateSchema",
+  "spec_fields": [
+   "title",
+   "subtitle",
+   "icon",
+   "href",
+   "gradient",
+   "sort"
+  ],
+  "spec_cols": [
+   "title",
+   "subtitle",
+   "href",
+   "sort"
+  ],
+  "contract_keys": [
+   "title",
+   "subtitle",
+   "icon",
+   "href",
+   "gradient",
+   "hoverGradient",
+   "shadow",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "title"
+  ],
+  "filters": [],
+  "only_contract": [
+   "hoverGradient",
+   "shadow",
+   "status"
+  ],
+  "only_form": [],
+  "overlap": 6
+ },
+ {
+  "res": "hot-majors",
+  "schema": "hotMajorCreateSchema",
+  "spec_fields": [
+   "title",
+   "subtitle",
+   "description",
+   "duration",
+   "iconType",
+   "iconImage",
+   "iconColor",
+   "backgroundImage",
+   "link",
+   "majorId",
+   "sort"
+  ],
+  "spec_cols": [
+   "title",
+   "subtitle",
+   "duration",
+   "sort"
+  ],
+  "contract_keys": [
+   "title",
+   "subtitle",
+   "description",
+   "duration",
+   "iconType",
+   "iconImage",
+   "iconColor",
+   "backgroundImage",
+   "link",
+   "majorId",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "title",
+   "subtitle"
+  ],
+  "filters": [],
+  "only_contract": [
+   "status"
+  ],
+  "only_form": [],
+  "overlap": 11
+ },
+ {
+  "res": "service-guides",
+  "schema": "serviceGuideCreateSchema",
+  "spec_fields": [
+   "title",
+   "slug",
+   "subtitle",
+   "icon",
+   "contentType",
+   "content",
+   "sort",
+   "status"
+  ],
+  "spec_cols": [
+   "title",
+   "slug",
+   "contentType",
+   "sort"
+  ],
+  "contract_keys": [
+   "title",
+   "slug",
+   "subtitle",
+   "content",
+   "contentType",
+   "icon",
+   "link",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "title",
+   "subtitle"
+  ],
+  "filters": [],
+  "only_contract": [
+   "link"
+  ],
+  "only_form": [],
+  "overlap": 8
+ },
+ {
+  "res": "navigations",
+  "schema": "navigationCreateSchema",
+  "spec_fields": [
+   "name",
+   "slug",
+   "link",
+   "linkType",
+   "parentId",
+   "level",
+   "sort",
+   "isVisible",
+   "isNav"
+  ],
+  "spec_cols": [
+   "name",
+   "link",
+   "level",
+   "sort",
+   "isVisible"
+  ],
+  "contract_keys": [
+   "name",
+   "slug",
+   "parentId",
+   "level",
+   "icon",
+   "link",
+   "linkType",
+   "target",
+   "categoryId",
+   "contentType",
+   "sort",
+   "isVisible",
+   "isNav"
+  ],
+  "search": [
+   "name",
+   "slug"
+  ],
+  "filters": [
+   "level"
+  ],
+  "only_contract": [
+   "categoryId",
+   "contentType",
+   "icon",
+   "target"
+  ],
+  "only_form": [],
+  "overlap": 9
+ },
+ {
+  "res": "chat-scenes",
+  "schema": "chatSceneCreateSchema",
+  "spec_fields": [
+   "code",
+   "name",
+   "greeting",
+   "systemPrompt",
+   "knowledgeTags",
+   "baseIds",
+   "useKnowledgeBase",
+   "sort"
+  ],
+  "spec_cols": [
+   "code",
+   "name",
+   "useKnowledgeBase",
+   "status"
+  ],
+  "contract_keys": [
+   "code",
+   "name",
+   "description",
+   "greeting",
+   "systemPrompt",
+   "knowledgeTags",
+   "baseIds",
+   "starters",
+   "useKnowledgeBase",
+   "llmProviderId",
+   "sort",
+   "status"
+  ],
+  "search": [
+   "name",
+   "code"
+  ],
+  "filters": [],
+  "only_contract": [
+   "description",
+   "llmProviderId",
+   "starters",
+   "status"
+  ],
+  "only_form": [],
+  "overlap": 8
+ },
+ {
+  "res": "knowledge",
+  "schema": "knowledgeCreateSchema",
+  "spec_fields": [
+   "title",
+   "content",
+   "tags",
+   "priority",
+   "status"
+  ],
+  "spec_cols": [
+   "title",
+   "tags",
+   "priority",
+   "status"
+  ],
+  "contract_keys": [
+   "title",
+   "content",
+   "tags",
+   "source",
+   "externalUrl",
+   "priority",
+   "status"
+  ],
+  "search": [
+   "title",
+   "content",
+   "tags"
+  ],
+  "filters": [
+   "status"
+  ],
+  "only_contract": [
+   "externalUrl",
+   "source"
+  ],
+  "only_form": [],
+  "overlap": 5
+ },
+ {
+  "res": "content-items",
+  "schema": "contentItemCreateSchema",
+  "spec_fields": [
+   "title",
+   "contentType",
+   "status",
+   "excerpt",
+   "coverImage",
+   "tags",
+   "content"
+  ],
+  "spec_cols": [
+   "title",
+   "source",
+   "status",
+   "author",
+   "createdAt"
+  ],
+  "contract_keys": [
+   "title",
+   "contentType",
+   "content",
+   "excerpt",
+   "coverImage",
+   "tags",
+   "source",
+   "status"
+  ],
+  "search": [],
+  "filters": [],
+  "only_contract": [
+   "source"
+  ],
+  "only_form": [],
+  "overlap": 7
+ },
+ {
+  "res": "notify-recipients",
+  "schema": "recipientCreateSchema",
+  "spec_fields": [
+   "name",
+   "email",
+   "groups",
+   "enabled"
+  ],
+  "spec_cols": [
+   "name",
+   "email",
+   "groups",
+   "enabled"
+  ],
+  "contract_keys": [
+   "name",
+   "email",
+   "groups",
+   "enabled"
+  ],
+  "search": [
+   "name",
+   "email"
+  ],
+  "filters": [],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 4
+ },
+ {
+  "res": "notify-templates",
+  "schema": "notifyTemplateCreateSchema",
+  "spec_fields": [
+   "name",
+   "event",
+   "subject",
+   "body",
+   "isDefault"
+  ],
+  "spec_cols": [
+   "name",
+   "event",
+   "subject",
+   "isDefault"
+  ],
+  "contract_keys": [
+   "name",
+   "event",
+   "subject",
+   "body",
+   "isDefault"
+  ],
+  "search": [
+   "name",
+   "subject"
+  ],
+  "filters": [],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 5
+ },
+ {
+  "res": "collect-sources",
+  "schema": "collectSourceCreateSchema",
+  "spec_fields": [
+   "name",
+   "type",
+   "url",
+   "cron",
+   "autoTags",
+   "parser",
+   "enabled"
+  ],
+  "spec_cols": [
+   "name",
+   "type",
+   "url",
+   "cron",
+   "lastStatus"
+  ],
+  "contract_keys": [
+   "name",
+   "type",
+   "url",
+   "parser",
+   "cron",
+   "autoTags",
+   "enabled",
+   "autoToKb",
+   "autoApprove"
+  ],
+  "search": [
+   "name",
+   "url"
+  ],
+  "filters": [
+   "type",
+   "enabled"
+  ],
+  "only_contract": [
+   "autoApprove",
+   "autoToKb"
+  ],
+  "only_form": [],
+  "overlap": 7
+ },
+ {
+  "res": "users",
+  "schema": null,
+  "spec_fields": [
+   "username",
+   "password",
+   "nickname",
+   "email",
+   "phone",
+   "roleId",
+   "isActive"
+  ],
+  "spec_cols": [
+   "username",
+   "nickname",
+   "role",
+   "isActive",
+   "lastLoginAt"
+  ],
+  "contract_keys": [],
+  "search": [],
+  "filters": [],
+  "only_contract": [],
+  "only_form": [
+   "email",
+   "isActive",
+   "nickname",
+   "password",
+   "phone",
+   "roleId",
+   "username"
+  ],
+  "overlap": 0
+ },
+ {
+  "res": "roles",
+  "schema": null,
+  "spec_fields": [
+   "name",
+   "slug",
+   "permissions",
+   "isSuper",
+   "description"
+  ],
+  "spec_cols": [
+   "name",
+   "slug",
+   "isSuper",
+   "userCount"
+  ],
+  "contract_keys": [],
+  "search": [],
+  "filters": [],
+  "only_contract": [],
+  "only_form": [
+   "description",
+   "isSuper",
+   "name",
+   "permissions",
+   "slug"
+  ],
+  "overlap": 0
+ },
+ {
+  "res": "user-actions",
+  "schema": null,
+  "spec_fields": [],
+  "spec_cols": [
+   "actionType",
+   "actionTarget",
+   "pageUrl",
+   "sessionId",
+   "createdAt"
+  ],
+  "contract_keys": [],
+  "search": [
+   "actionTarget",
+   "pageUrl"
+  ],
+  "filters": [
+   "actionType"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 0
+ },
+ {
+  "res": "logs",
+  "schema": null,
+  "spec_fields": [],
+  "spec_cols": [
+   "username",
+   "module",
+   "action",
+   "title",
+   "ipAddress",
+   "createdAt"
+  ],
+  "contract_keys": [],
+  "search": [
+   "username",
+   "module",
+   "title"
+  ],
+  "filters": [
+   "module"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 0
+ },
+ {
+  "res": "notify-records",
+  "schema": null,
+  "spec_fields": [],
+  "spec_cols": [
+   "event",
+   "toEmails",
+   "subject",
+   "status",
+   "createdAt"
+  ],
+  "contract_keys": [],
+  "search": [
+   "subject",
+   "toEmails"
+  ],
+  "filters": [
+   "event",
+   "status"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 0
+ },
+ {
+  "res": "collect-tasks",
+  "schema": null,
+  "spec_fields": [],
+  "spec_cols": [
+   "source",
+   "status",
+   "newCount",
+   "skipCount",
+   "startedAt",
+   "finishedAt"
+  ],
+  "contract_keys": [],
+  "search": [],
+  "filters": [
+   "sourceId",
+   "status"
+  ],
+  "only_contract": [],
+  "only_form": [],
+  "overlap": 0
+ }
+]

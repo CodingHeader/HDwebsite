@@ -1,0 +1,703 @@
+{
+ "cycle": false,
+ "order": [
+  "W0-01",
+  "W0-02",
+  "W0-03",
+  "W0-R0",
+  "W0-04",
+  "W0-05",
+  "W0-06",
+  "W0-07",
+  "W0-09",
+  "W0-08",
+  "A-01",
+  "A-02",
+  "A-03",
+  "A-04",
+  "A-05",
+  "A-07",
+  "A-06",
+  "B-01",
+  "B-02",
+  "B-03",
+  "B-04",
+  "B-05",
+  "B-06",
+  "B-07",
+  "C-01",
+  "C-02",
+  "C-03",
+  "C-04",
+  "C-05",
+  "C-06",
+  "C-07",
+  "C-08",
+  "C-09",
+  "C-10",
+  "C-11",
+  "C-12",
+  "D-01",
+  "D-02",
+  "D-03",
+  "D-04",
+  "D-05",
+  "D-06",
+  "D-07",
+  "D-08",
+  "D-09",
+  "D-10",
+  "D-11",
+  "D-12",
+  "E-01",
+  "E-02",
+  "E-03",
+  "E-04",
+  "E-05",
+  "E-06",
+  "E-07",
+  "E-09",
+  "E-10",
+  "E-11",
+  "E-08",
+  "A-08",
+  "W2-01",
+  "W2-02",
+  "W2-03",
+  "W2-04",
+  "W2-08",
+  "W2-09",
+  "W2-05",
+  "W2-06",
+  "W2-07"
+ ],
+ "critical": [
+  "W0-01",
+  "W0-02",
+  "W0-03",
+  "W0-R0",
+  "W0-04",
+  "W0-05",
+  "W0-06",
+  "W0-07",
+  "W0-09",
+  "W0-08",
+  "A-01",
+  "A-03",
+  "A-04",
+  "A-07",
+  "E-05",
+  "E-07",
+  "E-08",
+  "A-08",
+  "W2-01",
+  "W2-02",
+  "W2-05",
+  "W2-06",
+  "W2-07"
+ ],
+ "critical_days": 20.0,
+ "lane_chain": {
+  "A": {
+   "chain": [
+    "A-01",
+    "A-03",
+    "A-04",
+    "A-07",
+    "A-06",
+    "A-08"
+   ],
+   "chain_days": 4.5,
+   "total_days": 6.5
+  },
+  "B": {
+   "chain": [
+    "B-01",
+    "B-04",
+    "B-05",
+    "B-07"
+   ],
+   "chain_days": 3.75,
+   "total_days": 7.25
+  },
+  "C": {
+   "chain": [
+    "C-01",
+    "C-02",
+    "C-04",
+    "C-06",
+    "C-12"
+   ],
+   "chain_days": 7.5,
+   "total_days": 14.0
+  },
+  "D": {
+   "chain": [
+    "D-01",
+    "D-02",
+    "D-03",
+    "D-09",
+    "D-10"
+   ],
+   "chain_days": 3.5,
+   "total_days": 9.25
+  },
+  "E": {
+   "chain": [
+    "E-04",
+    "E-11",
+    "E-08"
+   ],
+   "chain_days": 5.0,
+   "total_days": 16.75
+  }
+ },
+ "overlaps": [],
+ "subset_violations": [],
+ "owned_counts": {
+  "D": 501,
+  "A": 47,
+  "B": 62,
+  "C": 40,
+  "E": 62
+ },
+ "frozen_count": 156,
+ "frozen_sample": [
+  "prisma/migrations/20261011052216_init/migration.sql",
+  "prisma/migrations/20261011105140_partner_int_id/migration.sql",
+  "prisma/migrations/20261011110550_course_sort/migration.sql",
+  "prisma/migrations/20261011111012_llm_kind_botid/migration.sql",
+  "prisma/migrations/20261012134621_p04_data_integrity/migration.sql",
+  "prisma/migrations/20261012154723_p06_collect_kb_review/migration.sql",
+  "prisma/migrations/migration_lock.toml",
+  "prisma/rollback/p06.sql",
+  "prisma/schema.prisma",
+  "src/app/api/banners/[id]/route.ts",
+  "src/app/api/banners/route.ts",
+  "src/app/api/campus-images/[id]/route.ts",
+  "src/app/api/campus-images/route.ts",
+  "src/app/api/campus/[id]/images/[imageId]/route.ts",
+  "src/app/api/campus/[id]/images/route.ts",
+  "src/app/api/campus/[id]/route.ts",
+  "src/app/api/campus/route.ts",
+  "src/app/api/categories/[id]/route.ts",
+  "src/app/api/categories/route.ts",
+  "src/app/api/content-blocks/[id]/route.ts",
+  "src/app/api/content-blocks/route.ts",
+  "src/app/api/courses/[id]/route.ts",
+  "src/app/api/courses/route.ts",
+  "src/app/api/element-configs/[id]/route.ts",
+  "src/app/api/element-configs/route.ts",
+  "src/app/api/enrollment-offerings/[id]/route.ts",
+  "src/app/api/enrollment-offerings/route.ts",
+  "src/app/api/gallery/[id]/route.ts",
+  "src/app/api/gallery/route.ts",
+  "src/app/api/home-cards/[id]/route.ts",
+  "src/app/api/home-cards/route.ts",
+  "src/app/api/hot-majors/[id]/route.ts",
+  "src/app/api/hot-majors/route.ts",
+  "src/app/api/majors/[id]/route.ts",
+  "src/app/api/majors/route.ts",
+  "src/app/api/navigations/[id]/route.ts",
+  "src/app/api/navigations/route.ts",
+  "src/app/api/navigations/tree.ts",
+  "src/app/api/page-templates/[id]/route.ts",
+  "src/app/api/page-templates/route.ts",
+  "src/app/api/partners/[id]/route.ts",
+  "src/app/api/partners/route.ts",
+  "src/app/api/service-guides/[id]/route.ts",
+  "src/app/api/service-guides/route.ts",
+  "src/app/api/students/[id]/route.ts",
+  "src/app/api/students/route.ts",
+  "src/app/api/tags/[id]/route.ts",
+  "src/app/api/tags/route.ts",
+  "src/app/api/template-blocks/[id]/route.ts",
+  "src/app/api/template-blocks/route.ts",
+  "src/app/globals.css",
+  "src/app/layout.tsx",
+  "src/components/ui/button.tsx",
+  "src/components/ui/input.tsx",
+  "src/components/ui/textarea.tsx",
+  "src/components/web/ApplyForm.tsx",
+  "src/components/web/ArticleContent.tsx",
+  "src/components/web/Banner.tsx",
+  "src/components/web/Breadcrumb.tsx",
+  "src/components/web/CampusSection.tsx",
+  "src/components/web/CategoryFilter.tsx",
+  "src/components/web/CertificateGallery.tsx",
+  "src/components/web/CompanyIntro.tsx",
+  "src/components/web/CourseCard.tsx",
+  "src/components/web/CourseSection.tsx",
+  "src/components/web/CourseSectionNew.tsx",
+  "src/components/web/FloatingContact.tsx",
+  "src/components/web/FourCards.tsx",
+  "src/components/web/Header.tsx",
+  "src/components/web/MarkdownRenderer.tsx",
+  "src/components/web/Navbar.tsx",
+  "src/components/web/Navigation.tsx",
+  "src/components/web/NewsCard.tsx",
+  "src/components/web/NewsCenter.tsx",
+  "src/components/web/NewsSection.tsx",
+  "src/components/web/PartnerUniversities.tsx",
+  "src/components/web/SearchBox.tsx",
+  "src/components/web/StatsBanner.tsx",
+  "src/components/web/TopBanner.tsx",
+  "src/components/web/TopBar.tsx",
+  "src/components/web/TopEntranceSection.tsx",
+  "src/components/web/UserActionTracker.tsx",
+  "src/contracts/article.ts",
+  "src/contracts/auth.ts",
+  "src/contracts/blocks.ts",
+  "src/contracts/common.ts",
+  "src/contracts/events.ts",
+  "src/contracts/index.ts",
+  "src/contracts/resources.ts",
+  "src/contracts/setting.ts",
+  "src/contracts/user-action.ts",
+  "src/lib/__tests__/crypto.test.ts",
+  "src/lib/__tests__/markdown.test.ts",
+  "src/lib/__tests__/seed-keys.ts",
+  "src/lib/__tests__/slug.test.ts",
+  "src/lib/app-origin.ts",
+  "src/lib/crud-resources.ts",
+  "src/lib/crypto.ts",
+  "src/lib/jwt.ts",
+  "src/lib/log.ts",
+  "src/lib/manager-fetch.ts",
+  "src/lib/markdown.ts",
+  "src/lib/prisma.ts",
+  "src/lib/security/xss-filter.ts",
+  "src/lib/slug.ts",
+  "src/lib/utils.ts",
+  "src/lib/view-stats.ts",
+  "src/store/authStore.ts",
+  "tests/e2e/playwright.config.ts",
+  "tests/visual/reference/about-1440.png",
+  "tests/visual/reference/about-375.png",
+  "tests/visual/reference/about-768.png",
+  "tests/visual/reference/apply-1440.png",
+  "tests/visual/reference/apply-375.png",
+  "tests/visual/reference/apply-768.png",
+  "tests/visual/reference/article-detail-1440.png",
+  "tests/visual/reference/article-detail-375.png",
+  "tests/visual/reference/article-detail-768.png",
+  "tests/visual/reference/articles-1440.png",
+  "tests/visual/reference/articles-375.png",
+  "tests/visual/reference/articles-768.png",
+  "tests/visual/reference/campus-1440.png",
+  "tests/visual/reference/campus-375.png",
+  "tests/visual/reference/campus-768.png",
+  "tests/visual/reference/contact-1440.png",
+  "tests/visual/reference/contact-375.png",
+  "tests/visual/reference/contact-768.png",
+  "tests/visual/reference/course-detail-1440.png",
+  "tests/visual/reference/course-detail-375.png",
+  "tests/visual/reference/course-detail-768.png",
+  "tests/visual/reference/courses-1440.png",
+  "tests/visual/reference/courses-375.png",
+  "tests/visual/reference/courses-768.png",
+  "tests/visual/reference/gallery-1440.png",
+  "tests/visual/reference/gallery-375.png",
+  "tests/visual/reference/gallery-768.png",
+  "tests/visual/reference/home-1440.png",
+  "tests/visual/reference/home-375.png",
+  "tests/visual/reference/home-768.png",
+  "tests/visual/reference/learning-1440.png",
+  "tests/visual/reference/learning-375.png",
+  "tests/visual/reference/learning-768.png",
+  "tests/visual/reference/not-found-1440.png",
+  "tests/visual/reference/not-found-375.png",
+  "tests/visual/reference/not-found-768.png",
+  "tests/visual/reference/partners-1440.png",
+  "tests/visual/reference/partners-375.png",
+  "tests/visual/reference/partners-768.png",
+  "tests/visual/reference/party-1440.png",
+  "tests/visual/reference/party-375.png",
+  "tests/visual/reference/party-768.png",
+  "tests/visual/reference/service-detail-1440.png",
+  "tests/visual/reference/service-detail-375.png",
+  "tests/visual/reference/service-detail-768.png",
+  "tests/visual/routes.ts",
+  "tests/visual/web.spec.ts"
+ ],
+ "tiers": {
+  "Z": {
+   "haiku": 1,
+   "sonnect": 4,
+   "opus": 5
+  },
+  "A": {
+   "sonnect": 7,
+   "opus": 1
+  },
+  "E": {
+   "sonnect": 8,
+   "opus": 3
+  },
+  "B": {
+   "sonnect": 6,
+   "opus": 1
+  },
+  "C": {
+   "opus": 2,
+   "sonnect": 10
+  },
+  "D": {
+   "sonnect": 11,
+   "haiku": 1
+  },
+  "W": {
+   "opus": 2,
+   "sonnect": 5,
+   "haiku": 2
+  }
+ },
+ "n": 69,
+ "makespan": 30.25,
+ "lane_finish": {
+  "Z": 6.25,
+  "A": 22.5,
+  "E": 23.25,
+  "B": 13.5,
+  "C": 20.25,
+  "D": 15.5,
+  "W": 30.25
+ },
+ "modes": {
+  "V0.3（推荐）：Hark=A 流+E 流（UI 核心，自做）+W2 集成终审，P1=W0+B，P2=C，P3=D+W2 后端段": [
+   30.25,
+   {
+    "P1": 13.5,
+    "Hark-A": 30.25,
+    "Hark-E": 23.25,
+    "P2": 20.25,
+    "P3": 15.5
+   }
+  ],
+  "4 名（V0.2 推荐）：P1=W0+B→C，P2=A+W2 主持，P3=E，P4=D": [
+   30.25,
+   {
+    "P1": 27.5,
+    "P2": 30.25,
+    "P3": 23.25,
+    "P4": 15.5
+   }
+  ],
+  "2 名（已定）：X=A→E，Y=W0+B→C→D，W2 由 X 主持": [
+   37.75,
+   {
+    "Y": 36.75,
+    "X": 37.75
+   }
+  ],
+  "3 名：UI=A→E，平台=B→C，运维=D": [
+   36.5,
+   {
+    "Z": 6.25,
+    "A": 29.5,
+    "B": 27.5,
+    "D": 15.5,
+    "W": 36.5
+   }
+  ],
+  "5 名：A、E、B、C、D 各一人": [
+   30.25,
+   {
+    "Z": 6.25,
+    "A": 22.5,
+    "E": 23.25,
+    "C": 20.25,
+    "D": 15.5,
+    "B": 13.5,
+    "W": 30.25
+   }
+  ]
+ },
+ "start_finish": {
+  "W0-01": [
+   0.0,
+   0.25
+  ],
+  "W0-02": [
+   0.25,
+   0.75
+  ],
+  "W0-03": [
+   0.75,
+   1.25
+  ],
+  "W0-R0": [
+   1.25,
+   2.25
+  ],
+  "W0-04": [
+   2.25,
+   3.25
+  ],
+  "W0-05": [
+   3.25,
+   4.25
+  ],
+  "W0-06": [
+   4.25,
+   5.25
+  ],
+  "W0-07": [
+   5.25,
+   5.5
+  ],
+  "W0-09": [
+   5.5,
+   5.75
+  ],
+  "W0-08": [
+   5.75,
+   6.25
+  ],
+  "A-01": [
+   6.25,
+   7.25
+  ],
+  "A-02": [
+   8.75,
+   9.75
+  ],
+  "A-03": [
+   7.25,
+   8.75
+  ],
+  "A-04": [
+   9.75,
+   10.25
+  ],
+  "A-05": [
+   10.75,
+   11.75
+  ],
+  "A-06": [
+   10.5,
+   10.75
+  ],
+  "A-07": [
+   10.25,
+   10.5
+  ],
+  "A-08": [
+   21.5,
+   22.5
+  ],
+  "E-01": [
+   21.5,
+   22.5
+  ],
+  "E-02": [
+   22.5,
+   23.25
+  ],
+  "E-03": [
+   8.25,
+   10.25
+  ],
+  "E-04": [
+   6.25,
+   8.25
+  ],
+  "E-05": [
+   10.5,
+   12.5
+  ],
+  "E-06": [
+   12.5,
+   14.5
+  ],
+  "E-07": [
+   16.5,
+   18.0
+  ],
+  "E-08": [
+   20.5,
+   21.5
+  ],
+  "B-01": [
+   6.25,
+   6.5
+  ],
+  "B-02": [
+   6.5,
+   8.0
+  ],
+  "B-03": [
+   8.5,
+   9.5
+  ],
+  "B-04": [
+   8.0,
+   8.5
+  ],
+  "B-05": [
+   9.5,
+   10.5
+  ],
+  "B-06": [
+   10.5,
+   11.5
+  ],
+  "C-01": [
+   6.25,
+   7.25
+  ],
+  "C-02": [
+   7.25,
+   8.25
+  ],
+  "C-03": [
+   8.25,
+   9.25
+  ],
+  "C-04": [
+   9.25,
+   10.75
+  ],
+  "C-05": [
+   10.75,
+   11.75
+  ],
+  "C-06": [
+   11.75,
+   13.75
+  ],
+  "C-07": [
+   13.75,
+   14.75
+  ],
+  "C-08": [
+   15.75,
+   16.25
+  ],
+  "C-09": [
+   14.75,
+   15.75
+  ],
+  "D-01": [
+   6.25,
+   6.75
+  ],
+  "D-02": [
+   6.75,
+   7.25
+  ],
+  "D-03": [
+   7.25,
+   7.75
+  ],
+  "D-04": [
+   10.75,
+   11.75
+  ],
+  "D-05": [
+   15.0,
+   15.25
+  ],
+  "D-06": [
+   7.75,
+   9.75
+  ],
+  "D-07": [
+   15.25,
+   15.5
+  ],
+  "D-08": [
+   14.5,
+   15.0
+  ],
+  "D-09": [
+   9.75,
+   10.75
+  ],
+  "D-10": [
+   11.75,
+   12.75
+  ],
+  "D-11": [
+   13.75,
+   14.5
+  ],
+  "D-12": [
+   12.75,
+   13.75
+  ],
+  "W2-01": [
+   23.25,
+   24.25
+  ],
+  "W2-02": [
+   24.25,
+   26.25
+  ],
+  "W2-08": [
+   27.75,
+   28.25
+  ],
+  "W2-09": [
+   26.5,
+   27.25
+  ],
+  "W2-03": [
+   26.25,
+   26.5
+  ],
+  "W2-04": [
+   27.25,
+   27.75
+  ],
+  "W2-05": [
+   28.25,
+   29.25
+  ],
+  "W2-06": [
+   29.25,
+   29.75
+  ],
+  "W2-07": [
+   29.75,
+   30.25
+  ],
+  "B-07": [
+   11.5,
+   13.5
+  ],
+  "C-10": [
+   18.25,
+   19.25
+  ],
+  "C-11": [
+   19.25,
+   20.25
+  ],
+  "C-12": [
+   16.25,
+   18.25
+  ],
+  "E-09": [
+   18.0,
+   19.5
+  ],
+  "E-10": [
+   19.5,
+   20.5
+  ],
+  "E-11": [
+   14.5,
+   16.5
+  ]
+ },
+ "lane_days": {
+  "Z": 6.25,
+  "A": 6.5,
+  "E": 16.75,
+  "B": 7.25,
+  "C": 14.0,
+  "D": 9.25,
+  "W": 7.0
+ }
+}
