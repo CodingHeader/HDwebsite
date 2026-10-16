@@ -9,12 +9,20 @@
  */
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, openSync, readdirSync, rmSync, statSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { E2E_BASE_URL, E2E_DB_FILE, E2E_PORT, MOCK_PORT, ROOT } from "./fixtures/env";
+import { chromium } from "@playwright/test";
+import { ADMIN, E2E_BASE_URL, E2E_DB_FILE, E2E_PORT, MOCK_PORT, ROOT, VIEWER } from "./fixtures/env";
 import { startMockServer } from "./fixtures/mock-llm";
 
 const JWT_SECRET = "e2e-jwt-secret-0123456789abcdef-0123456789abcdef";
+/** CCR-1（W0-11）：生产 env 校验（D-03）所需的测试密钥值（仅 e2e.db 使用，非真实凭据） */
+const ENCRYPTION_KEY = "e2e-encryption-key-0123456789abcdef-0123456789abcdef";
+
+/** admin/viewer 的 storageState 落盘路径（helpers.ts 的 useAdmin/useViewer 读取） */
+export const ADMIN_STATE = path.join(ROOT, ".cache", "e2e", "state-admin.json");
+export const VIEWER_STATE = path.join(ROOT, ".cache", "e2e", "state-viewer.json");
 
 function run(cmd: string, args: string[], env: NodeJS.ProcessEnv) {
   const r = spawnSync(cmd, args, { cwd: ROOT, env, stdio: "pipe", encoding: "utf8" });
@@ -75,12 +83,29 @@ export default async function globalSetup() {
   const log = openSync(path.join(cacheDir, "app.log"), "w");
   const app = spawn(process.execPath, [serverJs], {
     cwd: ROOT,
-    env: { ...env, PORT: String(E2E_PORT), HOSTNAME: "127.0.0.1", NODE_ENV: "production" },
+    env: {
+      ...env,
+      PORT: String(E2E_PORT),
+      HOSTNAME: "127.0.0.1",
+      NODE_ENV: "production",
+      // CCR-1（W0-11）：生产 env 校验（D-03）所需的测试值——standalone 启动不因缺 env 失败
+      ENCRYPTION_KEY,
+      APP_ORIGIN: `http://127.0.0.1:${E2E_PORT}`,
+      DATA_DIR: path.join(os.tmpdir(), `hd-e2e-${process.pid}`),
+    },
     stdio: ["ignore", log, log],
     detached: true,
   });
   try {
     await waitReady(`${E2E_BASE_URL}/api/health`, 600_000, app);
+  } catch (err) {
+    if (app.pid) process.kill(-app.pid, "SIGTERM");
+    mock.close();
+    throw err;
+  }
+
+  try {
+    await prepareAccountsAndStates();
   } catch (err) {
     if (app.pid) process.kill(-app.pid, "SIGTERM");
     mock.close();
@@ -97,4 +122,64 @@ export default async function globalSetup() {
       }
     }
   };
+}
+
+/**
+ * CCR-1（W0-11）：幂等创建 e2e-viewer 并写 admin/viewer 的 storageState。
+ * 目的：除 globalSetup（本函数 2 次）与 auth.spec（验证登录本身）外，其余用例调用登录接口 0 次，
+ * 避免撞同 IP 60s≤10 次的登录限流（api/auth/login/route.ts）。
+ */
+async function prepareAccountsAndStates(): Promise<void> {
+  const login = async (user: { username: string; password: string }): Promise<string> => {
+    const res = await fetch(`${E2E_BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    });
+    const body = (await res.json()) as { code: number; message?: string; data?: { token?: string } };
+    if (body.code !== 200 || !body.data?.token) throw new Error(`登录 ${user.username} 失败：${body.message ?? res.status}`);
+    return body.data.token;
+  };
+
+  const adminToken = await login(ADMIN);
+
+  // 幂等创建 e2e-viewer（VIEWER 账号，viewer 角色）；已存在（400/409"已存在"）则忽略
+  const rolesRes = await fetch(`${E2E_BASE_URL}/api/roles?keyword=viewer&limit=50`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  const rolesBody = (await rolesRes.json()) as { code: number; data?: { list?: { id: number; slug?: string }[] } };
+  const viewerRole = rolesBody.data?.list?.find((r) => r.slug === "viewer");
+  if (!viewerRole) throw new Error("seed 未产出 viewer 角色（slug=viewer）");
+  const createRes = await fetch(`${E2E_BASE_URL}/api/users`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
+    body: JSON.stringify({ username: VIEWER.username, password: VIEWER.password, roleId: viewerRole.id, isActive: true }),
+  });
+  if (createRes.status !== 200) {
+    const body = (await createRes.json().catch(() => ({}))) as { message?: string };
+    // 幂等：已存在（400/409）放行；其他错误抛出
+    if (!/已存在|exists/i.test(body.message ?? "") && createRes.status !== 409) {
+      throw new Error(`创建 ${VIEWER.username} 失败：${body.message ?? createRes.status}`);
+    }
+  }
+
+  // admin 与 viewer 各登录一次，写 storageState（context 级 cookie 注入）
+  const writeState = async (user: { username: string; password: string }, statePath: string) => {
+    const browser = await chromium.launch();
+    try {
+      const ctx = await browser.newContext({ baseURL: E2E_BASE_URL });
+      const page = await ctx.newPage();
+      await page.goto("/manager/login");
+      await page.locator("#login-username").fill(user.username);
+      await page.locator("#login-password").fill(user.password);
+      await page.locator("#login-password").press("Enter");
+      await page.waitForURL(/\/manager\/?$/, { timeout: 30_000 });
+      await ctx.storageState({ path: statePath });
+      await ctx.close();
+    } finally {
+      await browser.close();
+    }
+  };
+  await writeState(ADMIN, ADMIN_STATE);
+  await writeState(VIEWER, VIEWER_STATE);
 }

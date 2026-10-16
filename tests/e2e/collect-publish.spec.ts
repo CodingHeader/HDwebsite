@@ -7,7 +7,7 @@
 import { expect, test } from "@playwright/test";
 import { MOCK_BASE_URL } from "./fixtures/env";
 import { MOCK_NEWS } from "./fixtures/mock-llm";
-import { api, apiToken, dialog, expectToast, loginUI } from "./fixtures/helpers";
+import { api, adminState, dialog, expectToast, pageToken } from "./fixtures/helpers";
 
 const STAMP = Date.now();
 const SOURCE = `E2E 采集源 ${STAMP}`;
@@ -18,9 +18,11 @@ function localInput(msFromNow: number) {
   return new Date(Date.now() + msFromNow + 8 * 3600_000).toISOString().slice(0, 16);
 }
 
+// CCR-1（W0-11）：storageState 注入登录态，本用例不再调用登录接口
+test.use({ storageState: adminState() });
+
 test("采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现", async ({ page, request }) => {
   test.setTimeout(240_000);
-  await loginUI(page);
   const dlg = dialog(page);
 
   // 1) 通知收件人（publish 组）
@@ -87,8 +89,8 @@ test("采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知
   // P06：审核通过后已按设置自动排期 1 个官网任务（publishAutoChannels），此处手动任务为第 2 行
   await expect(page.getByRole("row").filter({ hasText: MOCK_NEWS[0].title })).toHaveCount(2);
 
-  // 7) 通知记录：notify.scan 每分钟运行，最长等待 ~150s
-  const token = await apiToken(request);
+  // 7) 通知记录：notify.scan 每分钟运行，最长等待 ~150s；token 从页面 localStorage 读取（CCR-1，不调登录接口）
+  const token = await pageToken(page);
   await expect
     .poll(
       async () => {
