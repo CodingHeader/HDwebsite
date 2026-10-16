@@ -2,10 +2,16 @@
  * E2E 全局准备（P05）
  * 1. 重建独立数据库 prisma/e2e.db：prisma migrate deploy + seed（dev.db 不受影响）
  * 2. 启动 mock 上游（LLM + 采集站点）
- * 3. 以 e2e.db 启动被测应用（.next/standalone/server.js，端口 E2E_PORT），等待就绪
+ * 3. 以 e2e.db 启动被测应用（standalone：.next/standalone/server.js；win32：回退 `next start`，E-12），
+ *    端口 E2E_PORT，等待就绪
  *    不经 scripts/start-next.mjs：其"构建过期"判断监视 prisma/ 目录，e2e.db 重建会触发整站重新构建并干扰
  *    同机运行的其他服务；这里改为要求先 `npm run build`（src 比 BUILD_ID 新则直接报错，避免测到旧代码）。
- * 返回的 teardown 关闭两个服务（按 PID 结束进程组，不使用 pkill）。
+ * 返回的 teardown 关闭两个服务（进程树按平台结束，kill-tree.ts；不使用 pkill）。
+ *
+ * E-12（跨平台）：Linux 代码路径与 827646b 字节级一致（仍走 standalone）；
+ * win32 的差异仅限：①无 standalone → 回退 next start；②spawnSync 加 shell（Node ≥18.20.2 起
+ * Windows 上 .cmd 必须 shell）；③进程树结束用 taskkill /T /F（负 PID 进程组在 Windows 不存在）。
+ * 不改 next.config.ts 与 scripts/start-next.mjs。
  */
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, openSync, readdirSync, rmSync, statSync } from "node:fs";
@@ -15,6 +21,10 @@ import { pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
 import { ADMIN, E2E_BASE_URL, E2E_DB_FILE, E2E_PORT, MOCK_PORT, ROOT, VIEWER } from "./fixtures/env";
 import { startMockServer } from "./fixtures/mock-llm";
+import { appSpawnArgs, killTree } from "./fixtures/kill-tree";
+
+/** E-12：standalone 仅在非 win32 平台使用（next.config.ts 有意在 win32 关闭 standalone 产出） */
+const useStandalone = process.platform !== "win32";
 
 const JWT_SECRET = "e2e-jwt-secret-0123456789abcdef-0123456789abcdef";
 /** CCR-1（W0-11）：生产 env 校验（D-03）所需的测试密钥值（仅 e2e.db 使用，非真实凭据） */
@@ -24,9 +34,10 @@ const ENCRYPTION_KEY = "e2e-encryption-key-0123456789abcdef-0123456789abcdef";
 export const ADMIN_STATE = path.join(ROOT, ".cache", "e2e", "state-admin.json");
 export const VIEWER_STATE = path.join(ROOT, ".cache", "e2e", "state-viewer.json");
 
-function run(cmd: string, args: string[], env: NodeJS.ProcessEnv) {
-  const r = spawnSync(cmd, args, { cwd: ROOT, env, stdio: "pipe", encoding: "utf8" });
-  if (r.status !== 0) throw new Error(`${cmd} ${args.join(" ")} 失败：\n${r.stdout}\n${r.stderr}`);
+/** E-12：win32 上 npx 是 .cmd，Node ≥18.20.2 起 spawnSync 必须带 shell；Linux 行为不变（shell=false 等价缺省） */
+function runNpx(args: string[], env: NodeJS.ProcessEnv) {
+  const r = spawnSync("npx", args, { cwd: ROOT, env, stdio: "pipe", encoding: "utf8", shell: process.platform === "win32" });
+  if (r.status !== 0) throw new Error(`npx ${args.join(" ")} 失败：\n${r.stdout}\n${r.stderr}`);
 }
 
 async function waitReady(url: string, timeoutMs: number, child: ChildProcess) {
@@ -51,11 +62,14 @@ function latestMtime(p: string): number {
   return readdirSync(p).reduce((m, c) => Math.max(m, latestMtime(path.join(p, c))), st.mtimeMs);
 }
 
-/** 校验构建新鲜度并把 static/public 同步进 standalone（与 start-next 相同的产物布局） */
-function prepareStandalone(): string {
+/** 校验构建新鲜度；standalone 环境下把 static/public 同步进 standalone（与 start-next 相同的产物布局）。
+ * E-12：win32 无 standalone（next.config.ts 有意关闭），返回 null 并回退 `next start`；新鲜度仍以 BUILD_ID 校验。 */
+function prepareStandalone(): string | null {
   const buildId = path.join(ROOT, ".next", "BUILD_ID");
+  if (!existsSync(buildId)) throw new Error("缺少生产构建：请先运行 npm run build");
+  if (!useStandalone) return null; // E-12：win32 回退 next start
   const server = path.join(ROOT, ".next", "standalone", "server.js");
-  if (!existsSync(buildId) || !existsSync(server)) throw new Error("缺少生产构建：请先运行 npm run build");
+  if (!existsSync(server)) throw new Error("缺少生产构建：请先运行 npm run build");
   const builtAt = statSync(buildId).mtimeMs;
   if (latestMtime(path.join(ROOT, "src")) > builtAt) throw new Error("构建已过期（src 比 .next/BUILD_ID 新）：请先运行 npm run build");
   const staticDst = path.join(ROOT, ".next", "standalone", ".next", "static");
@@ -70,18 +84,26 @@ function prepareStandalone(): string {
 
 export default async function globalSetup() {
   const serverJs = prepareStandalone();
-  const dbUrl = pathToFileURL(E2E_DB_FILE).href;
+  // E-12：dbUrl 平台分支——Linux 保持绝对 file URL（与 827646b 字节级一致）；
+  // win32 的 Prisma schema engine 打不开 `file:///E:/...` 三斜线绝对 URL（os error 161 BAD_PATHNAME），
+  // 改用与 dev 库（prisma.config.ts 默认 `file:./prisma/dev.db`）同款的相对形式，从 cwd=ROOT 解析。
+  const dbUrl = useStandalone
+    ? pathToFileURL(E2E_DB_FILE).href
+    : `file:${path.relative(ROOT, E2E_DB_FILE).replace(/\\/g, "/")}`;
   for (const suffix of ["", "-journal", "-wal", "-shm"]) rmSync(E2E_DB_FILE + suffix, { force: true });
   const env = { ...process.env, DATABASE_URL: dbUrl, JWT_SECRET };
-  run("npx", ["prisma", "migrate", "deploy"], env);
-  run("npx", ["ts-node", "prisma/seed.ts"], env);
+  // E-12：npx 走 runNpx（win32 加 shell）；prisma migrate deploy + seed
+  runNpx(["prisma", "migrate", "deploy"], env);
+  runNpx(["ts-node", "prisma/seed.ts"], env);
 
   const mock = await startMockServer(MOCK_PORT);
 
   const cacheDir = path.join(ROOT, ".cache", "e2e");
   if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
   const log = openSync(path.join(cacheDir, "app.log"), "w");
-  const app = spawn(process.execPath, [serverJs], {
+  // E-12：启动命令按平台分支（standalone：[node, server.js]；win32：[node, next, start, ...]）
+  const { cmd, args } = appSpawnArgs(ROOT, serverJs, E2E_PORT);
+  const app = spawn(cmd, args, {
     cwd: ROOT,
     env: {
       ...env,
@@ -99,7 +121,7 @@ export default async function globalSetup() {
   try {
     await waitReady(`${E2E_BASE_URL}/api/health`, 600_000, app);
   } catch (err) {
-    if (app.pid) process.kill(-app.pid, "SIGTERM");
+    if (app.pid) killTree(app.pid, "SIGTERM");
     mock.close();
     throw err;
   }
@@ -107,7 +129,7 @@ export default async function globalSetup() {
   try {
     await prepareAccountsAndStates();
   } catch (err) {
-    if (app.pid) process.kill(-app.pid, "SIGTERM");
+    if (app.pid) killTree(app.pid, "SIGTERM");
     mock.close();
     throw err;
   }
@@ -116,7 +138,7 @@ export default async function globalSetup() {
     mock.close();
     if (app.pid) {
       try {
-        process.kill(-app.pid, "SIGTERM");
+        killTree(app.pid, "SIGTERM");
       } catch {
         /* 已退出 */
       }
