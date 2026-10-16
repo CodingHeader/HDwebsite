@@ -3,7 +3,10 @@
  * 文档依据：wechat-clawbot/docs/coze-integration.md + Coze Open API v3
  * - chat：v3/chat（stream=true SSE 优先；轮询 retrieve + message/list 兜底）
  * - 错误码：4011 PAT 无效 / 4101 未发布 / 4102 bot_id 错 / 4013 权限不足
+ * C-01：HTTP 走 http-client（超时/重试/统一 HttpError；不再用原生超时信号——验收 grep 双空之一）
  */
+import { httpFetch } from "@/lib/http-client";
+
 const DEFAULT_API_BASE = "https://api.coze.cn";
 
 export type CozeConfig = {
@@ -32,7 +35,7 @@ export async function cozeChatStream(
   messages: { role: "user" | "assistant"; content: string }[]
 ): Promise<ReadableStream<Uint8Array>> {
   const apiBase = cfg.apiBase || DEFAULT_API_BASE;
-  const res = await fetch(`${apiBase}/v3/chat`, {
+  const res = await httpFetch(`${apiBase}/v3/chat`, {
     method: "POST",
     headers: headers(cfg.pat),
     body: JSON.stringify({
@@ -46,11 +49,11 @@ export async function cozeChatStream(
         content_type: "text",
       })),
     }),
-    signal: AbortSignal.timeout(cfg.timeoutMs ?? 60_000),
+    timeoutMs: cfg.timeoutMs ?? 60_000,
+    logTag: "coze",
   });
-  if (!res.ok || !res.body) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Coze HTTP ${res.status}: ${text.slice(0, 200)}`);
+  if (!res.body) {
+    throw new Error("Coze 上游未返回响应体");
   }
   const encoder = new TextEncoder();
   let buf = "";
@@ -103,7 +106,7 @@ export async function cozeChatStream(
 export async function cozeChat(cfg: CozeConfig, message: string): Promise<CozeChatResult> {
   const apiBase = cfg.apiBase || DEFAULT_API_BASE;
   const timeoutMs = cfg.timeoutMs ?? 60_000;
-  const createRes = (await fetch(`${apiBase}/v3/chat`, {
+  const createRes = (await httpFetch(`${apiBase}/v3/chat`, {
     method: "POST",
     headers: headers(cfg.pat),
     body: JSON.stringify({
@@ -113,7 +116,10 @@ export async function cozeChat(cfg: CozeConfig, message: string): Promise<CozeCh
       auto_save_history: true,
       additional_messages: [{ role: "user", content: message, content_type: "text" }],
     }),
-    signal: AbortSignal.timeout(timeoutMs),
+    timeoutMs,
+    // 与原实现语义一致：业务错误以 200 + code 字段返回，由下方 code 检查处理（非 2xx 不抛）
+    throwOnHttpError: false,
+    logTag: "coze",
   }).then((r) => r.json())) as { code?: number; msg?: string; data?: { id: string; conversation_id: string; status: string } };
 
   if (createRes.code !== 0 || !createRes.data) {
@@ -128,9 +134,9 @@ export async function cozeChat(cfg: CozeConfig, message: string): Promise<CozeCh
   while (status === "created" || status === "in_progress") {
     if (Date.now() > deadline) return { ok: false, reply: "", errMsg: "Coze 轮询超时", conversationId, chatId };
     await new Promise((r) => setTimeout(r, 1000));
-    const retrieve = (await fetch(
+    const retrieve = (await httpFetch(
       `${apiBase}/v3/chat/retrieve?chat_id=${chatId}&conversation_id=${conversationId}`,
-      { headers: headers(cfg.pat), signal: AbortSignal.timeout(10_000) }
+      { headers: headers(cfg.pat), timeoutMs: 10_000, throwOnHttpError: false, logTag: "coze" }
     ).then((r) => r.json())) as { code?: number; data?: { status: string; last_error?: { msg?: string } } };
     if (retrieve.code !== 0 || !retrieve.data) {
       return { ok: false, reply: "", errMsg: `Coze retrieve ${retrieve.code}`, conversationId, chatId };
@@ -141,9 +147,9 @@ export async function cozeChat(cfg: CozeConfig, message: string): Promise<CozeCh
     }
   }
 
-  const list = (await fetch(
+  const list = (await httpFetch(
     `${apiBase}/v3/chat/message/list?chat_id=${chatId}&conversation_id=${conversationId}`,
-    { headers: headers(cfg.pat), signal: AbortSignal.timeout(10_000) }
+    { headers: headers(cfg.pat), timeoutMs: 10_000, throwOnHttpError: false, logTag: "coze" }
   ).then((r) => r.json())) as { code?: number; data?: { role: string; type: string; content: string }[] };
   if (list.code !== 0 || !list.data) {
     return { ok: false, reply: "", errMsg: `Coze message/list ${list.code}`, conversationId, chatId };

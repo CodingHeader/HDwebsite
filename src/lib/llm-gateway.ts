@@ -2,18 +2,20 @@
  * llm-gateway（SOL-003）：多供应商路由/降级/用量统计单点
  * 路由：[场景指定模型] → isDefault → 失败按 priority 升序遍历 active → 全败 → isFallback 必试
  * P06：按场景选模型——ChatScene.llmProviderId 作为 preferredProviderId 置顶（停用则忽略，仍按默认路由降级）
- * kind：openai（OpenAI 兼容 /chat/completions）| coze（v3/chat，ADR-023）
+ * C-01：按 kind 的调用细节全部收敛到适配器注册表（./llm/registry）；本文件只保留路由/熔断/统计，
+ *       供应商类型字面量比较归零（新增供应商类型只需实现 LLMProviderAdapter 并注册）。
  * 统计：LLMUsage(date+providerId 唯一) upsert；失败计数；余额人工填报（ADR-005）
  */
 import { prisma } from "@/lib/prisma";
-import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
+import { getAllSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）；C-01：去 as 别名（B-01 语义单一化）
 import { decryptField } from "@/lib/crypto";
-import { cozeChatStream, cozeChat } from "@/lib/coze";
 import type { LLMProvider } from ".prisma/client";
+import type { ChatMessage } from "./llm/types";
+import { getAdapter } from "./llm/registry";
+
+export type { ChatMessage };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
 export type GatewayResult = {
   ok: boolean;
@@ -76,62 +78,6 @@ async function failureCount(providerId: number): Promise<number> {
   return row?.failures ?? 0;
 }
 
-async function callOpenAI(provider: LLMProvider, apiKey: string, messages: ChatMessage[], stream: false, timeoutMs: number): Promise<GatewayResult["reply"]> {
-  const endpoint = provider.endpoint.replace(/\/+$/, "");
-  const res = await fetch(`${endpoint}/chat/completions`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: provider.model,
-      messages,
-      temperature: provider.temperature,
-      max_tokens: provider.maxTokens,
-      stream: false,
-    }),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`上游 ${res.status}：${text.slice(0, 200)}`);
-  }
-  const body = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-    usage?: { prompt_tokens?: number; completion_tokens?: number };
-  };
-  await recordUsage(provider.id, body.usage?.prompt_tokens ?? 0, body.usage?.completion_tokens ?? 0, false);
-  return body.choices?.[0]?.message?.content ?? "";
-}
-
-async function callCoze(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number): Promise<GatewayResult> {
-  const settings = await getSettings();
-  const last = messages.filter((m) => m.role === "user").slice(-1)[0];
-  const result = await cozeChat(
-    {
-      pat: apiKey,
-      botId: provider.botId ?? (await parseBotIdFromEndpoint(provider)),
-      apiBase: provider.endpoint,
-      timeoutMs,
-      userId: "hd-" + hashUserId(String(provider.id)),
-    },
-    last?.content ?? ""
-  );
-  if (result.ok) {
-    await recordUsage(provider.id, 0, 0, false);
-    return { ok: true, reply: result.reply, providerId: provider.id, providerName: provider.name };
-  }
-  throw new Error(result.errMsg ?? "Coze 调用失败");
-}
-
-async function parseBotIdFromEndpoint(provider: LLMProvider): Promise<string> {
-  throw new Error(`供应商「${provider.name}」为 Coze 类型但未配置 bot_id`);
-}
-
-function hashUserId(seed: string): string {
-  let h = 0;
-  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) | 0;
-  return Math.abs(h).toString(36);
-}
-
 /**
  * 非流式对话（测试端点/内部调用）
  */
@@ -140,7 +86,7 @@ export async function gatewayChat(messages: ChatMessage[], opts: RouteOptions = 
   if (providers.length === 0) {
     return { ok: false, reply: "", errMsg: "尚未配置可用的 AI 模型供应商" };
   }
-  const settings = await getSettings();
+  const settings = await getAllSettings();
   const timeoutMs = Number(settings.llmTimeoutMs || 30000);
   const errors: string[] = [];
 
@@ -153,11 +99,11 @@ export async function gatewayChat(messages: ChatMessage[], opts: RouteOptions = 
     try {
       const apiKey = await resolveKey(provider);
       if (!apiKey) throw new Error("API Key 解密失败");
-      if (provider.kind === "coze") {
-        return await callCoze(provider, apiKey, messages, timeoutMs);
-      }
-      const reply = await callOpenAI(provider, apiKey, messages, false, timeoutMs);
-      return { ok: true, reply, providerId: provider.id, providerName: provider.name };
+      // C-01：按 kind 的调用细节收敛到适配器注册表（本文件无类型分支）
+      const adapter = getAdapter(provider.kind);
+      const r = await adapter.chat(provider, apiKey, messages, timeoutMs);
+      await recordUsage(provider.id, r.tokensIn, r.tokensOut, false);
+      return { ok: true, reply: r.reply, providerId: provider.id, providerName: provider.name };
     } catch (err) {
       await recordUsage(provider.id, 0, 0, true);
       errors.push(`${provider.name}: ${err instanceof Error ? err.message : String(err)}`);
@@ -178,7 +124,7 @@ export async function gatewayChatStream(
   if (providers.length === 0) {
     return { ok: false, errMsg: "尚未配置可用的 AI 模型供应商" };
   }
-  const settings = await getSettings();
+  const settings = await getAllSettings();
   const timeoutMs = Number(settings.llmTimeoutMs || 30000);
   const errors: string[] = [];
 
@@ -190,15 +136,8 @@ export async function gatewayChatStream(
     try {
       const apiKey = await resolveKey(provider);
       if (!apiKey) throw new Error("API Key 解密失败");
-      let stream: ReadableStream<Uint8Array>;
-      if (provider.kind === "coze") {
-        stream = await cozeChatStream(
-          { pat: apiKey, botId: provider.botId ?? "", apiBase: provider.endpoint, timeoutMs, userId: "hd-" + hashUserId(String(provider.id)) },
-          messages.filter((m): m is { role: "user" | "assistant"; content: string } => m.role !== "system")
-        );
-      } else {
-        stream = await openAIStream(provider, apiKey, messages, timeoutMs);
-      }
+      // C-01：按 kind 的调用细节收敛到适配器注册表（本文件无类型分支）
+      const stream = await getAdapter(provider.kind).stream(provider, apiKey, messages, timeoutMs);
       await recordUsage(provider.id, 0, 0, false);
       return { ok: true, stream, providerId: provider.id, providerName: provider.name };
     } catch (err) {
@@ -207,51 +146,4 @@ export async function gatewayChatStream(
     }
   }
   return { ok: false, errMsg: errors.join("；") || "全部供应商调用失败" };
-}
-
-function openAIStream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number): Promise<ReadableStream<Uint8Array>> {
-  return (async () => {
-    const endpoint = provider.endpoint.replace(/\/+$/, "");
-    const res = await fetch(`${endpoint}/chat/completions`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: provider.model,
-        messages,
-        temperature: provider.temperature,
-        max_tokens: provider.maxTokens,
-        stream: true,
-      }),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (!res.ok || !res.body) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`上游 ${res.status}：${text.slice(0, 200)}`);
-    }
-    const encoder = new TextEncoder();
-    let buf = "";
-    const decoder = new TextDecoder();
-    return res.body.pipeThrough(
-      new TransformStream<Uint8Array, Uint8Array>({
-        transform(chunk, controller) {
-          // 跨块行缓冲（P1-4）：只解析完整 SSE 行，防丢字与多字节截断
-          buf += decoder.decode(chunk, { stream: true });
-          const lines = buf.split("\n");
-          buf = lines.pop() ?? "";
-          for (const line of lines) {
-            if (!line.startsWith("data:")) continue;
-            const payload = line.slice(5).trim();
-            if (payload === "[DONE]") continue;
-            try {
-              const evt = JSON.parse(payload) as { choices?: { delta?: { content?: string } }[] };
-              const delta = evt.choices?.[0]?.delta?.content;
-              if (delta) controller.enqueue(encoder.encode(delta));
-            } catch {
-              /* 非法行忽略 */
-            }
-          }
-        },
-      })
-    );
-  })();
 }
