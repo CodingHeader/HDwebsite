@@ -31,11 +31,18 @@ import {
   KB_UPLOAD_FIELD,
   cozeFileTypeOf,
   isAllowedKbFilename,
+  kbBatchSchema,
+  kbExportQuerySchema,
   kbFileExtOf,
+  kbRebuildResponseSchema,
   kbSearchRequestSchema,
+  kbStatsSchema,
+  kbTrashActionSchema,
   knowledgeBaseCreateSchema,
   knowledgeBaseUpdateSchema,
+  knowledgeChunkUpdateSchema,
   knowledgeFileStatusSchema,
+  knowledgeFileUpdateSchema,
 } from "@/contracts/kb";
 import { CHAT_SSE_EVENTS, chatRequestSchema, chatSseEventSchema } from "@/contracts/chat";
 import {
@@ -45,6 +52,8 @@ import {
   notifyRuleUpdateSchema,
   publishJobCreateSchema,
 } from "@/contracts/resources";
+import { channelStateSchema, channelStatusSchema, contentHubItemSchema, CHANNEL_STATUSES } from "@/contracts/content-hub";
+import { llmProviderOrderSchema, llmUsageQuerySchema, llmUsageRowSchema } from "@/contracts/llm";
 import { blockRegistryItemSchema, homeBlocksResetRequestSchema } from "@/contracts/blocks";
 import { settingGroups } from "@/contracts/setting";
 import * as barrel from "@/contracts";
@@ -263,10 +272,14 @@ describe("resources 增量：notifyRule.quietHours", () => {
     }
   });
 
-  it("钉住已知宽松点：冻结包正则只校验格式、不校验 0..23/0..59 范围（登记待 CCR）", () => {
-    // `/^\d{2}:\d{2}$/` 接受 "25:00"/"99:99"；这是 02-契约冻结包 §W0-05 的既定形态，
-    // 实现者不得擅自加 min/max 收敛（会改冻结语义）。此处显式钉住，避免后续被误改。
-    expect(notifyRuleUpdateSchema.safeParse({ quietHours: { start: "25:00", end: "99:99" } }).success).toBe(true);
+  it("CCR-1 后范围收敛：25:00/99:99 非法（原钉住宽松点已由 W0-10 收敛）", () => {
+    // W0-10 quietHours 范围收敛为 `^([01]\d|2[0-3]):[0-5]\d$`（0..23 / 0..59）；
+    // 跨零点允许（start > end 表示跨夜，如 22:00→07:00）。
+    expect(notifyRuleUpdateSchema.safeParse({ quietHours: { start: "25:00", end: "99:99" } }).success).toBe(false);
+    expect(notifyRuleUpdateSchema.safeParse({ quietHours: { start: "23:59", end: "00:00" } }).success).toBe(true);
+    expect(notifyRuleUpdateSchema.safeParse({ quietHours: { start: "22:00", end: "07:00" } }).success).toBe(true); // 跨夜合法
+    expect(notifyRuleUpdateSchema.safeParse({ quietHours: { start: "00:00", end: "23:59" } }).success).toBe(true);
+    expect(notifyRuleUpdateSchema.safeParse({ quietHours: { start: "23:60", end: "08:00" } }).success).toBe(false);
   });
 
   it("extend 只加字段：既有的 enabled/templateId/recipientGroups 行为不变", () => {
@@ -448,5 +461,188 @@ describe("契约出口与设置注册表（W0-05 新增键）", () => {
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys).toContain("kbCozeProviderId");
     expect(keys).toContain("kbCozeSpaceId");
+  });
+});
+
+// ── CCR-1（W0-10）：G 系列 DTO parse 验证 ─────────────────────────────────
+describe("CCR-1 content-hub：渠道状态与内容中枢条目", () => {
+  it("CHANNEL_STATUSES 取值固定（= ContentChannel.status 列）", () => {
+    expect(CHANNEL_STATUSES).toEqual(["unsent", "scheduled", "publishing", "published", "failed"]);
+  });
+
+  it("channelStateSchema 合法：官网渠道 accountId=null、各时间列可空", () => {
+    const r = channelStateSchema.safeParse({
+      channel: "website", accountId: null, status: "published",
+      scheduledAt: null, publishedAt: "2026-05-01T10:00:00+08:00", externalUrl: "/info/1", errMsg: null,
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("channelStateSchema 合法：公众号渠道带 accountId", () => {
+    const r = channelStateSchema.safeParse({
+      channel: "wechat", accountId: 1, status: "scheduled",
+      scheduledAt: "2026-05-02T09:00:00+08:00", publishedAt: null, externalUrl: null, errMsg: null,
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("channelStateSchema 非法：未知 status 与未知 channel", () => {
+    expect(channelStateSchema.safeParse({ channel: "website", accountId: null, status: "queued", scheduledAt: null, publishedAt: null, externalUrl: null, errMsg: null }).success).toBe(false);
+    expect(channelStateSchema.safeParse({ channel: "email", accountId: null, status: "published", scheduledAt: null, publishedAt: null, externalUrl: null, errMsg: null }).success).toBe(false);
+  });
+
+  it("channelStatusSchema 覆盖全部取值、拒绝未知值", () => {
+    for (const s of CHANNEL_STATUSES) expect(channelStatusSchema.safeParse(s).success).toBe(true);
+    expect(channelStatusSchema.safeParse("pending").success).toBe(false);
+  });
+
+  it("contentHubItemSchema 合法：channels 数组可空数组", () => {
+    const r = contentHubItemSchema.safeParse({
+      id: 1, title: "测试内容", contentType: "markdown", source: "manual",
+      updatedAt: "2026-05-01T10:00:00+08:00", channels: [],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("contentHubItemSchema 合法：多渠道视图", () => {
+    const r = contentHubItemSchema.safeParse({
+      id: 2, title: "采集内容", contentType: "html", source: "collect",
+      updatedAt: "2026-05-01T10:00:00+08:00",
+      channels: [
+        { channel: "website", accountId: null, status: "published", scheduledAt: null, publishedAt: "2026-05-01T10:00:00+08:00", externalUrl: "/info/2", errMsg: null },
+        { channel: "wechat", accountId: 1, status: "failed", scheduledAt: null, publishedAt: null, externalUrl: null, errMsg: "appid 无效" },
+      ],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("contentHubItemSchema 非法：未知 contentType/source", () => {
+    expect(contentHubItemSchema.safeParse({ id: 1, title: "t", contentType: "pdf", source: "manual", updatedAt: "2026-05-01T10:00:00+08:00", channels: [] }).success).toBe(false);
+    expect(contentHubItemSchema.safeParse({ id: 1, title: "t", contentType: "markdown", source: "wechat", updatedAt: "2026-05-01T10:00:00+08:00", channels: [] }).success).toBe(false);
+  });
+});
+
+describe("CCR-1 llm：用量查询与供应商排序", () => {
+  it("llmUsageQuerySchema 合法：provider 分组", () => {
+    const r = llmUsageQuerySchema.safeParse({ groupBy: "provider", from: "2026-01-01", to: "2026-03-31" });
+    expect(r.success).toBe(true);
+  });
+
+  it("llmUsageQuerySchema 合法：day 分组 + providerId 过滤", () => {
+    const r = llmUsageQuerySchema.safeParse({ groupBy: "day", from: "2026-01-01", to: "2026-01-31", providerId: 3 });
+    expect(r.success).toBe(true);
+  });
+
+  it("llmUsageQuerySchema 非法：区间超 92 天", () => {
+    expect(llmUsageQuerySchema.safeParse({ groupBy: "day", from: "2026-01-01", to: "2026-05-01" }).success).toBe(false);
+  });
+
+  it("llmUsageQuerySchema 非法：to 早于 from 与坏日期格式", () => {
+    expect(llmUsageQuerySchema.safeParse({ groupBy: "provider", from: "2026-03-01", to: "2026-01-01" }).success).toBe(false);
+    expect(llmUsageQuerySchema.safeParse({ groupBy: "provider", from: "2026/01/01", to: "2026-01-31" }).success).toBe(false);
+  });
+
+  it("llmUsageRowSchema 合法：列名与 LLMUsage 表一致（无费用/耗时）", () => {
+    const r = llmUsageRowSchema.safeParse({ key: "1", calls: 10, tokensIn: 1000, tokensOut: 2000, failures: 1 });
+    expect(r.success).toBe(true);
+    if (r.success) expect(Object.keys(r.data).sort()).toEqual(["calls", "failures", "key", "tokensIn", "tokensOut"]);
+  });
+
+  it("llmUsageRowSchema 非法：负数计数", () => {
+    expect(llmUsageRowSchema.safeParse({ key: "1", calls: -1, tokensIn: 0, tokensOut: 0, failures: 0 }).success).toBe(false);
+  });
+
+  it("llmProviderOrderSchema 合法：1~50 个不重复 id", () => {
+    expect(llmProviderOrderSchema.safeParse({ ids: [3, 1, 2] }).success).toBe(true);
+    expect(llmProviderOrderSchema.safeParse({ ids: Array.from({ length: 50 }, (_, i) => i + 1) }).success).toBe(true);
+  });
+
+  it("llmProviderOrderSchema 非法：重复 id、空数组、超 50 个", () => {
+    expect(llmProviderOrderSchema.safeParse({ ids: [1, 1, 2] }).success).toBe(false);
+    expect(llmProviderOrderSchema.safeParse({ ids: [] }).success).toBe(false);
+    expect(llmProviderOrderSchema.safeParse({ ids: Array.from({ length: 51 }, (_, i) => i + 1) }).success).toBe(false);
+  });
+});
+
+describe("CCR-1 kb：管理端扩展 DTO", () => {
+  it("knowledgeFileUpdateSchema 合法：tags 可空", () => {
+    expect(knowledgeFileUpdateSchema.safeParse({ tags: ["招生", "政策"] }).success).toBe(true);
+    expect(knowledgeFileUpdateSchema.safeParse({ tags: null }).success).toBe(true);
+    expect(knowledgeFileUpdateSchema.safeParse({}).success).toBe(true);
+  });
+
+  it("knowledgeFileUpdateSchema 非法：超 20 个标签或空标签", () => {
+    expect(knowledgeFileUpdateSchema.safeParse({ tags: Array.from({ length: 21 }, (_, i) => `t${i}`) }).success).toBe(false);
+    expect(knowledgeFileUpdateSchema.safeParse({ tags: [""] }).success).toBe(false);
+  });
+
+  it("kbBatchSchema 合法：enable/disable/tag/untag/trash", () => {
+    for (const action of ["enable", "disable", "tag", "untag", "trash"] as const) {
+      expect(kbBatchSchema.safeParse({ ids: [1, 2], action }).success).toBe(true);
+    }
+    expect(kbBatchSchema.safeParse({ ids: [1], action: "tag", tags: ["a"] }).success).toBe(true);
+  });
+
+  it("kbBatchSchema 非法：超 100 个 id 与未知 action", () => {
+    expect(kbBatchSchema.safeParse({ ids: Array.from({ length: 101 }, (_, i) => i + 1), action: "enable" }).success).toBe(false);
+    expect(kbBatchSchema.safeParse({ ids: [1], action: "delete" }).success).toBe(false);
+    expect(kbBatchSchema.safeParse({ ids: [], action: "enable" }).success).toBe(false);
+  });
+
+  it("kbTrashActionSchema 合法：restore/purge；非法 action 拒绝", () => {
+    expect(kbTrashActionSchema.safeParse({ ids: [1], action: "restore" }).success).toBe(true);
+    expect(kbTrashActionSchema.safeParse({ ids: [1], action: "purge" }).success).toBe(true);
+    expect(kbTrashActionSchema.safeParse({ ids: [1], action: "enable" }).success).toBe(false);
+  });
+
+  it("kbStatsSchema 合法：含派生 lastSyncAt 可空", () => {
+    const r = kbStatsSchema.safeParse({ baseId: 1, files: 10, chunks: 100, trash: 2, cozeOk: 8, cozeFailed: 1, lastSyncAt: null });
+    expect(r.success).toBe(true);
+    expect(kbStatsSchema.safeParse({ baseId: 1, files: 1, chunks: 1, trash: 0, cozeOk: 1, cozeFailed: 0, lastSyncAt: "2026-05-01T10:00:00+08:00" }).success).toBe(true);
+  });
+
+  it("kbExportQuerySchema 合法：includeTrash 默认 false", () => {
+    const r = kbExportQuerySchema.safeParse({ baseId: 1 });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.includeTrash).toBe(false);
+  });
+
+  it("knowledgeChunkUpdateSchema 合法与非法：1..20000", () => {
+    expect(knowledgeChunkUpdateSchema.safeParse({ content: "内容" }).success).toBe(true);
+    expect(knowledgeChunkUpdateSchema.safeParse({ content: "" }).success).toBe(false);
+    expect(knowledgeChunkUpdateSchema.safeParse({ content: "a".repeat(20001) }).success).toBe(false);
+  });
+
+  it("kbRebuildResponseSchema 合法：jobId 必填", () => {
+    expect(kbRebuildResponseSchema.safeParse({ jobId: "job-1" }).success).toBe(true);
+    expect(kbRebuildResponseSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("CCR-1 resources：publishJobCreateSchema 多渠道与定时校验", () => {
+  it("旧单 channel 兼容（e2e collect-publish 走旧字段）", () => {
+    const r = publishJobCreateSchema.safeParse({ itemId: 1, contentType: "info", channel: "website" });
+    expect(r.success).toBe(true);
+  });
+
+  it("新 channels 多渠道合法：1~2 个去重", () => {
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channels: ["website"] }).success).toBe(true);
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channels: ["website", "wechat"] }).success).toBe(true);
+  });
+
+  it("channels 非法：超 2 个、空数组、重复", () => {
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channels: ["website", "wechat", "website"] }).success).toBe(false);
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channels: [] }).success).toBe(false);
+  });
+
+  it("scheduledAt 定时必须晚于现在：过去时间非法、未来时间合法", () => {
+    const past = new Date(Date.now() - 60_000).toISOString();
+    const future = new Date(Date.now() + 3_600_000).toISOString();
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channel: "website", scheduledAt: past }).success).toBe(false);
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channel: "website", scheduledAt: future }).success).toBe(true);
+  });
+
+  it("scheduledAt 缺省合法（立即发布）", () => {
+    expect(publishJobCreateSchema.safeParse({ itemId: 1, channel: "website", scheduledAt: null }).success).toBe(true);
   });
 });

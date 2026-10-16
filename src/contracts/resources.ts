@@ -276,11 +276,13 @@ export const notifyRuleUpdateSchema = z
     recipientGroups: z.array(z.string()).nullable().optional(),
   })
   // W0-05：静默时段（E-02 表单 + B-06 生效逻辑共用；DB 列 NotifyRule.quietHours 已存在）
+  // CCR-1（W0-10）：范围收敛为 0..23 / 0..59（原 `\d{2}` 接受 "25:00"/"99:99"，w0-contracts.test 已钉住待 CCR）；
+  // 跨零点允许（start > end 表示跨夜，如 22:00→07:00）；规则级 quietHours 优先于全局 notifyQuietHours 设置（B-06 生效逻辑）。
   .extend({
     quietHours: z
       .object({
-        start: z.string().regex(/^\d{2}:\d{2}$/, "开始时间格式应为 HH:mm"),
-        end: z.string().regex(/^\d{2}:\d{2}$/, "结束时间格式应为 HH:mm"),
+        start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "开始时间格式应为 HH:mm（0..23:0..59）"),
+        end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "结束时间格式应为 HH:mm（0..23:0..59）"),
       })
       .nullable()
       .optional(),
@@ -326,15 +328,32 @@ export const collectItemUpdateSchema = z.object({
 });
 
 // ── 发布任务（SOL-005） ──────────────────────────────────────
-export const publishJobCreateSchema = z.object({
-  itemId: z.coerce.number().int().positive().nullable().optional(),
-  contentType: z.enum(["article", "info", "service_guide", "wechat"]).default("article"),
-  channel: channelKindSchema.default("website"),
-  accountId: z.coerce.number().int().positive().nullable().optional(),
-  action: z.enum(["publish", "update", "offline"]).default("publish"),
-  scheduledAt: z.string().datetime({ offset: true }).nullable().optional(),
-  preNotify: z.boolean().default(true),
-});
+// CCR-1（W0-10）：新增 `channels` 多渠道发布（1~2、去重），与旧单 `channel` 二选一（refine：二者恰一；
+// 服务端把 channel 规范化为 [channel]，B-07 落库为每渠道一条 PublishJob——见 ADR-034 §多渠道映射）；
+// `scheduledAt` 必须晚于当前时间。旧单 channel 字段保留：现有 e2e collect-publish 走旧字段，必须保持 8/8。
+export const publishJobCreateSchema = z
+  .object({
+    itemId: z.coerce.number().int().positive().nullable().optional(),
+    contentType: z.enum(["article", "info", "service_guide", "wechat"]).default("article"),
+    channel: channelKindSchema.default("website"),
+    /** 多渠道发布（CCR-1 新增）：1~2 个、去重；与 channel 二选一 */
+    channels: z.array(channelKindSchema).min(1).max(2).nullable().optional(),
+    accountId: z.coerce.number().int().positive().nullable().optional(),
+    action: z.enum(["publish", "update", "offline"]).default("publish"),
+    scheduledAt: z.string().datetime({ offset: true }).nullable().optional(),
+    preNotify: z.boolean().default(true),
+  })
+  .refine((v) => (v.channels?.length ?? 0) > 0 || Boolean(v.channel), {
+    message: "channels 与 channel 必须二选一",
+  })
+  .refine(
+    (v) => {
+      if (!v.scheduledAt) return true;
+      const t = new Date(v.scheduledAt).getTime();
+      return !Number.isNaN(t) && t > Date.now();
+    },
+    { message: "定时时间必须晚于现在" }
+  );
 
 // ── 公众号账号（SOL-006） ────────────────────────────────────
 export const wechatAccountCreateSchema = z.object({

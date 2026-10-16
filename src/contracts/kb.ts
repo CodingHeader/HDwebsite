@@ -88,3 +88,65 @@ export const kbSearchRequestSchema = z.object({
   topK: z.coerce.number().int().min(1).max(20).default(5),
 });
 export type KbSearchRequest = z.infer<typeof kbSearchRequestSchema>;
+
+// ── 管理端扩展（CCR-1 / W0-10 新增；消费卡 C-12、E-04、E-11）──────────────
+/**
+ * 文件元信息更新（PATCH `/api/knowledge-files/[id]`）。
+ * 只更新 tags（KnowledgeFile.tags 列已存在）；状态走 kbBatch（见下）。
+ */
+export const knowledgeFileUpdateSchema = z.object({
+  tags: z.array(z.string().min(1).max(20)).max(20).nullable().optional(),
+});
+export type KnowledgeFileUpdate = z.infer<typeof knowledgeFileUpdateSchema>;
+
+/**
+ * 批量操作（POST `/api/knowledge-files/batch`）。
+ * enable/disable 的落点：按 Knowledge.fileId 批量设该文件全部 Knowledge 行的 status=active|inactive
+ * （**KnowledgeFile 无 enabled 列**，见 ADR-034 §enable/disable 映射）；tag/untag 更新 KnowledgeFile.tags；
+ * trash 移入回收站（KnowledgeFile.deletedAt）。
+ */
+export const kbBatchSchema = z.object({
+  ids: z.array(z.coerce.number().int().positive()).min(1).max(100),
+  action: z.enum(["enable", "disable", "tag", "untag", "trash"]),
+  tags: z.array(z.string().min(1).max(20)).max(20).nullable().optional(),
+});
+export type KbBatch = z.infer<typeof kbBatchSchema>;
+
+/** 回收站操作（POST `/api/knowledge-files/trash`）；purge 彻底删除时同步删 Coze 远端（C-12） */
+export const kbTrashActionSchema = z.object({
+  ids: z.array(z.coerce.number().int().positive()).min(1).max(100),
+  action: z.enum(["restore", "purge"]),
+});
+export type KbTrashAction = z.infer<typeof kbTrashActionSchema>;
+
+/** 知识库统计（GET `/api/knowledge-bases/[id]/stats`）；lastSyncAt 为派生字段（见 ADR-034） */
+export const kbStatsSchema = z.object({
+  baseId: z.coerce.number().int().positive(),
+  files: z.coerce.number().int().min(0),
+  chunks: z.coerce.number().int().min(0),
+  trash: z.coerce.number().int().min(0),
+  cozeOk: z.coerce.number().int().min(0),
+  cozeFailed: z.coerce.number().int().min(0),
+  /** 派生：该库 Knowledge.syncedAt 最大值（无同步记录为 null） */
+  lastSyncAt: z.string().datetime({ offset: true }).nullable(),
+});
+export type KbStats = z.infer<typeof kbStatsSchema>;
+
+/** 导出查询（GET `/api/knowledge-bases/[id]/export`，鉴权下载 zip；文件不对外公开，契约④） */
+export const kbExportQuerySchema = z.object({
+  baseId: z.coerce.number().int().positive(),
+  includeTrash: z.coerce.boolean().default(false),
+});
+export type KbExportQuery = z.infer<typeof kbExportQuerySchema>;
+
+/** 分块内容更新（PATCH `/api/knowledge-chunks/[id]`） */
+export const knowledgeChunkUpdateSchema = z.object({
+  content: z.string().min(1).max(20000),
+});
+export type KnowledgeChunkUpdate = z.infer<typeof knowledgeChunkUpdateSchema>;
+
+/** 重建响应（POST `/api/knowledge-bases/[id]/rebuild`） */
+export const kbRebuildResponseSchema = z.object({
+  jobId: z.string().min(1),
+});
+export type KbRebuildResponse = z.infer<typeof kbRebuildResponseSchema>;

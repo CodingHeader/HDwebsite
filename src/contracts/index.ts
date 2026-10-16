@@ -17,3 +17,5 @@ export * from "./events";
 export * from "./resources";
 export * from "./kb";
 export * from "./chat";
+export * from "./content-hub";
+export * from "./llm";
