@@ -1,0 +1,3550 @@
+{
+ "V0.5-20261015": {
+  "repo_dir": "docs/V0.5-20261015",
+  "source_dir": "/workspace/work/hd/out/v05",
+  "repo_files": 108,
+  "source_files": 145,
+  "mojibake_count": 25,
+  "unmatched_in_repo": [],
+  "missing_in_repo": [
+   {
+    "path": "out/v05/00-规划快照与事实基线.md",
+    "sha": "3c92b76a07763327560237107b1cf86699265852"
+   },
+   {
+    "path": "out/v05/01-需求基线复核.md",
+    "sha": "e3ac47b2d2ad230c5de31615d561b3581daa34d0"
+   },
+   {
+    "path": "out/v05/02-契约冻结包.md",
+    "sha": "b298c7aa53e53bef201eb785467b171ec485e1af"
+   },
+   {
+    "path": "out/v05/03-数据模型与迁移编排.md",
+    "sha": "359facb3dbb849648014a9578b784e527c615699"
+   },
+   {
+    "path": "out/v05/06-依赖DAG与并行判定.md",
+    "sha": "37d7ae1c064ea7b6e6bc67d8a74745f45017fca6"
+   },
+   {
+    "path": "out/v05/08-档位与成本预算.md",
+    "sha": "91aaa977c0e32015d6607726f73c99ccacee92db"
+   },
+   {
+    "path": "out/v05/10-风险·未决·待裁决.md",
+    "sha": "f68537807fc076828edc57a422939c2abb3d46d1"
+   },
+   {
+    "path": "out/v05/11-验收与审查规程.md",
+    "sha": "d7bfa16aa2ca0445999d83516c95d7b81f6721ec"
+   },
+   {
+    "path": "out/v05/14-V0.2-进度校准与四人并行方案.md",
+    "sha": "42290e5ee029ee824ff7255594dbddeb3067ca75"
+   },
+   {
+    "path": "out/v05/16-V0.4-827646b检查点重校准.md",
+    "sha": "d10c167cb7a142258ba32d0b4f55259a164e8df6"
+   },
+   {
+    "path": "out/v05/evidence/V0.3-需求缺口审计.md",
+    "sha": "3f10e4f78b69acd651d9665488e1d742384aa03f"
+   },
+   {
+    "path": "out/v05/evidence/V0.4-827646b-门禁.log",
+    "sha": "f5c2a3f8c7064a56c649be86a8e70eb67192781d"
+   },
+   {
+    "path": "out/v05/evidence/gates-2026-10-13.log",
+    "sha": "87ca91b8762c8e39d3f9ed471e065d3e9fa7ffca"
+   },
+   {
+    "path": "out/v05/evidence/规划校验-结构与合规.md",
+    "sha": "e4fd9fbdcda3fe24a2a9d53dd60a1355b1d4bfa8"
+   },
+   {
+    "path": "out/v05/gen/__pycache__/gen_prompts.cpython-312.pyc",
+    "sha": "776882d88347cbce44baa395606b03cfe9a28bd2"
+   },
+   {
+    "path": "out/v05/gen/__pycache__/gen_prompts_xy.cpython-312.pyc",
+    "sha": "85c7f0bc0119270481dd96bd032019b7360c6100"
+   },
+   {
+    "path": "out/v05/gen/__pycache__/tasks.cpython-312.pyc",
+    "sha": "c63579e14a5162a209cd8e5a8bcdd6d51db243b6"
+   },
+   {
+    "path": "out/v05/prompts/V0.5-Hark与三Agent/Hark-自执行计划-UI核心与集成终审.md",
+    "sha": "80bbe5be6553a704f8269f4cc2b156af781eed51"
+   },
+   {
+    "path": "out/v05/prompts/V0.5-Hark与三Agent/P1-完整提示词-契约与API平台线.md",
+    "sha": "a97609968f9d49a6fc1ab4203f885eb7d7044699"
+   },
+   {
+    "path": "out/v05/prompts/V0.5-Hark与三Agent/P2-完整提示词-AI与知识库线.md",
+    "sha": "ffbf0837e77c0dbc11a6bef0b06a93ee73d17d2b"
+   },
+   {
+    "path": "out/v05/prompts/V0.5-Hark与三Agent/P3-完整提示词-运维性能线.md",
+    "sha": "b2ffe0beca684904057863690c17d464b5479e53"
+   },
+   {
+    "path": "out/v05/prompts/执行者X-完整提示词-管理端UI线.md",
+    "sha": "b179327d43767ffd9c8398942ff6b50da20ac69c"
+   },
+   {
+    "path": "out/v05/prompts/执行者Y-完整提示词-契约与后端平台线.md",
+    "sha": "7da35537e4c4139692f17518329cd4f5e6e6fa5d"
+   },
+   {
+    "path": "out/v05/prompts/提示词-A-管理端组件库.md",
+    "sha": "fcbd443031edf02e3ffd72a8306304ebbb78d76d"
+   },
+   {
+    "path": "out/v05/prompts/提示词-B-API与响应平台.md",
+    "sha": "9001c735d994775d4cec182be764bcbfc9118e2e"
+   },
+   {
+    "path": "out/v05/prompts/提示词-C-AI与知识库.md",
+    "sha": "6335089d6126525a3eb2209d5e0973a9feb3fd0a"
+   },
+   {
+    "path": "out/v05/prompts/提示词-D-运维性能配置存储资源.md",
+    "sha": "8a6167f7b1682b07e667c8bb27ed9d1ba124d03e"
+   },
+   {
+    "path": "out/v05/prompts/提示词-E-管理端页面与功能.md",
+    "sha": "af51f1177705a192400a340f064b3e09c93125b0"
+   },
+   {
+    "path": "out/v05/prompts/提示词-W0-契约员.md",
+    "sha": "79100a81f52675c2dac7f1608f8a281653cc1013"
+   },
+   {
+    "path": "out/v05/prompts/提示词-W2-集成与终审.md",
+    "sha": "065eb1fcaa6d0c9225e54032594f81b880420315"
+   },
+   {
+    "path": "out/v05/prompts/提示词-独立验证者.md",
+    "sha": "1f6fec6b1bc4c9e66fc94619a4ed44eb5dfd0c06"
+   },
+   {
+    "path": "out/v05/steps/STEP-0-Wave0-契约冻结与解阻.md",
+    "sha": "5c100f248166e2ad10d6ab507e6414ccff347c5d"
+   },
+   {
+    "path": "out/v05/steps/STEP-00-V0.2-校准与续跑.md",
+    "sha": "722336cfee7575c9ca312f53cf1a46c9103fbd3f"
+   },
+   {
+    "path": "out/v05/steps/STEP-00-V0.3-裁决与续跑.md",
+    "sha": "940f41c68f13b41cd4c734b5c865624a869b0d31"
+   },
+   {
+    "path": "out/v05/steps/STEP-00-V0.5-W0-08门禁裁决与续跑.md",
+    "sha": "e6ba79b2443b86361c9463be33a0ea3d3a254feb"
+   },
+   {
+    "path": "out/v05/steps/STEP-1B-API与响应平台.md",
+    "sha": "f543aea91452b3f302567f6ecdd78c2968e1a69b"
+   },
+   {
+    "path": "out/v05/steps/STEP-2-集成与终审.md",
+    "sha": "3ce56e0d7c878ad5d37d70492060876c8755028d"
+   }
+  ],
+  "map": [
+   {
+    "mojibake": "docs/V0.5-20261015/03a-鍨傜洿鍒囩墖娓呭崟.md",
+    "correct": "docs/V0.5-20261015/03a-垂直切片清单.md",
+    "sha": "1bfe44d447d0f94962e0641620cb6a4dcea4ef00",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/03a-垂直切片清单.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/04-鍓╀綑浠诲姟澶х翰浣撶郴.md",
+    "correct": "docs/V0.5-20261015/04-剩余任务大纲体系.md",
+    "sha": "a4677ec4db8c64d17d369903f88e3de24fcc4b41",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/04-剩余任务大纲体系.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/05-浠诲姟绱㈠紩.md",
+    "correct": "docs/V0.5-20261015/05-任务索引.md",
+    "sha": "726d54ad38e8253f40061ec7de6f6df535d89e6f",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/05-任务索引.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/07-鎵€鏈夋潈鐭╅樀.md",
+    "correct": "docs/V0.5-20261015/07-所有权矩阵.md",
+    "sha": "1592822fc52a0a67bd7348cea51e39fdedc348db",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/07-所有权矩阵.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/09-鍩虹嚎鎸囨爣.md",
+    "correct": "docs/V0.5-20261015/09-基线指标.md",
+    "sha": "ab35d78b450bb77616c40dbedf612fa1bf4faeaa",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/09-基线指标.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/11a-钀界洏娓呭崟.md",
+    "correct": "docs/V0.5-20261015/11a-落盘清单.md",
+    "sha": "f86c4352f580a9879f488bac149ace7bdc917eb7",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/11a-落盘清单.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/12-鍓嶆彁灞€闄愪笌鍚姩椤哄簭.md",
+    "correct": "docs/V0.5-20261015/12-前提局限与启动顺序.md",
+    "sha": "3b2f7299cb1615428aaeab863dc90ab6f11f8fbc",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/12-前提局限与启动顺序.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/13-鑷缁撴灉.md",
+    "correct": "docs/V0.5-20261015/13-自检结果.md",
+    "sha": "76da6cde892624e1a22b31cd4d4e69dd78c8842d",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/13-自检结果.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/15-V0.3-闇€姹傜己鍙ｅ鏍镐笌缁熶竴瑙勫垝.md",
+    "correct": "docs/V0.5-20261015/15-V0.3-需求缺口复核与统一规划.md",
+    "sha": "09b9c79391558ff0eef71134f2503d88b8e4433a",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/15-V0.3-需求缺口复核与统一规划.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/17-V0.5-W0-08闂ㄧ鐜瑁佸喅.md",
+    "correct": "docs/V0.5-20261015/17-V0.5-W0-08门禁环境裁决.md",
+    "sha": "37c77688defd165287827bef048143493295d07c",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/17-V0.5-W0-08门禁环境裁决.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/README.md",
+    "correct": "docs/V0.5-20261015/README.md",
+    "sha": "cf0a71932059465b870837c9b0e4d978b2007d50",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/README.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/A-ui-瀹¤.md",
+    "correct": "docs/V0.5-20261015/evidence/A-ui-审计.md",
+    "sha": "114d93abd918fd901bfebbff4ec79b24f6bd5af9",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/A-ui-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/B-domain-瀹¤.md",
+    "correct": "docs/V0.5-20261015/evidence/B-domain-审计.md",
+    "sha": "0d523dc81651f2713c98cba1504272f626ee758a",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/B-domain-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/C-ops-瀹¤.md",
+    "correct": "docs/V0.5-20261015/evidence/C-ops-审计.md",
+    "sha": "cab827a76f8c3baabc26ca5e4fecc6cfb50b29b6",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/C-ops-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/V0.2-鐙珛鏍￠獙.md",
+    "correct": "docs/V0.5-20261015/evidence/V0.2-独立校验.md",
+    "sha": "1419c4f509ee77458281292a00371236b47b054f",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/V0.2-独立校验.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/V0.3-鐙珛鏍￠獙.md",
+    "correct": "docs/V0.5-20261015/evidence/V0.3-独立校验.md",
+    "sha": "93338f5a4479c4b1edda84e0d680a83b5a1fa6dd",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/V0.3-独立校验.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/V0.4-827646b-妫€鏌ョ偣瀹¤.md",
+    "correct": "docs/V0.5-20261015/evidence/V0.4-827646b-检查点审计.md",
+    "sha": "f88791e3357b25be3b84f2359170b50aad5052f0",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/V0.4-827646b-检查点审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/V0.4-棣栧睆JS瀹炴祴.txt",
+    "correct": "docs/V0.5-20261015/evidence/V0.4-首屏JS实测.txt",
+    "sha": "9e0146110a1c7f20601ae287d2720f69037e8a66",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/V0.4-首屏JS实测.txt",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/scratch/drift.json",
+    "correct": "docs/V0.5-20261015/evidence/scratch/drift.json",
+    "sha": "427de40b86a1d0dff46473059a716b7c252a6f81",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/scratch/drift.json",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/scratch/drift.py",
+    "correct": "docs/V0.5-20261015/evidence/scratch/drift.py",
+    "sha": "a55b97536d6c0a2a91d3a8cf0e26b623e1b33cc6",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/scratch/drift.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/scratch/enumdrift.py",
+    "correct": "docs/V0.5-20261015/evidence/scratch/enumdrift.py",
+    "sha": "62a343fdecde4327db0d9abde8ec582f564795b3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/scratch/enumdrift.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/瑙勫垝鏍￠獙-浜嬪疄鏍告煡.md",
+    "correct": "docs/V0.5-20261015/evidence/规划校验-事实核查.md",
+    "sha": "b8d2d3ff0273f4b6ff998555a21ecc1da98c8617",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/规划校验-事实核查.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/瑙勫垝鏍￠獙-淇璁板綍.md",
+    "correct": "docs/V0.5-20261015/evidence/规划校验-修正记录.md",
+    "sha": "a8b0f55fb8b014ee25bba3b2be16cfb2ace17228",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/规划校验-修正记录.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/evidence/瑙勫垝鏍￠獙-澶嶆牳.md",
+    "correct": "docs/V0.5-20261015/evidence/规划校验-复核.md",
+    "sha": "73e517c2639b4bb35261b797d0e3bbb7fab649d4",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/evidence/规划校验-复核.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen-check.json",
+    "correct": "docs/V0.5-20261015/gen-check.json",
+    "sha": "fb8ea77fed648fe0fcdaaa0febb9fc9fc38aed3d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen-check.json",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/06-head.md",
+    "correct": "docs/V0.5-20261015/gen/06-head.md",
+    "sha": "2c65b47bcae4163f757574e0cc5168652845df00",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/06-head.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/files.txt",
+    "correct": "docs/V0.5-20261015/gen/files.txt",
+    "sha": "f0eafe99fc235b46e02de248c50236542d5d2ef9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/files.txt",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/gen.py",
+    "correct": "docs/V0.5-20261015/gen/gen.py",
+    "sha": "ab954b694baf9e88f20978b73e31cbb2871f61ce",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/gen.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/gen_prompts.py",
+    "correct": "docs/V0.5-20261015/gen/gen_prompts.py",
+    "sha": "3015668fff329efe1aaa254b2972500fcb89bcaf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/gen_prompts.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/gen_prompts_v03.py",
+    "correct": "docs/V0.5-20261015/gen/gen_prompts_v03.py",
+    "sha": "bb760f0eccd021fac6d8459587323047db323b7c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/gen_prompts_v03.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/gen_prompts_xy.py",
+    "correct": "docs/V0.5-20261015/gen/gen_prompts_xy.py",
+    "sha": "0adfa1ac9941ec883197f410e3143d1332eed270",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/gen_prompts_xy.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/gen/tasks.py",
+    "correct": "docs/V0.5-20261015/gen/tasks.py",
+    "sha": "b637879bc06175cda8a92014c526d94ac7a26c0b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/gen/tasks.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/steps/STEP-00-V0.4-閲嶆牎鍑嗕笌缁窇.md",
+    "correct": "docs/V0.5-20261015/steps/STEP-00-V0.4-重校准与续跑.md",
+    "sha": "4aea9c3e149fcf32d049a09a33e92ca0bf95dccb",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/steps/STEP-00-V0.4-重校准与续跑.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/steps/STEP-1A-绠＄悊绔粍浠跺簱.md",
+    "correct": "docs/V0.5-20261015/steps/STEP-1A-管理端组件库.md",
+    "sha": "3d8b2e9299cb9dbf75dd255064be7058fda503d4",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/steps/STEP-1A-管理端组件库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/steps/STEP-1C-AI涓庣煡璇嗗簱.md",
+    "correct": "docs/V0.5-20261015/steps/STEP-1C-AI与知识库.md",
+    "sha": "ae9c27969237bdbb62428f87bb068a38c1d3f6f3",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/steps/STEP-1C-AI与知识库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/steps/STEP-1D-杩愮淮鎬ц兘閰嶇疆瀛樺偍璧勬簮.md",
+    "correct": "docs/V0.5-20261015/steps/STEP-1D-运维性能配置存储资源.md",
+    "sha": "9568dbf95f65fe7191bc9a3b615157d83f4e0f47",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/steps/STEP-1D-运维性能配置存储资源.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/steps/STEP-1E-绠＄悊绔〉闈笌鍔熻兘.md",
+    "correct": "docs/V0.5-20261015/steps/STEP-1E-管理端页面与功能.md",
+    "sha": "a3f2ce973599bcc377b39b161bba5d753c05a421",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "out/v05/steps/STEP-1E-管理端页面与功能.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-01.md",
+    "correct": "docs/V0.5-20261015/tasks/A-01.md",
+    "sha": "25f1769572626cd02162379378edd18a33600f38",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-02.md",
+    "correct": "docs/V0.5-20261015/tasks/A-02.md",
+    "sha": "0d53f5580a4fbc80d7baa6d60f90e1c4fae29b65",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-03.md",
+    "correct": "docs/V0.5-20261015/tasks/A-03.md",
+    "sha": "a99e92a6512af482f3699428ae8990e32094e2b0",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-04.md",
+    "correct": "docs/V0.5-20261015/tasks/A-04.md",
+    "sha": "a5e896ed06c791dcb293cbc3de6d92ca1721fac3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-05.md",
+    "correct": "docs/V0.5-20261015/tasks/A-05.md",
+    "sha": "c46f382a700e02f6c68b8d0fd7e4e9e75eaa000c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-06.md",
+    "correct": "docs/V0.5-20261015/tasks/A-06.md",
+    "sha": "7f59e2bcc811767c9819946cb92c34d2008ddaf9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-07.md",
+    "correct": "docs/V0.5-20261015/tasks/A-07.md",
+    "sha": "769009d37f7951fce758671e11bfc2d765071d6b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/A-08.md",
+    "correct": "docs/V0.5-20261015/tasks/A-08.md",
+    "sha": "1df273d6b4dc5678b5898150daa065bf9f86cd8b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/A-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-01.md",
+    "correct": "docs/V0.5-20261015/tasks/B-01.md",
+    "sha": "4cb33e24bde9b517336e157d71bdc147afae99e9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-02.md",
+    "correct": "docs/V0.5-20261015/tasks/B-02.md",
+    "sha": "f39b629ccda5d0766e77f47605e6f4fe5b38aa24",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-03.md",
+    "correct": "docs/V0.5-20261015/tasks/B-03.md",
+    "sha": "579350872851ef28a4416fe90583d1d201d15e28",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-04.md",
+    "correct": "docs/V0.5-20261015/tasks/B-04.md",
+    "sha": "34f10a7922b12780af0b79d43d08e6ce0f083959",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-05.md",
+    "correct": "docs/V0.5-20261015/tasks/B-05.md",
+    "sha": "ba1ed971c69b4e227f570095e0200ebf663b92f7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-06.md",
+    "correct": "docs/V0.5-20261015/tasks/B-06.md",
+    "sha": "1ab60a7421710229c7e8dfefc395dc009f98d36d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/B-07.md",
+    "correct": "docs/V0.5-20261015/tasks/B-07.md",
+    "sha": "263aad03f02c2f694e0582bf845c17b36506caf8",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/B-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-01.md",
+    "correct": "docs/V0.5-20261015/tasks/C-01.md",
+    "sha": "f542e05a07bc257160b591c84ad0c8fb21834105",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-02.md",
+    "correct": "docs/V0.5-20261015/tasks/C-02.md",
+    "sha": "2301b99870c54928d0211e75a52fe1d26d0c406a",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-03.md",
+    "correct": "docs/V0.5-20261015/tasks/C-03.md",
+    "sha": "47857968878273cce25bf412ff0becbf65b6ecbf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-04.md",
+    "correct": "docs/V0.5-20261015/tasks/C-04.md",
+    "sha": "27ee37b8714eab143d8cbb64ba3579fbc639772e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-05.md",
+    "correct": "docs/V0.5-20261015/tasks/C-05.md",
+    "sha": "1c0d88b8ab5976136cfc0ae54cd84dd0f91fee20",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-06.md",
+    "correct": "docs/V0.5-20261015/tasks/C-06.md",
+    "sha": "6ff9bf6f699b456c8c7fd5fe8ce69da8c4f9dde3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-07.md",
+    "correct": "docs/V0.5-20261015/tasks/C-07.md",
+    "sha": "02be86fc2a205e77c7c608206d3f38522f3f25af",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-08.md",
+    "correct": "docs/V0.5-20261015/tasks/C-08.md",
+    "sha": "200a807d8ad1d753cc31bbbd1f174f76e6f7c91b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-09.md",
+    "correct": "docs/V0.5-20261015/tasks/C-09.md",
+    "sha": "98b3cc235fe93ebb061126093fff82ab2223126c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-10.md",
+    "correct": "docs/V0.5-20261015/tasks/C-10.md",
+    "sha": "f3e45519d3d42c427633ad9179b183cf58e0b4d0",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-11.md",
+    "correct": "docs/V0.5-20261015/tasks/C-11.md",
+    "sha": "b5dd27345d2175590447ceb7a2f2e6c1db06e760",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/C-12.md",
+    "correct": "docs/V0.5-20261015/tasks/C-12.md",
+    "sha": "a81f4c94b1209b8c6af5288aaba2af4c90c1a791",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/C-12.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-01.md",
+    "correct": "docs/V0.5-20261015/tasks/D-01.md",
+    "sha": "db055be25b046a18390c6978124e77713810be9b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-02.md",
+    "correct": "docs/V0.5-20261015/tasks/D-02.md",
+    "sha": "5acfd491e807cdc44bff479ec82f0a3961482369",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-03.md",
+    "correct": "docs/V0.5-20261015/tasks/D-03.md",
+    "sha": "a4ae1e2e504af00382974e34640cf08f13e07db7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-04.md",
+    "correct": "docs/V0.5-20261015/tasks/D-04.md",
+    "sha": "1aa257b1124d7da26aef714c1796603def202c05",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-05.md",
+    "correct": "docs/V0.5-20261015/tasks/D-05.md",
+    "sha": "e256ccb9048d1ea7af8461f2a6d71d404ce2e8b7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-06.md",
+    "correct": "docs/V0.5-20261015/tasks/D-06.md",
+    "sha": "630c6fafe44628c97694bbdf18efd5b760e7ca0d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-07.md",
+    "correct": "docs/V0.5-20261015/tasks/D-07.md",
+    "sha": "ae6ae06b6c6fbfa00d9496125d6271197c489e9e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-08.md",
+    "correct": "docs/V0.5-20261015/tasks/D-08.md",
+    "sha": "2cad8c58ff83050a152d55080a8633cbc92c4589",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-09.md",
+    "correct": "docs/V0.5-20261015/tasks/D-09.md",
+    "sha": "92853a7c37142cdbf8f65d1a2e35a300d1e6644c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-10.md",
+    "correct": "docs/V0.5-20261015/tasks/D-10.md",
+    "sha": "266a71861f09a0cff03c7de7c8cbb8ed0f0aa811",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-11.md",
+    "correct": "docs/V0.5-20261015/tasks/D-11.md",
+    "sha": "e3e3c5ddd7ba65cb24fe6b24e761813aa3e35925",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-12.md",
+    "correct": "docs/V0.5-20261015/tasks/D-12.md",
+    "sha": "d13d7dbbf85164f33e3703bbc6e9a82ed6812527",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-12.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/D-13.md",
+    "correct": "docs/V0.5-20261015/tasks/D-13.md",
+    "sha": "1bbf4874173a03ab0fb91a5e78bf6db637a488de",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/D-13.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-01.md",
+    "correct": "docs/V0.5-20261015/tasks/E-01.md",
+    "sha": "59ed99f792492ad3758045f6bfcdabc29d3e5338",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-02.md",
+    "correct": "docs/V0.5-20261015/tasks/E-02.md",
+    "sha": "8cb1cbb622a31446e49bf6ee8287d116c1590f71",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-03.md",
+    "correct": "docs/V0.5-20261015/tasks/E-03.md",
+    "sha": "b2b32bb18d4dbe29ba313efe34285508abab1bf4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-04.md",
+    "correct": "docs/V0.5-20261015/tasks/E-04.md",
+    "sha": "32161444dbf7b600f73e12cfa085814f20586b0b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-05.md",
+    "correct": "docs/V0.5-20261015/tasks/E-05.md",
+    "sha": "f1c31b4b7e0a901bfe48e03427a264122e4983df",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-06.md",
+    "correct": "docs/V0.5-20261015/tasks/E-06.md",
+    "sha": "7f167c6546d40de71e9b38346dd3681a39427432",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-07.md",
+    "correct": "docs/V0.5-20261015/tasks/E-07.md",
+    "sha": "96e54ee9e9ff43bdd95ef1a31bfd79ad753ed028",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-08.md",
+    "correct": "docs/V0.5-20261015/tasks/E-08.md",
+    "sha": "81c7b61de533689770c61228e0fce6b497c1b32f",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-09.md",
+    "correct": "docs/V0.5-20261015/tasks/E-09.md",
+    "sha": "d39d70a82df4d60c3fd475c7eaae36d129052867",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-10.md",
+    "correct": "docs/V0.5-20261015/tasks/E-10.md",
+    "sha": "451f2263570c0f010f03fc36bf992519e3b91599",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-11.md",
+    "correct": "docs/V0.5-20261015/tasks/E-11.md",
+    "sha": "831e12f03a27154a7b611e67e178f8e747372fc2",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/E-12.md",
+    "correct": "docs/V0.5-20261015/tasks/E-12.md",
+    "sha": "dc564c7dc9dbb6927cf2cdcdb428084f921674e7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/E-12.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-01.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-01.md",
+    "sha": "12784c40da85e3a21c2a314c0c0d99134175dc50",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-02.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-02.md",
+    "sha": "8d015615424244268b7d72d6ffe3d1689991041d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-03.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-03.md",
+    "sha": "df8c2aa44323e3fcce408c2c6a6708ea0d02edd1",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-04.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-04.md",
+    "sha": "e6bf176c773f45787b0189782884cb10e2d77a21",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-05.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-05.md",
+    "sha": "559fdb23f565532922edabe37b2b0ea605e29c8c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-06.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-06.md",
+    "sha": "c1130cf2b05f7b4be583ea15e9fcee31bbcbc527",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-07.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-07.md",
+    "sha": "bf8ac4e0735d8141ee4241eef3aaf39c5b50a3e7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-08.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-08.md",
+    "sha": "165f31c42375c9a1404336a177851065b7b93508",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-09.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-09.md",
+    "sha": "af648fd26fa4df6e02bb58feeb017d7b128edc56",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W0-R0.md",
+    "correct": "docs/V0.5-20261015/tasks/W0-R0.md",
+    "sha": "22d2f162b30bf6433bc3ddf0bdb81fe61d567524",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W0-R0.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-01.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-01.md",
+    "sha": "20f02a58a010d5479a17c6c35572f8bebbe56c8e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-02.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-02.md",
+    "sha": "0ca72ccbe292cda3bc0518732702d2d8cf752da9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-03.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-03.md",
+    "sha": "962c3319036f200882f1480f3385eaaff0617b03",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-04.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-04.md",
+    "sha": "660de989173cca490442b67798ef0e4eb9c1f1ff",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-05.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-05.md",
+    "sha": "b749af9dfe098dca5b801f2a41755be58e0941d7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-06.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-06.md",
+    "sha": "d92c368888f68f3255bfb98e45dfb04ffee6eaa5",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-07.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-07.md",
+    "sha": "a80af02f445e54ab5e8ea6f8aad136b01d7bdb8d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-08.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-08.md",
+    "sha": "87fd6ed6a5a405ee1cc6465b91e35ddf4ab80a16",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/V0.5-20261015/tasks/W2-09.md",
+    "correct": "docs/V0.5-20261015/tasks/W2-09.md",
+    "sha": "fc2d6d50393a3cdfd45c883f02a4d17acb3bdcb4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/v05/tasks/W2-09.md",
+    "relocated": false
+   }
+  ]
+ },
+ "任务规划V0.1.0": {
+  "repo_dir": "docs/任务规划V0.1.0",
+  "sources": [
+   "out/HDwebsite-upgrade并行规划-20261013",
+   "zip:并行规划-20261013",
+   "zip:V0.2"
+  ],
+  "repo_files": 114,
+  "mojibake_count": 0,
+  "relocated_count": 2,
+  "matched_by_source": {
+   "out": 100,
+   "NONE": 14
+  },
+  "unmatched_in_repo": [
+   {
+    "path": "docs/任务规划V0.1.0/04-剩余任务大纲体系.md",
+    "decoded_guess": null
+   },
+   {
+    "path": "docs/任务规划V0.1.0/07-所有权矩阵.md",
+    "decoded_guess": null
+   },
+   {
+    "path": "docs/任务规划V0.1.0/13-自检结果.md",
+    "decoded_guess": null
+   },
+   {
+    "path": "docs/任务规划V0.1.0/README.md",
+    "decoded_guess": "docs/任务规划V0.1.0/README.md"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/evidence/规划校验-修正记录.md",
+    "decoded_guess": null
+   },
+   {
+    "path": "docs/任务规划V0.1.0/gen-check.json",
+    "decoded_guess": "docs/任务规划V0.1.0/gen-check.json"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/gen/tasks.py",
+    "decoded_guess": "docs/任务规划V0.1.0/gen/tasks.py"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/prompts/执行者X说明-管理端UI线.md",
+    "decoded_guess": null
+   },
+   {
+    "path": "docs/任务规划V0.1.0/prompts/执行者Y说明-契约与后端平台线.md",
+    "decoded_guess": null
+   },
+   {
+    "path": "docs/任务规划V0.1.0/tasks/A-01.md",
+    "decoded_guess": "docs/任务规划V0.1.0/tasks/A-01.md"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/tasks/A-02.md",
+    "decoded_guess": "docs/任务规划V0.1.0/tasks/A-02.md"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/tasks/A-03.md",
+    "decoded_guess": "docs/任务规划V0.1.0/tasks/A-03.md"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/tasks/W2-03.md",
+    "decoded_guess": "docs/任务规划V0.1.0/tasks/W2-03.md"
+   },
+   {
+    "path": "docs/任务规划V0.1.0/执行者Y-执行报告-2026-10-13.md",
+    "decoded_guess": null
+   }
+  ],
+  "primary_source_files_missing_in_repo": [
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/04-剩余任务大纲体系.md",
+    "sha": "4f5c1e88356d363c3bb69771279a2e7ee2ee6d9c"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/07-所有权矩阵.md",
+    "sha": "91fecf8e65097d82b922b9e0859e3ef56cfb3859"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/13-自检结果.md",
+    "sha": "684ffe471a25c98beb7ee1e46659f92e41d5200b"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/README.md",
+    "sha": "07da2d0f402327e581dcb2e71a1f6796e44b5225"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/evidence/gates-2026-10-13.log",
+    "sha": "87ca91b8762c8e39d3f9ed471e065d3e9fa7ffca"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/evidence/规划校验-修正记录.md",
+    "sha": "a8b0f55fb8b014ee25bba3b2be16cfb2ace17228"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/gen-check.json",
+    "sha": "2b8dfb17134cd666a2f138e6e2d02e886c6c8f69"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/gen/gen_prompts_xy.py",
+    "sha": "c599e93623d64381c177037bc01ce872419bcbd9"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/gen/tasks.py",
+    "sha": "a84efb0934677e7f81a8ad26dce7c71dc8ad003f"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-01.md",
+    "sha": "78b58291bbd87cecc67b53d120444b416f1187c4"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-02.md",
+    "sha": "25123739789656b438a0fa2790d048db06739258"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-03.md",
+    "sha": "8b7cd4e09ecdc03f3723148e3e167de8fba0c1fe"
+   },
+   {
+    "path": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-03.md",
+    "sha": "76bf00cd5425bd18890ab5638d6afd1a31c8eb6e"
+   }
+  ],
+  "map": [
+   {
+    "mojibake": "docs/任务规划V0.1.0/00-规划快照与事实基线.md",
+    "correct": "docs/任务规划V0.1.0/00-规划快照与事实基线.md",
+    "sha": "3c92b76a07763327560237107b1cf86699265852",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/00-规划快照与事实基线.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/01-需求基线复核.md",
+    "correct": "docs/任务规划V0.1.0/01-需求基线复核.md",
+    "sha": "e3ac47b2d2ad230c5de31615d561b3581daa34d0",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/01-需求基线复核.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/02-契约冻结包.md",
+    "correct": "docs/任务规划V0.1.0/02-契约冻结包.md",
+    "sha": "b298c7aa53e53bef201eb785467b171ec485e1af",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/02-契约冻结包.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/03-数据模型与迁移编排.md",
+    "correct": "docs/任务规划V0.1.0/03-数据模型与迁移编排.md",
+    "sha": "359facb3dbb849648014a9578b784e527c615699",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/03-数据模型与迁移编排.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/03a-垂直切片清单.md",
+    "correct": "docs/任务规划V0.1.0/03a-垂直切片清单.md",
+    "sha": "7157168c081ba84c9cb3d51884119b86f493c504",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/03a-垂直切片清单.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/04-剩余任务大纲体系.md",
+    "correct": null,
+    "sha": "48c3e8c4bb4858d1e8823aa816d3aa3317194bcd",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/05-任务索引.md",
+    "correct": "docs/任务规划V0.1.0/05-任务索引.md",
+    "sha": "d9e489e473e4f586229f16a48d1a97d1f783a574",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/05-任务索引.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/06-依赖DAG与并行判定.md",
+    "correct": "docs/任务规划V0.1.0/06-依赖DAG与并行判定.md",
+    "sha": "53b591216371b2bbe3114b064c7c0b53eec5ae60",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/06-依赖DAG与并行判定.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/07-所有权矩阵.md",
+    "correct": null,
+    "sha": "f5a71f0a05bab8d994b41472b0dd4427d6d88f32",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/08-档位与成本预算.md",
+    "correct": "docs/任务规划V0.1.0/08-档位与成本预算.md",
+    "sha": "8fdcac17014aa8e97b797d9e23c19e06f3da4dc3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/08-档位与成本预算.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/09-基线指标.md",
+    "correct": "docs/任务规划V0.1.0/09-基线指标.md",
+    "sha": "ab35d78b450bb77616c40dbedf612fa1bf4faeaa",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/09-基线指标.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/10-风险·未决·待裁决.md",
+    "correct": "docs/任务规划V0.1.0/10-风险·未决·待裁决.md",
+    "sha": "f68537807fc076828edc57a422939c2abb3d46d1",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/10-风险·未决·待裁决.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/11-验收与审查规程.md",
+    "correct": "docs/任务规划V0.1.0/11-验收与审查规程.md",
+    "sha": "d7bfa16aa2ca0445999d83516c95d7b81f6721ec",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/11-验收与审查规程.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/11a-落盘清单.md",
+    "correct": "docs/任务规划V0.1.0/11a-落盘清单.md",
+    "sha": "f86c4352f580a9879f488bac149ace7bdc917eb7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/11a-落盘清单.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/12-前提局限与启动顺序.md",
+    "correct": "docs/任务规划V0.1.0/12-前提局限与启动顺序.md",
+    "sha": "3b2f7299cb1615428aaeab863dc90ab6f11f8fbc",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/12-前提局限与启动顺序.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/13-自检结果.md",
+    "correct": null,
+    "sha": "74962ad40e7a0c3312313e822e8fbf3a29d75be6",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/README.md",
+    "correct": "docs/任务规划V0.1.0/README.md",
+    "sha": "02df3d3748bf2aa101aa22539b88acc27333c5ec",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/A-ui-审计.md",
+    "correct": "docs/任务规划V0.1.0/evidence/A-ui-审计.md",
+    "sha": "114d93abd918fd901bfebbff4ec79b24f6bd5af9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/A-ui-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/B-domain-审计.md",
+    "correct": "docs/任务规划V0.1.0/evidence/B-domain-审计.md",
+    "sha": "0d523dc81651f2713c98cba1504272f626ee758a",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/B-domain-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/C-ops-审计.md",
+    "correct": "docs/任务规划V0.1.0/evidence/C-ops-审计.md",
+    "sha": "cab827a76f8c3baabc26ca5e4fecc6cfb50b29b6",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/C-ops-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/scratch/drift.json",
+    "correct": "docs/任务规划V0.1.0/evidence/scratch/drift.json",
+    "sha": "427de40b86a1d0dff46473059a716b7c252a6f81",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/scratch/drift.json",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/scratch/drift.py",
+    "correct": "docs/任务规划V0.1.0/evidence/scratch/drift.py",
+    "sha": "a55b97536d6c0a2a91d3a8cf0e26b623e1b33cc6",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/scratch/drift.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/scratch/enumdrift.py",
+    "correct": "docs/任务规划V0.1.0/evidence/scratch/enumdrift.py",
+    "sha": "62a343fdecde4327db0d9abde8ec582f564795b3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/scratch/enumdrift.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/规划校验-事实核查.md",
+    "correct": "docs/任务规划V0.1.0/evidence/规划校验-事实核查.md",
+    "sha": "b8d2d3ff0273f4b6ff998555a21ecc1da98c8617",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/规划校验-事实核查.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/规划校验-修正记录.md",
+    "correct": null,
+    "sha": "7424b135257993e11f99b9b473ae5a9ea5455186",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/规划校验-复核.md",
+    "correct": "docs/任务规划V0.1.0/evidence/规划校验-复核.md",
+    "sha": "73e517c2639b4bb35261b797d0e3bbb7fab649d4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/规划校验-复核.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/evidence/规划校验-结构与合规.md",
+    "correct": "docs/任务规划V0.1.0/evidence/规划校验-结构与合规.md",
+    "sha": "e4fd9fbdcda3fe24a2a9d53dd60a1355b1d4bfa8",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/evidence/规划校验-结构与合规.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen-check.json",
+    "correct": "docs/任务规划V0.1.0/gen-check.json",
+    "sha": "a5b4e2771b9b28650d35ad022e17a580b2a37e59",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen/06-head.md",
+    "correct": "docs/任务规划V0.1.0/gen/06-head.md",
+    "sha": "2c65b47bcae4163f757574e0cc5168652845df00",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/gen/06-head.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen/__pycache__/tasks.cpython-312.pyc",
+    "correct": "docs/任务规划V0.1.0/gen/__pycache__/tasks.cpython-312.pyc",
+    "sha": "d2fc2c5341d045f6d67609ac4f383b924a30d49a",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/gen/__pycache__/tasks.cpython-312.pyc",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen/files.txt",
+    "correct": "docs/任务规划V0.1.0/gen/files.txt",
+    "sha": "f0eafe99fc235b46e02de248c50236542d5d2ef9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/gen/files.txt",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen/gen.py",
+    "correct": "docs/任务规划V0.1.0/gen/gen.py",
+    "sha": "5bba38f35db751bc5dcfb847fa930cb6fd5f3caf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/gen/gen.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen/gen_prompts.py",
+    "correct": "docs/任务规划V0.1.0/gen/gen_prompts.py",
+    "sha": "906bf920380d17ace1192e29436f94e5d024e916",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/gen/gen_prompts.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/gen/tasks.py",
+    "correct": "docs/任务规划V0.1.0/gen/tasks.py",
+    "sha": "f0a1d7406cfa1bf733ed265cd212801ce4bff9bd",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/执行者X说明-管理端UI线.md",
+    "correct": null,
+    "sha": "5c1979ab310c2f770b4ea98dce62f3c1ee45852f",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/执行者Y说明-契约与后端平台线.md",
+    "correct": null,
+    "sha": "fde808c25fe636944908c8c9b4e3cf7c4b1c109d",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-A-管理端组件库.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-A-管理端组件库.md",
+    "sha": "a29058be2b6766fc8d6cb669c01a7f7049f36eeb",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-A-管理端组件库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-B-API与响应平台.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-B-API与响应平台.md",
+    "sha": "0ce43fb5ee82551cfaf1dbe3b1f3a35a28de390a",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-B-API与响应平台.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-C-AI与知识库.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-C-AI与知识库.md",
+    "sha": "af2c89763e2b55a66210c8c5c627e4135e92e6e3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-C-AI与知识库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-D-运维性能配置存储资源.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-D-运维性能配置存储资源.md",
+    "sha": "1c3f6455dd4da219fb85666c17a174cddb0b261c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-D-运维性能配置存储资源.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-E-管理端页面与功能.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-E-管理端页面与功能.md",
+    "sha": "6cb728aad76b1c55acefcf31535b6601d3bbbe7d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-E-管理端页面与功能.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-W0-契约员.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-W0-契约员.md",
+    "sha": "2f8058a1d78fd8eb5d765416d8d2593747e807d5",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-W0-契约员.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-W2-集成与终审.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-W2-集成与终审.md",
+    "sha": "065eb1fcaa6d0c9225e54032594f81b880420315",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-W2-集成与终审.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/prompts/提示词-独立验证者.md",
+    "correct": "docs/任务规划V0.1.0/prompts/提示词-独立验证者.md",
+    "sha": "1f6fec6b1bc4c9e66fc94619a4ed44eb5dfd0c06",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/提示词-独立验证者.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-0-Wave0-契约冻结与解阻.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-0-Wave0-契约冻结与解阻.md",
+    "sha": "98e5b7408ebe2b8cf661d353195ab26f53c96989",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-0-Wave0-契约冻结与解阻.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-1A-管理端组件库.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-1A-管理端组件库.md",
+    "sha": "8138aa832c1c98f0c81c4b62d3fb666cf38feda9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-1A-管理端组件库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-1B-API与响应平台.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-1B-API与响应平台.md",
+    "sha": "11ad724fe952f4b26506df46d882bb689cff9d52",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-1B-API与响应平台.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-1C-AI与知识库.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-1C-AI与知识库.md",
+    "sha": "aca56a1085a5342352efc5ebe1192bbe802bb79e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-1C-AI与知识库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-1D-运维性能配置存储资源.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-1D-运维性能配置存储资源.md",
+    "sha": "274df21f2c9458e6b7e13880a6604309e44c9895",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-1D-运维性能配置存储资源.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-1E-管理端页面与功能.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-1E-管理端页面与功能.md",
+    "sha": "e907d2178ca4b853d3ee2683f4a60c4661ad95bf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-1E-管理端页面与功能.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/steps/STEP-2-集成与终审.md",
+    "correct": "docs/任务规划V0.1.0/steps/STEP-2-集成与终审.md",
+    "sha": "14910f5b762d97c1ba76a08c77650338df734b38",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/steps/STEP-2-集成与终审.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-01.md",
+    "sha": "ebe1acb1d54dca5ce91c15d3de6f61c21d37af7f",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-02.md",
+    "sha": "23c2a0d45b361dcb561fc161716f7b5dc43b6b99",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-03.md",
+    "sha": "42db2d9f83703585f25b44744a5784cded5a052e",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-04.md",
+    "sha": "3aa314eebb99bf6a9af24a5f41a43403dabe75e2",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-05.md",
+    "sha": "c7f58b03bb13826214f859c45b6109f8721f0fb4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-06.md",
+    "sha": "5183307c7aa247d788e0275ec113bc1dde933c98",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-07.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-07.md",
+    "sha": "9b9d2ee0cac3017935f9e0132f97c68e93317343",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/A-08.md",
+    "correct": "docs/任务规划V0.1.0/tasks/A-08.md",
+    "sha": "1df273d6b4dc5678b5898150daa065bf9f86cd8b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/A-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/B-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/B-01.md",
+    "sha": "4cb33e24bde9b517336e157d71bdc147afae99e9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/B-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/B-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/B-02.md",
+    "sha": "f39b629ccda5d0766e77f47605e6f4fe5b38aa24",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/B-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/B-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/B-03.md",
+    "sha": "579350872851ef28a4416fe90583d1d201d15e28",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/B-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/B-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/B-04.md",
+    "sha": "34f10a7922b12780af0b79d43d08e6ce0f083959",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/B-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/B-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/B-05.md",
+    "sha": "21e2cb4785de9909c245c8efd93f7a33fb5ba564",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/B-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/B-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/B-06.md",
+    "sha": "1ab60a7421710229c7e8dfefc395dc009f98d36d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/B-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-01.md",
+    "sha": "311d2057bdd5dd7c77948aed7450a8e650236e48",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-02.md",
+    "sha": "2301b99870c54928d0211e75a52fe1d26d0c406a",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-03.md",
+    "sha": "47857968878273cce25bf412ff0becbf65b6ecbf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-04.md",
+    "sha": "27ee37b8714eab143d8cbb64ba3579fbc639772e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-05.md",
+    "sha": "1c0d88b8ab5976136cfc0ae54cd84dd0f91fee20",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-06.md",
+    "sha": "e8f5e82ef7070914a40eb55d05e6beb52449ec24",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-07.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-07.md",
+    "sha": "dda06ae90783b76d99c594e60b565ef7defd0764",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-08.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-08.md",
+    "sha": "8a909a54b4a92dbfd9db179feb9322ee967821df",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/C-09.md",
+    "correct": "docs/任务规划V0.1.0/tasks/C-09.md",
+    "sha": "98b3cc235fe93ebb061126093fff82ab2223126c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/C-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-01.md",
+    "sha": "db055be25b046a18390c6978124e77713810be9b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-02.md",
+    "sha": "c85742310b4eb272e399650964c9c281ddac421e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-03.md",
+    "sha": "a4ae1e2e504af00382974e34640cf08f13e07db7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-04.md",
+    "sha": "5367c8ec15d6f89b8c99bfdae7dc373b7876af15",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-05.md",
+    "sha": "e256ccb9048d1ea7af8461f2a6d71d404ce2e8b7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-06.md",
+    "sha": "d1f658af4503a220ac0a807223c1925e352e8527",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-07.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-07.md",
+    "sha": "ae6ae06b6c6fbfa00d9496125d6271197c489e9e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-08.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-08.md",
+    "sha": "2cad8c58ff83050a152d55080a8633cbc92c4589",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-09.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-09.md",
+    "sha": "92853a7c37142cdbf8f65d1a2e35a300d1e6644c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-10.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-10.md",
+    "sha": "266a71861f09a0cff03c7de7c8cbb8ed0f0aa811",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-11.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-11.md",
+    "sha": "e3e3c5ddd7ba65cb24fe6b24e761813aa3e35925",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/D-12.md",
+    "correct": "docs/任务规划V0.1.0/tasks/D-12.md",
+    "sha": "d13d7dbbf85164f33e3703bbc6e9a82ed6812527",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/D-12.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-01.md",
+    "sha": "59ed99f792492ad3758045f6bfcdabc29d3e5338",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-02.md",
+    "sha": "8cb1cbb622a31446e49bf6ee8287d116c1590f71",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-03.md",
+    "sha": "610f2652b37d668deb8161409144feb3f64c13d5",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-04.md",
+    "sha": "84787da26472722d73bb246312c6d96e8664fcd8",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-05.md",
+    "sha": "67748a918679bc70f8790260b3045a226883f6af",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-06.md",
+    "sha": "907332eae541707494cb34fa906c55b95ecb4443",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-07.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-07.md",
+    "sha": "96e54ee9e9ff43bdd95ef1a31bfd79ad753ed028",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/E-08.md",
+    "correct": "docs/任务规划V0.1.0/tasks/E-08.md",
+    "sha": "8c069c5286b0b5f0fdaab87db61a7c7f38a2e4ae",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/E-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-01.md",
+    "sha": "12784c40da85e3a21c2a314c0c0d99134175dc50",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-02.md",
+    "sha": "163193e8344278a60431ef43456a79612f2dc200",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-03.md",
+    "sha": "3d99488746d168d93e7dda0e1694418d74838dd8",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-04.md",
+    "sha": "dc77f18ea9b6c193b6f35ef40dc6eee9d1e55c69",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-05.md",
+    "sha": "8be83143b166c6d9cbed32e99564d5fe36b5b220",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-06.md",
+    "sha": "9f7dd36d2dc0827b2694033de4528b1252d6aa0c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-07.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-07.md",
+    "sha": "8239909f1e1be213831fdbabc1e3a2849918ab83",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W0-08.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W0-08.md",
+    "sha": "bad3f70dedb9735a7a492447f5bfd21bd57785cd",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W0-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-01.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-01.md",
+    "sha": "1b2ff03a81e29488ced24aef8c067221a6a603c1",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-02.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-02.md",
+    "sha": "0ca72ccbe292cda3bc0518732702d2d8cf752da9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-03.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-03.md",
+    "sha": "55ac7ec0585683c08e7bc98bad4fa0e022af27e0",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-04.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-04.md",
+    "sha": "660de989173cca490442b67798ef0e4eb9c1f1ff",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-05.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-05.md",
+    "sha": "b749af9dfe098dca5b801f2a41755be58e0941d7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-06.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-06.md",
+    "sha": "d92c368888f68f3255bfb98e45dfb04ffee6eaa5",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-07.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-07.md",
+    "sha": "a80af02f445e54ab5e8ea6f8aad136b01d7bdb8d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-08.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-08.md",
+    "sha": "87fd6ed6a5a405ee1cc6465b91e35ddf4ab80a16",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/tasks/W2-09.md",
+    "correct": "docs/任务规划V0.1.0/tasks/W2-09.md",
+    "sha": "fc2d6d50393a3cdfd45c883f02a4d17acb3bdcb4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/tasks/W2-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/执行者X-完整提示词-管理端UI线.md",
+    "correct": "docs/任务规划V0.1.0/prompts/执行者X-完整提示词-管理端UI线.md",
+    "sha": "06c071bef13af76fdaf1aff25b99646e4aef8c22",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/执行者X-完整提示词-管理端UI线.md",
+    "relocated": true
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/执行者Y-完整提示词-契约与后端平台线.md",
+    "correct": "docs/任务规划V0.1.0/prompts/执行者Y-完整提示词-契约与后端平台线.md",
+    "sha": "fe8497db9fec424bf943546b4fe6dbff927df550",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "out/HDwebsite-upgrade并行规划-20261013/prompts/执行者Y-完整提示词-契约与后端平台线.md",
+    "relocated": true
+   },
+   {
+    "mojibake": "docs/任务规划V0.1.0/执行者Y-执行报告-2026-10-13.md",
+    "correct": null,
+    "sha": "b99e0921fc870ede23355cb19dc389eff0f57f82",
+    "is_mojibake": false,
+    "matched_by": "none",
+    "source": null,
+    "relocated": false
+   }
+  ]
+ },
+ "任务规划V0.2.0": {
+  "repo_dir": "docs/任务规划V0.2.0",
+  "sources": [
+   "zip:V0.2",
+   "zip:V0.3",
+   "zip:V0.4",
+   "out/HDwebsite-upgrade并行规划-20261013",
+   "zip:V0.5"
+  ],
+  "repo_files": 106,
+  "mojibake_count": 24,
+  "relocated_count": 0,
+  "matched_by_source": {
+   "zip:V0.4": 31,
+   "zip:V0.2": 50,
+   "zip:V0.3": 25
+  },
+  "unmatched_in_repo": [],
+  "primary_source_files_missing_in_repo": [
+   {
+    "path": "zip:V0.2/00-规划快照与事实基线.md",
+    "sha": "3c92b76a07763327560237107b1cf86699265852"
+   },
+   {
+    "path": "zip:V0.2/01-需求基线复核.md",
+    "sha": "e3ac47b2d2ad230c5de31615d561b3581daa34d0"
+   },
+   {
+    "path": "zip:V0.2/02-契约冻结包.md",
+    "sha": "b298c7aa53e53bef201eb785467b171ec485e1af"
+   },
+   {
+    "path": "zip:V0.2/03-数据模型与迁移编排.md",
+    "sha": "359facb3dbb849648014a9578b784e527c615699"
+   },
+   {
+    "path": "zip:V0.2/03a-垂直切片清单.md",
+    "sha": "1abef2092f9fdcdfb8caa2faaa27792516a71e19"
+   },
+   {
+    "path": "zip:V0.2/04-剩余任务大纲体系.md",
+    "sha": "c162f2a461259e3a273e2e095b8e5dd603b56062"
+   },
+   {
+    "path": "zip:V0.2/05-任务索引.md",
+    "sha": "775e5182978df0262ec53e5defacea7236f6a7b0"
+   },
+   {
+    "path": "zip:V0.2/06-依赖DAG与并行判定.md",
+    "sha": "eb909a0e9bd6516070fab155b06bb687630fc261"
+   },
+   {
+    "path": "zip:V0.2/07-所有权矩阵.md",
+    "sha": "7c084d80555d4173c705ac98d76390d77530b3c1"
+   },
+   {
+    "path": "zip:V0.2/08-档位与成本预算.md",
+    "sha": "ee0b86d5fe9195afa0047f1d89b1e1ca557466f1"
+   },
+   {
+    "path": "zip:V0.2/10-风险·未决·待裁决.md",
+    "sha": "f68537807fc076828edc57a422939c2abb3d46d1"
+   },
+   {
+    "path": "zip:V0.2/11-验收与审查规程.md",
+    "sha": "d7bfa16aa2ca0445999d83516c95d7b81f6721ec"
+   },
+   {
+    "path": "zip:V0.2/13-自检结果.md",
+    "sha": "684ffe471a25c98beb7ee1e46659f92e41d5200b"
+   },
+   {
+    "path": "zip:V0.2/14-V0.2-进度校准与四人并行方案.md",
+    "sha": "94f3d448bfb44ca506c11bd492fdb9e28a152b38"
+   },
+   {
+    "path": "zip:V0.2/README.md",
+    "sha": "2ae67fe35c4ab368a5c480139e770c61a3eafff9"
+   },
+   {
+    "path": "zip:V0.2/evidence/gates-2026-10-13.log",
+    "sha": "87ca91b8762c8e39d3f9ed471e065d3e9fa7ffca"
+   },
+   {
+    "path": "zip:V0.2/evidence/规划校验-结构与合规.md",
+    "sha": "e4fd9fbdcda3fe24a2a9d53dd60a1355b1d4bfa8"
+   },
+   {
+    "path": "zip:V0.2/gen-check.json",
+    "sha": "1b4bafe478b00ea1ea9d81fff0ae3aebd0ed93f5"
+   },
+   {
+    "path": "zip:V0.2/gen/gen.py",
+    "sha": "bc7895f99598608c5e58a71ff21df8a1e9072b68"
+   },
+   {
+    "path": "zip:V0.2/gen/gen_prompts.py",
+    "sha": "906bf920380d17ace1192e29436f94e5d024e916"
+   },
+   {
+    "path": "zip:V0.2/gen/gen_prompts_4p.py",
+    "sha": "d94838e9df794d0a0d39b79a9a8fed99add0d1f6"
+   },
+   {
+    "path": "zip:V0.2/gen/gen_prompts_xy.py",
+    "sha": "be584aaafb8da0294e59393562989e56b95fa449"
+   },
+   {
+    "path": "zip:V0.2/gen/tasks.py",
+    "sha": "678c2f1dc56e9a26a35ac2033f5be2ca0fa44b4c"
+   },
+   {
+    "path": "zip:V0.2/prompts/四人模式/P1-完整提示词-契约与API-AI平台线.md",
+    "sha": "fa52e059299dbe88109529e3cd95e3ec20357f7a"
+   },
+   {
+    "path": "zip:V0.2/prompts/四人模式/P2-完整提示词-组件库与集成线.md",
+    "sha": "fbf6837f4552aade40ce64b8d7cbe3d15831d198"
+   },
+   {
+    "path": "zip:V0.2/prompts/四人模式/P3-完整提示词-管理端页面线.md",
+    "sha": "b7dd226d520bd08c2d07bec4211ca95b8f0baeae"
+   },
+   {
+    "path": "zip:V0.2/prompts/四人模式/P4-完整提示词-运维性能线.md",
+    "sha": "66a9c3622a4b6c9924da5a2bfbcdef11995d6953"
+   },
+   {
+    "path": "zip:V0.2/prompts/执行者X-完整提示词-管理端UI线.md",
+    "sha": "9370f10a808597d81a336ee43e5960561f8e0b8b"
+   },
+   {
+    "path": "zip:V0.2/prompts/执行者Y-完整提示词-契约与后端平台线.md",
+    "sha": "bf8fb15c66db4482597b42306dd8f3395a4ffb59"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-A-管理端组件库.md",
+    "sha": "a29058be2b6766fc8d6cb669c01a7f7049f36eeb"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-B-API与响应平台.md",
+    "sha": "0ce43fb5ee82551cfaf1dbe3b1f3a35a28de390a"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-C-AI与知识库.md",
+    "sha": "af2c89763e2b55a66210c8c5c627e4135e92e6e3"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-D-运维性能配置存储资源.md",
+    "sha": "1c3f6455dd4da219fb85666c17a174cddb0b261c"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-E-管理端页面与功能.md",
+    "sha": "6cb728aad76b1c55acefcf31535b6601d3bbbe7d"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-W0-契约员.md",
+    "sha": "34af17ecba66648ca371c39424fa7c95753752ba"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-W2-集成与终审.md",
+    "sha": "065eb1fcaa6d0c9225e54032594f81b880420315"
+   },
+   {
+    "path": "zip:V0.2/prompts/提示词-独立验证者.md",
+    "sha": "1f6fec6b1bc4c9e66fc94619a4ed44eb5dfd0c06"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-0-Wave0-契约冻结与解阻.md",
+    "sha": "0969b48ed2eea9a6a6e8c476806077ab9a37f752"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-00-V0.2-校准与续跑.md",
+    "sha": "722336cfee7575c9ca312f53cf1a46c9103fbd3f"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-1A-管理端组件库.md",
+    "sha": "8138aa832c1c98f0c81c4b62d3fb666cf38feda9"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-1B-API与响应平台.md",
+    "sha": "11ad724fe952f4b26506df46d882bb689cff9d52"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-1C-AI与知识库.md",
+    "sha": "aca56a1085a5342352efc5ebe1192bbe802bb79e"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-1E-管理端页面与功能.md",
+    "sha": "e907d2178ca4b853d3ee2683f4a60c4661ad95bf"
+   },
+   {
+    "path": "zip:V0.2/steps/STEP-2-集成与终审.md",
+    "sha": "14910f5b762d97c1ba76a08c77650338df734b38"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-01.md",
+    "sha": "78b58291bbd87cecc67b53d120444b416f1187c4"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-02.md",
+    "sha": "25123739789656b438a0fa2790d048db06739258"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-03.md",
+    "sha": "8b7cd4e09ecdc03f3723148e3e167de8fba0c1fe"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-04.md",
+    "sha": "3aa314eebb99bf6a9af24a5f41a43403dabe75e2"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-05.md",
+    "sha": "c7f58b03bb13826214f859c45b6109f8721f0fb4"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-06.md",
+    "sha": "5183307c7aa247d788e0275ec113bc1dde933c98"
+   },
+   {
+    "path": "zip:V0.2/tasks/A-07.md",
+    "sha": "9b9d2ee0cac3017935f9e0132f97c68e93317343"
+   },
+   {
+    "path": "zip:V0.2/tasks/B-05.md",
+    "sha": "21e2cb4785de9909c245c8efd93f7a33fb5ba564"
+   },
+   {
+    "path": "zip:V0.2/tasks/C-01.md",
+    "sha": "311d2057bdd5dd7c77948aed7450a8e650236e48"
+   },
+   {
+    "path": "zip:V0.2/tasks/C-06.md",
+    "sha": "e8f5e82ef7070914a40eb55d05e6beb52449ec24"
+   },
+   {
+    "path": "zip:V0.2/tasks/C-07.md",
+    "sha": "dda06ae90783b76d99c594e60b565ef7defd0764"
+   },
+   {
+    "path": "zip:V0.2/tasks/C-08.md",
+    "sha": "8a909a54b4a92dbfd9db179feb9322ee967821df"
+   },
+   {
+    "path": "zip:V0.2/tasks/D-02.md",
+    "sha": "c85742310b4eb272e399650964c9c281ddac421e"
+   },
+   {
+    "path": "zip:V0.2/tasks/D-04.md",
+    "sha": "5367c8ec15d6f89b8c99bfdae7dc373b7876af15"
+   },
+   {
+    "path": "zip:V0.2/tasks/D-06.md",
+    "sha": "d1f658af4503a220ac0a807223c1925e352e8527"
+   },
+   {
+    "path": "zip:V0.2/tasks/E-03.md",
+    "sha": "610f2652b37d668deb8161409144feb3f64c13d5"
+   },
+   {
+    "path": "zip:V0.2/tasks/E-04.md",
+    "sha": "84787da26472722d73bb246312c6d96e8664fcd8"
+   },
+   {
+    "path": "zip:V0.2/tasks/E-05.md",
+    "sha": "67748a918679bc70f8790260b3045a226883f6af"
+   },
+   {
+    "path": "zip:V0.2/tasks/E-06.md",
+    "sha": "907332eae541707494cb34fa906c55b95ecb4443"
+   },
+   {
+    "path": "zip:V0.2/tasks/E-08.md",
+    "sha": "8c069c5286b0b5f0fdaab87db61a7c7f38a2e4ae"
+   },
+   {
+    "path": "zip:V0.2/tasks/W0-02.md",
+    "sha": "163193e8344278a60431ef43456a79612f2dc200"
+   },
+   {
+    "path": "zip:V0.2/tasks/W0-03.md",
+    "sha": "3d99488746d168d93e7dda0e1694418d74838dd8"
+   },
+   {
+    "path": "zip:V0.2/tasks/W0-04.md",
+    "sha": "dc77f18ea9b6c193b6f35ef40dc6eee9d1e55c69"
+   },
+   {
+    "path": "zip:V0.2/tasks/W0-05.md",
+    "sha": "8be83143b166c6d9cbed32e99564d5fe36b5b220"
+   },
+   {
+    "path": "zip:V0.2/tasks/W0-06.md",
+    "sha": "9f7dd36d2dc0827b2694033de4528b1252d6aa0c"
+   },
+   {
+    "path": "zip:V0.2/tasks/W0-07.md",
+    "sha": "9e9c33eb168c0f9685f0d4f62c0f007516685f79"
+   },
+   {
+    "path": "zip:V0.2/tasks/W2-03.md",
+    "sha": "76bf00cd5425bd18890ab5638d6afd1a31c8eb6e"
+   }
+  ],
+  "map": [
+   {
+    "mojibake": "docs/任务规划V0.2.0/03a-鍨傜洿鍒囩墖娓呭崟.md",
+    "correct": "docs/任务规划V0.2.0/03a-垂直切片清单.md",
+    "sha": "313a454af7f29e8b1992dc866754a8ae34a82033",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/03a-垂直切片清单.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/04-鍓╀綑浠诲姟澶х翰浣撶郴.md",
+    "correct": "docs/任务规划V0.2.0/04-剩余任务大纲体系.md",
+    "sha": "9288dcfb3692450c75b89465625ab0f339037ff8",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/04-剩余任务大纲体系.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/05-浠诲姟绱㈠紩.md",
+    "correct": "docs/任务规划V0.2.0/05-任务索引.md",
+    "sha": "4b93eeb8f8bad736b64a50cf64f47f1c020d20a3",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/05-任务索引.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/07-鎵€鏈夋潈鐭╅樀.md",
+    "correct": "docs/任务规划V0.2.0/07-所有权矩阵.md",
+    "sha": "b932f72c985d8586ef90ff6bcb118225442219fc",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/07-所有权矩阵.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/09-鍩虹嚎鎸囨爣.md",
+    "correct": "docs/任务规划V0.2.0/09-基线指标.md",
+    "sha": "ab35d78b450bb77616c40dbedf612fa1bf4faeaa",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/09-基线指标.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/11a-钀界洏娓呭崟.md",
+    "correct": "docs/任务规划V0.2.0/11a-落盘清单.md",
+    "sha": "f86c4352f580a9879f488bac149ace7bdc917eb7",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/11a-落盘清单.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/12-鍓嶆彁灞€闄愪笌鍚姩椤哄簭.md",
+    "correct": "docs/任务规划V0.2.0/12-前提局限与启动顺序.md",
+    "sha": "3b2f7299cb1615428aaeab863dc90ab6f11f8fbc",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/12-前提局限与启动顺序.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/13-鑷缁撴灉.md",
+    "correct": "docs/任务规划V0.2.0/13-自检结果.md",
+    "sha": "76da6cde892624e1a22b31cd4d4e69dd78c8842d",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/13-自检结果.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/15-V0.3-闇€姹傜己鍙ｅ鏍镐笌缁熶竴瑙勫垝.md",
+    "correct": "docs/任务规划V0.2.0/15-V0.3-需求缺口复核与统一规划.md",
+    "sha": "09b9c79391558ff0eef71134f2503d88b8e4433a",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/15-V0.3-需求缺口复核与统一规划.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/README.md",
+    "correct": "docs/任务规划V0.2.0/README.md",
+    "sha": "3d1e1b891275bbc49445abc6fa4314e11f374e30",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/README.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/A-ui-瀹¤.md",
+    "correct": "docs/任务规划V0.2.0/evidence/A-ui-审计.md",
+    "sha": "114d93abd918fd901bfebbff4ec79b24f6bd5af9",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/A-ui-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/B-domain-瀹¤.md",
+    "correct": "docs/任务规划V0.2.0/evidence/B-domain-审计.md",
+    "sha": "0d523dc81651f2713c98cba1504272f626ee758a",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/B-domain-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/C-ops-瀹¤.md",
+    "correct": "docs/任务规划V0.2.0/evidence/C-ops-审计.md",
+    "sha": "cab827a76f8c3baabc26ca5e4fecc6cfb50b29b6",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/C-ops-审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/V0.2-鐙珛鏍￠獙.md",
+    "correct": "docs/任务规划V0.2.0/evidence/V0.2-独立校验.md",
+    "sha": "1419c4f509ee77458281292a00371236b47b054f",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/V0.2-独立校验.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/V0.3-鐙珛鏍￠獙.md",
+    "correct": "docs/任务规划V0.2.0/evidence/V0.3-独立校验.md",
+    "sha": "93338f5a4479c4b1edda84e0d680a83b5a1fa6dd",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/evidence/V0.3-独立校验.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/V0.4-827646b-妫€鏌ョ偣瀹¤.md",
+    "correct": "docs/任务规划V0.2.0/evidence/V0.4-827646b-检查点审计.md",
+    "sha": "f88791e3357b25be3b84f2359170b50aad5052f0",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/evidence/V0.4-827646b-检查点审计.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/V0.4-棣栧睆JS瀹炴祴.txt",
+    "correct": "docs/任务规划V0.2.0/evidence/V0.4-首屏JS实测.txt",
+    "sha": "9e0146110a1c7f20601ae287d2720f69037e8a66",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/evidence/V0.4-首屏JS实测.txt",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/scratch/drift.json",
+    "correct": "docs/任务规划V0.2.0/evidence/scratch/drift.json",
+    "sha": "427de40b86a1d0dff46473059a716b7c252a6f81",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/scratch/drift.json",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/scratch/drift.py",
+    "correct": "docs/任务规划V0.2.0/evidence/scratch/drift.py",
+    "sha": "a55b97536d6c0a2a91d3a8cf0e26b623e1b33cc6",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/scratch/drift.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/scratch/enumdrift.py",
+    "correct": "docs/任务规划V0.2.0/evidence/scratch/enumdrift.py",
+    "sha": "62a343fdecde4327db0d9abde8ec582f564795b3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/scratch/enumdrift.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/瑙勫垝鏍￠獙-浜嬪疄鏍告煡.md",
+    "correct": "docs/任务规划V0.2.0/evidence/规划校验-事实核查.md",
+    "sha": "b8d2d3ff0273f4b6ff998555a21ecc1da98c8617",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/规划校验-事实核查.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/瑙勫垝鏍￠獙-淇璁板綍.md",
+    "correct": "docs/任务规划V0.2.0/evidence/规划校验-修正记录.md",
+    "sha": "a8b0f55fb8b014ee25bba3b2be16cfb2ace17228",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/规划校验-修正记录.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/evidence/瑙勫垝鏍￠獙-澶嶆牳.md",
+    "correct": "docs/任务规划V0.2.0/evidence/规划校验-复核.md",
+    "sha": "73e517c2639b4bb35261b797d0e3bbb7fab649d4",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/evidence/规划校验-复核.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen-check.json",
+    "correct": "docs/任务规划V0.2.0/gen-check.json",
+    "sha": "4d10ac080fdec9e0a878a680199f798ddb4fe8b0",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/gen-check.json",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/06-head.md",
+    "correct": "docs/任务规划V0.2.0/gen/06-head.md",
+    "sha": "2c65b47bcae4163f757574e0cc5168652845df00",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/gen/06-head.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/__pycache__/tasks.cpython-312.pyc",
+    "correct": "docs/任务规划V0.2.0/gen/__pycache__/tasks.cpython-312.pyc",
+    "sha": "99b8580cf5b34ce7cc3dcb5551a6df6ac0e4346d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/gen/__pycache__/tasks.cpython-312.pyc",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/files.txt",
+    "correct": "docs/任务规划V0.2.0/gen/files.txt",
+    "sha": "f0eafe99fc235b46e02de248c50236542d5d2ef9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/gen/files.txt",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/gen.py",
+    "correct": "docs/任务规划V0.2.0/gen/gen.py",
+    "sha": "ab954b694baf9e88f20978b73e31cbb2871f61ce",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/gen/gen.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/gen_prompts.py",
+    "correct": "docs/任务规划V0.2.0/gen/gen_prompts.py",
+    "sha": "3015668fff329efe1aaa254b2972500fcb89bcaf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/gen/gen_prompts.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/gen_prompts_v03.py",
+    "correct": "docs/任务规划V0.2.0/gen/gen_prompts_v03.py",
+    "sha": "4700af36140453235ecb4f5df2aad51e9ca1a4a1",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/gen/gen_prompts_v03.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/gen_prompts_xy.py",
+    "correct": "docs/任务规划V0.2.0/gen/gen_prompts_xy.py",
+    "sha": "8e97c78ff7a5f08450ef4bd63127cba9c54467a6",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/gen/gen_prompts_xy.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/gen/tasks.py",
+    "correct": "docs/任务规划V0.2.0/gen/tasks.py",
+    "sha": "bb2458ce8dfbe99ce6b8df2abc7aa6cc5679a71e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/gen/tasks.py",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/steps/STEP-00-V0.4-閲嶆牎鍑嗕笌缁窇.md",
+    "correct": "docs/任务规划V0.2.0/steps/STEP-00-V0.4-重校准与续跑.md",
+    "sha": "4aea9c3e149fcf32d049a09a33e92ca0bf95dccb",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/steps/STEP-00-V0.4-重校准与续跑.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/steps/STEP-1A-绠＄悊绔粍浠跺簱.md",
+    "correct": "docs/任务规划V0.2.0/steps/STEP-1A-管理端组件库.md",
+    "sha": "3d8b2e9299cb9dbf75dd255064be7058fda503d4",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/steps/STEP-1A-管理端组件库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/steps/STEP-1C-AI涓庣煡璇嗗簱.md",
+    "correct": "docs/任务规划V0.2.0/steps/STEP-1C-AI与知识库.md",
+    "sha": "ae9c27969237bdbb62428f87bb068a38c1d3f6f3",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/steps/STEP-1C-AI与知识库.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/steps/STEP-1D-杩愮淮鎬ц兘閰嶇疆瀛樺偍璧勬簮.md",
+    "correct": "docs/任务规划V0.2.0/steps/STEP-1D-运维性能配置存储资源.md",
+    "sha": "274df21f2c9458e6b7e13880a6604309e44c9895",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/steps/STEP-1D-运维性能配置存储资源.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/steps/STEP-1E-绠＄悊绔〉闈笌鍔熻兘.md",
+    "correct": "docs/任务规划V0.2.0/steps/STEP-1E-管理端页面与功能.md",
+    "sha": "6d6bf37e4fd91761d0b30106702e37113611cdf8",
+    "is_mojibake": true,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/steps/STEP-1E-管理端页面与功能.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-01.md",
+    "sha": "25f1769572626cd02162379378edd18a33600f38",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-02.md",
+    "sha": "0d53f5580a4fbc80d7baa6d60f90e1c4fae29b65",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-03.md",
+    "sha": "a99e92a6512af482f3699428ae8990e32094e2b0",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-04.md",
+    "sha": "a5e896ed06c791dcb293cbc3de6d92ca1721fac3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-05.md",
+    "sha": "c46f382a700e02f6c68b8d0fd7e4e9e75eaa000c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-06.md",
+    "sha": "7f59e2bcc811767c9819946cb92c34d2008ddaf9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-07.md",
+    "sha": "769009d37f7951fce758671e11bfc2d765071d6b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/A-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/A-08.md",
+    "correct": "docs/任务规划V0.2.0/tasks/A-08.md",
+    "sha": "1df273d6b4dc5678b5898150daa065bf9f86cd8b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/A-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-01.md",
+    "sha": "4cb33e24bde9b517336e157d71bdc147afae99e9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/B-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-02.md",
+    "sha": "f39b629ccda5d0766e77f47605e6f4fe5b38aa24",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/B-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-03.md",
+    "sha": "579350872851ef28a4416fe90583d1d201d15e28",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/B-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-04.md",
+    "sha": "34f10a7922b12780af0b79d43d08e6ce0f083959",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/B-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-05.md",
+    "sha": "ba1ed971c69b4e227f570095e0200ebf663b92f7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/B-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-06.md",
+    "sha": "1ab60a7421710229c7e8dfefc395dc009f98d36d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/B-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/B-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/B-07.md",
+    "sha": "263aad03f02c2f694e0582bf845c17b36506caf8",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/B-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-01.md",
+    "sha": "f542e05a07bc257160b591c84ad0c8fb21834105",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-02.md",
+    "sha": "2301b99870c54928d0211e75a52fe1d26d0c406a",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/C-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-03.md",
+    "sha": "47857968878273cce25bf412ff0becbf65b6ecbf",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/C-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-04.md",
+    "sha": "27ee37b8714eab143d8cbb64ba3579fbc639772e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/C-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-05.md",
+    "sha": "1c0d88b8ab5976136cfc0ae54cd84dd0f91fee20",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/C-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-06.md",
+    "sha": "6ff9bf6f699b456c8c7fd5fe8ce69da8c4f9dde3",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-07.md",
+    "sha": "02be86fc2a205e77c7c608206d3f38522f3f25af",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-08.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-08.md",
+    "sha": "200a807d8ad1d753cc31bbbd1f174f76e6f7c91b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-09.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-09.md",
+    "sha": "98b3cc235fe93ebb061126093fff82ab2223126c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/C-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-10.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-10.md",
+    "sha": "f3e45519d3d42c427633ad9179b183cf58e0b4d0",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-11.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-11.md",
+    "sha": "b5dd27345d2175590447ceb7a2f2e6c1db06e760",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/C-12.md",
+    "correct": "docs/任务规划V0.2.0/tasks/C-12.md",
+    "sha": "a81f4c94b1209b8c6af5288aaba2af4c90c1a791",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/C-12.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-01.md",
+    "sha": "db055be25b046a18390c6978124e77713810be9b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-02.md",
+    "sha": "5acfd491e807cdc44bff479ec82f0a3961482369",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/D-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-03.md",
+    "sha": "a4ae1e2e504af00382974e34640cf08f13e07db7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-04.md",
+    "sha": "1aa257b1124d7da26aef714c1796603def202c05",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/D-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-05.md",
+    "sha": "e256ccb9048d1ea7af8461f2a6d71d404ce2e8b7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-06.md",
+    "sha": "630c6fafe44628c97694bbdf18efd5b760e7ca0d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/D-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-07.md",
+    "sha": "ae6ae06b6c6fbfa00d9496125d6271197c489e9e",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-08.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-08.md",
+    "sha": "2cad8c58ff83050a152d55080a8633cbc92c4589",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-09.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-09.md",
+    "sha": "92853a7c37142cdbf8f65d1a2e35a300d1e6644c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-10.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-10.md",
+    "sha": "266a71861f09a0cff03c7de7c8cbb8ed0f0aa811",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-11.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-11.md",
+    "sha": "e3e3c5ddd7ba65cb24fe6b24e761813aa3e35925",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/D-12.md",
+    "correct": "docs/任务规划V0.2.0/tasks/D-12.md",
+    "sha": "d13d7dbbf85164f33e3703bbc6e9a82ed6812527",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/D-12.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-01.md",
+    "sha": "59ed99f792492ad3758045f6bfcdabc29d3e5338",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/E-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-02.md",
+    "sha": "8cb1cbb622a31446e49bf6ee8287d116c1590f71",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/E-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-03.md",
+    "sha": "b2b32bb18d4dbe29ba313efe34285508abab1bf4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/E-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-04.md",
+    "sha": "32161444dbf7b600f73e12cfa085814f20586b0b",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-05.md",
+    "sha": "f1c31b4b7e0a901bfe48e03427a264122e4983df",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-06.md",
+    "sha": "7f167c6546d40de71e9b38346dd3681a39427432",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-07.md",
+    "sha": "96e54ee9e9ff43bdd95ef1a31bfd79ad753ed028",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/E-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-08.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-08.md",
+    "sha": "81c7b61de533689770c61228e0fce6b497c1b32f",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-09.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-09.md",
+    "sha": "d39d70a82df4d60c3fd475c7eaae36d129052867",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-10.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-10.md",
+    "sha": "451f2263570c0f010f03fc36bf992519e3b91599",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-10.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/E-11.md",
+    "correct": "docs/任务规划V0.2.0/tasks/E-11.md",
+    "sha": "831e12f03a27154a7b611e67e178f8e747372fc2",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/E-11.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-01.md",
+    "sha": "12784c40da85e3a21c2a314c0c0d99134175dc50",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W0-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-02.md",
+    "sha": "8d015615424244268b7d72d6ffe3d1689991041d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/W0-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-03.md",
+    "sha": "df8c2aa44323e3fcce408c2c6a6708ea0d02edd1",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/W0-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-04.md",
+    "sha": "e6bf176c773f45787b0189782884cb10e2d77a21",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/W0-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-05.md",
+    "sha": "559fdb23f565532922edabe37b2b0ea605e29c8c",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/W0-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-06.md",
+    "sha": "c1130cf2b05f7b4be583ea15e9fcee31bbcbc527",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.3/tasks/W0-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-07.md",
+    "sha": "bf8ac4e0735d8141ee4241eef3aaf39c5b50a3e7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/W0-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-08.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-08.md",
+    "sha": "917beebd662842dc2fef57b9f332c96fc35c0996",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W0-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-09.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-09.md",
+    "sha": "af648fd26fa4df6e02bb58feeb017d7b128edc56",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W0-09.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W0-R0.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W0-R0.md",
+    "sha": "22d2f162b30bf6433bc3ddf0bdb81fe61d567524",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/W0-R0.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-01.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-01.md",
+    "sha": "1b2ff03a81e29488ced24aef8c067221a6a603c1",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-01.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-02.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-02.md",
+    "sha": "0ca72ccbe292cda3bc0518732702d2d8cf752da9",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-02.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-03.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-03.md",
+    "sha": "962c3319036f200882f1480f3385eaaff0617b03",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.4/tasks/W2-03.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-04.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-04.md",
+    "sha": "660de989173cca490442b67798ef0e4eb9c1f1ff",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-04.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-05.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-05.md",
+    "sha": "b749af9dfe098dca5b801f2a41755be58e0941d7",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-05.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-06.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-06.md",
+    "sha": "d92c368888f68f3255bfb98e45dfb04ffee6eaa5",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-06.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-07.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-07.md",
+    "sha": "a80af02f445e54ab5e8ea6f8aad136b01d7bdb8d",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-07.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-08.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-08.md",
+    "sha": "87fd6ed6a5a405ee1cc6465b91e35ddf4ab80a16",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-08.md",
+    "relocated": false
+   },
+   {
+    "mojibake": "docs/任务规划V0.2.0/tasks/W2-09.md",
+    "correct": "docs/任务规划V0.2.0/tasks/W2-09.md",
+    "sha": "fc2d6d50393a3cdfd45c883f02a4d17acb3bdcb4",
+    "is_mojibake": false,
+    "matched_by": "content_sha",
+    "source": "zip:V0.2/tasks/W2-09.md",
+    "relocated": false
+   }
+  ]
+ }
+}

@@ -1,0 +1,32 @@
+=== npx prisma generate
+EXIT 0 (17s)
+=== npm run lint
+  27:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  42:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  19:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+✖ 21 problems (0 errors, 21 warnings)
+EXIT 0 (71s)
+=== npm run typecheck
+EXIT 0 (35s)
+=== npm test
+ Test Files  17 passed (17)
+      Tests  210 passed (210)
+EXIT 0 (46s)
+=== npm run build
+✓ Compiled successfully in 44s
+Route (app)
+EXIT 0 (77s)
+
+# 基线测量（standalone server.js，PORT=6790，临时库，见 09-基线指标.md）
+ready_ms 7346
+/ js_gzip=227007 html=69942
+/manager js_gzip=345853 html=11741
+/manager/articles js_gzip=352019 html=12225
+/ ttfb=0.041982
+/ ttfb=0.035713
+/ ttfb=0.032748
+/api/articles?page=1 ttfb=0.024924
+/api/articles?page=1 ttfb=0.020457
+/api/articles?page=1 ttfb=0.030544
+du -sh .next/standalone/uploads -> 32M
+.next/standalone/server.js:6 -> process.chdir(__dirname)

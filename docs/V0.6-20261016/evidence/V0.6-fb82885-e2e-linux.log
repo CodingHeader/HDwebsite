@@ -1,0 +1,18 @@
+
+> hdwebsite-1011@0.1.0 test:e2e
+> playwright test -c tests/e2e/playwright.config.ts
+
+
+Running 8 tests using 1 worker
+
+  ✓  1 tests/e2e/apply-chat.spec.ts:12:5 › 访客在 /apply 发送消息收到 AI 流式回复 (7.1s)
+  ✓  2 tests/e2e/auth.spec.ts:11:5 › 未登录访问后台跳转登录页 (796ms)
+  ✓  3 tests/e2e/auth.spec.ts:17:5 › 错误密码提示，正确密码进入仪表盘 (1.5s)
+  ✓  4 tests/e2e/auth.spec.ts:33:5 › Viewer 访问用户管理渲染 Forbidden 视图 (3.2s)
+  ✓  5 tests/e2e/collect-publish.spec.ts:21:5 › 采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现 (49.0s)
+  ✓  6 tests/e2e/crud-article.spec.ts:16:5 › 文章新建 → 编辑 → 删除 (4.8s)
+  ✓  7 tests/e2e/crud-article.spec.ts:67:5 › 列表接口 500 → ErrorState，点击重试恢复 (2.3s)
+  ✓  8 tests/e2e/crud-article.spec.ts:87:5 › 搜索无结果 → EmptyState (2.3s)
+
+  8 passed (1.4m)
+EXIT 0 (89s)

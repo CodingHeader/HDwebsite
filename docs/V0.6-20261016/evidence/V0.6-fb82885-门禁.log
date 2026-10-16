@@ -1,0 +1,377 @@
+=== npm ci
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'hdwebsite-1011@0.1.0',
+npm warn EBADENGINE   required: { node: '>=24' },
+npm warn EBADENGINE   current: { node: 'v22.23.3', npm: '10.9.9' }
+npm warn EBADENGINE }
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 865 packages in 2m
+EXIT 0 (108s)
+=== npx prisma generate
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (v7.10.0) to ./node_modules/@prisma/client in 871ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+EXIT 0 (23s)
+=== npm run lint
+
+> hdwebsite-1011@0.1.0 lint
+> eslint
+
+
+/workspace/work/hd/wt-fb8/src/app/(web)/apply/ApplyClient.tsx
+  124:10  warning  'resolveSceneCode' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/(web)/articles/page.tsx
+  4:10  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/(web)/campus/page.tsx
+  27:9  warning  'schoolShortName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/(web)/not-found.tsx
+  2:16  warning  'ArrowLeft' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/(web)/page.tsx
+  28:7  warning  'HOME_BLOCK_ORDER' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/api/settings/email/test/route.ts
+  4:10  warning  'serverError' is defined but never used  @typescript-eslint/no-unused-vars
+  4:23  warning  'success' is defined but never used      @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/api/users/[id]/route.ts
+  20:25  warning  '_ph' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  58:27  warning  '_ph' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/api/users/route.ts
+  69:27  warning  '_ph' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/app/api/wechat/callback/route.ts
+  15:9  warning  'settings' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  31:9  warning  'settings' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/components/web/ArticleContent.tsx
+  160:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/work/hd/wt-fb8/src/lib/collect-engine.ts
+  27:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/workspace/work/hd/wt-fb8/src/lib/crud.ts
+  17:15  warning  'Prisma' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/lib/jobs/backup.ts
+  33:33  warning  '_ctx' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/lib/llm-gateway.ts
+  106:9  warning  'settings' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/work/hd/wt-fb8/src/lib/wechat.ts
+  19:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+✖ 18 problems (0 errors, 18 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+
+EXIT 0 (79s)
+=== npm run typecheck
+
+> hdwebsite-1011@0.1.0 typecheck
+> tsc --noEmit
+
+EXIT 0 (48s)
+=== npm test
+
+> hdwebsite-1011@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /workspace/work/hd/wt-fb8
+
+ ✓ src/lib/__tests__/w0-contracts.test.ts (36 tests) 32ms
+ ✓ src/lib/__tests__/api-contract/p03-endpoints.test.ts (28 tests) 568ms
+ ✓ src/lib/__tests__/w0-errors.test.ts (32 tests) 49ms
+ ✓ src/lib/__tests__/w0-shared.test.ts (16 tests) 17ms
+ ✓ src/lib/__tests__/block-registry.test.ts (17 tests) 645ms
+stderr | src/lib/__tests__/notify-before-publish.test.ts > API 异常 → system_error 邮件 > 路由抛异常 → 500 信封 + 多收件人 system_error；10 分钟聚合为 1 条
+[api-error] GET test/boom TypeError: boom
+    at __vi_import_4__.withApi.route (/workspace/work/hd/wt-fb8/src/lib/__tests__/notify-before-publish.test.ts:105:47)
+    at route (/workspace/work/hd/wt-fb8/src/lib/api-handler.ts:166:20)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at /workspace/work/hd/wt-fb8/src/lib/__tests__/notify-before-publish.test.ts:106:16
+    at file:///workspace/work/hd/wt-fb8/node_modules/@vitest/runner/dist/chunk-hooks.js:752:20
+
+stderr | src/lib/__tests__/notify-before-publish.test.ts > API 异常 → system_error 邮件 > 路由抛异常 → 500 信封 + 多收件人 system_error；10 分钟聚合为 1 条
+[api-error] GET test/boom TypeError: boom
+    at __vi_import_4__.withApi.route (/workspace/work/hd/wt-fb8/src/lib/__tests__/notify-before-publish.test.ts:105:47)
+    at route (/workspace/work/hd/wt-fb8/src/lib/api-handler.ts:166:20)
+    at /workspace/work/hd/wt-fb8/src/lib/__tests__/notify-before-publish.test.ts:111:16
+    at file:///workspace/work/hd/wt-fb8/node_modules/@vitest/runner/dist/chunk-hooks.js:752:20
+
+stderr | src/lib/__tests__/notify-before-publish.test.ts > 调度任务异常 → job_failed > scanOnce 中任务抛错 → job_failed 记录
+[scheduler] 任务 test.explode 执行失败： Error: job exploded
+    at /workspace/work/hd/wt-fb8/src/lib/__tests__/notify-before-publish.test.ts:124:53
+    at Module.scanOnce (/workspace/work/hd/wt-fb8/src/lib/scheduler.ts:107:13)
+    at /workspace/work/hd/wt-fb8/src/lib/__tests__/notify-before-publish.test.ts:125:5
+    at file:///workspace/work/hd/wt-fb8/node_modules/@vitest/runner/dist/chunk-hooks.js:752:20
+
+ ✓ src/lib/__tests__/notify-before-publish.test.ts (6 tests) 6936ms
+   ✓ 发布前提醒（立即发布） > scheduledAt=null 的任务执行前产生 before_publish_news 记录且邮件已发  2160ms
+   ✓ 发布前提醒（立即发布） > preNotify=false 不提醒  2016ms
+   ✓ 发布前提醒（立即发布） > 未审核内容不得发布（failed，不改内容状态）  2016ms
+   ✓ API 异常 → system_error 邮件 > 路由抛异常 → 500 信封 + 多收件人 system_error；10 分钟聚合为 1 条  370ms
+ ✓ src/lib/__tests__/sqlite-busy-timeout.test.ts (4 tests) 1875ms
+   ✓ SQLite busy_timeout（RISK-007） > 跨进程：子进程持写锁 400ms 期间，并发 20 写 + 调度锁 + 事务全部成功，无 SQLITE_BUSY  789ms
+   ✓ SQLite busy_timeout（RISK-007） > 对照组：timeout=0 时子进程持锁下写入立即 SQLITE_BUSY（证明测试有区分力）  796ms
+ ✓ src/lib/__tests__/content-review.test.ts (10 tests) 471ms
+ ✓ src/lib/__tests__/wechat-chat.test.ts (3 tests) 494ms
+ ✓ src/lib/__tests__/api-contract/with-api.test.ts (7 tests) 198ms
+ ✓ src/lib/__tests__/collect-autokb.test.ts (4 tests) 719ms
+ ✓ src/lib/__tests__/w0-structure.test.ts (6 tests) 8ms
+stderr | src/lib/__tests__/p06-followups.test.ts > crud runHook > 钩子抛 TypeError → 500（触发 onApiError，不再伪装成 400）
+[api-error] POST tag/POST TypeError: x is undefined
+    at Object.beforeCreate (/workspace/work/hd/wt-fb8/src/lib/__tests__/p06-followups.test.ts:36:75)
+    at /workspace/work/hd/wt-fb8/src/lib/crud.ts:112:62
+    at runHook (/workspace/work/hd/wt-fb8/src/lib/crud.ts:221:18)
+    at permission (/workspace/work/hd/wt-fb8/src/lib/crud.ts:112:43)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at route (/workspace/work/hd/wt-fb8/src/lib/api-handler.ts:166:14)
+    at /workspace/work/hd/wt-fb8/src/lib/__tests__/p06-followups.test.ts:37:17
+    at file:///workspace/work/hd/wt-fb8/node_modules/@vitest/runner/dist/chunk-hooks.js:752:20
+
+ ✓ src/lib/__tests__/p06-followups.test.ts (5 tests) 406ms
+ ✓ src/lib/__tests__/markdown.test.ts (10 tests) 7ms
+ ✓ src/lib/__tests__/publish-state-machine.test.ts (89 tests) 18ms
+ ✓ src/lib/__tests__/view-stats.test.ts (4 tests) 231ms
+ ✓ src/lib/__tests__/settings-registry.test.ts (6 tests) 6ms
+stderr | src/lib/__tests__/scheduler-cron.test.ts > 调度器 cron 判定 > 非法表达式返回 false 不抛出
+[scheduler] 非法 cron 表达式：not-a-cron
+
+ ✓ src/lib/__tests__/scheduler-cron.test.ts (6 tests) 38ms
+ ✓ src/lib/__tests__/auth-permission.test.ts (4 tests) 4ms
+ ✓ src/lib/__tests__/crypto.test.ts (4 tests) 4ms
+ ✓ src/lib/__tests__/slug.test.ts (3 tests) 5ms
+ ✓ tests/contract/w0-placeholder.test.ts (1 test) 3ms
+ ✓ src/lib/__tests__/w0-jsdom-smoke.test.tsx (2 tests) 31ms
+
+ Test Files  23 passed (23)
+      Tests  303 passed (303)
+   Start at  05:28:35
+   Duration  103.01s (transform 1.74s, setup 0ms, collect 54.01s, tests 12.77s, environment 18.65s, prepare 6.16s)
+
+EXIT 0 (107s)
+=== npm run build
+
+> hdwebsite-1011@0.1.0 build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+▲ Next.js 16.2.1 (Turbopack)
+- Experiments (use with caution):
+  ⨯ cssChunking
+
+  Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+./next.config.ts
+Encountered unexpected file in NFT list
+A file was traced that indicates that the whole project was traced unintentionally. Somewhere in the import trace below, there are:
+- filesystem operations (like path.join, path.resolve or fs.readFile), or
+- very dynamic requires (like require('./' + foo)).
+To resolve this, you can
+- remove them if possible, or
+- only use them in development, or
+- make sure they are statically scoped to some subfolder: path.join(process.cwd(), 'data', bar), or
+- add ignore comments: path.join(/*turbopackIgnore: true*/ process.cwd(), bar)
+
+Output asset trace:
+  [output]/.next/server/instrumentation.js
+  [output]/.next/server/chunks/src_0x4fzgm._.js
+
+Import trace:
+  Instrumentation:
+    ./next.config.ts
+    ./src/lib/jobs/backup.ts
+    ./src/lib/jobs/index.ts
+    ./src/instrumentation.ts
+
+
+✓ Compiled successfully in 57s
+  Running TypeScript ...
+  Finished TypeScript in 37.4s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/39) ...
+  Generating static pages using 1 worker (9/39) 
+  Generating static pages using 1 worker (19/39) 
+  Generating static pages using 1 worker (29/39) 
+✓ Generating static pages using 1 worker (39/39) in 1191ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /about
+├ ƒ /api
+├ ƒ /api/apply
+├ ƒ /api/articles
+├ ƒ /api/articles/[id]
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/me
+├ ƒ /api/auth/refresh
+├ ƒ /api/banners
+├ ƒ /api/banners/[id]
+├ ƒ /api/campus
+├ ƒ /api/campus-images
+├ ƒ /api/campus-images/[id]
+├ ƒ /api/campus/[id]
+├ ƒ /api/campus/[id]/images
+├ ƒ /api/campus/[id]/images/[imageId]
+├ ƒ /api/categories
+├ ƒ /api/categories/[id]
+├ ƒ /api/chat-history
+├ ƒ /api/chat-history/[id]
+├ ƒ /api/chat-scenes
+├ ƒ /api/chat-scenes/[id]
+├ ƒ /api/chat/stream
+├ ƒ /api/collect-items
+├ ƒ /api/collect-items/[id]
+├ ƒ /api/collect-sources
+├ ƒ /api/collect-sources/[id]
+├ ƒ /api/collect-sources/[id]/run
+├ ƒ /api/collect-sources/[id]/test
+├ ƒ /api/collect-tasks
+├ ƒ /api/content-blocks
+├ ƒ /api/content-blocks/[id]
+├ ƒ /api/content-items
+├ ƒ /api/content-items/[id]
+├ ƒ /api/content-items/[id]/review
+├ ƒ /api/courses
+├ ƒ /api/courses/[id]
+├ ƒ /api/element-configs
+├ ƒ /api/element-configs/[id]
+├ ƒ /api/enrollment-offerings
+├ ƒ /api/enrollment-offerings/[id]
+├ ƒ /api/file/[...path]
+├ ƒ /api/gallery
+├ ƒ /api/gallery/[id]
+├ ƒ /api/health
+├ ƒ /api/home-cards
+├ ƒ /api/home-cards/[id]
+├ ƒ /api/hot-majors
+├ ƒ /api/hot-majors/[id]
+├ ƒ /api/kb/test
+├ ƒ /api/knowledge
+├ ƒ /api/knowledge/[id]
+├ ƒ /api/llm/providers
+├ ƒ /api/llm/providers/[id]
+├ ƒ /api/llm/providers/[id]/balance
+├ ƒ /api/llm/providers/[id]/test
+├ ƒ /api/logs
+├ ƒ /api/majors
+├ ƒ /api/majors/[id]
+├ ƒ /api/manager-menus
+├ ƒ /api/manager/dashboard
+├ ƒ /api/media
+├ ƒ /api/media/[id]
+├ ƒ /api/media/batch
+├ ƒ /api/navigations
+├ ƒ /api/navigations/[id]
+├ ƒ /api/notify-recipients
+├ ƒ /api/notify-recipients/[id]
+├ ƒ /api/notify-records
+├ ƒ /api/notify-rules
+├ ƒ /api/notify-rules/[id]
+├ ƒ /api/notify-templates
+├ ƒ /api/notify-templates/[id]
+├ ƒ /api/page-templates
+├ ƒ /api/page-templates/[id]
+├ ƒ /api/partners
+├ ƒ /api/partners/[id]
+├ ƒ /api/publish-jobs
+├ ƒ /api/publish-jobs/[id]
+├ ƒ /api/publish-jobs/[id]/cancel
+├ ƒ /api/publish-jobs/[id]/retry
+├ ƒ /api/roles
+├ ƒ /api/roles/[id]
+├ ƒ /api/service-guides
+├ ƒ /api/service-guides/[id]
+├ ƒ /api/settings
+├ ƒ /api/settings/definitions
+├ ƒ /api/settings/email/test
+├ ƒ /api/students
+├ ƒ /api/students/[id]
+├ ƒ /api/tags
+├ ƒ /api/tags/[id]
+├ ƒ /api/template-blocks
+├ ƒ /api/template-blocks/[id]
+├ ƒ /api/upload
+├ ƒ /api/user-actions
+├ ƒ /api/users
+├ ƒ /api/users/[id]
+├ ƒ /api/wechat/accounts
+├ ƒ /api/wechat/accounts/[id]
+├ ƒ /api/wechat/accounts/[id]/test
+├ ƒ /api/wechat/callback
+├ ƒ /apply
+├ ƒ /articles
+├ ƒ /articles/[id]
+├ ƒ /campus
+├ ƒ /contact
+├ ƒ /courses
+├ ƒ /courses/[id]
+├ ƒ /gallery
+├ ƒ /learning
+├ ○ /manager
+├ ○ /manager/articles
+├ ○ /manager/banners
+├ ○ /manager/campus
+├ ○ /manager/categories
+├ ○ /manager/chat-history
+├ ○ /manager/chat-scenes
+├ ○ /manager/collect-items
+├ ○ /manager/collect-sources
+├ ○ /manager/collect-tasks
+├ ○ /manager/content-hub
+├ ○ /manager/courses
+├ ○ /manager/enrollment-offerings
+├ ○ /manager/gallery
+├ ○ /manager/home-cards
+├ ○ /manager/hot-majors
+├ ○ /manager/knowledge
+├ ○ /manager/llm-providers
+├ ○ /manager/login
+├ ○ /manager/logs
+├ ○ /manager/majors
+├ ○ /manager/media
+├ ○ /manager/navigations
+├ ○ /manager/notify-recipients
+├ ○ /manager/notify-records
+├ ○ /manager/notify-templates
+├ ○ /manager/partners
+├ ○ /manager/publish-jobs
+├ ○ /manager/roles
+├ ○ /manager/service-guides
+├ ○ /manager/settings
+├ ○ /manager/students
+├ ○ /manager/tags
+├ ○ /manager/user-actions
+├ ○ /manager/users
+├ ○ /manager/wechat-accounts
+├ ƒ /news
+├ ƒ /news/[id]
+├ ƒ /partners
+├ ƒ /party
+├ ○ /robots.txt
+├ ƒ /services/[slug]
+└ ƒ /sitemap.xml
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+EXIT 0 (121s)
+=== DONE
+=== ALLDONE

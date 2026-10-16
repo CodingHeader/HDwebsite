@@ -1,0 +1,3 @@
+/ scripts=12 js_raw=756084 js_gzip=226948 html=175689
+/manager scripts=12 js_raw=1257124 js_gzip=353491 html=11393
+/manager/articles scripts=13 js_raw=2027333 js_gzip=586879 html=12113

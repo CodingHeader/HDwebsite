@@ -1,0 +1,116 @@
+# HDwebsite upgrade@827646b 门禁复跑 — 2026-10-14T06:13:38Z（UTC）
+# 环境：Debian 13 arm64 沙箱，Node v22.23.3（package.json engines 要求 >=24 → npm ci 报 EBADENGINE 警告，与 10-13 运行相同），npm 10.9.9
+# 隔离：git worktree /workspace/work/hd/wt-827（detached 827646b）；/workspace/work/hd/repo 未改动（git status 干净）
+# 环境变量：DATABASE_URL=file:<wt>/prisma/gates.db（本地 SQLite，仅门禁用）；JWT_SECRET=一次性本地值（未入库）；CI=1
+
+## 1. 基础门禁（原始输出摘录，完整见 /workspace/work/hd/gates-827-raw.log）
+=== npm ci
+EXIT 0 (83s)
+=== npx prisma generate
+EXIT 0 (21s)
+=== npm run lint
+✖ 19 problems (0 errors, 19 warnings)
+EXIT 0 (79s)
+=== npm run typecheck
+EXIT 0 (43s)
+=== npm test
+ Test Files  17 passed (17)
+EXIT 0 (50s)
+=== npm run build
+EXIT 0 (94s)
+=== DONE
+lint warning 分布：15 × @typescript-eslint/no-unused-vars，3 × 未使用的 eslint-disable（no-explicit-any），1 × @next/next/no-img-element；0 error
+（对比 2026-10-13 gates：0 errors / 21 warnings → 现 0 errors / 19 warnings）
+build：✓ Compiled successfully in 54s；静态页 39/39；Turbopack 1 条警告：next.config.ts 'Encountered unexpected file in NFT list'（Instrumentation → src/instrumentation.ts → src/lib/jobs/index.ts → src/lib/jobs/backup.ts 动态 fs 路径导致整项目被 trace）
+build 不打印 First Load JS（Next 16 Turbopack 路由表只有 ○/ƒ），/manager 为 ○ (Static)
+
+## 2. First-load JS（与 09-基线指标 同法：standalone server，HTML 中全部 <script src> 下载后 gzip -9 求和；PORT=6789，库=迁移+main 内容导入）
+/ scripts=12 js_raw=756084 js_gzip=226948 html=175689
+/manager scripts=12 js_raw=1257124 js_gzip=353491 html=11393
+/manager/articles scripts=13 js_raw=2027333 js_gzip=586879 html=12113
+基线（upgrade@bb2c0e5，09-基线指标.md）：/ 227,007 B；/manager 345,853 B；/manager/articles 352,019 B
+差值：/ −59 B（−0.03%）；/manager +7,638 B（+2.2%）；/manager/articles +234,860 B（+66.7%）
+/manager/articles 相对 /manager 多出的 chunk：0e5~2v0.cv~uf.js gzip 227,870 B（含 ProseMirror/Tiptap 代码，列表页首屏即加载编辑器）+ 0rm0vu..-rw70.js 7,443 B
+
+## 3. 视觉 npm run test:visual
+准备：npx playwright install chromium（Chromium 147.0.7727.15 / headless_shell 1217，@playwright/test 1.59.1）；系统缺 libatk/libatk-bridge/libxcomposite/libxdamage/libatspi → sudo apt-get 安装，并装 fonts-noto-cjk
+数据：prisma migrate deploy + scripts/import-main-content.mjs --source <main@94dbbbb prisma/dev.db> --apply（Article 30、Banner 1、HomeCard 4、HotMajor 8、Partner 8、Gallery 8、ServiceGuide 6、Course 6、Navigation 9、ChatScene 7、Setting 34）
+服务：PORT=6789 node scripts/start-next.mjs；VISUAL_BASE_URL=http://127.0.0.1:6789
+  ✘  14 tests/visual/web.spec.ts:45:11 › web @1440 › service-detail @1440 (7.2s)
+  ✘  16 tests/visual/web.spec.ts:45:11 › web @768 › home @768 (4.5s)
+  ✘  17 tests/visual/web.spec.ts:45:11 › web @768 › about @768 (2.5s)
+  ✘  19 tests/visual/web.spec.ts:45:11 › web @768 › articles @768 (3.2s)
+  ✘  23 tests/visual/web.spec.ts:45:11 › web @768 › courses @768 (3.1s)
+  ✘  26 tests/visual/web.spec.ts:45:11 › web @768 › learning @768 (2.0s)
+  ✘  28 tests/visual/web.spec.ts:45:11 › web @768 › party @768 (2.1s)
+  ✘  29 tests/visual/web.spec.ts:45:11 › web @768 › service-detail @768 (7.2s)
+  ✘  34 tests/visual/web.spec.ts:45:11 › web @375 › articles @375 (3.9s)
+  ✘  35 tests/visual/web.spec.ts:45:11 › web @375 › article-detail @375 (3.9s)
+  ✘  44 tests/visual/web.spec.ts:45:11 › web @375 › service-detail @375 (7.7s)
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+  11 failed
+  35 passed (2.4m)
+EXIT 1 (156s)
+差异（按失败顺序）：31745 pixels (ratio 0.02;62296 pixels (ratio 0.02;21414 pixels (ratio 0.02;31825 pixels (ratio 0.02;18619 pixels (ratio 0.02;16040 pixels (ratio 0.02;17199 pixels (ratio 0.02;29201 pixels (ratio 0.02;30209 pixels (ratio 0.02;received 667px by 1949px. 55943 pixels (ratio 0.05;29526 pixels (ratio 0.02;
+注：/uploads/202604/*.png 等 74 次 'isn't a valid image'（main dev.db 引用的上传文件不在仓库内），两次运行相同
+
+### 3b. 对照组：同沙箱、同步骤跑 upgrade@bb2c0e5（P06 已记 46/46）
+  ✘  14 tests/visual/web.spec.ts:45:11 › web @1440 › service-detail @1440 (7.2s)
+  ✘  16 tests/visual/web.spec.ts:45:11 › web @768 › home @768 (7.5s)
+  ✘  17 tests/visual/web.spec.ts:45:11 › web @768 › about @768 (2.5s)
+  ✘  19 tests/visual/web.spec.ts:45:11 › web @768 › articles @768 (3.3s)
+  ✘  23 tests/visual/web.spec.ts:45:11 › web @768 › courses @768 (3.1s)
+  ✘  26 tests/visual/web.spec.ts:45:11 › web @768 › learning @768 (2.1s)
+  ✘  28 tests/visual/web.spec.ts:45:11 › web @768 › party @768 (2.1s)
+  ✘  29 tests/visual/web.spec.ts:45:11 › web @768 › service-detail @768 (7.1s)
+  ✘  34 tests/visual/web.spec.ts:45:11 › web @375 › articles @375 (3.4s)
+  ✘  35 tests/visual/web.spec.ts:45:11 › web @375 › article-detail @375 (2.4s)
+  ✘  44 tests/visual/web.spec.ts:45:11 › web @375 › service-detail @375 (7.1s)
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+    Error: expect(page).toHaveScreenshot(expected) failed
+  11 failed
+  35 passed (2.1m)
+EXIT 1 (130s)
+差异：31745 pixels (ratio 0.02;64605 pixels (ratio 0.02;21414 pixels (ratio 0.02;31825 pixels (ratio 0.02;18619 pixels (ratio 0.02;16040 pixels (ratio 0.02;17199 pixels (ratio 0.02;29201 pixels (ratio 0.02;30209 pixels (ratio 0.02;received 667px by 1949px. 55943 pixels (ratio 0.05;29526 pixels (ratio 0.02;
+结论：失败集合与 827646b 完全相同（11 条同名），10/11 像素差逐字相同（home@768 62,296 vs 64,605）；diff 图显示全页文字抗锯齿/字形差 → 本沙箱字体渲染环境与参照截图生成环境不同，非 827646b 引入的回退。本沙箱无法独立复现 46/46。
+
+## 4. E2E npm run test:e2e（global-setup 自建 prisma/e2e.db + mock 上游，端口 6791/6799）
+  ✓  1 tests/e2e/apply-chat.spec.ts:12:5 › 访客在 /apply 发送消息收到 AI 流式回复 (8.9s)
+  ✓  2 tests/e2e/auth.spec.ts:11:5 › 未登录访问后台跳转登录页 (655ms)
+  ✓  3 tests/e2e/auth.spec.ts:17:5 › 错误密码提示，正确密码进入仪表盘 (1.1s)
+  ✓  4 tests/e2e/auth.spec.ts:33:5 › Viewer 访问用户管理渲染 Forbidden 视图 (2.4s)
+  ✓  5 tests/e2e/collect-publish.spec.ts:21:5 › 采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知记录出现 (27.2s)
+  ✓  6 tests/e2e/crud-article.spec.ts:16:5 › 文章新建 → 编辑 → 删除 (3.7s)
+  ✓  7 tests/e2e/crud-article.spec.ts:67:5 › 列表接口 500 → ErrorState，点击重试恢复 (2.0s)
+  ✘  8 tests/e2e/crud-article.spec.ts:87:5 › 搜索无结果 → EmptyState (3.0m)
+    .cache/e2e/test-results/crud-article-搜索无结果-→-EmptyState/test-failed-1.png
+  1 failed
+  7 passed (5.3m)
+EXIT 1 (331s)
+失败首行：Test timeout of 180000ms exceeded while running "beforeEach" hook → loginUI → page.waitForURL(/\/manager\/?$/)（tests/e2e/fixtures/helpers.ts:10）
+失败页面快照：登录页 alert「尝试过于频繁，请稍后再试」→ 根因：src/app/api/auth/login/route.ts 同 IP 60s 内 >10 次登录即限流（返回 400），整套 E2E 有 11 处 loginUI/apiToken 调用，第 8 个用例撞限流。与提交说明的 'login timeout' 一致。
+工件：wt-827/.cache/e2e/test-results/crud-article-搜索无结果-→-EmptyState/（随 worktree 删除；关键内容已摘录于此）
+
+## 5. 清理
+git worktree remove --force wt-827 与 wt-bb2（对照组）已完成；git worktree list 仅剩 /workspace/work/hd/repo 827646b [upgrade]；repo 工作区干净。
+保留的原始日志：/workspace/work/hd/gates-827-raw.log、/workspace/work/hd/v827/{visual.log,visual-ctrl.log,e2e.log,firstload.txt,ctrl.log,srv-*.log,sd-diff.png}
+系统层变更（沙箱，非仓库）：apt 安装 libatk1.0-0t64 libatk-bridge2.0-0t64 libxcomposite1 libxdamage1 libatspi2.0-0t64 fonts-noto-cjk；~/.cache/ms-playwright 下载 chromium-1217
