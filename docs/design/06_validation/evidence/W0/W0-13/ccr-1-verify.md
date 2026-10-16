@@ -10,11 +10,13 @@
 |---|---|---|
 | 通用门禁 4 项全 exit 0 | **PASS** | 最终 HEAD `951a123` 复跑 lint/typecheck/test/build 全 0（gate-ccr1-final.log） |
 | Linux e2e 8/8 | **PASS** | Docker 容器（playwright:v1.59.1-noble）同一 SHA：8 passed (1.2m)，E2E_EXIT=0（e2e-ccr1-merge.log） |
-| visual 46/46 | **45/46（K7 待裁决）** | 唯一失败 courses@375：26989px（ratio 0.02）= 卡内上限值，失败集 ⊆ {courses@375}（visual-ccr1-final.log） |
+| visual 46/46 | **45/46（K7=A 用户裁决放行）** | 唯一失败 courses@375：26989px（ratio 0.02）= 卡内上限值，失败集 ⊆ {courses@375}；K7=A 裁决（decision_5e201bc7f8b44b8aa3f5ce52b1cc33a6，2026-10-16）：登记偏差放行，留 A/E 线修复 |
 | 两份输出 HEAD SHA 一致 | **PASS** | visual 与 e2e 均为 `951a123ebe37ab4fd0ca7c20300f37226e93af7a` |
 | `git diff fb82885..HEAD` ⊆ W0-10/11/12/13 allow | **PASS** | 仅 contracts/llm 设置键/测试文件/AGENTS.md/规划 docs/evidence/W0/**/courses-375.png（见 §2） |
 | courses-375 参照图真实性 | **已更正** | 补生成运行后 **md5 不变**（32230fcd）＝现有图即 main@94dbbbb 的真实标准（W0-08 证据中"已重新生成"的陈述更正于 §4） |
-| tag w1-base-ccr-1 | **待 K7 裁决后执行** | 卡内：K7=A 登记偏差放行 → 打 tag；K7=B 像素级根因后再定（根因已有，见 §3） |
+| tag w1-base-ccr-1 | **已执行（K7=A）** | PASS 后 `git tag w1-base-ccr-1` 并推送 upgrade 与 tag |
+
+**综合判定：PASS（K7=A 用户裁决放行 courses@375 已登记偏差）**——五条 lane 从 `w1-base-ccr-1` 开工。
 
 ## 1. W0-10/W0-11/W0-12 交付摘要
 
