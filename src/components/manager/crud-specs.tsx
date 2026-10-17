@@ -1,30 +1,21 @@
 "use client";
 
 /**
- * 管理页规格表（与后端 crud-resources.ts 一一对应）：列 + 表单字段 + 关联下拉。
+ * 管理页规格表（E-07 单源派生）：字段键与枚举 options 由冻结契约派生（resource-meta/derive.ts + specs.ts），
+ * 本文件只剩列定义、控件提示性覆盖入口与特殊行为（行操作/关联下拉/只读资源）。
  * 特殊页（settings/media/collect-items/publish-jobs/llm-providers/wechat-accounts/dashboard）单独实现。
  */
 import type { CrudPageSpec, RowAction } from "@/components/manager/CrudPage";
+import type { FieldSpec } from "@/components/manager/SchemaForm";
 import { managerFetch } from "@/lib/manager-fetch";
 import { alertDialog, toast } from "@/components/manager/feedback";
-
-const statusField = {
-  key: "status",
-  label: "状态",
-  type: "select" as const,
-  options: [
-    { label: "启用", value: "active" },
-    { label: "草稿", value: "draft" },
-    { label: "归档", value: "archived" },
-  ],
-};
+import { deriveFields } from "@/components/manager/resource-meta/derive";
+import { resourceMetas } from "@/components/manager/resource-meta/specs";
+import { COLUMNS } from "@/components/manager/resource-meta/columns";
 
 async function runSource(row: Record<string, unknown>, reload: () => void, fail: (m: string) => void) {
   try {
-    const res = await managerFetch<{ newCount: number; skipCount: number }>(
-      `/api/collect-sources/${row.id}/run`,
-      { method: "POST", body: "{}" }
-    );
+    const res = await managerFetch<{ newCount: number; skipCount: number }>(`/api/collect-sources/${row.id}/run`, { method: "POST", body: "{}" });
     toast.success("采集执行完成", `新增 ${res.newCount} 条，跳过 ${res.skipCount} 条；新条目在「采集审核」中待审。`);
     reload();
   } catch (e) {
@@ -61,498 +52,26 @@ async function testSource(row: Record<string, unknown>, _reload: () => void, fai
   }
 }
 
-
-export const crudPageSpecs: Record<string, CrudPageSpec> = {
-  categories: {
-    title: "分类管理",
-    endpoint: "categories",
-    columns: [
-      { key: "name", label: "名称" },
-      { key: "slug", label: "Slug" },
-      { key: "type", label: "类型" },
-      { key: "sort", label: "排序" },
-      { key: "isVisible", label: "可见", render: "boolean" },
-    ],
-    fields: [
-      { key: "name", label: "名称", required: true },
-      { key: "slug", label: "Slug（留空自动生成）" },
-      {
-        key: "type", label: "类型", type: "select", required: true,
-        options: [
-          { label: "文章", value: "article" },
-          { label: "课程", value: "course" },
-          { label: "合作院校", value: "partner" },
-        ],
-      },
-      { key: "image", label: "栏目图", type: "image" },
-      { key: "parentId", label: "父分类", type: "number" },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "isNav", label: "显示在导航", type: "switch" },
-      { key: "isVisible", label: "可见", type: "switch" },
-      { key: "description", label: "描述", type: "textarea", colSpan: 2 },
-    ],
-  },
-  tags: {
-    title: "标签管理",
-    endpoint: "tags",
-    columns: [
-      { key: "name", label: "名称" },
-      { key: "slug", label: "Slug" },
-    ],
-    fields: [
-      { key: "name", label: "名称", required: true },
-      { key: "slug", label: "Slug（留空自动生成）" },
-    ],
-  },
-  courses: {
-    title: "课程管理",
-    endpoint: "courses",
-    searchPlaceholder: "搜索课程…",
-    columns: [
-      { key: "title", label: "标题" },
-      { key: "category", label: "分类" },
-      { key: "priceText", label: "价格文案" },
-      { key: "price", label: "价格" },
-      { key: "cover", label: "封面", render: "image" },
-      { key: "status", label: "状态" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true, colSpan: 2 },
-      { key: "categoryId", label: "分类 ID" },
-      { key: "majorId", label: "专业 ID" },
-      { key: "price", label: "价格", type: "number" },
-      { key: "priceText", label: "价格文案" },
-      { key: "duration", label: "学制" },
-      { key: "cover", label: "封面", type: "image" },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "status", label: "状态", type: "select", options: [
-        { label: "启用", value: "active" }, { label: "草稿", value: "draft" }, { label: "归档", value: "archived" },
-      ] },
-      { key: "description", label: "简介", type: "textarea", colSpan: 2 },
-      { key: "outline", label: "课程大纲", type: "textarea", colSpan: 2, rows: 6 },
-    ],
-  },
-  majors: {
-    title: "专业管理",
-    endpoint: "majors",
-    columns: [
-      { key: "name", label: "专业名称" },
-      { key: "slug", label: "Slug" },
-      { key: "category", label: "分类" },
-      { key: "duration", label: "学制" },
-      { key: "status", label: "状态" },
-    ],
-    fields: [
-      { key: "name", label: "专业名称", required: true },
-      { key: "slug", label: "Slug（留空自动生成）" },
-      { key: "categoryId", label: "分类 ID" },
-      { key: "duration", label: "学制" },
-      { key: "cover", label: "封面", type: "image" },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "status", label: "状态", type: "select", options: [
-        { label: "启用", value: "active" }, { label: "草稿", value: "draft" }, { label: "归档", value: "archived" },
-      ] },
-      { key: "description", label: "简介", type: "textarea", colSpan: 2 },
-    ],
-  },
-  "enrollment-offerings": {
-    title: "招生计划",
-    endpoint: "enrollment-offerings",
-    searchPlaceholder: "搜索批次/类型…",
-    columns: [
-      { key: "major", label: "专业" },
-      { key: "partner", label: "院校" },
-      { key: "sourceBatch", label: "批次" },
-      { key: "educationType", label: "学历类型" },
-      { key: "yearTuition", label: "学年学费" },
-      { key: "status", label: "状态" },
-    ],
-    fields: [
-      { key: "majorId", label: "专业 ID", type: "number", required: true },
-      { key: "partnerId", label: "院校 ID", type: "number", required: true },
-      { key: "sourceBatch", label: "批次" },
-      { key: "educationType", label: "学历类型" },
-      { key: "level", label: "层次" },
-      { key: "majorCode", label: "专业代码" },
-      { key: "studyForm", label: "学习形式" },
-      { key: "yearTuition", label: "学年学费", type: "number" },
-      { key: "totalTuition", label: "总学费", type: "number" },
-      { key: "hasPrice", label: "已定价", type: "switch" },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "status", label: "状态", type: "select", options: [
-        { label: "启用", value: "active" }, { label: "草稿", value: "draft" }, { label: "归档", value: "archived" },
-      ] },
-      { key: "feeDetail", label: "费用明细", type: "textarea", colSpan: 2 },
-      { key: "extraFeeNote", label: "其他费用说明", type: "textarea", colSpan: 2 },
-    ],
-  },
-  students: {
-    title: "报名管理",
-    endpoint: "students",
-    searchPlaceholder: "搜索姓名/电话…",
-    columns: [
-      { key: "name", label: "姓名" },
-      { key: "phone", label: "电话" },
-      { key: "course", label: "课程" },
-      { key: "status", label: "状态" },
-      { key: "createdAt", label: "报名时间" },
-    ],
-    fields: [
-      { key: "name", label: "姓名", required: true },
-      { key: "phone", label: "电话", required: true },
-      { key: "courseId", label: "课程 ID", type: "number" },
-      {
-        key: "status", label: "状态", type: "select", options: [
-          { label: "待跟进", value: "pending" }, { label: "已联系", value: "contacted" },
-          { label: "已转化", value: "converted" }, { label: "无效", value: "invalid" },
-        ],
-      },
-      { key: "message", label: "留言", type: "textarea", colSpan: 2 },
-    ],
-  },
-  partners: {
-    title: "合作院校",
-    endpoint: "partners",
-    columns: [
-      { key: "logo", label: "Logo", render: "image" },
-      { key: "name", label: "名称" },
-      { key: "website", label: "官网" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "name", label: "名称", required: true },
-      { key: "logo", label: "Logo", type: "image" },
-      { key: "website", label: "官网地址" },
-      { key: "sort", label: "排序", type: "number" },
-    ],
-  },
-  campus: {
-    title: "校区管理",
-    endpoint: "campus",
-    columns: [
-      { key: "name", label: "校区" },
-      { key: "address", label: "地址" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "name", label: "校区名称", required: true },
-      { key: "address", label: "地址" },
-      { key: "sort", label: "排序", type: "number" },
-    ],
-  },
-  gallery: {
-    title: "证书风采",
-    endpoint: "gallery",
-    columns: [
-      { key: "image", label: "图片", render: "image" },
-      { key: "title", label: "标题" },
-      { key: "category", label: "分类" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true },
-      { key: "image", label: "图片", type: "image", required: true },
-      {
-        key: "category", label: "分类", type: "select", options: [
-          { label: "证书", value: "certificate" }, { label: "考试", value: "exam" }, { label: "校园", value: "campus" },
-        ],
-      },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "status", label: "状态", type: "select", options: [
-        { label: "启用", value: "active" }, { label: "草稿", value: "draft" }, { label: "归档", value: "archived" },
-      ] },
-    ],
-  },
-  banners: {
-    title: "轮播图",
-    endpoint: "banners",
-    columns: [
-      { key: "image", label: "图片", render: "image" },
-      { key: "link", label: "链接" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "image", label: "图片", type: "image", required: true },
-      { key: "link", label: "跳转链接" },
-      { key: "sort", label: "排序", type: "number" },
-    ],
-  },
-  "home-cards": {
-    title: "首页卡片",
-    endpoint: "home-cards",
-    columns: [
-      { key: "title", label: "标题" },
-      { key: "subtitle", label: "副标题" },
-      { key: "href", label: "链接" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true },
-      { key: "subtitle", label: "副标题" },
-      { key: "icon", label: "图标（Lucide 名）" },
-      { key: "href", label: "链接" },
-      { key: "gradient", label: "渐变色（CSS）", colSpan: 2 },
-      { key: "sort", label: "排序", type: "number" },
-    ],
-  },
-  "hot-majors": {
-    title: "热门专业位",
-    endpoint: "hot-majors",
-    columns: [
-      { key: "title", label: "标题" },
-      { key: "subtitle", label: "副标题" },
-      { key: "duration", label: "学制" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true },
-      { key: "subtitle", label: "副标题" },
-      { key: "description", label: "描述", type: "textarea", colSpan: 2 },
-      { key: "duration", label: "学制" },
-      {
-        key: "iconType", label: "图标类型", type: "select",
-        options: [{ label: "文字", value: "text" }, { label: "图片", value: "image" }],
-      },
-      { key: "iconImage", label: "图标图片", type: "image" },
-      { key: "iconColor", label: "图标颜色" },
-      { key: "backgroundImage", label: "背景图", type: "image" },
-      { key: "link", label: "链接" },
-      { key: "majorId", label: "关联专业 ID", type: "number" },
-      { key: "sort", label: "排序", type: "number" },
-    ],
-  },
-  "service-guides": {
-    title: "服务指南",
-    endpoint: "service-guides",
-    columns: [
-      { key: "title", label: "标题" },
-      { key: "slug", label: "Slug" },
-      { key: "contentType", label: "内容类型" },
-      { key: "sort", label: "排序" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true },
-      { key: "slug", label: "Slug（留空自动生成）" },
-      { key: "subtitle", label: "副标题", colSpan: 2 },
-      { key: "icon", label: "图标（Lucide 名）" },
-      {
-        key: "contentType", label: "内容类型", type: "select",
-        options: [{ label: "Markdown", value: "markdown" }, { label: "HTML", value: "html" }],
-      },
-      { key: "content", label: "正文", type: "markdown", colSpan: 2, rows: 10 },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "status", label: "状态", type: "select", options: [
-        { label: "启用", value: "active" }, { label: "草稿", value: "draft" }, { label: "归档", value: "archived" },
-      ] },
-    ],
-  },
-  navigations: {
-    title: "导航管理",
-    endpoint: "navigations",
-    columns: [
-      { key: "name", label: "名称" },
-      { key: "link", label: "链接" },
-      { key: "level", label: "层级" },
-      { key: "sort", label: "排序" },
-      { key: "isVisible", label: "可见", render: "boolean" },
-    ],
-    fields: [
-      { key: "name", label: "名称", required: true },
-      { key: "slug", label: "Slug（留空自动生成）" },
-      { key: "link", label: "链接" },
-      {
-        key: "linkType", label: "链接类型", type: "select",
-        options: [{ label: "内部", value: "internal" }, { label: "外部", value: "external" }, { label: "下拉", value: "dropdown" }],
-      },
-      { key: "parentId", label: "父导航 ID", type: "number" },
-      { key: "level", label: "层级", type: "number" },
-      { key: "sort", label: "排序", type: "number" },
-      { key: "isVisible", label: "可见", type: "switch" },
-      { key: "isNav", label: "主导航", type: "switch" },
-    ],
-  },
-  "chat-scenes": {
-    title: "AI 场景",
-    endpoint: "chat-scenes",
-    columns: [
-      { key: "code", label: "Code" },
-      { key: "name", label: "名称" },
-      { key: "useKnowledgeBase", label: "用知识库", render: "boolean" },
-      { key: "status", label: "状态" },
-    ],
-    fields: [
-      { key: "code", label: "Code（如 apply/float/faq）", required: true, section: "基础" },
-      { key: "name", label: "名称", required: true, section: "基础" },
-      { key: "greeting", label: "欢迎语", required: true, colSpan: 2, section: "基础" },
-      { key: "systemPrompt", label: "系统提示词", type: "textarea", required: true, colSpan: 2, rows: 5, section: "基础" },
-      { key: "knowledgeTags", label: "知识标签（逗号分隔）", colSpan: 2, section: "知识库" },
-      { key: "baseIds", label: "绑定知识库 ID（逗号分隔）", colSpan: 2, section: "知识库" },
-      { key: "useKnowledgeBase", label: "启用知识库", type: "switch", section: "知识库" },
-      { key: "sort", label: "排序", type: "number", section: "基础" },
-      // E-01：冻结契约字段补齐（chatSceneCreateSchema：场景专属模型与参数）；E-04：表单分区「模型与参数」
-      { key: "llmProviderId", label: "专属模型供应商 ID", type: "number", help: "留空 = 走网关默认路由（isDefault → priority → isFallback）", section: "模型与参数" },
-      { key: "temperature", label: "温度 temperature", type: "number", help: "0~2；留空用供应商默认", section: "模型与参数" },
-      { key: "maxTokens", label: "最大 tokens", type: "number", section: "模型与参数" },
-      { key: "topP", label: "top_p", type: "number", help: "0~1；留空用供应商默认", section: "模型与参数" },
-    ],
-  },
-  knowledge: {
-    title: "知识条目（本地兜底库）",
-    endpoint: "knowledge",
-    searchPlaceholder: "搜索标题/内容/标签…",
-    columns: [
-      { key: "title", label: "标题" },
-      { key: "tags", label: "标签" },
-      { key: "priority", label: "优先级" },
-      { key: "status", label: "状态" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true, colSpan: 2 },
-      { key: "content", label: "内容", type: "textarea", required: true, colSpan: 2, rows: 8 },
-      { key: "tags", label: "标签（逗号分隔）", colSpan: 2 },
-      { key: "priority", label: "优先级", type: "number" },
-      {
-        key: "status", label: "状态", type: "select",
-        options: [{ label: "启用", value: "active" }, { label: "停用", value: "inactive" }],
-      },
-    ],
-  },
-  "content-items": {
-    title: "内容中枢",
-    endpoint: "content-items",
-    searchPlaceholder: "搜索标题/内容…",
-    columns: [
-      { key: "title", label: "标题" },
-      { key: "source", label: "来源" },
-      { key: "status", label: "状态" },
-      { key: "author", label: "作者" },
-      { key: "createdAt", label: "创建时间" },
-    ],
-    fields: [
-      { key: "title", label: "标题", required: true, colSpan: 2 },
-      {
-        key: "contentType", label: "内容类型", type: "select",
-        options: [{ label: "Markdown", value: "markdown" }, { label: "HTML", value: "html" }],
-      },
-      {
-        key: "status", label: "状态", type: "select",
-        // E-01：与冻结契约一致（draft/pending_review/offline；审核走专用端点，approved/published 由执行器写入）
-        options: [
-          { label: "草稿", value: "draft" }, { label: "待审核", value: "pending_review" },
-          { label: "已下线", value: "offline" },
-        ],
-      },
-      { key: "excerpt", label: "摘要（留空自动）", colSpan: 2 },
-      { key: "coverImage", label: "封面", type: "image" },
-      { key: "tags", label: "标签", type: "tags" },
-      { key: "content", label: "正文", type: "markdown", required: true, colSpan: 2, rows: 12 },
-    ],
-  },
-  "notify-recipients": {
-    title: "提醒接收人",
-    endpoint: "notify-recipients",
-    columns: [
-      { key: "name", label: "姓名" },
-      { key: "email", label: "邮箱" },
-      { key: "groups", label: "通知组" },
-      { key: "enabled", label: "启用", render: "boolean" },
-    ],
-    fields: [
-      { key: "name", label: "姓名", required: true },
-      { key: "email", label: "邮箱", required: true },
-      { key: "groups", label: "通知组（逗号分隔：publish,ops）", type: "tags" },
-      { key: "enabled", label: "启用", type: "switch" },
-    ],
-  },
-  "notify-templates": {
-    title: "邮件模板",
-    endpoint: "notify-templates",
-    columns: [
-      { key: "name", label: "名称" },
-      { key: "event", label: "适用事件" },
-      { key: "subject", label: "主题" },
-      { key: "isDefault", label: "默认", render: "boolean" },
-    ],
-    fields: [
-      { key: "name", label: "名称", required: true },
-      { key: "event", label: "适用事件（留空=通用）" },
-      { key: "subject", label: "主题（支持 {title} {time} {detail} {link}）", required: true, colSpan: 2 },
-      { key: "body", label: "正文（支持变量）", type: "textarea", required: true, colSpan: 2, rows: 6 },
-      { key: "isDefault", label: "设为默认模板", type: "switch" },
-    ],
-  },
+/** 特殊行为（行操作/关联下拉/默认值/搜索占位），按资源名合并 */
+const EXTRA: Record<string, Partial<CrudPageSpec>> = {
+  courses: { searchPlaceholder: "搜索课程…" },
+  "enrollment-offerings": { searchPlaceholder: "搜索批次/类型…" },
+  students: { searchPlaceholder: "搜索姓名/电话…" },
+  knowledge: { searchPlaceholder: "搜索标题/内容/标签…" },
+  "content-items": { searchPlaceholder: "搜索标题/内容…" },
+  users: { relations: { roleId: { endpoint: "roles", labelKey: "name" } } },
   "collect-sources": {
-    title: "采集源",
-    endpoint: "collect-sources",
     // E-05 回归修复（E-01 引入）：defaultValues 把 switch 一律默认 true，autoApprove 违反 ADR-017「默认关闭」——显式覆盖
     defaults: { autoApprove: false },
-    columns: [
-      { key: "name", label: "名称" },
-      { key: "type", label: "类型" },
-      { key: "url", label: "地址" },
-      { key: "cron", label: "计划" },
-      { key: "lastStatus", label: "上次状态" },
-    ],
-    fields: [
-      { key: "name", label: "名称", required: true },
-      {
-        key: "type", label: "类型", type: "select",
-        options: [{ label: "HTML 页面", value: "html" }, { label: "RSS", value: "rss" }],
-      },
-      { key: "url", label: "列表页 URL", required: true, colSpan: 2 },
-      // E-01：cron 留空 = 仅手动执行（契约口径的提示文案）
-      { key: "cron", label: "Cron 表达式", placeholder: "0 4 * * *", help: "留空表示仅手动执行（不在列表页展示计划）" },
-      { key: "autoTags", label: "自动标签", type: "tags" },
-      { key: "parser", label: "解析规则 JSON（listSelector/titleSelector/linkSelector/timeSelector/contentSelector）", type: "textarea", colSpan: 2, rows: 5 },
-      { key: "enabled", label: "启用", type: "switch" },
-      // E-01：冻结契约字段补齐（collectSourceCreateSchema）
-      { key: "autoToKb", label: "采集后自动入知识库", type: "switch", help: "新条目默认入知识库（默认开启）" },
-      { key: "autoApprove", label: "超管预授权直接通过", type: "switch", visibleTo: "super", help: "仅超级管理员可见可改；开启后采集条目跳过人工审核" },
-      { key: "knowledgeBaseId", label: "采集目标库 ID", type: "number", help: "留空 = 默认「采集资讯」库" },
-    ],
     rowActions: [
       { label: "试抓", run: testSource },
       { label: "立即执行", confirm: (row) => `立即执行采集源「${row.name}」？`, run: runSource },
     ] as RowAction[],
   },
-  users: {
-    title: "用户管理",
-    endpoint: "users",
-    columns: [
-      { key: "username", label: "用户名" },
-      { key: "nickname", label: "昵称" },
-      { key: "role", label: "角色" },
-      { key: "isActive", label: "启用", render: "boolean" },
-      { key: "lastLoginAt", label: "最后登录" },
-    ],
-    fields: [
-      { key: "username", label: "用户名", required: true },
-      { key: "password", label: "密码（编辑时留空=不改）" },
-      { key: "nickname", label: "昵称" },
-      { key: "email", label: "邮箱" },
-      { key: "phone", label: "电话" },
-      { key: "roleId", label: "角色", type: "select", required: true },
-      { key: "isActive", label: "启用", type: "switch" },
-    ],
-    relations: { roleId: { endpoint: "roles", labelKey: "name" } },
-  },
-  roles: {
-    title: "角色管理",
-    endpoint: "roles",
-    columns: [
-      { key: "name", label: "角色" },
-      { key: "slug", label: "标识" },
-      { key: "isSuper", label: "超管", render: "boolean" },
-      { key: "userCount", label: "用户数" },
-    ],
-    fields: [
-      { key: "name", label: "角色名", required: true },
-      { key: "slug", label: "标识" },
-      { key: "permissions", label: "权限点（逗号分隔，如 article:list,article:edit）", type: "tags", colSpan: 2 },
-      { key: "isSuper", label: "超级管理员", type: "switch" },
-      { key: "description", label: "描述", type: "textarea", colSpan: 2 },
-    ],
-  },
+};
+
+/** 只读资源（无表单契约；fields 空） */
+const READ_ONLY: Record<string, CrudPageSpec> = {
   "user-actions": {
     title: "行为记录",
     endpoint: "user-actions",
@@ -632,4 +151,16 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
   },
 };
 
-export { statusField };
+export const crudPageSpecs: Record<string, CrudPageSpec> = Object.fromEntries([
+  ...Object.entries(resourceMetas).map(([key, meta]): [string, CrudPageSpec] => [
+    key,
+    {
+      title: meta.title,
+      endpoint: key,
+      columns: COLUMNS[key] ?? [],
+      fields: deriveFields(meta.schema, meta.labels) as FieldSpec[],
+      ...EXTRA[key],
+    } as CrudPageSpec,
+  ]),
+  ...Object.entries(READ_ONLY).map(([key, spec]): [string, CrudPageSpec] => [key, spec]),
+]);
