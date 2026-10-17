@@ -389,6 +389,11 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
       { key: "baseIds", label: "绑定知识库 ID（逗号分隔）", colSpan: 2 },
       { key: "useKnowledgeBase", label: "启用知识库", type: "switch" },
       { key: "sort", label: "排序", type: "number" },
+      // E-01：冻结契约字段补齐（chatSceneCreateSchema：场景专属模型与参数）
+      { key: "llmProviderId", label: "专属模型供应商 ID", type: "number", help: "留空 = 走网关默认路由（isDefault → priority → isFallback）" },
+      { key: "temperature", label: "温度 temperature", type: "number", help: "0~2；留空用供应商默认" },
+      { key: "maxTokens", label: "最大 tokens", type: "number" },
+      { key: "topP", label: "top_p", type: "number", help: "0~1；留空用供应商默认" },
     ],
   },
   knowledge: {
@@ -431,9 +436,10 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
       },
       {
         key: "status", label: "状态", type: "select",
+        // E-01：与冻结契约一致（draft/pending_review/offline；审核走专用端点，approved/published 由执行器写入）
         options: [
           { label: "草稿", value: "draft" }, { label: "待审核", value: "pending_review" },
-          { label: "已通过", value: "approved" }, { label: "已发布", value: "published" }, { label: "已下线", value: "offline" },
+          { label: "已下线", value: "offline" },
         ],
       },
       { key: "excerpt", label: "摘要（留空自动）", colSpan: 2 },
@@ -492,10 +498,15 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
         options: [{ label: "HTML 页面", value: "html" }, { label: "RSS", value: "rss" }],
       },
       { key: "url", label: "列表页 URL", required: true, colSpan: 2 },
-      { key: "cron", label: "Cron 表达式", placeholder: "0 4 * * *" },
+      // E-01：cron 留空 = 仅手动执行（契约口径的提示文案）
+      { key: "cron", label: "Cron 表达式", placeholder: "0 4 * * *", help: "留空表示仅手动执行（不在列表页展示计划）" },
       { key: "autoTags", label: "自动标签", type: "tags" },
       { key: "parser", label: "解析规则 JSON（listSelector/titleSelector/linkSelector/timeSelector/contentSelector）", type: "textarea", colSpan: 2, rows: 5 },
       { key: "enabled", label: "启用", type: "switch" },
+      // E-01：冻结契约字段补齐（collectSourceCreateSchema）
+      { key: "autoToKb", label: "采集后自动入知识库", type: "switch", help: "新条目默认入知识库（默认开启）" },
+      { key: "autoApprove", label: "超管预授权直接通过", type: "switch", visibleTo: "super", help: "仅超级管理员可见可改；开启后采集条目跳过人工审核" },
+      { key: "knowledgeBaseId", label: "采集目标库 ID", type: "number", help: "留空 = 默认「采集资讯」库" },
     ],
     rowActions: [
       { label: "试抓", run: testSource },
