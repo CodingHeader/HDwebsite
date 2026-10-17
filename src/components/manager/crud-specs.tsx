@@ -484,6 +484,8 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
   "collect-sources": {
     title: "采集源",
     endpoint: "collect-sources",
+    // E-05 回归修复（E-01 引入）：defaultValues 把 switch 一律默认 true，autoApprove 违反 ADR-017「默认关闭」——显式覆盖
+    defaults: { autoApprove: false },
     columns: [
       { key: "name", label: "名称" },
       { key: "type", label: "类型" },
