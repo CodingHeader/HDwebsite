@@ -12,18 +12,21 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { FormField } from "@/components/manager/ui/form-field";
-import { Input, Select, Switch, Textarea, Checkbox } from "@/components/manager/ui/input";
+import { Input, Select, Switch, Textarea, Checkbox, DateTimeInput } from "@/components/manager/ui/input";
 import { SectionTitle } from "@/components/manager/ui/misc";
 import { ImageField } from "@/components/manager/fields/ImageField";
 import { MarkdownField } from "@/components/manager/fields/MarkdownField";
 import { RichTextField } from "@/components/manager/fields/RichTextField";
+import { RelationField } from "@/components/manager/fields/RelationField";
 import { sanitizeRichContent } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 export type FieldType =
   | "text" | "textarea" | "number" | "switch" | "select" | "multiselect" | "date" | "datetime"
-  | "image" | "tags" | "markdown" | "richtext" | "json" | "secret";
+  | "image" | "tags" | "markdown" | "richtext" | "json" | "secret"
+  /** A-03：远程搜索关联选择（FieldSpec.relation 提供端点；值=valueKey，显示=labelKey） */
+  | "relation";
 
 export type FieldSpec = {
   key: string;
@@ -45,6 +48,8 @@ export type FieldSpec = {
   disabled?: boolean | ((values: FormValues) => boolean);
   /** 可见性（ADR-028/W0-04）：`"super"` = 仅超级管理员可见/可编辑（非超管整块不渲染，也不参与必填校验） */
   visibleTo?: "super";
+  /** A-03：type="relation" 时的远程搜索配置（端点 + 显示/值键 + 额外参数） */
+  relation?: { path: string; labelKey?: string; valueKey?: string; params?: string };
 };
 
 export type FormValues = Record<string, unknown>;
@@ -270,13 +275,24 @@ function Field({ f, values, set, error }: { f: FieldSpec; values: FormValues; se
           case "date":
           case "datetime":
             return (
-              <Input
+              <DateTimeInput
                 {...a}
-                type="datetime-local"
                 disabled={disabled}
                 value={raw ? toLocalInput(String(raw)) : ""}
                 onChange={(e) => set(f.key, e.target.value ? new Date(e.target.value).toISOString() : null)}
               />
+            );
+          case "relation":
+            return f.relation ? (
+              <RelationField
+                a11y={a}
+                config={f.relation}
+                value={str}
+                disabled={disabled}
+                onChange={(v) => set(f.key, v === "" ? null : v)}
+              />
+            ) : (
+              <Input {...a} value={str} disabled={disabled} onChange={(e) => set(f.key, e.target.value)} />
             );
           case "image":
             return <ImageField a11y={a} value={str} placeholder={f.placeholder} onChange={(v) => set(f.key, v)} />;
