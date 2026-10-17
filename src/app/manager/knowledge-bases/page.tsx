@@ -13,7 +13,7 @@ import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField } from "@/components/manager/ui/form-field";
-import { Input, Select, Switch, Textarea } from "@/components/manager/ui";
+import { Button, Input, Select, Switch, Textarea } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { ErrorState, Forbidden, PageSkeleton, btnCls, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 import { Badge } from "@/components/manager/ui/misc";
@@ -219,10 +219,10 @@ export default function KnowledgeBasesPage() {
           title={`知识库：${selected.name}`}
           description={selected.description ?? selected.code}
           actions={
-            <button type="button" onClick={() => setSelected(null)} className={btnCls("secondary")} data-testid="kb-back">
+            <Button type="button" variant="secondary" onClick={() => setSelected(null)} data-testid="kb-back">
               <ArrowLeft aria-hidden="true" />
               返回库列表
-            </button>
+            </Button>
           }
         />
         <div className={cardCls}>
@@ -285,9 +285,9 @@ export default function KnowledgeBasesPage() {
                 if (e.key === "Enter") void runTest();
               }}
             />
-            <button type="button" onClick={() => void runTest()} className={btnCls("primary")} disabled={testing || !testQuery.trim()} data-testid="kb-test-run">
+            <Button type="button" variant="primary" onClick={() => void runTest()} disabled={testing || !testQuery.trim()} data-testid="kb-test-run">
               {testing ? "检索中…" : "检索"}
-            </button>
+            </Button>
           </div>
           {testHits && (
             <ul className="mt-3 flex flex-col gap-2" data-testid="kb-test-hits">
@@ -322,9 +322,9 @@ export default function KnowledgeBasesPage() {
         title="知识库"
         description="Coze 知识库管理：新建/绑定库、上传 Word/Markdown/TXT、查看同步进度与检索测试。"
         actions={
-          <button type="button" onClick={openCreate} className={btnCls("primary")} data-testid="kb-create">
+          <Button type="button" variant="primary" onClick={openCreate} data-testid="kb-create">
             新建知识库
-          </button>
+          </Button>
         }
       />
       <div className={cardCls}>

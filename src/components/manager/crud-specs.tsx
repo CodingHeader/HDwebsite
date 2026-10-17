@@ -581,6 +581,27 @@ export const crudPageSpecs: Record<string, CrudPageSpec> = {
       { key: "createdAt", label: "时间" },
     ],
     fields: [],
+    // E-06：模块筛选（后端 crud filters 白名单 module:string；动作/时间范围筛选需后端扩展 → 已登记待 B 线）
+    filters: [
+      {
+        key: "module",
+        label: "模块",
+        options: [
+          { label: "文章", value: "article" },
+          { label: "认证", value: "auth" },
+          { label: "校区", value: "campus" },
+          { label: "对话日志", value: "chat-history" },
+          { label: "采集", value: "collect" },
+          { label: "模型供应商", value: "llm" },
+          { label: "媒体库", value: "media" },
+          { label: "内容审核", value: "review" },
+          { label: "角色", value: "role" },
+          { label: "站点设置", value: "setting" },
+          { label: "用户", value: "user" },
+          { label: "公众号", value: "wechat" },
+        ],
+      },
+    ],
   },
   "notify-records": {
     title: "通知记录",

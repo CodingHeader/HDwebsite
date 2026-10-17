@@ -9,9 +9,8 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, Lock, ShieldCheck, User } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import type { AuthPayload } from "@/contracts";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button, IconButton, Input } from "@/components/manager/ui";
+import { Label } from "@/components/manager/ui/form-field";
 
 const fieldClass =
   "h-10 rounded-mgr-control border-mgr-border bg-mgr-surface pl-9 text-[14px] text-mgr-fg placeholder:text-mgr-muted-fg focus-visible:border-mgr-primary focus-visible:ring-2 focus-visible:ring-mgr-primary/25";
@@ -133,15 +132,15 @@ export default function LoginPage() {
                   aria-describedby={error ? "login-error" : undefined}
                   className={`${fieldClass} pr-10`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                <IconButton
+                  label={showPassword ? "隐藏密码" : "显示密码"}
                   aria-pressed={showPassword}
-                  className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
+                  size="sm"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                </IconButton>
               </div>
             </div>
 

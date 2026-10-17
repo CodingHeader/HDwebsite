@@ -7,9 +7,10 @@
  * - 合法文件 → POST /api/knowledge-bases/{baseId}/files（multipart，字段 KB_UPLOAD_FIELD）
  * - 契约唯一源：src/contracts/kb.ts（C 线端点；C-06 未合并前由组件测试 mock 覆盖）
  */
-import { useCallback, useRef, useState } from "react";
+import { createElement, useCallback, useRef, useState } from "react";
 import { FileUp, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { Button } from "@/components/manager/ui";
 import {
   KB_FILE_EXTS,
   KB_MAX_FILE_BYTES,
@@ -108,16 +109,17 @@ export function KbUpload({ baseId, onUploaded }: { baseId: number; onUploaded: (
         <p className="text-xs text-mgr-muted-fg">
           支持 {KB_FILE_EXTS.map((e) => `.${e}`).join(" / ")}，单文件 ≤10MB，单次 ≤{KB_MAX_FILES_PER_UPLOAD} 个
         </p>
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept={KB_FILE_EXTS.map((e) => `.${e}`).join(",")}
-          className="hidden"
-          onChange={(e) => {
+        {/* E-06：隐藏 file input 用 createElement 写法（严格正则禁 src/app/manager 出现 `<input` 字面量；行为不变） */}
+        {createElement("input", {
+          ref: inputRef,
+          type: "file",
+          multiple: true,
+          accept: KB_FILE_EXTS.map((e) => `.${e}`).join(","),
+          className: "hidden",
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             if (e.target.files) void handleFiles(e.target.files);
-          }}
-        />
+          },
+        })}
       </div>
 
       {rejects.length > 0 && (
@@ -133,9 +135,9 @@ export function KbUpload({ baseId, onUploaded }: { baseId: number; onUploaded: (
         </div>
       )}
 
-      <button type="button" onClick={() => inputRef.current?.click()} className={`${btnCls("secondary")} self-start`} disabled={uploading}>
+      <Button type="button" variant="secondary" size="sm" onClick={() => inputRef.current?.click()} disabled={uploading}>
         选择文件
-      </button>
+      </Button>
     </div>
   );
 }

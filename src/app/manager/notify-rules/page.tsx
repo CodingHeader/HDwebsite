@@ -15,9 +15,9 @@ import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField, Label } from "@/components/manager/ui/form-field";
-import { Input, Select, Switch } from "@/components/manager/ui";
+import { Button, Input, Select, Switch } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { ErrorState, Forbidden, PageSkeleton, btnCls, cardCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { ErrorState, Forbidden, PageSkeleton, cardCls, toast, useManagerQuery } from "@/components/manager/feedback";
 import { Badge } from "@/components/manager/ui/misc";
 
 type Rule = {
@@ -292,14 +292,9 @@ export default function NotifyRulesPage() {
                   data-testid="notify-rule-quiet-end"
                 />
                 {(draft.quietStart || draft.quietEnd) && (
-                  <button
-                    type="button"
-                    onClick={() => setDraft((d) => (d ? { ...d, quietStart: "", quietEnd: "" } : d))}
-                    className={btnCls("ghost")}
-                    data-testid="notify-rule-quiet-clear"
-                  >
+                  <Button type="button" variant="ghost" onClick={() => setDraft((d) => (d ? { ...d, quietStart: "", quietEnd: "" } : d))} data-testid="notify-rule-quiet-clear">
                     清除
-                  </button>
+                  </Button>
                 )}
               </div>
             </fieldset>

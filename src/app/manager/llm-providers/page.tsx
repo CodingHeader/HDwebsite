@@ -13,8 +13,11 @@ import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { StatusBadge } from "@/components/manager/StatusBadge";
-import { tableCls } from "@/components/manager/Pagination";
-import { Forbidden, TableState, btnCls, confirmDialog, linkCls, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
+import { Button } from "@/components/manager/ui";
+import { Forbidden, confirmDialog, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Badge } from "@/components/manager/ui/misc";
 
 type Provider = {
   id: number; name: string; kind: string; endpoint: string; model: string; botId: string | null;
@@ -162,94 +165,81 @@ export default function ManagerLlmProvidersPage() {
   const create = () =>
     begin(null, { name: "", kind: "openai", endpoint: "", apiKey: "", model: "", temperature: 0.7, maxTokens: 2048, priority: 10, status: "active", isDefault: false, isFallback: false });
 
+  const columns: DataColumn<Provider>[] = [
+    { key: "name", label: "名称", primary: true, render: (p) => <span className="font-medium">{p.name}</span> },
+    { key: "kind", label: "类型", render: (p) => (p.kind === "coze" ? "Coze" : "OpenAI 兼容") },
+    { key: "model", label: "模型/bot", render: (p) => <span className="text-mgr-muted-fg">{p.kind === "coze" ? `bot ${p.botId ?? "—"}` : p.model}</span> },
+    { key: "priority", label: "优先级", align: "right" },
+    {
+      key: "role",
+      label: "角色",
+      render: (p) => (
+        <span className="inline-flex gap-1">
+          {p.isDefault && <Badge tone="primary">默认</Badge>}
+          {p.isFallback && <Badge tone="neutral">兜底</Badge>}
+          {!p.isDefault && !p.isFallback && <span className="text-mgr-muted-fg">—</span>}
+        </span>
+      ),
+    },
+    {
+      key: "balance",
+      label: "余额",
+      render: (p) => {
+        const low = p.balance != null && p.balanceThreshold != null && p.balance <= p.balanceThreshold;
+        return p.balance != null ? (
+          <span className={low ? "font-medium text-mgr-danger" : undefined} title={low ? "低于提醒阈值" : undefined}>
+            {p.balance}
+            {low ? "（偏低）" : ""}
+          </span>
+        ) : (
+          <span className="text-mgr-muted-fg">未填报</span>
+        );
+      },
+    },
+    { key: "status", label: "状态", render: (p) => <StatusBadge tone={p.status === "active" ? "success" : "muted"}>{p.status === "active" ? "启用" : "停用"}</StatusBadge> },
+  ];
+
   return (
     <div>
       <PageHeader
         title="模型供应商"
         description="路由规则：默认模型 → 失败按优先级升序 → 全败走兜底模型。"
         actions={
-          <button type="button" onClick={create} className={btnCls("primary")} data-testid="llm-create">
+          <Button type="button" onClick={create} variant="primary" data-testid="llm-create">
             <Plus aria-hidden="true" />
             新建供应商
-          </button>
+          </Button>
         }
       />
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>名称</th>
-              <th scope="col" className={tableCls.th}>类型</th>
-              <th scope="col" className={tableCls.th}>模型/bot</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>优先级</th>
-              <th scope="col" className={tableCls.th}>角色</th>
-              <th scope="col" className={tableCls.th}>余额</th>
-              <th scope="col" className={tableCls.th}>状态</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <TableState
-              columns={8}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle="尚未配置模型供应商"
-              emptyDescription="AI 客服需要至少一个启用的供应商才能回复访客。"
-              emptyAction={
-                <button type="button" onClick={create} className={btnCls("primary")}>
-                  <Plus aria-hidden="true" />
-                  新建供应商
-                </button>
-              }
-            />
-            {!error &&
-              list.map((p) => {
-                const low = p.balance != null && p.balanceThreshold != null && p.balance <= p.balanceThreshold;
-                return (
-                  <tr key={p.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                    <td className={`${tableCls.td} font-medium`}>{p.name}</td>
-                    <td className={tableCls.td}>{p.kind === "coze" ? "Coze" : "OpenAI 兼容"}</td>
-                    <td className={`${tableCls.td} text-mgr-muted-fg`}>{p.kind === "coze" ? `bot ${p.botId ?? "—"}` : p.model}</td>
-                    <td className={`${tableCls.td} text-right tabular-nums`}>{p.priority}</td>
-                    <td className={tableCls.td}>
-                      <span className="inline-flex gap-1">
-                        {p.isDefault && <span className="rounded-full bg-mgr-primary-soft px-2 py-0.5 text-[11px] font-medium text-mgr-primary">默认</span>}
-                        {p.isFallback && <span className="rounded-full bg-mgr-subtle px-2 py-0.5 text-[11px] font-medium text-mgr-fg">兜底</span>}
-                        {!p.isDefault && !p.isFallback && <span className="text-mgr-muted-fg">—</span>}
-                      </span>
-                    </td>
-                    <td className={`${tableCls.td} tabular-nums`}>
-                      {p.balance != null ? <span className={low ? "font-medium text-mgr-danger" : undefined} title={low ? "低于提醒阈值" : undefined}>{p.balance}{low ? "（偏低）" : ""}</span> : <span className="text-mgr-muted-fg">未填报</span>}
-                    </td>
-                    <td className={tableCls.td}>
-                      <StatusBadge tone={p.status === "active" ? "success" : "muted"}>{p.status === "active" ? "启用" : "停用"}</StatusBadge>
-                    </td>
-                    <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                      <div className="inline-flex items-center gap-2">
-                        <button type="button" disabled={busy === p.id} onClick={() => void test(p)} className={linkCls("primary")}>
-                          {busy === p.id ? "处理中…" : "测试"}
-                        </button>
-                        <button type="button" disabled={busy === p.id} onClick={() => void fillBalance(p)} className={linkCls("muted")}>
-                          余额
-                        </button>
-                        <button type="button" onClick={() => begin(p.id, { ...p })} className={linkCls("primary")} aria-label={`编辑 ${p.name}`}>
-                          编辑
-                        </button>
-                        <button type="button" disabled={busy === p.id} onClick={() => void remove(p)} className={linkCls("danger")} aria-label={`删除 ${p.name}`}>
-                          删除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<Provider>
+        caption="模型供应商"
+        rows={list}
+        columns={columns}
+        rowKey={(p) => String(p.id)}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle="尚未配置模型供应商"
+        emptyDescription="AI 客服需要至少一个启用的供应商才能回复访客。"
+        emptyAction={
+          <Button type="button" onClick={create} variant="primary">
+            <Plus aria-hidden="true" />
+            新建供应商
+          </Button>
+        }
+        rowName={(p) => p.name}
+        rowActions={(p) => [
+          { key: "test", label: busy === p.id ? "处理中…" : "测试", tone: "primary", onClick: () => void test(p), disabled: busy === p.id },
+          { key: "balance", label: "余额", tone: "muted", onClick: () => void fillBalance(p), disabled: busy === p.id },
+          { key: "edit", label: "编辑", tone: "primary", ariaLabel: `编辑 ${p.name}`, onClick: () => begin(p.id, { ...p }) },
+          { key: "delete", label: "删除", tone: "danger", ariaLabel: `删除 ${p.name}`, onClick: () => void remove(p), disabled: busy === p.id },
+        ]}
+        pagination={undefined}
+        data-testid="llm-providers-table"
+      />
 
-      <FormDialog
+            <FormDialog
         open={editing !== null}
         title={editingId ? "编辑供应商" : "新建供应商"}
         onClose={() => setEditing(null)}

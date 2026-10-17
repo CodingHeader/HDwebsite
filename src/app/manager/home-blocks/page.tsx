@@ -15,9 +15,9 @@ import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField } from "@/components/manager/ui/form-field";
-import { Input, Switch, Textarea } from "@/components/manager/ui";
+import { Button, Input, Switch, Textarea } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { ErrorState, Forbidden, PageSkeleton, btnCls, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { ErrorState, Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 import { Badge } from "@/components/manager/ui/misc";
 
 type RegistryField = { key: string; label: string; type: string };
@@ -213,10 +213,10 @@ export default function HomeBlocksPage() {
         title="首页区块"
         description="首页区块的顺序、启用与覆盖配置（ADR-024）；顺序决定前台渲染，恢复默认回 main 原样。"
         actions={
-          <button type="button" onClick={() => void resetDefaults()} className={btnCls("danger")} data-testid="home-blocks-reset">
+          <Button type="button" variant="danger" onClick={() => void resetDefaults()} data-testid="home-blocks-reset">
             <RotateCcw aria-hidden="true" />
             恢复默认
-          </button>
+          </Button>
         }
       />
       {error && !isForbidden(error) && <ErrorState message={error.message} onRetry={() => void tbQ.reload()} />}
@@ -247,10 +247,10 @@ export default function HomeBlocksPage() {
           <p className="mb-2 text-sm font-medium">注册表中未加入首页的区块</p>
           <div className="flex flex-wrap gap-2">
             {addable.map((item) => (
-              <button key={item.code} type="button" onClick={() => void addBlock(item)} className={btnCls("ghost")} data-testid={`home-blocks-add-${item.code}`}>
+              <Button key={item.code} type="button" variant="ghost" onClick={() => void addBlock(item)} data-testid={`home-blocks-add-${item.code}`}>
                 <Plus aria-hidden="true" />
                 {item.name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
