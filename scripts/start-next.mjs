@@ -18,16 +18,26 @@ const port = process.env.PORT || "6789";
 const hostname = process.env.HOSTNAME || "0.0.0.0";
 const resolvedDatabaseUrl = process.env.DATABASE_URL || pathToFileURL(databaseFile).href;
 const useStandalone = process.platform !== "win32";
+// D-02：监视面精确化——不再监视整个 prisma/ 目录（数据库写入 dev.db/备份不再触发整站重建），
+// 只监视 schema 与 migrations；scripts 变化不触发重建（构建产物不含 scripts 运行时）。
 const watchedBuildEntries = [
   "src",
   "public",
-  "prisma",
-  "scripts",
+  "prisma/schema.prisma",
+  "prisma/migrations",
   "package.json",
   "package-lock.json",
   "next.config.ts",
   "tsconfig.json",
 ];
+
+// D-02：启动前按 Next 优先级加载 env 文件（.env.production.local > .env.local > .env.production > .env），
+// 使 npm start / node scripts/start-next.mjs 的生产启动读得到 .env.local（与 next dev 行为对齐）。
+// 注意：@next/env 是 CommonJS 模块，ESM 命名导入不可用——经默认导出解构。
+import nextEnv from "@next/env";
+const { loadEnvConfig } = nextEnv;
+loadEnvConfig(process.cwd(), process.env.NODE_ENV === "production", { info: () => {}, error: console.error });
+loadEnvConfig(process.cwd(), process.env.NODE_ENV === "production", { info: () => {}, error: console.error });
 
 function runBuildIfNeeded() {
   if (!shouldRunBuild({

@@ -12,6 +12,7 @@
  *   ≥ 768px 为表格，宽表在容器内横向滚动，操作列 sticky 固定在右侧。
  */
 import { useMemo, useState, type ReactNode } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronsUpDown, Columns3, RefreshCw, Rows3, Rows4 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePref } from "@/components/manager/shell/usePref";
@@ -75,6 +76,8 @@ export type DataTablePagination = {
   onLimitChange?: (limit: number) => void;
 };
 
+export type SortState = { key: string; dir: "asc" | "desc" };
+
 export interface DataTableProps<T> {
   /** 表格可读名称（读屏 caption） */
   caption: string;
@@ -96,6 +99,12 @@ export interface DataTableProps<T> {
   onRefresh?: () => void | Promise<void>;
   /** 行名称（批量与 aria 文案） */
   rowName?: (row: T) => string;
+  /** A-02：服务端排序回调——提供后点击表头触发回调（rows 由调用方重查），跳过客户端当前页排序 */
+  onSortChange?: (sort: SortState | null) => void;
+  /** A-02：受控排序态（与 onSortChange 配对；缺省用内部态渲染箭头） */
+  sort?: SortState | null;
+  /** A-02：分页/排序变化写入 URL 查询参数（?page&limit&sort；router.replace, scroll:false）。缺省关闭（既有调用方行为不变） */
+  syncUrl?: boolean;
   "data-testid"?: string;
 }
 
@@ -237,14 +246,21 @@ export function DataTable<T>({
   toolbar,
   onRefresh,
   rowName,
+  onSortChange,
+  sort: sortProp,
+  syncUrl = false,
   ...rest
 }: DataTableProps<T>) {
-  const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" } | null>(null);
+  const [sortState, setSortState] = useState<SortState | null>(null);
+  // A-02：受控排序态优先（onSortChange 配对），否则内部态（纯客户端排序，向后兼容）
+  const sort = sortProp !== undefined ? sortProp : sortState;
   const [hidden, setHidden] = useState<Set<string>>(() => new Set(columns.filter((c) => c.defaultHidden).map((c) => c.key)));
   const [colMenu, setColMenu] = useState(false);
   const [density, setDensity] = usePref("hd-mgr-density", "comfortable", DENSITIES);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   // 数据集变化（翻页/筛选/刷新）时清空选择：以行 key 串为依据，在渲染期同步（避免 effect 级联）
   const dataSig = rows.map(rowKey).join("|");
   const [prevSig, setPrevSig] = useState(dataSig);
@@ -255,7 +271,8 @@ export function DataTable<T>({
 
   const visibleCols = columns.filter((c) => !hidden.has(c.key));
   const sorted = useMemo(() => {
-    if (!sort) return rows;
+    // A-02：服务端排序模式（onSortChange 提供）时 rows 已由调用方重查排好，跳过客户端当前页排序
+    if (!sort || onSortChange) return rows;
     const col = columns.find((c) => c.key === sort.key);
     if (!col) return rows;
     const copy = [...rows];
@@ -266,7 +283,7 @@ export function DataTable<T>({
       return sort.dir === "asc" ? r : -r;
     });
     return copy;
-  }, [rows, sort, columns]);
+  }, [rows, sort, columns, onSortChange]);
 
   const selectable = !!bulkActions?.length;
   const hasActions = !!rowActions;
@@ -277,8 +294,22 @@ export function DataTable<T>({
   const showData = !loading && !error && sorted.length > 0;
   const primaryCol = columns.find((c) => c.primary) ?? columns[0];
 
+  /** A-02：把键值写进 URL 查询参数（syncUrl 开启时；scroll:false 不打断滚动位置） */
+  function syncParams(next: Record<string, string | null>) {
+    if (!syncUrl) return;
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [k, v] of Object.entries(next)) {
+      if (v === null || v === "") params.delete(k);
+      else params.set(k, v);
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+
   function toggleSort(key: string) {
-    setSort((s) => (!s || s.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : null));
+    const next: SortState | null = !sort || sort.key !== key ? { key, dir: "asc" } : sort.dir === "asc" ? { key, dir: "desc" } : null;
+    if (sortProp === undefined) setSortState(next);
+    onSortChange?.(next);
+    syncParams({ sort: next ? `${next.key}.${next.dir}` : null });
   }
 
   function toggleRow(k: string, on: boolean) {
@@ -545,7 +576,12 @@ export function DataTable<T>({
                 aria-label="每页条数"
                 className="w-20"
                 value={String(pagination.limit)}
-                onChange={(e) => pagination.onLimitChange!(Number(e.target.value))}
+                onChange={(e) => {
+                  const limit = Number(e.target.value);
+                  // A-02：每页条数变化回到第 1 页（调用方语义），URL 同步 limit
+                  syncParams({ limit: String(limit) });
+                  pagination.onLimitChange!(limit);
+                }}
                 options={PAGE_SIZES.map((n) => ({ label: String(n), value: n }))}
               />
               条
@@ -554,7 +590,7 @@ export function DataTable<T>({
             <span />
           )}
           <div className="min-w-0 sm:flex-1">
-            <Pagination page={pagination.page} totalPages={pagination.totalPages} total={pagination.total} onChange={pagination.onPageChange} className="" />
+            <Pagination page={pagination.page} totalPages={pagination.totalPages} total={pagination.total} onChange={(p) => { syncParams({ page: p > 1 ? String(p) : null }); pagination.onPageChange(p); }} className="" />
           </div>
         </div>
       )}

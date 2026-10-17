@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Label（前台共用，样式保持 main 原样）。P07：去除 @radix-ui/react-label 依赖，改为原生 <label>（Radix Label 本身即渲染 <label>，外观不变）。
+ * Label（前台共用，样式保持 main 原样）。P07：旧 Radix Label 依赖已移除，改为原生 <label>（外观不变）。
  */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"

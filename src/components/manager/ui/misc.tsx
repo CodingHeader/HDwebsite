@@ -122,3 +122,16 @@ export function HelpCallout({ children, tone = "info", className }: { children: 
     </div>
   );
 }
+
+// ── A-01（Wave 1）新增：Skeleton 骨架屏（纯样式件，加载态契约⑥） ──────────
+
+/** 骨架屏：脉冲加载占位（E 线列表/详情加载态复用；契约⑥ UX States） */
+export function Skeleton({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={style}
+      className={cn("animate-pulse rounded-mgr-control bg-mgr-subtle", className)}
+    />
+  );
+}

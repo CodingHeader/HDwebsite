@@ -163,3 +163,57 @@ export function SearchField({
     </div>
   );
 }
+
+// ── A-01（Wave 1）新增基础件：DateTimeInput / RadioGroup ───────────────────
+
+/** 日期时间输入（input[type=datetime-local] 原生美化；键盘与读屏原生可用） */
+export const DateTimeInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  function DateTimeInput({ className, type = "datetime-local", ...rest }, ref) {
+    return <input ref={ref} type={type} className={cn(controlClass, "h-9", className)} {...rest} />;
+  }
+);
+
+export interface RadioOption {
+  label: string;
+  value: string | number;
+  disabled?: boolean;
+}
+
+export interface RadioGroupProps {
+  /** 无障碍名（fieldset legend 或 aria-label 二选一） */
+  label?: string;
+  name: string;
+  value: string | number;
+  onValueChange: (value: string) => void;
+  options: RadioOption[];
+  className?: string;
+  disabled?: boolean;
+}
+
+/** 单选组：原生 radio（方向键原生切换、label 关联、Playwright check() 可用） */
+export function RadioGroup({ label, name, value, onValueChange, options, className, disabled }: RadioGroupProps) {
+  return (
+    <fieldset
+      className={cn("flex flex-col gap-2", className)}
+      {...(label ? {} : { "aria-label": undefined })}
+    >
+      {label && <legend className="mb-1 text-[13px] font-medium text-mgr-fg">{label}</legend>}
+      <div className="flex flex-col gap-2">
+        {options.map((o) => (
+          <label key={String(o.value)} className="inline-flex cursor-pointer items-center gap-2 text-[13px] text-mgr-fg disabled:cursor-not-allowed">
+            <input
+              type="radio"
+              name={name}
+              value={String(o.value)}
+              checked={String(o.value) === String(value)}
+              onChange={() => onValueChange(String(o.value))}
+              disabled={disabled || o.disabled}
+              className="h-4 w-4 shrink-0 cursor-pointer border-mgr-border accent-[var(--mgr-primary)] disabled:cursor-not-allowed"
+            />
+            <span className={o.disabled ? "text-mgr-muted-fg" : undefined}>{o.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
