@@ -153,6 +153,10 @@ async function seedMenus() {
     { parent: 'group-site', code: 'home-cards', label: '首页卡片', path: '/manager/home-cards', sort: 2, permission: 'banner:list' },
     { parent: 'group-site', code: 'campus', label: '校区管理', path: '/manager/campus', sort: 3, permission: 'campus:list' },
     { parent: 'group-site', code: 'gallery', label: '证书风采', path: '/manager/gallery', sort: 4, permission: 'gallery:list' },
+    // E-03（ADR-024）：首页区块配置三页
+    { parent: 'group-site', code: 'home-blocks', label: '首页区块', path: '/manager/home-blocks', sort: 5, permission: 'block:list' },
+    { parent: 'group-site', code: 'page-templates', label: '页面模板', path: '/manager/page-templates', sort: 6, permission: 'block:list' },
+    { parent: 'group-site', code: 'element-configs', label: '元素配置', path: '/manager/element-configs', sort: 7, permission: 'block:list' },
     { parent: 'group-ai', code: 'content-hub', label: '内容中枢', path: '/manager/content-hub', sort: 0, permission: 'content:list' },
     { parent: 'group-ai', code: 'chat-scenes', label: 'AI 场景', path: '/manager/chat-scenes', sort: 1, permission: 'setting:list' },
     { parent: 'group-ai', code: 'knowledge', label: '知识库', path: '/manager/knowledge', sort: 2, permission: 'kb:list' },
