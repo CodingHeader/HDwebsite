@@ -161,6 +161,10 @@ async function seedMenus() {
     { parent: 'group-ai', code: 'collect-items', label: '采集审核', path: '/manager/collect-items', sort: 5, permission: 'collect:list' },
     { parent: 'group-ai', code: 'publish-jobs', label: '发布任务', path: '/manager/publish-jobs', sort: 6, permission: 'publish:list' },
     { parent: 'group-ai', code: 'wechat-accounts', label: '公众号账号', path: '/manager/wechat-accounts', sort: 7, permission: 'wechat:list' },
+    // E-02（P-2）：/manager/collect-tasks 页面已存在，补登记菜单（P-2 与 notify-rules 同批）
+    { parent: 'group-ai', code: 'collect-tasks', label: '采集任务', path: '/manager/collect-tasks', sort: 8, permission: 'collect:list' },
+    // E-02：通知规则页（规则配置入口，置于通知组首位）
+    { parent: 'group-notify', code: 'notify-rules', label: '通知规则', path: '/manager/notify-rules', sort: 0, permission: 'notify:list' },
     { parent: 'group-notify', code: 'notify-recipients', label: '提醒接收人', path: '/manager/notify-recipients', sort: 1, permission: 'notify:list' },
     { parent: 'group-notify', code: 'notify-templates', label: '邮件模板', path: '/manager/notify-templates', sort: 2, permission: 'notify:list' },
     { parent: 'group-notify', code: 'notify-records', label: '通知记录', path: '/manager/notify-records', sort: 3, permission: 'notify:list' },
