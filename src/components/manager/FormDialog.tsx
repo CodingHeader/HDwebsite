@@ -3,10 +3,12 @@
 /**
  * FormDialog（P05）：新建/编辑表单弹窗
  * - base-ui Dialog：焦点陷阱、Esc 关闭、遮罩关闭；有未保存修改时关闭前二次确认（防误丢）
- * - <form> 提交：输入框内 Enter 提交；textarea 内 Ctrl/⌘+Enter 提交
+ * - A-03：浏览器级 beforeunload 未保存提示；快捷键 Ctrl/⌘+S 提交（保留 Ctrl/⌘+Enter 别名）
+ * - <form> 提交：输入框内 Enter 提交；textarea 内 Ctrl/⌘+S 提交
  * - serverError：后端返回的失败原因在弹窗顶部以 alert 呈现（同时由调用方 toast）
  */
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import * as Dialog from "@/components/manager/ui/dialog-primitive";
 import { AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/manager/ui/button";
@@ -55,6 +57,16 @@ export function FormDialog({
     onClose();
   }
 
+  // A-03：浏览器级未保存提示（刷新/关闭标签页时，dirty 有未保存修改则提示；应用内关闭已有二次确认）
+  useEffect(() => {
+    if (!open || !dirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [open, dirty]);
+
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && void requestClose()}>
       <Dialog.Portal>
@@ -72,7 +84,9 @@ export function FormDialog({
                 if (!saving) void onSubmit();
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                // A-03：快捷键改 Ctrl/⌘+S（保留 Ctrl/⌘+Enter 别名）；输入框内单 Enter 提交保持
+                const mod = e.ctrlKey || e.metaKey;
+                if (mod && (e.key === "s" || e.key === "S" || e.key === "Enter")) {
                   e.preventDefault();
                   if (!saving) void onSubmit();
                 }
