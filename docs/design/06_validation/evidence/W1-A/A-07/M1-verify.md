@@ -35,6 +35,6 @@
 
 ## 4. 合并后复跑结果（回填）
 
-- [ ] 通用门禁 4/4
-- [ ] visual 45/46（失败集 ⊆ {courses@375}，差异=基线）
-- [ ] e2e 9/9
+- [x] 通用门禁 4/4（gate-m1.log，SHA=c6a2cb4）
+- [x] visual 45/46（失败集 ⊆ {courses@375}，差异=基线不增，visual-m1.log）
+- [x] e2e 9/9（Windows，visual-m1.log）
