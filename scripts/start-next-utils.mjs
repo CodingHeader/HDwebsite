@@ -30,12 +30,21 @@ export function getLatestWatchedMtimeMs(projectRoot, watchEntries) {
   }, 0);
 }
 
-export function shouldRunBuild({ projectRoot, buildIdPath, watchEntries }) {
-  if (!existsSync(buildIdPath)) {
+/**
+ * 纯函数（D-02，可单测）：构建缺失或监视面比构建产物新时需要重建。
+ * 输入全部为标量（文件系统读取与纯函数判定分离），单测无需真实 fs。
+ */
+export function needsRebuild({ buildIdExists, buildIdMtimeMs, latestWatchedMtimeMs }) {
+  if (!buildIdExists) {
     return true;
   }
-
-  const buildIdMtimeMs = statSync(buildIdPath).mtimeMs;
-  const latestWatchedMtimeMs = getLatestWatchedMtimeMs(projectRoot, watchEntries);
   return latestWatchedMtimeMs > buildIdMtimeMs;
+}
+
+export function shouldRunBuild({ projectRoot, buildIdPath, watchEntries }) {
+  return needsRebuild({
+    buildIdExists: existsSync(buildIdPath),
+    buildIdMtimeMs: existsSync(buildIdPath) ? statSync(buildIdPath).mtimeMs : 0,
+    latestWatchedMtimeMs: getLatestWatchedMtimeMs(projectRoot, watchEntries),
+  });
 }
