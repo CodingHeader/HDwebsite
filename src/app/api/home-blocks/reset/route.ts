@@ -15,7 +15,7 @@ export const POST = withApi(
   async ({ request }) => {
     const input = await parseBody(request, homeBlocksResetRequestSchema);
     const template = await prisma.pageTemplate.findUnique({ where: { code: input.templateCode } });
-    if (!template) return success({ reset: 0 }, "模板不存在，无需恢复");
+    if (!template) return success({ templateCode: input.templateCode, blocks: 0 }, "模板不存在，无需恢复");
     await prisma.templateBlock.deleteMany({ where: { templateId: template.id } });
     let created = 0;
     for (const [i, code] of DEFAULT_HOME_BLOCK_ORDER.entries()) {
@@ -24,7 +24,8 @@ export const POST = withApi(
       await prisma.templateBlock.create({ data: { templateId: template.id, blockId: block.id, sort: (i + 1) * 10, config: null } });
       created += 1;
     }
-    return success({ reset: created }, "已恢复默认区块配置");
+    // 契约冻结包 §home-blocks/reset：响应 data = { templateCode, blocks: number }
+    return success({ templateCode: input.templateCode, blocks: created }, "已恢复默认区块配置");
   },
   { permission: "block:edit", route: "home-blocks/reset/POST", errorMessage: "恢复默认失败" }
 );

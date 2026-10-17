@@ -160,6 +160,8 @@ async function seedMenus() {
     { parent: 'group-ai', code: 'content-hub', label: '内容中枢', path: '/manager/content-hub', sort: 0, permission: 'content:list' },
     { parent: 'group-ai', code: 'chat-scenes', label: 'AI 场景', path: '/manager/chat-scenes', sort: 1, permission: 'setting:list' },
     { parent: 'group-ai', code: 'knowledge', label: '知识库', path: '/manager/knowledge', sort: 2, permission: 'kb:list' },
+    // E-04（ADR-025）：知识库管理页（库级：Coze 绑定/文件上传/检索测试）
+    { parent: 'group-ai', code: 'knowledge-bases', label: '知识库管理', path: '/manager/knowledge-bases', sort: 2, permission: 'kb:list' },
     { parent: 'group-ai', code: 'llm-providers', label: '模型供应商', path: '/manager/llm-providers', sort: 3, permission: 'llm:list' },
     { parent: 'group-ai', code: 'collect-sources', label: '采集源', path: '/manager/collect-sources', sort: 4, permission: 'collect:list' },
     { parent: 'group-ai', code: 'collect-items', label: '采集审核', path: '/manager/collect-items', sort: 5, permission: 'collect:list' },
