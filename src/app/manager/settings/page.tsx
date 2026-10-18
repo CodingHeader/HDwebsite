@@ -11,7 +11,8 @@ import { toastCopy } from "@/contracts/common";
 import { SchemaForm } from "@/components/manager/SchemaForm";
 import type { FormValues } from "@/components/manager/SchemaForm";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { ErrorState, Forbidden, PageSkeleton, btnCls, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { ErrorState, Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Button } from "@/components/manager/ui";
 
 type Defs = { groups: { group: string; label: string; isPublic: boolean; items: { key: string; label: string; type: string; isEncrypted: boolean }[] }[] };
 
@@ -95,10 +96,10 @@ export default function ManagerSettingsPage() {
       title="站点设置"
       description="前台展示的站点信息、联系方式与系统参数；带锁图标的分组为非公开配置。"
       actions={
-        <button type="button" onClick={() => void save()} disabled={saving || !current || dirtyKeys.length === 0} className={btnCls("primary")} data-testid="settings-save">
+        <Button type="button" onClick={() => void save()} disabled={saving || !current || dirtyKeys.length === 0} variant="primary" data-testid="settings-save">
           <Save aria-hidden="true" />
           {saving ? "保存中…" : dirtyKeys.length ? `保存修改（${dirtyKeys.length}）` : "已是最新"}
-        </button>
+        </Button>
       }
     />
   );
@@ -145,15 +146,16 @@ export default function ManagerSettingsPage() {
               const active = g.group === activeGroup;
               return (
                 <li key={g.group}>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     aria-current={active ? "true" : undefined}
                     onClick={() => void switchGroup(g.group)}
-                    className={`flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-mgr-control px-3 py-2 text-left text-[13px] transition-colors ${active ? "bg-mgr-primary-soft font-medium text-mgr-primary" : "text-mgr-fg hover:bg-mgr-subtle"}`}
+                    className={`w-full justify-between gap-2 whitespace-nowrap rounded-mgr-control px-3 py-2 text-left text-[13px] ${active ? "bg-mgr-primary-soft font-medium text-mgr-primary" : "text-mgr-fg hover:bg-mgr-subtle"}`}
                   >
                     {g.label}
                     {!g.isPublic && <Lock className="h-3.5 w-3.5 text-mgr-muted-fg" aria-label="非公开" />}
-                  </button>
+                  </Button>
                 </li>
               );
             })}

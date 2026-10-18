@@ -14,8 +14,10 @@ import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { FilterTabs } from "@/components/manager/FilterTabs";
 import { StatusBadge, type Tone } from "@/components/manager/StatusBadge";
-import { Pagination, tableCls } from "@/components/manager/Pagination";
-import { Forbidden, TableState, btnCls, confirmDialog, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
+import { Button } from "@/components/manager/ui";
+import { Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Job = {
   id: number; itemId: number | null; contentType: string; channel: string; action: string; status: string;
@@ -138,6 +140,46 @@ export default function ManagerPublishJobsPage() {
   if (isForbidden(error)) return <Forbidden message={error.message} />;
   const list = data?.list ?? [];
 
+  const columns: DataColumn<Job>[] = [
+    {
+      key: "item",
+      label: "内容",
+      primary: true,
+      render: (j) => (
+        <span className="line-clamp-1 max-w-[280px]" title={titleOf(j)}>
+          {titleOf(j)}
+        </span>
+      ),
+    },
+    { key: "channel", label: "渠道", render: (j) => (j.channel === "website" ? "官网" : "公众号") },
+    { key: "action", label: "动作", render: (j) => ACTIONS[j.action] ?? j.action },
+    {
+      key: "status",
+      label: "状态",
+      render: (j) => {
+        const st = STATUS[j.status] ?? { label: j.status, tone: "muted" as Tone };
+        return (
+          <span className="inline-flex flex-col">
+            <StatusBadge tone={st.tone} title={j.errMsg ?? undefined}>
+              {st.label}
+            </StatusBadge>
+            {j.errMsg && (
+              <span className="mt-0.5 line-clamp-1 max-w-[220px] text-[11px] text-mgr-muted-fg" title={j.errMsg}>
+                {j.errMsg}
+              </span>
+            )}
+          </span>
+        );
+      },
+    },
+    {
+      key: "scheduledAt",
+      label: "排期",
+      render: (j) => (j.scheduledAt ? new Date(j.scheduledAt).toLocaleString("zh-CN", { hour12: false }).slice(0, -3) : "立即"),
+    },
+    { key: "attemptCount", label: "尝试", align: "right" },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -153,82 +195,44 @@ export default function ManagerPublishJobsPage() {
                 setPage(1);
               }}
             />
-            <button type="button" onClick={() => void openCreate()} className={btnCls("primary")} data-testid="publish-create">
+            <Button type="button" onClick={() => void openCreate()} variant="primary" data-testid="publish-create">
               <Plus aria-hidden="true" />
               新建任务
-            </button>
+            </Button>
           </>
         }
       />
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>内容</th>
-              <th scope="col" className={tableCls.th}>渠道</th>
-              <th scope="col" className={tableCls.th}>动作</th>
-              <th scope="col" className={tableCls.th}>状态</th>
-              <th scope="col" className={tableCls.th}>排期</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>尝试</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody className={refreshing ? "opacity-60 transition-opacity" : undefined}>
-            <TableState
-              columns={7}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle="暂无发布任务"
-              emptyDescription="在「内容中枢」点「发官网 / 发公众号」，或在此新建任务。"
-              emptyAction={
-                <button type="button" onClick={() => void openCreate()} className={btnCls("primary")}>
-                  <Plus aria-hidden="true" />
-                  新建任务
-                </button>
-              }
-            />
-            {!error &&
-              list.map((j) => {
-                const st = STATUS[j.status] ?? { label: j.status, tone: "muted" as Tone };
-                return (
-                  <tr key={j.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                    <td className={`${tableCls.td} max-w-[280px]`}>
-                      <span className="line-clamp-1" title={titleOf(j)}>{titleOf(j)}</span>
-                    </td>
-                    <td className={tableCls.td}>{j.channel === "website" ? "官网" : "公众号"}</td>
-                    <td className={tableCls.td}>{ACTIONS[j.action] ?? j.action}</td>
-                    <td className={tableCls.td}>
-                      <StatusBadge tone={st.tone} title={j.errMsg ?? undefined}>
-                        {st.label}
-                      </StatusBadge>
-                      {j.errMsg && <p className="mt-0.5 line-clamp-1 max-w-[220px] text-[11px] text-mgr-muted-fg" title={j.errMsg}>{j.errMsg}</p>}
-                    </td>
-                    <td className={`${tableCls.td} tabular-nums text-mgr-muted-fg`}>
-                      {j.scheduledAt ? new Date(j.scheduledAt).toLocaleString("zh-CN", { hour12: false }).slice(0, -3) : "立即"}
-                    </td>
-                    <td className={`${tableCls.td} text-right tabular-nums`}>{j.attemptCount}</td>
-                    <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                      {(j.status === "failed" || j.status === "cancelled") && (
-                        <button type="button" disabled={busy === j.id} onClick={() => void action(j, "retry")} className={linkCls("primary")}>
-                          重试
-                        </button>
-                      )}
-                      {["pending", "scheduled", "reviewing"].includes(j.status) && (
-                        <button type="button" disabled={busy === j.id} onClick={() => void action(j, "cancel")} className={linkCls("danger")}>
-                          取消
-                        </button>
-                      )}
-                      {["published", "publishing"].includes(j.status) && <span className="text-mgr-muted-fg">—</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </div>
-      {data && !error && <Pagination page={page} totalPages={data.pagination.totalPages} total={data.pagination.total} onChange={setPage} />}
+      <DataTable<Job>
+        caption="发布任务"
+        rows={list}
+        columns={columns}
+        rowKey={(j) => String(j.id)}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle="暂无发布任务"
+        emptyDescription="在「内容中枢」点「发官网 / 发公众号」，或在此新建任务。"
+        emptyAction={
+          <Button type="button" onClick={() => void openCreate()} variant="primary">
+            <Plus aria-hidden="true" />
+            新建任务
+          </Button>
+        }
+        rowName={(j) => titleOf(j)}
+        rowActions={(j) =>
+          [
+            ...(j.status === "failed" || j.status === "cancelled"
+              ? [{ key: "retry", label: "重试", tone: "primary" as const, onClick: () => void action(j, "retry"), disabled: busy === j.id }]
+              : []),
+            ...["pending", "scheduled", "reviewing"].includes(j.status)
+              ? [{ key: "cancel", label: "取消", tone: "danger" as const, onClick: () => void action(j, "cancel"), disabled: busy === j.id }]
+              : [],
+          ]
+        }
+        pagination={data && !error ? { page, limit: 15, totalPages: data.pagination.totalPages, total: data.pagination.total ?? list.length, onPageChange: setPage } : undefined}
+        data-testid="publish-jobs-table"
+      />
 
       <FormDialog
         open={creating !== null}

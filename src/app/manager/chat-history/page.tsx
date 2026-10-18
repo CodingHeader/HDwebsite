@@ -12,8 +12,10 @@ import { toastCopy } from "@/contracts/common";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { DetailDialog } from "@/components/manager/DetailDialog";
 import { SearchInput } from "@/components/manager/SearchInput";
-import { Pagination, tableCls } from "@/components/manager/Pagination";
-import { Bone, ErrorState, Forbidden, TableState, btnCls, confirmDialog, inputCls, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
+import { Button, Select } from "@/components/manager/ui";
+import { Bone, ErrorState, Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type SessionRow = {
   id: string;
@@ -92,6 +94,14 @@ export default function ChatHistoryPage() {
   if (isForbidden(error)) return <Forbidden message={error.message} />;
   const list = data?.list ?? [];
 
+  const columns: DataColumn<SessionRow>[] = [
+    { key: "sessionId", label: "会话", primary: true, render: (row) => <span className="max-w-[180px] truncate font-mono text-[12px]" title={row.sessionId}>{row.sessionId}</span> },
+    { key: "channel", label: "渠道", render: (row) => channelLabel[row.channel] ?? row.channel },
+    { key: "messageCount", label: "消息数", align: "right" },
+    { key: "lastUserMessage", label: "最近提问", render: (row) => <span className="max-w-[320px] truncate" title={row.lastUserMessage ?? ""}>{row.lastUserMessage ?? "—"}</span> },
+    { key: "lastAt", label: "最后活跃", render: (row) => <span className="whitespace-nowrap tabular-nums text-mgr-muted-fg">{fmt(row.lastAt)}</span> },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -99,19 +109,20 @@ export default function ChatHistoryPage() {
         description="官网与公众号 AI 客服的访客会话记录，按会话聚合。"
         actions={
           <>
-            <select
+            <Select
               aria-label="按渠道筛选"
-              className={`${inputCls.replace("w-full ", "")} w-auto sm:w-32`}
+              className="w-auto sm:w-32"
               value={channel}
               onChange={(e) => {
                 setChannel(e.target.value);
                 setPage(1);
               }}
-            >
-              <option value="">全部渠道</option>
-              <option value="website">官网</option>
-              <option value="wechat">公众号</option>
-            </select>
+              options={[
+                { label: "全部渠道", value: "" },
+                { label: "官网", value: "website" },
+                { label: "公众号", value: "wechat" },
+              ]}
+            />
             <SearchInput
               value={keyword}
               placeholder="搜索消息内容/会话…"
@@ -124,57 +135,25 @@ export default function ChatHistoryPage() {
         }
       />
 
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>会话</th>
-              <th scope="col" className={tableCls.th}>渠道</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>消息数</th>
-              <th scope="col" className={tableCls.th}>最近提问</th>
-              <th scope="col" className={tableCls.th}>最后活跃</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody className={refreshing ? "opacity-60 transition-opacity" : undefined}>
-            <TableState
-              columns={6}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle={keyword || channel ? "没有符合条件的会话" : "暂无对话记录"}
-              emptyDescription={keyword || channel ? "调整筛选条件试试。" : "访客在官网或公众号与 AI 客服对话后，会话会出现在这里。"}
-            />
-            {!error &&
-              list.map((row) => (
-                <tr key={`${row.sessionId}-${row.channel}`} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                  <td className={`${tableCls.td} max-w-[180px] truncate font-mono text-[12px]`} title={row.sessionId}>
-                    {row.sessionId}
-                  </td>
-                  <td className={tableCls.td}>{channelLabel[row.channel] ?? row.channel}</td>
-                  <td className={`${tableCls.td} text-right tabular-nums`}>{row.messageCount}</td>
-                  <td className={`${tableCls.td} max-w-[320px] truncate`} title={row.lastUserMessage ?? ""}>
-                    {row.lastUserMessage ?? "—"}
-                  </td>
-                  <td className={`${tableCls.td} whitespace-nowrap tabular-nums text-mgr-muted-fg`}>{fmt(row.lastAt)}</td>
-                  <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                    <div className="inline-flex items-center gap-2">
-                      <button type="button" onClick={() => openDetail(row)} className={linkCls("primary")}>
-                        查看
-                      </button>
-                      <button type="button" disabled={busy === row.sessionId} onClick={() => void remove(row)} className={linkCls("danger")}>
-                        删除
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-
-      {data && !error && <Pagination page={page} totalPages={data.pagination.totalPages} total={data.pagination.total} onChange={setPage} />}
+      <DataTable<SessionRow>
+        caption="对话日志"
+        rows={list}
+        columns={columns}
+        rowKey={(row) => `${row.sessionId}-${row.channel}`}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle={keyword || channel ? "没有符合条件的会话" : "暂无对话记录"}
+        emptyDescription={keyword || channel ? "调整筛选条件试试。" : "访客在官网或公众号与 AI 客服对话后，会话会出现在这里。"}
+        rowName={(row) => row.sessionId}
+        rowActions={(row) => [
+          { key: "view", label: "查看", tone: "primary", onClick: () => openDetail(row) },
+          { key: "delete", label: "删除", tone: "danger", onClick: () => void remove(row), disabled: busy === row.sessionId },
+        ]}
+        pagination={data && !error ? { page, limit: 10, totalPages: data.pagination.totalPages, total: data.pagination.total ?? list.length, onPageChange: setPage } : undefined}
+        data-testid="chat-history-table"
+      />
 
       <DetailDialog
         open={openRow !== null}
@@ -189,10 +168,10 @@ export default function ChatHistoryPage() {
         }
         footer={
           openRow ? (
-            <button type="button" className={btnCls("secondary")} disabled={busy === openRow.sessionId} onClick={() => void remove(openRow)}>
+            <Button type="button" variant="secondary" disabled={busy === openRow.sessionId} onClick={() => void remove(openRow)}>
               <Trash2 aria-hidden="true" />
               删除会话
-            </button>
+            </Button>
           ) : undefined
         }
       >

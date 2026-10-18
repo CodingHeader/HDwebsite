@@ -3,9 +3,12 @@
 /**
  * 模型供应商：列表 + 优先级/默认/兜底 + 连通性测试 + 余额填报 + 新建/编辑/删除
  * P05：五态接入；原生 prompt 余额填报 → promptDialog（行内校验）；删除走 ConfirmDialog（补齐 CRUD 的 D）；测试结果 Toast。
+ * E-10：Tabs（供应商 / 用量统计）+ 优先级拖拽排序（HTML5 DnD + 键盘上/下移按钮，a11y 可替代）
+ *   + 一次保存（逐条 PUT /api/llm/providers/[id] {priority}；C-11 合并后可切 PUT /api/llm/providers/order 单请求）
+ *   + 保存失败回滚顺序；用量 Tab（GET /api/llm/usage，C-11 未合并前错误态）表格 + 简单柱状（无新依赖）。
  */
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowDown, ArrowUp, GripVertical, Plus } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
 import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
@@ -13,8 +16,12 @@ import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { StatusBadge } from "@/components/manager/StatusBadge";
-import { tableCls } from "@/components/manager/Pagination";
-import { Forbidden, TableState, btnCls, confirmDialog, linkCls, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
+import { Button, IconButton, Input, Select } from "@/components/manager/ui";
+import { ErrorState, Forbidden, cardCls, confirmDialog, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Badge, Tabs } from "@/components/manager/ui/misc";
+import type { LlmUsageRow } from "@/contracts/llm";
 
 type Provider = {
   id: number; name: string; kind: string; endpoint: string; model: string; botId: string | null;
@@ -44,6 +51,19 @@ const FIELDS: FieldSpec[] = [
 
 export default function ManagerLlmProvidersPage() {
   const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(`/api/llm/providers?page=1&limit=50`);
+  const [tab, setTab] = useState("providers");
+  // E-10 优先级排序：本地顺序（priority 升序初始化）+ dirty + 保存失败回滚
+  const [order, setOrder] = useState<Provider[] | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  // E-10：远端数据到达后初始化本地顺序（仅首次；hooks 须在 early return 之前）
+  useEffect(() => {
+    if (data && order === null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 外部数据到达后一次性初始化
+      setOrder([...data.list].sort((a, b) => a.priority - b.priority || a.id - b.id));
+    }
+  }, [data, order]);
   const [editing, setEditing] = useState<FormValues | null>(null);
   const [initial, setInitial] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -159,8 +179,74 @@ export default function ManagerLlmProvidersPage() {
 
   if (isForbidden(error)) return <Forbidden message={error.message} />;
   const list = data?.list ?? [];
+  const byPriority = [...list].sort((a, b) => a.priority - b.priority || a.id - b.id);
+  const current = order ?? byPriority;
+  const orderDirty = order !== null && JSON.stringify(order.map((p) => p.id)) !== JSON.stringify(byPriority.map((p) => p.id));
+
+  function moveOrder(from: number, to: number) {
+    if (to < 0 || to >= current.length || from === to) return;
+    const next = [...current];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setOrder(next);
+  }
+
+  async function saveOrder() {
+    if (!order || savingOrder) return;
+    setSavingOrder(true);
+    const baseline = [...byPriority]; // 失败回滚基准
+    try {
+      // 逐条 PUT（现有端点）；C-11 合并后可切 PUT /api/llm/providers/order 单请求
+      for (const [i, p] of order.entries()) {
+        await managerFetch(`/api/llm/providers/${p.id}`, { method: "PUT", body: JSON.stringify({ priority: (i + 1) * 10 }) });
+      }
+      toast.success("优先级已保存", "新会话按新顺序路由");
+      setOrder(null);
+      void reload();
+    } catch (e) {
+      setOrder(baseline); // 失败回滚
+      toast.error("保存失败，已回滚顺序", errorMessage(e));
+    } finally {
+      setSavingOrder(false);
+    }
+  }
+
   const create = () =>
     begin(null, { name: "", kind: "openai", endpoint: "", apiKey: "", model: "", temperature: 0.7, maxTokens: 2048, priority: 10, status: "active", isDefault: false, isFallback: false });
+
+  const columns: DataColumn<Provider>[] = [
+    { key: "name", label: "名称", primary: true, render: (p) => <span className="font-medium">{p.name}</span> },
+    { key: "kind", label: "类型", render: (p) => (p.kind === "coze" ? "Coze" : "OpenAI 兼容") },
+    { key: "model", label: "模型/bot", render: (p) => <span className="text-mgr-muted-fg">{p.kind === "coze" ? `bot ${p.botId ?? "—"}` : p.model}</span> },
+    { key: "priority", label: "优先级", align: "right" },
+    {
+      key: "role",
+      label: "角色",
+      render: (p) => (
+        <span className="inline-flex gap-1">
+          {p.isDefault && <Badge tone="primary">默认</Badge>}
+          {p.isFallback && <Badge tone="neutral">兜底</Badge>}
+          {!p.isDefault && !p.isFallback && <span className="text-mgr-muted-fg">—</span>}
+        </span>
+      ),
+    },
+    {
+      key: "balance",
+      label: "余额",
+      render: (p) => {
+        const low = p.balance != null && p.balanceThreshold != null && p.balance <= p.balanceThreshold;
+        return p.balance != null ? (
+          <span className={low ? "font-medium text-mgr-danger" : undefined} title={low ? "低于提醒阈值" : undefined}>
+            {p.balance}
+            {low ? "（偏低）" : ""}
+          </span>
+        ) : (
+          <span className="text-mgr-muted-fg">未填报</span>
+        );
+      },
+    },
+    { key: "status", label: "状态", render: (p) => <StatusBadge tone={p.status === "active" ? "success" : "muted"}>{p.status === "active" ? "启用" : "停用"}</StatusBadge> },
+  ];
 
   return (
     <div>
@@ -168,88 +254,101 @@ export default function ManagerLlmProvidersPage() {
         title="模型供应商"
         description="路由规则：默认模型 → 失败按优先级升序 → 全败走兜底模型。"
         actions={
-          <button type="button" onClick={create} className={btnCls("primary")} data-testid="llm-create">
-            <Plus aria-hidden="true" />
-            新建供应商
-          </button>
+          <>
+            <Tabs
+              items={[
+                { key: "providers", label: "供应商" },
+                { key: "usage", label: "用量统计" },
+              ]}
+              value={tab}
+              onChange={setTab}
+              label="模型运营视图"
+              className="border-b-0"
+            />
+            {tab === "providers" && (
+              <Button type="button" onClick={create} variant="primary" data-testid="llm-create">
+                <Plus aria-hidden="true" />
+                新建供应商
+              </Button>
+            )}
+          </>
         }
       />
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>名称</th>
-              <th scope="col" className={tableCls.th}>类型</th>
-              <th scope="col" className={tableCls.th}>模型/bot</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>优先级</th>
-              <th scope="col" className={tableCls.th}>角色</th>
-              <th scope="col" className={tableCls.th}>余额</th>
-              <th scope="col" className={tableCls.th}>状态</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <TableState
-              columns={8}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle="尚未配置模型供应商"
-              emptyDescription="AI 客服需要至少一个启用的供应商才能回复访客。"
-              emptyAction={
-                <button type="button" onClick={create} className={btnCls("primary")}>
-                  <Plus aria-hidden="true" />
-                  新建供应商
-                </button>
-              }
-            />
-            {!error &&
-              list.map((p) => {
-                const low = p.balance != null && p.balanceThreshold != null && p.balance <= p.balanceThreshold;
-                return (
-                  <tr key={p.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                    <td className={`${tableCls.td} font-medium`}>{p.name}</td>
-                    <td className={tableCls.td}>{p.kind === "coze" ? "Coze" : "OpenAI 兼容"}</td>
-                    <td className={`${tableCls.td} text-mgr-muted-fg`}>{p.kind === "coze" ? `bot ${p.botId ?? "—"}` : p.model}</td>
-                    <td className={`${tableCls.td} text-right tabular-nums`}>{p.priority}</td>
-                    <td className={tableCls.td}>
-                      <span className="inline-flex gap-1">
-                        {p.isDefault && <span className="rounded-full bg-mgr-primary-soft px-2 py-0.5 text-[11px] font-medium text-mgr-primary">默认</span>}
-                        {p.isFallback && <span className="rounded-full bg-mgr-subtle px-2 py-0.5 text-[11px] font-medium text-mgr-fg">兜底</span>}
-                        {!p.isDefault && !p.isFallback && <span className="text-mgr-muted-fg">—</span>}
-                      </span>
-                    </td>
-                    <td className={`${tableCls.td} tabular-nums`}>
-                      {p.balance != null ? <span className={low ? "font-medium text-mgr-danger" : undefined} title={low ? "低于提醒阈值" : undefined}>{p.balance}{low ? "（偏低）" : ""}</span> : <span className="text-mgr-muted-fg">未填报</span>}
-                    </td>
-                    <td className={tableCls.td}>
-                      <StatusBadge tone={p.status === "active" ? "success" : "muted"}>{p.status === "active" ? "启用" : "停用"}</StatusBadge>
-                    </td>
-                    <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                      <div className="inline-flex items-center gap-2">
-                        <button type="button" disabled={busy === p.id} onClick={() => void test(p)} className={linkCls("primary")}>
-                          {busy === p.id ? "处理中…" : "测试"}
-                        </button>
-                        <button type="button" disabled={busy === p.id} onClick={() => void fillBalance(p)} className={linkCls("muted")}>
-                          余额
-                        </button>
-                        <button type="button" onClick={() => begin(p.id, { ...p })} className={linkCls("primary")} aria-label={`编辑 ${p.name}`}>
-                          编辑
-                        </button>
-                        <button type="button" disabled={busy === p.id} onClick={() => void remove(p)} className={linkCls("danger")} aria-label={`删除 ${p.name}`}>
-                          删除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </div>
 
-      <FormDialog
+      {tab === "providers" && (
+        <>
+          {/* E-10：优先级排序面板——拖拽（HTML5 DnD）+ 键盘上/下移按钮（a11y 可替代）；一次保存，失败回滚 */}
+          {current.length > 0 && (
+            <div className={cardCls} data-testid="llm-order-panel">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-medium">优先级排序（拖拽或用键盘按钮，小值优先）</p>
+                  <Button type="button" onClick={() => void saveOrder()} disabled={!orderDirty || savingOrder} variant="primary" data-testid="llm-order-save">
+                  {savingOrder ? "保存中…" : orderDirty ? "保存排序" : "已是最新"}
+                </Button>
+              </div>
+              <ul className="flex flex-col gap-1">
+                {current.map((p, i) => (
+                  <li
+                    key={p.id}
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (dragIndex !== null && dragIndex !== i) moveOrder(dragIndex, i);
+                    }}
+                    onDragEnd={() => setDragIndex(null)}
+                    className={`flex items-center gap-2 rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2 ${dragIndex === i ? "opacity-50" : ""}`}
+                    data-testid={`llm-order-row-${p.name}`}
+                  >
+                    <GripVertical aria-hidden="true" className="h-4 w-4 cursor-grab text-mgr-muted-fg" />
+                    <span className="w-6 text-center text-[12px] tabular-nums text-mgr-muted-fg">{i + 1}</span>
+                    <span className="flex-1 truncate text-[13px] font-medium">{p.name}</span>
+                    <span className="text-[12px] text-mgr-muted-fg">优先级 {p.priority}</span>
+                    <IconButton label={`上移 ${p.name}`} size="sm" disabled={i === 0} onClick={() => moveOrder(i, i - 1)}>
+                      <ArrowUp aria-hidden="true" />
+                    </IconButton>
+                    <IconButton label={`下移 ${p.name}`} size="sm" disabled={i === current.length - 1} onClick={() => moveOrder(i, i + 1)}>
+                      <ArrowDown aria-hidden="true" />
+                    </IconButton>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <DataTable<Provider>
+        caption="模型供应商"
+        rows={list}
+        columns={columns}
+        rowKey={(p) => String(p.id)}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle="尚未配置模型供应商"
+        emptyDescription="AI 客服需要至少一个启用的供应商才能回复访客。"
+        emptyAction={
+          <Button type="button" onClick={create} variant="primary">
+            <Plus aria-hidden="true" />
+            新建供应商
+          </Button>
+        }
+        rowName={(p) => p.name}
+        rowActions={(p) => [
+          { key: "test", label: busy === p.id ? "处理中…" : "测试", tone: "primary", onClick: () => void test(p), disabled: busy === p.id },
+          { key: "balance", label: "余额", tone: "muted", onClick: () => void fillBalance(p), disabled: busy === p.id },
+          { key: "edit", label: "编辑", tone: "primary", ariaLabel: `编辑 ${p.name}`, onClick: () => begin(p.id, { ...p }) },
+          { key: "delete", label: "删除", tone: "danger", ariaLabel: `删除 ${p.name}`, onClick: () => void remove(p), disabled: busy === p.id },
+        ]}
+        pagination={undefined}
+        data-testid="llm-providers-table"
+        />
+        </>
+      )}
+
+      {tab === "usage" && <UsageTab />}
+
+            <FormDialog
         open={editing !== null}
         title={editingId ? "编辑供应商" : "新建供应商"}
         onClose={() => setEditing(null)}
@@ -275,6 +374,91 @@ export default function ManagerLlmProvidersPage() {
           />
         )}
       </FormDialog>
+    </div>
+  );
+}
+
+/** E-10 用量统计 Tab（GET /api/llm/usage，C-11 未合并前错误态；DataTable + 简单柱状，无新图表依赖） */
+function UsageTab() {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [groupBy, setGroupBy] = useState<"provider" | "day">("provider");
+  // 默认区间（最近 7 天）：Date.now 只在 effect 中调用（render 纯度）
+  /* eslint-disable react-hooks/set-state-in-effect -- 挂载后一次性初始化默认区间（与 settings 页同款先例） */
+  useEffect(() => {
+    const t = new Date().toISOString().slice(0, 10);
+    const w = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+    setFrom(w);
+    setTo(t);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+  const usageQ = useManagerQuery<{ list: LlmUsageRow[] }>(`/api/llm/usage?groupBy=${groupBy}&from=${from}&to=${to}`);
+  const rows = usageQ.data?.list ?? [];
+  const maxCalls = rows.length > 0 ? Math.max(...rows.map((r) => r.calls), 1) : 1;
+
+  const columns: DataColumn<LlmUsageRow>[] = [
+    { key: "key", label: "模型供应商", primary: true },
+    { key: "calls", label: "调用数", align: "right" },
+    { key: "tokensIn", label: "输入 tokens", align: "right" },
+    { key: "tokensOut", label: "输出 tokens", align: "right" },
+    { key: "failures", label: "失败", align: "right" },
+    {
+      key: "share",
+      label: "调用数占比",
+      render: (r) => (
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-32 overflow-hidden rounded-full bg-mgr-subtle" aria-hidden="true">
+            <div className="h-full rounded-full bg-mgr-primary" style={{ width: `${Math.round((r.calls / maxCalls) * 100)}%` }} />
+          </div>
+          <span className="text-[11px] tabular-nums text-mgr-muted-fg">{Math.round((r.calls / maxCalls) * 100)}%</span>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end gap-3">
+        <div>
+          <label htmlFor="usage-from" className="mb-1 block text-[13px] font-medium">开始日期</label>
+          <Input id="usage-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-auto" data-testid="usage-from" />
+        </div>
+        <div>
+          <label htmlFor="usage-to" className="mb-1 block text-[13px] font-medium">结束日期</label>
+          <Input id="usage-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-auto" data-testid="usage-to" />
+        </div>
+        <div>
+          <label htmlFor="usage-group" className="mb-1 block text-[13px] font-medium">聚合方式</label>
+          <Select
+            id="usage-group"
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value as "provider" | "day")}
+            options={[
+              { label: "按模型", value: "provider" },
+              { label: "按日", value: "day" },
+            ]}
+          />
+        </div>
+      </div>
+
+      {usageQ.error && !isForbidden(usageQ.error) && (
+        <ErrorState message={usageQ.error.message} onRetry={() => void usageQ.reload()} />
+      )}
+      {!usageQ.error && (
+        <DataTable<LlmUsageRow>
+          caption="模型用量统计"
+          rows={rows}
+          columns={columns}
+          rowKey={(r) => r.key}
+          loading={usageQ.loading}
+          refreshing={usageQ.refreshing}
+          onRetry={() => void usageQ.reload()}
+          emptyTitle="区间内暂无调用记录"
+          emptyDescription="AI 客服处理访客会话后，用量会按模型/按日聚合显示。"
+          pagination={undefined}
+          data-testid="usage-table"
+        />
+      )}
     </div>
   );
 }

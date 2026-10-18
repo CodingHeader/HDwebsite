@@ -47,17 +47,34 @@ test("文章新建 → 编辑 → 删除", async ({ page }) => {
   const editedRow = page.getByRole("row").filter({ hasText: EDITED });
   await expect(editedRow).toBeVisible();
 
+  // P05-verify:41 承接（E-05）：保存后重新 GET 断言持久化
+  await page.reload();
+  const persistedRow = page.getByRole("row").filter({ hasText: EDITED });
+  await expect(persistedRow).toBeVisible({ timeout: 15_000 });
+  await persistedRow.getByRole("button", { name: `编辑 ${EDITED}` }).click();
+  await expect(dlg.getByLabel(/^正文/)).toHaveValue(BODY);
+  await dlg.getByRole("button", { name: "取消" }).or(dlg.locator("[aria-label='关闭']")).first().click();
+
+  // E-05：一键上下线（PATCH /api/articles/[id]）——先下线（published→draft）再上线（draft→published）
+  await page.getByRole("row").filter({ hasText: EDITED }).getByRole("button", { name: `下线 ${EDITED}` }).click();
+  await expectToast(page, "success", "已下线");
+  await expect(page.getByRole("row").filter({ hasText: EDITED }).getByText("草稿")).toBeVisible();
+  await page.getByRole("row").filter({ hasText: EDITED }).getByRole("button", { name: `上线 ${EDITED}` }).click();
+  await expectToast(page, "success", "已上线");
+  await expect(page.getByRole("row").filter({ hasText: EDITED }).getByText("已发布")).toBeVisible();
+
   // 删除：先取消（记录仍在），再确认（记录消失）
-  await editedRow.getByRole("button", { name: `删除 ${EDITED}` }).click();
+  const delRow = page.getByRole("row").filter({ hasText: EDITED });
+  await delRow.getByRole("button", { name: `删除 ${EDITED}` }).click();
   const confirm = page.getByTestId("confirm-dialog");
   await expect(confirm).toBeVisible();
   await expect(confirm.getByRole("button", { name: "取消" })).toBeFocused(); // 危险操作默认聚焦"取消"
   await evidenceShot(page, "confirm-delete-article");
   await page.keyboard.press("Escape");
   await expect(confirm).toBeHidden();
-  await expect(editedRow).toBeVisible();
+  await expect(delRow).toBeVisible();
 
-  await editedRow.getByRole("button", { name: `删除 ${EDITED}` }).click();
+  await delRow.getByRole("button", { name: `删除 ${EDITED}` }).click();
   await confirm.getByTestId("confirm-ok").click();
   await expectToast(page, "success", "已删除");
   await expect(page.getByRole("row").filter({ hasText: EDITED })).toHaveCount(0);
@@ -73,12 +90,14 @@ test("列表接口 500 → ErrorState，点击重试恢复", async ({ page }) =>
     }
   });
   await page.goto("/manager/articles");
-  const err = page.getByTestId("error-state");
+  // DataTable 桌面（table 内）与移动（卡片，CSS 隐藏）各渲染一份 stateBlock → 用 first() 取可见那份
+  const err = page.getByTestId("error-state").first();
   await expect(err).toBeVisible();
   await expect(err).toContainText("服务器内部错误（E2E 注入）");
   await evidenceShot(page, "error-state-articles-500");
   fail = false;
-  await page.getByTestId("error-retry").click();
+  // DataTable 桌面/移动双渲染 → first() 取可见那份
+  await page.getByTestId("error-retry").first().click();
   await expect(err).toBeHidden();
   await expect(page.getByRole("row").nth(1)).toBeVisible();
 });
@@ -86,6 +105,6 @@ test("列表接口 500 → ErrorState，点击重试恢复", async ({ page }) =>
 test("搜索无结果 → EmptyState", async ({ page }) => {
   await page.goto("/manager/articles");
   await page.getByRole("searchbox").fill("不存在的关键词-zzz-e2e");
-  await expect(page.getByTestId("empty-state")).toContainText("没有找到");
+  await expect(page.getByTestId("empty-state").first()).toContainText("没有找到");
   await evidenceShot(page, "empty-state-articles-search");
 });

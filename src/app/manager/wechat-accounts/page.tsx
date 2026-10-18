@@ -13,8 +13,10 @@ import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { StatusBadge } from "@/components/manager/StatusBadge";
-import { tableCls } from "@/components/manager/Pagination";
-import { Forbidden, TableState, btnCls, confirmDialog, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
+import { Button } from "@/components/manager/ui";
+import { Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Account = {
   id: number; name: string; type: string; appid: string; appSecret: string;
@@ -128,6 +130,18 @@ export default function ManagerWechatAccountsPage() {
   const list = data?.list ?? [];
   const create = () => void begin(null, { name: "", type: "service", appid: "", appSecret: "", sceneId: null, aiEnabled: true, freepublishEnabled: true });
 
+  const columns: DataColumn<Account>[] = [
+    { key: "name", label: "名称", primary: true, render: (a) => <span className="font-medium">{a.name}</span> },
+    { key: "appid", label: "AppID", render: (a) => <span className="font-mono text-[12px]">{a.appid}</span> },
+    { key: "type", label: "类型", render: (a) => (a.type === "service" ? "服务号" : "订阅号") },
+    {
+      key: "aiEnabled",
+      label: "AI 客服",
+      render: (a) => <StatusBadge tone={a.aiEnabled ? "success" : "muted"}>{a.aiEnabled ? `开${a.scene ? ` · ${a.scene.name}` : ""}` : "关"}</StatusBadge>,
+    },
+    { key: "status", label: "状态", render: (a) => <StatusBadge tone={a.status === "active" ? "success" : "muted"}>{a.status === "active" ? "启用" : a.status}</StatusBadge> },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -138,82 +152,50 @@ export default function ManagerWechatAccountsPage() {
           </>
         }
         actions={
-          <button type="button" onClick={create} className={btnCls("primary")}>
+          <Button type="button" onClick={create} variant="primary">
             <Plus aria-hidden="true" />
             新建账号
-          </button>
+          </Button>
         }
       />
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>名称</th>
-              <th scope="col" className={tableCls.th}>AppID</th>
-              <th scope="col" className={tableCls.th}>类型</th>
-              <th scope="col" className={tableCls.th}>AI 客服</th>
-              <th scope="col" className={tableCls.th}>状态</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <TableState
-              columns={6}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle="尚未配置公众号账号"
-              emptyDescription="添加服务号后即可启用公众号 AI 客服与文章发布。"
-              emptyAction={
-                <button type="button" onClick={create} className={btnCls("primary")}>
-                  <Plus aria-hidden="true" />
-                  新建账号
-                </button>
-              }
-            />
-            {!error &&
-              list.map((a) => (
-                <tr key={a.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                  <td className={`${tableCls.td} font-medium`}>{a.name}</td>
-                  <td className={`${tableCls.td} font-mono text-[12px]`}>{a.appid}</td>
-                  <td className={tableCls.td}>{a.type === "service" ? "服务号" : "订阅号"}</td>
-                  <td className={tableCls.td}>
-                    <StatusBadge tone={a.aiEnabled ? "success" : "muted"}>{a.aiEnabled ? `开${a.scene ? ` · ${a.scene.name}` : ""}` : "关"}</StatusBadge>
-                  </td>
-                  <td className={tableCls.td}>
-                    <StatusBadge tone={a.status === "active" ? "success" : "muted"}>{a.status === "active" ? "启用" : a.status}</StatusBadge>
-                  </td>
-                  <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                    <div className="inline-flex items-center gap-2">
-                      <button type="button" disabled={busy === a.id} onClick={() => void test(a)} className={linkCls("primary")}>
-                        {busy === a.id ? "处理中…" : "测试"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void begin(a.id, {
-                            ...a,
-                            sceneId: a.scene?.id ?? null,
-                            appSecret: a.appSecret.includes("****") || a.appSecret.startsWith("v1:") ? "" : a.appSecret,
-                          } as FormValues)
-                        }
-                        className={linkCls("primary")}
-                      >
-                        编辑
-                      </button>
-                      <button type="button" disabled={busy === a.id} onClick={() => void remove(a)} className={linkCls("danger")}>
-                        删除
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<Account>
+        caption="公众号账号"
+        rows={list}
+        columns={columns}
+        rowKey={(a) => String(a.id)}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle="尚未配置公众号账号"
+        emptyDescription="添加服务号后即可启用公众号 AI 客服与文章发布。"
+        emptyAction={
+          <Button type="button" onClick={create} variant="primary">
+            <Plus aria-hidden="true" />
+            新建账号
+          </Button>
+        }
+        rowName={(a) => a.name}
+        rowActions={(a) => [
+          { key: "test", label: busy === a.id ? "处理中…" : "测试", tone: "primary", onClick: () => void test(a), disabled: busy === a.id },
+          {
+            key: "edit",
+            label: "编辑",
+            tone: "primary",
+            onClick: () =>
+              void begin(a.id, {
+                ...a,
+                sceneId: a.scene?.id ?? null,
+                appSecret: a.appSecret.includes("****") || a.appSecret.startsWith("v1:") ? "" : a.appSecret,
+              } as FormValues),
+          },
+          { key: "delete", label: "删除", tone: "danger", onClick: () => void remove(a), disabled: busy === a.id },
+        ]}
+        pagination={undefined}
+        data-testid="wechat-accounts-table"
+      />
 
-      <FormDialog
+            <FormDialog
         open={editing !== null}
         title={editingId ? "编辑公众号账号" : "新建公众号账号"}
         onClose={() => setEditing(null)}
