@@ -7,7 +7,7 @@
  * - 保存 PATCH /api/notify-rules/[id] 后 refresh() 回读
  * - quietHours 契约（CCR-1）：start/end 均 0..23:0..59；规则级优先于全局 notifyQuietHours（B-06 生效逻辑）
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BellOff, BellRing, PencilLine } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";

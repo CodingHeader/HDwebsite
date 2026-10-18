@@ -30,7 +30,10 @@ test("键盘排序 → 保存 → 刷新顺序保持", async ({ page }) => {
   // 排序面板：两行；键盘（Tab 聚焦 + Enter 触发按钮）完成排序——a11y 可完成
   const panel = page.getByTestId("llm-order-panel");
   await expect(panel).toBeVisible({ timeout: 15_000 });
-  await expect(panel.locator("li")).toHaveCount(2);
+  // 数量无关（e2e.db 跨轮累积供应商）：≥2 行即可，取第 2 行上移验证
+  await expect(panel.locator("li").first()).toBeVisible();
+  const rowCount = await panel.locator("li").count();
+  expect(rowCount).toBeGreaterThanOrEqual(2);
   const secondRow = panel.locator("li").nth(1);
   const secondName = (await secondRow.locator("span").nth(1).innerText()).trim();
   await secondRow.getByRole("button", { name: `上移 ${secondName}` }).focus();

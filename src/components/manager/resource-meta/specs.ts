@@ -241,7 +241,7 @@ export const resourceMetas = {
     schema: knowledgeCreateSchema,
     labels: {
       title: { label: "标题", colSpan: 2 },
-      content: { label: "内容", type: "textarea", colSpan: 2, rows: 8 },
+      content: { label: "内容", type: "markdown", colSpan: 2, rows: 8 },
       tags: { label: "标签（逗号分隔）", colSpan: 2 },
       source: { label: "来源", options: [{ label: "本地", value: "local" }, { label: "Notion", value: "notion" }, { label: "飞书", value: "feishu" }, { label: "网页", value: "web" }, { label: "采集", value: "collect" }] },
       externalUrl: { label: "外部链接" },

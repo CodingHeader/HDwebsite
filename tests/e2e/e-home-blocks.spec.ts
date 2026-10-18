@@ -5,7 +5,7 @@
  * 依赖：admin storageState（globalSetup）；e2e.db 种子含 home 模板 + 12 区块 TemplateBlock。
  */
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import { adminState, viewerState } from "./fixtures/helpers";
+import { adminState } from "./fixtures/helpers";
 
 test.use({ storageState: adminState() });
 

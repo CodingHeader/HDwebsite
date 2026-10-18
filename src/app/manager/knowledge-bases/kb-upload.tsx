@@ -20,7 +20,7 @@ import {
   kbFileExtOf,
   isAllowedKbExt,
 } from "@/contracts/kb";
-import { btnCls, toast } from "@/components/manager/feedback";
+import { toast } from "@/components/manager/feedback";
 
 type Reject = { name: string; reason: string };
 

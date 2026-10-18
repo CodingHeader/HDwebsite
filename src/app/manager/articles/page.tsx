@@ -16,11 +16,11 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { SearchInput } from "@/components/manager/SearchInput";
-import { Select, Button, LinkButton } from "@/components/manager/ui";
+import { Select, Button } from "@/components/manager/ui";
 import { Badge } from "@/components/manager/ui/misc";
 import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
-import { Bone, Forbidden, btnCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Bone, Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Row = ArticleSummary & { category?: { name: string } | null };
 type ListData = { list: Row[]; pagination: PaginationData };

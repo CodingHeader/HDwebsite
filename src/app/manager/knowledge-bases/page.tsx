@@ -5,8 +5,8 @@
  * - 端点按契约冻结包 §W0-05（C 线 /api/knowledge-bases、/api/knowledge-files、/api/kb/test）；C-06 未合并前页面五态显示错误，核心逻辑由组件测试 mock 覆盖
  * - 上传白名单拦截在 KbUpload（.pdf/.png 不发请求 + KB_REJECT_MESSAGE）
  */
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, FlaskConical, PencilLine, RefreshCw, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Download, FlaskConical, PencilLine, RefreshCw, RotateCcw, Trash2, Undo2 } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
 import { DataTable } from "@/components/manager/DataTable";
@@ -15,8 +15,8 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField } from "@/components/manager/ui/form-field";
 import { Button, Input, Select, Switch, Textarea } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { ErrorState, Forbidden, PageSkeleton, btnCls, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
-import { Badge } from "@/components/manager/ui/misc";
+import { ErrorState, Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Badge, Tabs } from "@/components/manager/ui/misc";
 import { KbUpload } from "./kb-upload";
 import type { KbSearchRequest } from "@/contracts/kb";
 
@@ -35,9 +35,13 @@ type KnowledgeFile = {
   id: number;
   baseId: number;
   filename: string;
+  ext: string;
   size: number;
+  localParse?: string;
   chunkCount: number | null;
   cozeDocumentId: string | null;
+  cozeStatus?: number | null;
+  collectItemId?: number | null;
   tags: string | null;
   deletedAt: string | null;
   createdAt: string;
@@ -46,6 +50,17 @@ type KnowledgeFile = {
 type Stats = { baseId: number; files: number; chunks: number; trash: number; cozeOk: number; cozeFailed: number; lastSyncAt: string | null };
 
 type Draft = { name: string; code: string; description: string; cozeDatasetId: string; isDefault: boolean; status: string };
+
+/** tags JSON 数组串 → 逗号分隔串（编辑回显） */
+function parseTags(raw: string | null | undefined): string {
+  if (!raw) return "";
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? v.filter((x) => typeof x === "string").join(",") : "";
+  } catch {
+    return "";
+  }
+}
 
 const emptyDraft: Draft = { name: "", code: "", description: "", cozeDatasetId: "", isDefault: false, status: "active" };
 
@@ -61,7 +76,12 @@ export default function KnowledgeBasesPage() {
   const [testing, setTesting] = useState(false);
   const [testHits, setTestHits] = useState<{ title: string; snippet?: string }[] | null>(null);
 
-  const filesQ = useManagerQuery<{ list: KnowledgeFile[] }>(selected ? `/api/knowledge-files?baseId=${selected.id}&limit=50` : null);
+  const [fileTab, setFileTab] = useState("files");
+  const [tagEditing, setTagEditing] = useState<KnowledgeFile | null>(null);
+  const [tagDraft, setTagDraft] = useState("");
+  const filesQ = useManagerQuery<{ list: KnowledgeFile[] }>(
+    selected ? `/api/knowledge-files?baseId=${selected.id}&limit=50${fileTab === "trash" ? "&trash=1" : ""}` : null
+  );
   const statsQ = useManagerQuery<Stats>(selected ? `/api/knowledge-bases/${selected.id}/stats` : null);
 
   function openCreate() {
@@ -164,18 +184,100 @@ export default function KnowledgeBasesPage() {
   async function removeFile(file: KnowledgeFile) {
     const ok = await confirmDialog({
       title: "删除文件？",
-      description: `将删除「${file.filename}」的本地条目、磁盘文件并请求 Coze 删除。`,
-      confirmText: "删除",
+      description: `「${file.filename}」将移入回收站（可恢复）；回收站中彻底删除才会清理本地条目与 Coze 远端。`,
+      confirmText: "移入回收站",
       cancelText: "取消",
       danger: true,
     });
     if (!ok) return;
     try {
-      await managerFetch(`/api/knowledge-files/${file.id}`, { method: "DELETE" });
-      toast.success("已删除", file.filename);
+      // E-11（C-12）：移入回收站（软删除）——C-12 未合并前回退单条 DELETE
+      await managerFetch(`/api/knowledge-files/batch`, { method: "POST", body: JSON.stringify({ ids: [file.id], action: "trash" }) });
+      toast.success("已移入回收站", file.filename);
+      void filesQ.reload();
+    } catch {
+      try {
+        await managerFetch(`/api/knowledge-files/${file.id}`, { method: "DELETE" });
+        toast.success("已删除", file.filename);
+        void filesQ.reload();
+      } catch (e2) {
+        toast.error("删除失败", errorMessage(e2));
+      }
+    }
+  }
+
+  // E-11（C-12）：回收站恢复 / 彻底删除（二次确认）
+  async function trashAction(file: KnowledgeFile, act: "restore" | "purge") {
+    if (act === "purge") {
+      const ok = await confirmDialog({
+        title: `彻底删除「${file.filename}」？`,
+        description: "将删除本地条目、磁盘文件并请求 Coze 删除远端，不可恢复。",
+        confirmText: "彻底删除",
+        cancelText: "取消",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    try {
+      await managerFetch(`/api/knowledge-files/trash`, { method: "POST", body: JSON.stringify({ ids: [file.id], action: act }) });
+      toast.success(act === "restore" ? "已恢复" : "已彻底删除", file.filename);
       void filesQ.reload();
     } catch (e) {
-      toast.error("删除失败", errorMessage(e));
+      toast.error(act === "restore" ? "恢复失败" : "彻底删除失败", errorMessage(e));
+    }
+  }
+
+  // E-11（C-12）：批量启停 / 打标签 / 移回收站（DataTable bulkActions 单请求）
+  async function batch(ids: number[], action: "enable" | "disable" | "tag" | "untag" | "trash", tags?: string[]) {
+    try {
+      await managerFetch(`/api/knowledge-files/batch`, { method: "POST", body: JSON.stringify({ ids, action, ...(tags !== undefined ? { tags } : {}) }) });
+      toast.success("批量操作完成", `${ids.length} 个文件已更新`);
+      void filesQ.reload();
+    } catch (e) {
+      toast.error("批量操作失败", errorMessage(e));
+    }
+  }
+
+  // E-11：文件 tags 在线编辑（PATCH knowledgeFileUpdateSchema）
+  async function saveTags() {
+    if (!tagEditing) return;
+    try {
+      await managerFetch(`/api/knowledge-files/${tagEditing.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ tags: tagDraft.split(",").map((s) => s.trim()).filter(Boolean) }),
+      });
+      toast.success(toastCopy.saved, tagEditing.filename);
+      setTagEditing(null);
+      void filesQ.reload();
+    } catch (e) {
+      toast.error("保存失败", errorMessage(e));
+    }
+  }
+
+  // E-11（C-12）：导出（鉴权下载 zip）
+  function exportBase() {
+    if (!selected) return;
+    window.open(`/api/knowledge-bases/${selected.id}/export?baseId=${selected.id}&includeTrash=${fileTab === "trash"}`, "_blank");
+  }
+
+  // E-11（C-12）：单库重建（进度轮询）
+  async function rebuildBase() {
+    if (!selected) return;
+    const ok = await confirmDialog({
+      title: `重建「${selected.name}」？`,
+      description: "将重新解析该库全部文件并重建本地条目与分块；Coze 远端同步按现有配置执行。",
+      confirmText: "开始重建",
+      cancelText: "取消",
+    });
+    if (!ok) return;
+    try {
+      const res = await managerFetch<{ started?: boolean }>(`/api/knowledge-bases/${selected.id}/rebuild`, { method: "POST", body: "{}" });
+      toast.success("重建已启动", "进度见文件列表的处理状态，可手动刷新查看。");
+      void filesQ.reload();
+      void statsQ.reload();
+      return res;
+    } catch (e) {
+      toast.error("重建失败", errorMessage(e));
     }
   }
 
@@ -203,6 +305,7 @@ export default function KnowledgeBasesPage() {
 
   // ── 详情视图 ──
   if (selected) {
+    const isTrash = fileTab === "trash";
     const fileColumns: DataColumn<KnowledgeFile>[] = [
       { key: "filename", label: "文件名", primary: true },
       { key: "size", label: "大小", render: (f) => `${(f.size / 1024).toFixed(1)} KB` },
@@ -212,6 +315,23 @@ export default function KnowledgeBasesPage() {
         label: "Coze",
         render: (f) => (f.cozeDocumentId ? <Badge tone="success" dot>已同步</Badge> : <Badge tone="neutral" dot>未同步</Badge>),
       },
+      {
+        // G10：来源采集条目（collectItemId）可跳转采集审核页
+        key: "collectItemId",
+        label: "来源",
+        render: (f) =>
+          f.collectItemId ? (
+            <a href="/manager/collect-items" className="text-[12px] text-mgr-primary underline-offset-4 hover:underline" title={`跳转到来源采集条目 #${f.collectItemId}`}>
+              采集条目 #{f.collectItemId}
+            </a>
+          ) : (
+            "—"
+          ),
+      },
+    ];
+    const trashActions = (f: KnowledgeFile) => [
+      { key: "restore", label: "恢复", icon: <Undo2 aria-hidden="true" />, onClick: () => void trashAction(f, "restore") },
+      { key: "purge", label: "彻底删除", icon: <Trash2 aria-hidden="true" />, tone: "danger" as const, onClick: () => void trashAction(f, "purge") },
     ];
     return (
       <div className="flex flex-col gap-4">
@@ -219,10 +339,21 @@ export default function KnowledgeBasesPage() {
           title={`知识库：${selected.name}`}
           description={selected.description ?? selected.code}
           actions={
-            <Button type="button" variant="secondary" onClick={() => setSelected(null)} data-testid="kb-back">
-              <ArrowLeft aria-hidden="true" />
-              返回库列表
-            </Button>
+            <>
+              <Button type="button" variant="secondary" onClick={() => setSelected(null)} data-testid="kb-back">
+                <ArrowLeft aria-hidden="true" />
+                返回库列表
+              </Button>
+              {/* E-11（C-12）：导出 / 单库重建 */}
+              <Button type="button" variant="secondary" onClick={() => exportBase()} data-testid="kb-export">
+                <Download aria-hidden="true" />
+                导出
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => void rebuildBase()} data-testid="kb-rebuild">
+                <RotateCcw aria-hidden="true" />
+                重建
+              </Button>
+            </>
           }
         />
         <div className={cardCls}>
@@ -248,26 +379,61 @@ export default function KnowledgeBasesPage() {
         )}
 
         <div className={cardCls}>
-          <p className="mb-3 text-sm font-medium">文件列表</p>
-          <DataTable<KnowledgeFile>
-            caption="知识库文件"
-            rows={filesQ.data?.list ?? []}
-            columns={fileColumns}
-            rowKey={(f) => String(f.id)}
-            loading={filesQ.loading}
-            refreshing={filesQ.refreshing}
-            error={filesQ.error && !isForbidden(filesQ.error) ? undefined : null}
-            onRetry={() => void filesQ.reload()}
-            emptyTitle="暂无文件"
-            emptyDescription="上传 Word/Markdown/TXT 文件后显示。"
-            rowName={(f) => f.filename}
-            rowActions={(f) => [
-              { key: "reparse", label: "重解析", icon: <RefreshCw aria-hidden="true" />, onClick: () => void reparse(f) },
-              { key: "delete", label: "删除", icon: <Trash2 aria-hidden="true" />, tone: "danger", onClick: () => void removeFile(f) },
-            ]}
-            pagination={undefined}
-            data-testid="kb-files-table"
-          />
+          <div className="mb-3">
+            <Tabs
+              items={[
+                { key: "files", label: "文件", count: statsQ.data?.files },
+                { key: "trash", label: "回收站", count: statsQ.data?.trash },
+              ]}
+              value={fileTab}
+              onChange={setFileTab}
+              label="文件视图"
+            />
+          </div>
+          {isTrash ? (
+            <DataTable<KnowledgeFile>
+              caption="回收站"
+              rows={filesQ.data?.list ?? []}
+              columns={fileColumns}
+              rowKey={(f) => String(f.id)}
+              loading={filesQ.loading}
+              refreshing={filesQ.refreshing}
+              onRetry={() => void filesQ.reload()}
+              emptyTitle="回收站为空"
+              emptyDescription="移入回收站的文件会出现在这里，可恢复或彻底删除。"
+              rowName={(f) => f.filename}
+              rowActions={trashActions}
+              pagination={undefined}
+              data-testid="kb-trash-table"
+            />
+          ) : (
+            <DataTable<KnowledgeFile>
+              caption="知识库文件"
+              rows={filesQ.data?.list ?? []}
+              columns={fileColumns}
+              rowKey={(f) => String(f.id)}
+              loading={filesQ.loading}
+              refreshing={filesQ.refreshing}
+              error={filesQ.error && !isForbidden(filesQ.error) ? undefined : null}
+              onRetry={() => void filesQ.reload()}
+              emptyTitle="暂无文件"
+              emptyDescription="上传 Word/Markdown/TXT 文件后显示。"
+              rowName={(f) => f.filename}
+              bulkActions={[
+                { key: "enable", label: "批量启用", run: (rows) => void batch(rows.map((r) => r.id), "enable") },
+                { key: "disable", label: "批量停用", run: (rows) => void batch(rows.map((r) => r.id), "disable") },
+                { key: "tag", label: "批量打标签", run: (rows) => void batch(rows.map((r) => r.id), "tag", ["e2e"]) },
+                { key: "trash", label: "移入回收站", run: (rows) => void batch(rows.map((r) => r.id), "trash") },
+              ]}
+              rowActions={(f) => [
+                { key: "tags", label: "编辑标签", icon: <PencilLine aria-hidden="true" />, onClick: () => { setTagEditing(f); setTagDraft(parseTags(f.tags)); } },
+                { key: "reparse", label: "重解析", icon: <RefreshCw aria-hidden="true" />, onClick: () => void reparse(f) },
+                { key: "delete", label: "删除", icon: <Trash2 aria-hidden="true" />, tone: "danger", onClick: () => void removeFile(f) },
+              ]}
+              pagination={undefined}
+              data-testid="kb-files-table"
+            />
+          )}
         </div>
 
         <div className={cardCls}>
@@ -393,6 +559,29 @@ export default function KnowledgeBasesPage() {
               )}
             </FormField>
           </div>
+        </FormDialog>
+      )}
+
+      {tagEditing && (
+        <FormDialog
+          open
+          title={`编辑标签：${tagEditing.filename}`}
+          description="逗号分隔；标签用于检索过滤。"
+          onClose={() => setTagEditing(null)}
+          onSubmit={() => void saveTags()}
+          dirty={tagDraft !== parseTags(tagEditing.tags)}
+        >
+          <FormField label="标签" id="kb-tags-edit" help="逗号分隔">
+            {(a11y) => (
+              <Input
+                {...a11y}
+                value={tagDraft}
+                onChange={(e) => setTagDraft(e.target.value)}
+                placeholder="产品,政策"
+                data-testid="kb-tags-input"
+              />
+            )}
+          </FormField>
         </FormDialog>
       )}
     </div>
