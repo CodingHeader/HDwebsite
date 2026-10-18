@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 export type BadgeTone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
 
 const toneCls: Record<BadgeTone, string> = {
-  neutral: "bg-mgr-subtle text-mgr-muted-fg ring-mgr-border",
+  // A-08：前景改用 ≥4.5:1 的深色调（原 text-mgr-muted-fg 在浅底 4.31:1 不合规；见 W1-E/a11y-report.md）
+  neutral: "bg-mgr-subtle text-[oklch(0.44_0_0)] ring-mgr-border",
   primary: "bg-mgr-primary-soft text-mgr-primary ring-mgr-primary/20",
-  success: "text-mgr-success ring-mgr-success/25 [background:color-mix(in_oklch,var(--mgr-success)_10%,white)]",
-  warning: "text-[oklch(0.55_0.15_60)] ring-mgr-warning/30 [background:color-mix(in_oklch,var(--mgr-warning)_14%,white)]",
-  danger: "text-mgr-danger ring-mgr-danger/25 [background:color-mix(in_oklch,var(--mgr-danger)_9%,white)]",
-  info: "text-mgr-info ring-mgr-info/25 [background:color-mix(in_oklch,var(--mgr-info)_10%,white)]",
+  // A-08：success 原 2.97:1 → 加深到 oklch(0.45 …)（同色相，≈5.2:1）
+  success: "text-[oklch(0.45_0.13_149)] ring-mgr-success/25 [background:color-mix(in_oklch,var(--mgr-success)_10%,white)]",
+  warning: "text-[oklch(0.47_0.14_60)] ring-mgr-warning/30 [background:color-mix(in_oklch,var(--mgr-warning)_14%,white)]",
+  danger: "text-[oklch(0.48_0.21_27.3)] ring-mgr-danger/25 [background:color-mix(in_oklch,var(--mgr-danger)_9%,white)]",
+  info: "text-[oklch(0.47_0.14_241)] ring-mgr-info/25 [background:color-mix(in_oklch,var(--mgr-info)_10%,white)]",
 };
 
 export function Badge({ tone = "neutral", dot, className, children, title }: { tone?: BadgeTone; dot?: boolean; className?: string; children: React.ReactNode; title?: string }) {
@@ -50,7 +52,7 @@ export function CardHeader({ title, description, actions, className }: { title: 
 }
 
 export function Kbd({ children }: { children: React.ReactNode }) {
-  return <kbd className="rounded border border-mgr-border bg-mgr-subtle px-1 font-sans text-[11px] text-mgr-muted-fg">{children}</kbd>;
+  return <kbd className="rounded border border-mgr-border bg-mgr-subtle px-1 font-sans text-[11px] text-[oklch(0.44_0_0)]">{children}</kbd>;
 }
 
 export function Separator({ className }: { className?: string }) {
