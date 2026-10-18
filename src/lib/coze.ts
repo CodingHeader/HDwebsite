@@ -19,11 +19,22 @@ export type CozeConfig = {
 
 export type CozeChatResult = { ok: boolean; reply: string; errMsg?: string; conversationId?: string; chatId?: string };
 
-function headers(pat: string): Record<string, string> {
+/**
+ * C-04：Coze Open API 通用请求头（抽出供 chat 与 knowledge 共用）。
+ * `Agw-Js-Conv: str` 为 Coze 网关要求（ADR-025 §3）；缺失时部分接口返回非预期结构。
+ */
+export function cozeHeaders(pat: string, extra?: Record<string, string>): Record<string, string> {
   return {
     Authorization: `Bearer ${pat}`,
     "Content-Type": "application/json",
+    "Agw-Js-Conv": "str",
+    ...(extra ?? {}),
   };
+}
+
+/** @deprecated 用 {@link cozeHeaders}（保留内部别名，避免既有调用点改动） */
+function headers(pat: string): Record<string, string> {
+  return cozeHeaders(pat);
 }
 
 /**

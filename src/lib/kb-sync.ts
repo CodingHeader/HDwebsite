@@ -36,6 +36,32 @@ export function registerKbRemoteAdapter(adapter: KbRemoteAdapter | null): void {
   });
 }
 
+/**
+ * C-04：按设置装配 Coze 后端（kbCozeProviderId 指向 kind=coze 的供应商 + kbCozeSpaceId）。
+ * - 未配置 → 不注册 coze 后端，队列保持 pending（本卡验收：无凭证时记录原因而非抛错）
+ * - PAT 取自 provider.apiKey（v1: 前缀为加密值，需解密）
+ */
+export async function configureCozeBackendFromSettings(): Promise<{ ok: boolean; reason?: string }> {
+  const { prisma } = await import("@/lib/prisma");
+  const { decryptField } = await import("@/lib/crypto");
+  const rows = await prisma.setting.findMany({ where: { key: { in: ["kbCozeProviderId", "kbCozeSpaceId"] } } });
+  const get = (k: string) => rows.find((r) => r.key === k)?.value ?? "";
+  const providerId = Number(get("kbCozeProviderId"));
+  const spaceIdRaw = get("kbCozeSpaceId");
+  const spaceId = spaceIdRaw.startsWith("v1:") ? decryptField(spaceIdRaw) ?? "" : spaceIdRaw;
+  if (!providerId || !spaceId) {
+    return { ok: false, reason: "知识库同步未配置：请在站点设置填写 kbCozeProviderId / kbCozeSpaceId" };
+  }
+  const provider = await prisma.lLMProvider.findUnique({ where: { id: providerId } });
+  if (!provider) return { ok: false, reason: `kbCozeProviderId=${providerId} 对应的供应商不存在` };
+  if (provider.kind !== "coze") return { ok: false, reason: `供应商 ${provider.name} 不是 Coze 类型` };
+  const pat = provider.apiKey.startsWith("v1:") ? decryptField(provider.apiKey) ?? "" : provider.apiKey;
+  if (!pat) return { ok: false, reason: "Coze PAT 解密失败（请在模型供应商页重新保存）" };
+  const { selfRegisterCozeBackend } = await import("@/lib/kb/coze");
+  selfRegisterCozeBackend(() => ({ pat, spaceId, apiBase: provider.endpoint, timeoutMs: 30_000 }));
+  return { ok: true };
+}
+
 export function getKbRemoteAdapter(): KbRemoteAdapter | null {
   const b = getKnowledgeBackend("coze");
   if (!b) return null;
@@ -74,10 +100,22 @@ export async function pendingKbSync(take = 100): Promise<Knowledge[]> {
   return prisma.knowledge.findMany({ where: { syncStatus: { in: ["pending", "failed"] } }, orderBy: { id: "asc" }, take });
 }
 
-export async function processKbSyncQueue(take = 20): Promise<{ synced: number; failed: number; skipped: number; adapter: string | null }> {
+export async function processKbSyncQueue(
+  take = 20
+): Promise<{ synced: number; failed: number; skipped: number; adapter: string | null; reason?: string }> {
   const adapter = getKbRemoteAdapter();
   const queue = await pendingKbSync(take);
-  if (!adapter) return { synced: 0, failed: 0, skipped: queue.length, adapter: null };
+  // C-04：无凭证时不抛错——返回原因，队列保持 pending 等配置补齐后重试
+  if (!adapter) {
+    const cfg = await configureCozeBackendFromSettings().catch(() => ({ ok: false, reason: "读取设置失败" }));
+    return {
+      synced: 0,
+      failed: 0,
+      skipped: queue.length,
+      adapter: null,
+      reason: cfg.reason ?? "知识库同步未配置：请在站点设置填写 kbCozeProviderId / kbCozeSpaceId",
+    };
+  }
   let synced = 0;
   let failed = 0;
   for (const k of queue) {
