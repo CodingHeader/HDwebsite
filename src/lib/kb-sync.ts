@@ -8,7 +8,12 @@
  */
 import { prisma } from "@/lib/prisma";
 import type { CollectItem, Knowledge } from ".prisma/client";
+import { registerKnowledgeBackend, getKnowledgeBackend, unregisterKnowledgeBackend } from "@/lib/kb/registry";
 
+/**
+ * C-02：远端适配器类型与注册入口保留为**薄包装**，底层收敛到唯一注册表 `src/lib/kb/registry.ts`
+ * （KnowledgeBackend）。旧类型/函数名不变，既有测试与调用方零改动。
+ */
 export type KbRemoteAdapter = {
   name: string;
   /** 推送（新增或覆盖）一条知识；返回远端文档 id */
@@ -17,14 +22,28 @@ export type KbRemoteAdapter = {
   remove?: (k: Knowledge) => Promise<void>;
 };
 
-const g = globalThis as unknown as { __hd_kb_remote__?: KbRemoteAdapter | null };
-
+/** 旧注册名（P06 兼容）：包装为 KnowledgeBackend 注册到唯一注册表；传 null 注销 */
 export function registerKbRemoteAdapter(adapter: KbRemoteAdapter | null): void {
-  g.__hd_kb_remote__ = adapter;
+  if (!adapter) {
+    unregisterKnowledgeBackend("coze");
+    return;
+  }
+  registerKnowledgeBackend({
+    name: "coze",
+    search: async () => [],
+    pushEntry: async (doc) => adapter.push(doc as unknown as Knowledge),
+    removeDocument: adapter.remove ? async (externalId) => adapter.remove!({ externalId } as unknown as Knowledge) : undefined,
+  });
 }
 
 export function getKbRemoteAdapter(): KbRemoteAdapter | null {
-  return g.__hd_kb_remote__ ?? null;
+  const b = getKnowledgeBackend("coze");
+  if (!b) return null;
+  return {
+    name: b.name,
+    push: async (k) => b.pushEntry({ id: k.id, title: k.title, content: k.content, tags: k.tags, externalId: k.externalId }),
+    remove: b.removeDocument ? async (k) => void (await b.removeDocument!(k.externalId ?? String(k.id))) : undefined,
+  };
 }
 
 /** 采集条目入本地知识库（已有回链则更新内容并重新排队），返回 knowledgeId */
