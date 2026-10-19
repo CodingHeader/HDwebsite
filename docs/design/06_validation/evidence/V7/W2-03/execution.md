@@ -37,6 +37,14 @@
 - **sharp 0.34.5 → 0.35.5**：修 high，跨主版本。
 - **mammoth 1.13 → 0.3.29**：修 moderate，**降主版本**（不推荐）。
 
+### next RCE 严重度补充（子代理复审发现）
+`audit-after.json` 中 next 的 advisory 聚合含多条 critical 源（source 1193676 / 1193732 / 1240609），涉及：
+- Unauthenticated RCE on windows-hosted（本机为 win32，**直接命中**）
+- Image Optimization AVIF RCE
+- next/og ImageResponse RCE
+
+`fixAvailable.version = 16.4.2`。**升级优先级高**，但跨小版本需评估前台视觉回归（REQ-F-014 冻结面），建议 K10 裁决材料中把此 RCE 风险显式列出。
+
 ### 未裁决前的默认策略
 - 只做补丁号升级并记录残留（规划文档 §W2-03 明确"未裁决前只做补丁号升级并记录残留"）。
 - 因此 next / sharp / mammoth 的升级全部推迟到 K10 裁决后。
