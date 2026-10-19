@@ -139,7 +139,9 @@ export async function deleteDocuments(cfg: CozeKbConfig, datasetId: string, docu
   await callCoze(cfg, "document/delete", { dataset_id: datasetId, space_id: cfg.spaceId, document_ids: documentIds });
 }
 
-/** coze 后端实现（注册到 C-02 的统一注册表） */
+/** coze 后端实现（注册到 C-02 的统一注册表）
+ * - C-08：推条目与推文件一律要求 datasetId（对应 KnowledgeBase.cozeDatasetId），缺失即抛错，
+ *   不再 fallback 到本端主键或字符串 "default"（ADR-025 §6） */
 export function makeCozeBackend(getCfg: () => CozeKbConfig | null): KnowledgeBackend {
   return {
     name: "coze",
@@ -148,7 +150,13 @@ export function makeCozeBackend(getCfg: () => CozeKbConfig | null): KnowledgeBac
     pushEntry: async (doc: KbDocument) => {
       const cfg = getCfg();
       if (!cfg) throw new Error("知识库同步未配置：请在站点设置填写 kbCozeProviderId / kbCozeSpaceId");
-      const ids = await pushDocuments(cfg, doc.externalId ?? String(doc.baseId ?? "default"), [
+      // C-08：目标库必须绑定 Coze dataset（ADR-025 §6"推送到对应 dataset"），否则不能凭空落到别的库
+      //        不允许 fallback 到 baseId（那是本端主键，不是 Coze dataset_id）
+      const datasetId = doc.datasetId ?? doc.externalId;
+      if (!datasetId) {
+        throw new Error(`知识库 #${doc.baseId ?? doc.id} 未绑定 Coze dataset（cozeDatasetId 为空），无法推送远端`);
+      }
+      const ids = await pushDocuments(cfg, datasetId, [
         { name: doc.title, content: doc.content },
       ]);
       return { externalId: ids[0] ?? "" };
@@ -156,12 +164,16 @@ export function makeCozeBackend(getCfg: () => CozeKbConfig | null): KnowledgeBac
     pushDocument: async (doc) => {
       const cfg = getCfg();
       if (!cfg) throw new Error("知识库同步未配置：请在站点设置填写 kbCozeProviderId / kbCozeSpaceId");
-      const ids = await pushDocuments(cfg, String(doc.baseId ?? "default"), [{ name: doc.title, content: doc.content }]);
+      const datasetId = doc.datasetId ?? doc.externalId;
+      if (!datasetId) throw new Error(`知识库 #${doc.baseId ?? doc.id} 未绑定 Coze dataset，无法推送文件`);
+      const ids = await pushDocuments(cfg, datasetId, [{ name: doc.title, content: doc.content }]);
       return { documentId: ids[0] ?? "" };
     },
     removeDocument: async (externalId: string) => {
       const cfg = getCfg();
       if (!cfg) throw new Error("知识库同步未配置");
+      // TODO(C-04/C-06 收口)：KnowledgeBackend.removeDocument 仅接收 externalId，无 dataset 上下文，
+      // 真实联调时由调用方（E-11 文件删除）先按文件 baseId 解析 cozeDatasetId 再调用。
       await deleteDocuments(cfg, "default", [externalId]);
     },
     getDocumentStatus: async (externalId: string) => {

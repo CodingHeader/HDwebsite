@@ -7,6 +7,7 @@
  * - 未注册适配器：队列保持 pending（不丢），processKbSyncQueue 返回 skipped
  */
 import { prisma } from "@/lib/prisma";
+import crypto from "node:crypto";
 import type { CollectItem, Knowledge } from ".prisma/client";
 import { registerKnowledgeBackend, getKnowledgeBackend, unregisterKnowledgeBackend } from "@/lib/kb/registry";
 
@@ -67,18 +68,90 @@ export function getKbRemoteAdapter(): KbRemoteAdapter | null {
   if (!b) return null;
   return {
     name: b.name,
-    push: async (k) => b.pushEntry({ id: k.id, title: k.title, content: k.content, tags: k.tags, externalId: k.externalId }),
+    push: async (k) => b.pushEntry({ id: k.id, title: k.title, content: k.content, tags: k.tags, externalId: k.externalId, datasetId: await cozeDatasetIdOf(k.baseId) }),
     remove: b.removeDocument ? async (k) => void (await b.removeDocument!(k.externalId ?? String(k.id))) : undefined,
   };
 }
 
-/** 采集条目入本地知识库（已有回链则更新内容并重新排队），返回 knowledgeId */
+/** 默认落库：seed 的 `collect` 采集资讯库（schema.prisma:868 注释；prisma/seed.ts:391/398） */
+export const DEFAULT_COLLECT_BASE_CODE = "collect";
+
+/** C-08（G10）：sha256（hex），用于 KnowledgeFile 去重列（与 kb/ingest.ts 同口径） */
+function sha256Of(text: string): string {
+  return crypto.createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+/** C-08：解析采集条目的目标库 id——源指定 knowledgeBaseId 优先，否则 seed 的 collect 采集资讯库 */
+async function resolveCollectBaseId(item: Pick<CollectItem, "id"> & { sourceId?: number }): Promise<number | null> {
+  if (item.sourceId) {
+    const source = await prisma.collectSource.findUnique({ where: { id: item.sourceId }, select: { knowledgeBaseId: true } });
+    if (source?.knowledgeBaseId) return source.knowledgeBaseId;
+  }
+  const def = await prisma.knowledgeBase.findUnique({ where: { code: DEFAULT_COLLECT_BASE_CODE }, select: { id: true } });
+  return def?.id ?? null;
+}
+
+/** C-08（G10）：把采集条目镜像为 KnowledgeFile，`collectItemId` 指回来源 CollectItem（E-11 文件详情跳转依据）
+ * - KnowledgeFile.baseId 为必填（schema.prisma）；目标库不存在时跳过镜像，反向回链由 CollectItem.knowledgeId 承担 */
+async function upsertCollectFile(
+  baseId: number | null,
+  item: Pick<CollectItem, "id" | "title">,
+  content: string,
+  tags: string
+): Promise<number | null> {
+  if (!baseId) return null;
+  const existing = await prisma.knowledgeFile.findFirst({ where: { collectItemId: item.id } });
+  if (existing) {
+    await prisma.knowledgeFile.update({
+      where: { id: existing.id },
+      // KnowledgeFile 无 title 列（schema.prisma），更新 filename / tags / sha256 / size
+      // （审核通过后 contentMd 可能变化：同步去重主键 sha256 与字节数，避免与 Knowledge 内容脱钩）
+      data: {
+        filename: `${item.title.slice(0, 200)}.md`,
+        tags,
+        sha256: sha256Of(`${item.id}:${content}`),
+        size: Buffer.byteLength(content, "utf8"),
+      },
+    });
+    return existing.id;
+  }
+  const title = item.title.slice(0, 200);
+  const created = await prisma.knowledgeFile.create({
+    data: {
+      baseId,
+      filename: `${title}.md`,
+      ext: "md",
+      mimeType: "text/markdown",
+      size: Buffer.byteLength(content, "utf8"),
+      sha256: sha256Of(`${item.id}:${content}`),
+      // 采集条目无真实磁盘文件：storagePath 记为 collect/<id>.md（仅占位，E-11 导出/重解析会提示重新上传）
+      storagePath: `collect/${item.id}.md`,
+      localParse: "ok",
+      chunkCount: 1,
+      collectItemId: item.id,
+      tags,
+    },
+  });
+  return created.id;
+}
+
+/** C-08：目标库（KnowledgeBase）→ Coze dataset_id 解析；未绑定返回 null */
+async function cozeDatasetIdOf(baseId: number | null): Promise<string | null> {
+  if (!baseId) return null;
+  const base = await prisma.knowledgeBase.findUnique({ where: { id: baseId }, select: { cozeDatasetId: true } });
+  return base?.cozeDatasetId ?? null;
+}
+
+/** 采集条目入本地知识库（已有回链则更新内容并重新排队），返回 knowledgeId
+ * - `sourceId` 可选：collect-engine（D 线，未声明 sourceId）运行时对象仍带该字段；缺省走默认 collect 库 */
 export async function ingestCollectItem(
-  item: Pick<CollectItem, "id" | "title" | "url" | "contentMd" | "summary" | "knowledgeId">,
+  item: Pick<CollectItem, "id" | "title" | "url" | "contentMd" | "summary" | "knowledgeId"> & { sourceId?: number },
   opts: { tags?: string[] } = {}
 ): Promise<number> {
   const content = item.contentMd || item.summary || item.title;
   const tags = ["采集", ...(opts.tags ?? [])].join(",");
+  // C-08：目标库 = 源指定 knowledgeBaseId 或默认采集资讯库（ADR-025 §6；不改 collect-engine）
+  const baseId = await resolveCollectBaseId(item);
   if (item.knowledgeId) {
     const existing = await prisma.knowledge.findUnique({ where: { id: item.knowledgeId } });
     if (existing) {
@@ -90,9 +163,22 @@ export async function ingestCollectItem(
     }
   }
   const k = await prisma.knowledge.create({
-    data: { title: item.title.slice(0, 300), content, tags, source: "collect", externalUrl: item.url, status: "active", syncStatus: "pending" },
+    data: {
+      title: item.title.slice(0, 300),
+      content,
+      tags,
+      source: "collect",
+      externalUrl: item.url,
+      status: "active",
+      syncStatus: "pending",
+      baseId,
+    },
   });
   await prisma.collectItem.update({ where: { id: item.id }, data: { knowledgeId: k.id, kbSyncedAt: null } });
+  // C-08（G10）：镜像 KnowledgeFile，collectItemId 指回来源 CollectItem（E-11 详情跳转；REQ-F-006 AC60）
+  await upsertCollectFile(baseId, item, content, tags).catch((err) =>
+    console.error(`[kb-sync] KnowledgeFile 镜像失败（CollectItem#${item.id}）：`, err)
+  );
   return k.id;
 }
 

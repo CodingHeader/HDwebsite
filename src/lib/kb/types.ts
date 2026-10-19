@@ -19,6 +19,8 @@ export type KbDocument = {
   id: number;
   /** 所属库（本地条目可为 null） */
   baseId?: number | null;
+  /** C-08：所属库对应的 Coze dataset_id（KnowledgeBase.cozeDatasetId）；推文档时优先于此值 */
+  datasetId?: string | null;
   title: string;
   content: string;
   /** 逗号分隔标签串（沿用 Knowledge.tags 现状） */
