@@ -5,12 +5,12 @@
  */
 import { httpFetch } from "@/lib/http-client";
 import type { LLMProvider } from ".prisma/client";
-import type { AdapterChatResult, ChatMessage, LLMProviderAdapter } from "./types";
+import type { AdapterChatResult, AdapterOverrides, ChatMessage, LLMProviderAdapter } from "./types";
 
 export const openaiAdapter: LLMProviderAdapter = {
   kind: "openai",
 
-  async chat(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number): Promise<AdapterChatResult> {
+  async chat(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides: AdapterOverrides = {}): Promise<AdapterChatResult> {
     const endpoint = provider.endpoint.replace(/\/+$/, "");
     // http-client：超时由 timeoutMs 控制、非 2xx 抛 HttpError（含 bodyText 前 2000 字符）
     const res = await httpFetch(`${endpoint}/chat/completions`, {
@@ -19,8 +19,9 @@ export const openaiAdapter: LLMProviderAdapter = {
       body: JSON.stringify({
         model: provider.model,
         messages,
-        temperature: provider.temperature,
-        max_tokens: provider.maxTokens,
+        temperature: overrides.temperature ?? provider.temperature,
+        max_tokens: overrides.maxTokens ?? provider.maxTokens,
+        ...(overrides.topP != null ? { top_p: overrides.topP } : {}),
         stream: false,
       }),
       timeoutMs,
@@ -37,7 +38,7 @@ export const openaiAdapter: LLMProviderAdapter = {
     };
   },
 
-  async stream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number): Promise<ReadableStream<Uint8Array>> {
+  async stream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides: AdapterOverrides = {}): Promise<ReadableStream<Uint8Array>> {
     const endpoint = provider.endpoint.replace(/\/+$/, "");
     const res = await httpFetch(`${endpoint}/chat/completions`, {
       method: "POST",
@@ -45,8 +46,9 @@ export const openaiAdapter: LLMProviderAdapter = {
       body: JSON.stringify({
         model: provider.model,
         messages,
-        temperature: provider.temperature,
-        max_tokens: provider.maxTokens,
+        temperature: overrides.temperature ?? provider.temperature,
+        max_tokens: overrides.maxTokens ?? provider.maxTokens,
+        ...(overrides.topP != null ? { top_p: overrides.topP } : {}),
         stream: true,
       }),
       timeoutMs,

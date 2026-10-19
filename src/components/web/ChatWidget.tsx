@@ -10,6 +10,7 @@
  * - 重试：上次请求失败且输入框为空时，按钮变为"重试"，重新发送上一条提问
  */
 import { useEffect, useRef, useState } from "react";
+import { parseSseFrame, reduceSseError } from "@/lib/llm/sse";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -99,6 +100,7 @@ export function ChatWidget() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let sseError: string | null = null;
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -106,28 +108,23 @@ export function ChatWidget() {
         const frames = buffer.split("\n\n");
         buffer = frames.pop() ?? "";
         for (const frame of frames) {
-          const eventLine = frame.split("\n").find((l) => l.startsWith("event:"));
-          const dataLine = frame.split("\n").find((l) => l.startsWith("data:"));
-          if (!eventLine || !dataLine) continue;
-          const event = eventLine.slice(6).trim();
-          let payload: Record<string, unknown> = {};
-          try {
-            payload = JSON.parse(dataLine.slice(5).trim());
-          } catch {
-            continue;
-          }
-          if (event === "delta" && typeof payload.text === "string") {
-            const chunk = payload.text;
+          // C-07：SSE 帧统一走契约 chatSseEventSchema 解析（非法帧忽略，不抛错）
+          const evt = parseSseFrame(frame);
+          if (!evt) continue;
+          if (evt.event === "delta") {
+            const chunk = evt.data.text;
             setMessages((m) => {
               const next = [...m];
               next[next.length - 1] = { role: "assistant", content: next[next.length - 1].content + chunk };
               return next;
             });
-          } else if (event === "error" && typeof payload.message === "string") {
-            setError(payload.message);
+          } else if (evt.event === "error") {
+            // C-07：同一流可能出现两条 error（route 的 catch 与 finally），只保留第一条
+            sseError = reduceSseError(sseError, evt.data.message);
           }
         }
       }
+      if (sseError) setError(sseError);
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
         // 用户主动停止：保留已生成内容，不视为错误

@@ -35,22 +35,44 @@ async function resolveKey(provider: LLMProvider): Promise<string> {
   return provider.apiKey;
 }
 
-/** 活跃供应商：default 优先，其余按 priority 升序，fallback 殿后 */
-export type RouteOptions = { preferredProviderId?: number | null };
+/**
+ * 活跃供应商：default 优先，其余按 priority 升序，fallback 殿后
+ * C-07：preferredProviderIds（场景 providerIds，K12 语义 = 逐个尝试的优先级序列）
+ * 与旧的 preferredProviderId（场景 llmProviderId）兼容——单元素等价。
+ */
+export type AdapterOverrides = { temperature?: number | null; maxTokens?: number | null; topP?: number | null };
+export type RouteOptions = {
+  preferredProviderId?: number | null;
+  /** C-07：非空优先于 preferredProviderId；数组序 = 逐个尝试序（B 失败回落 A） */
+  preferredProviderIds?: number[] | null;
+  /** C-07：场景级参数覆盖（空字段回落到供应商默认值） */
+  overrides?: AdapterOverrides;
+};
 
 export async function getRoutedProviders(opts: RouteOptions = {}): Promise<LLMProvider[]> {
   const rows = await prisma.lLMProvider.findMany({ where: { status: "active" }, orderBy: [{ priority: "asc" }, { id: "asc" }] });
-  return orderProviders(rows, opts.preferredProviderId);
+  // 空数组视为未指定 → 回落旧字段 preferredProviderId
+  const preferred = opts.preferredProviderIds?.length ? opts.preferredProviderIds : opts.preferredProviderId;
+  return orderProviders(rows, preferred);
 }
 
-/** 纯函数（导出供单测）：场景指定 → default → priority 升序 → fallback 殿后 */
-export function orderProviders<T extends { id: number; isDefault: boolean; isFallback: boolean }>(rows: T[], preferredId?: number | null): T[] {
-  const preferred = preferredId ? rows.filter((r) => r.id === preferredId) : [];
-  const others = rows.filter((r) => r.id !== preferredId);
+/** 纯函数（导出供单测）：[场景序] → default → priority 升序 → fallback 殿后
+ * C-07：接受数组（providerIds）或单数（llmProviderId）；无效 id 忽略；重复 id 保序去重 */
+export function orderProviders<T extends { id: number; isDefault: boolean; isFallback: boolean }>(
+  rows: T[],
+  preferred?: number | number[] | null
+): T[] {
+  const ids = Array.isArray(preferred) ? preferred : preferred ? [preferred] : [];
+  const uniq = [...new Set(ids)];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  // 保持 ids 声明顺序（K12：逐个尝试的优先级序列）
+  const pre = uniq.map((id) => byId.get(id)).filter((r): r is T => !!r);
+  const preIds = new Set(pre.map((r) => r.id));
+  const others = rows.filter((r) => !preIds.has(r.id));
   const byDefault = others.filter((r) => r.isDefault);
   const byFallback = others.filter((r) => r.isFallback && !r.isDefault);
   const rest = others.filter((r) => !r.isDefault && !r.isFallback);
-  return [...preferred, ...byDefault, ...rest, ...byFallback];
+  return [...pre, ...byDefault, ...rest, ...byFallback];
 }
 
 async function recordUsage(providerId: number, tokensIn: number, tokensOut: number, failure: boolean): Promise<void> {
@@ -101,7 +123,8 @@ export async function gatewayChat(messages: ChatMessage[], opts: RouteOptions = 
       if (!apiKey) throw new Error("API Key 解密失败");
       // C-01：按 kind 的调用细节收敛到适配器注册表（本文件无类型分支）
       const adapter = getAdapter(provider.kind);
-      const r = await adapter.chat(provider, apiKey, messages, timeoutMs);
+      // C-07：场景级参数覆盖（temperature/maxTokens/topP）透传适配器
+      const r = await adapter.chat(provider, apiKey, messages, timeoutMs, opts.overrides);
       await recordUsage(provider.id, r.tokensIn, r.tokensOut, false);
       return { ok: true, reply: r.reply, providerId: provider.id, providerName: provider.name };
     } catch (err) {
@@ -137,7 +160,8 @@ export async function gatewayChatStream(
       const apiKey = await resolveKey(provider);
       if (!apiKey) throw new Error("API Key 解密失败");
       // C-01：按 kind 的调用细节收敛到适配器注册表（本文件无类型分支）
-      const stream = await getAdapter(provider.kind).stream(provider, apiKey, messages, timeoutMs);
+      // C-07：场景级参数覆盖透传
+      const stream = await getAdapter(provider.kind).stream(provider, apiKey, messages, timeoutMs, opts.overrides);
       await recordUsage(provider.id, 0, 0, false);
       return { ok: true, stream, providerId: provider.id, providerName: provider.name };
     } catch (err) {

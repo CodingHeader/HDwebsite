@@ -1,18 +1,22 @@
+/**
+ * POST /api/chat/stream：SSE 流式 AI 客服（公开 + IP 限频 + 敏感词挡板 + chat-service 场景装配）
+ * C-07：
+ * - 请求体与 SSE 事件全部走契约 `src/contracts/chat.ts`（DR-23：删除内联 zod 定义）
+ * - 限频命中返回 HTTP 429 / code 429（ADR-028 契约错误码；原为 400）
+ * - 场景 providerIds [B,A] 逐个尝试 → llmProviderId → 默认 → priority → fallback（网关顺序保证回落）
+ * - 场景级参数（temperature/maxTokens/topP）透传网关 → 适配器
+ * - 流中途失败只发一条 error（catch 与 finally 去重，ChatWidget 只显示一条）
+ */
 import { prisma } from "@/lib/prisma";
-import { error } from "@/lib/api-response";
+import { error, tooManyRequests } from "@/lib/api-response";
 import { gatewayChatStream, recordGatewayFailure } from "@/lib/llm-gateway";
 import { buildChatContext, findScene, recordMessage } from "@/lib/chat-service";
 import { withApi } from "@/lib/api-handler";
 import { clientIp } from "@/lib/log";
-import { z } from "zod";
+import { sseFrame, reduceSseError } from "@/lib/llm/sse";
+import { chatRequestSchema } from "@/contracts/chat";
 
 export const dynamic = "force-dynamic";
-
-const chatRequestSchema = z.object({
-  sessionId: z.string().min(8).max(64),
-  sceneCode: z.string().max(50).default("float"),
-  message: z.string().min(1, "消息不能为空").max(2000),
-});
 
 const RATE_LIMIT_PER_MINUTE = 10;
 
@@ -30,12 +34,12 @@ export const POST = withApi(
     const { sessionId, sceneCode, message } = parsed.data;
     const ip = clientIp(request);
 
-    // 限频（SOL-003：默认 10 次/分钟）
+    // 限频（SOL-003：默认 10 次/分钟；C-07：HTTP 429 + code 429）
     const recent = await prisma.aIChatHistory.count({
       where: { role: "user", ipAddress: ip, createdAt: { gte: new Date(Date.now() - 60_000) } },
     });
     if (recent >= RATE_LIMIT_PER_MINUTE) {
-      return error("提问太频繁，请稍后再试", 400);
+      return tooManyRequests();
     }
 
     // 敏感词挡板（最小集：提示词注入与违禁引流；M2 按需扩充）
@@ -52,21 +56,23 @@ export const POST = withApi(
       await recordMessage({ sessionId, channel: "website", role: "user", message, ipAddress: ip, userAgent: request.headers.get("user-agent") });
     }
 
-    const routed = await gatewayChatStream(ctx.messages, { preferredProviderId: ctx.preferredProviderId });
+    const routed = await gatewayChatStream(ctx.messages, {
+      preferredProviderId: ctx.preferredProviderId,
+      preferredProviderIds: ctx.preferredProviderIds,
+      overrides: ctx.overrides,
+    });
     if (!routed.ok) {
       await recordMessage({ sessionId, channel: "website", role: "assistant", message: "", model: "gateway", metadata: JSON.stringify({ error: routed.errMsg }) });
       return error(`AI 服务暂时不可用：${routed.errMsg}`, 502);
     }
 
-    const encoder = new TextEncoder();
-    const sse = (event: string, data: unknown) => encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
         controller.enqueue(
-          sse("meta", { scene: { code: scene?.code ?? "float", name: scene?.name ?? "智能客服" }, greeting: scene?.greeting, provider: routed.providerName })
+          sseFrame("meta", { scene: { code: scene?.code ?? "float", name: scene?.name ?? "智能客服" }, greeting: scene?.greeting, provider: routed.providerName })
         );
         let full = "";
+        let errMsg: string | null = null;
         const reader = routed.stream.getReader();
         try {
           for (;;) {
@@ -74,26 +80,21 @@ export const POST = withApi(
             if (done) break;
             const text = new TextDecoder().decode(value);
             full += text;
-            controller.enqueue(sse("delta", { text }));
+            controller.enqueue(sseFrame("delta", { text }));
           }
-          controller.enqueue(sse("done", { conversationId: sessionId }));
+          controller.enqueue(sseFrame("done", { conversationId: sessionId }));
         } catch (err) {
           console.error("[chat/stream] 流式读取失败：", err);
           await recordGatewayFailure(routed.providerId).catch(() => undefined);
-          controller.enqueue(
-            sse("error", {
-              message:
-                err instanceof Error && err.message.startsWith("Coze ")
-                  ? err.message
-                  : "生成中断，请重试",
-            })
-          );
+          errMsg =
+            err instanceof Error && err.message.startsWith("Coze ")
+              ? err.message
+              : "生成中断，请重试";
         } finally {
           if (!full.trim()) {
-            controller.enqueue(
-              sse("error", { message: "AI 未返回内容（供应商凭证可能已失效，请在后台更新）" })
-            );
+            errMsg = reduceSseError(errMsg, "AI 未返回内容（供应商凭证可能已失效，请在后台更新）");
           }
+          if (errMsg) controller.enqueue(sseFrame("error", { message: errMsg }));
           await prisma.aIChatHistory
             .create({
               data: {
