@@ -176,3 +176,25 @@ export function makeCozeBackend(getCfg: () => CozeKbConfig | null): KnowledgeBac
 export function selfRegisterCozeBackend(getCfg: () => CozeKbConfig | null): void {
   registerKnowledgeBackend(makeCozeBackend(getCfg));
 }
+
+/**
+ * C-06：从站点设置读取 Coze 知识库配置（供路由层建库时同步 dataset、删除远端文档使用）。
+ * 与 kb-sync.configureCozeBackendFromSettings 读同一组设置（kbCozeProviderId / kbCozeSpaceId），
+ * 但只返回配置、不注册后端（建库是单次动作，无需注册到注册表）。
+ * 未配置 / 供应商不存在 / PAT 解密失败 → 返回 null（调用方按"未配置"降级）。
+ */
+export async function loadCozeKbConfig(): Promise<CozeKbConfig | null> {
+  const { prisma } = await import("@/lib/prisma");
+  const { decryptField } = await import("@/lib/crypto");
+  const rows = await prisma.setting.findMany({ where: { key: { in: ["kbCozeProviderId", "kbCozeSpaceId"] } } });
+  const get = (k: string) => rows.find((r) => r.key === k)?.value ?? "";
+  const providerId = Number(get("kbCozeProviderId"));
+  const spaceIdRaw = get("kbCozeSpaceId");
+  const spaceId = spaceIdRaw.startsWith("v1:") ? decryptField(spaceIdRaw) ?? "" : spaceIdRaw;
+  if (!providerId || !spaceId) return null;
+  const provider = await prisma.lLMProvider.findUnique({ where: { id: providerId } });
+  if (!provider || provider.kind !== "coze") return null;
+  const pat = provider.apiKey.startsWith("v1:") ? decryptField(provider.apiKey) ?? "" : provider.apiKey;
+  if (!pat) return null;
+  return { pat, spaceId, apiBase: provider.endpoint, timeoutMs: 30_000 };
+}
