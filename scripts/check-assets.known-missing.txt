@@ -1,0 +1,13 @@
+# check-assets 已登记待修（随对应卡修正后移除本行）
+# 格式：每行一个路径，`#` 开头为注释。
+# 登记原因见 docs/design/06_validation/evidence/V7/W2-09/execution.md
+#
+# 以下 3 项默认资源路径引用在 settings-registry.ts（src/lib/），
+# 由 D-04（设置键对等 16 键 + 修正 3 个不存在的默认资源路径）修正为仓库内存在的文件。
+/images/placeholder.svg
+/images/banner-bg.jpg
+/favicon.ico
+#
+# 以下 1 项是前台 CompanyIntro 的视频 poster（src/components/web/CompanyIntro.tsx:32），
+# 属前台冻结范围，须从 origin/main@94dbbbb 恢复；若 main 无此文件则按 main 视觉等价替换。
+/images/video-poster.jpg

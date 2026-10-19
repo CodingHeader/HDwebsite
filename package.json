@@ -12,7 +12,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "npm run lint && npm run typecheck && npm run build",
+    "check": "npm run lint && npm run typecheck && npm run build && npm run check:assets && npm run check:root",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -20,7 +20,9 @@
     "prisma.seed": "ts-node prisma/seed.ts",
     "test:visual": "playwright test tests/visual",
     "visual:reference": "VISUAL_REF=1 playwright test tests/visual --update-snapshots",
-    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts"
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts",
+    "check:assets": "node scripts/check-assets.mjs",
+    "check:root": "node scripts/check-root.mjs"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
