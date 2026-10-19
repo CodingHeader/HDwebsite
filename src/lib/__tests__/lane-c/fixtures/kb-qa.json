@@ -1,0 +1,22 @@
+[
+  { "id": "q01", "question": "报名需要什么材料", "expectTitle": "报名材料清单" },
+  { "id": "q02", "question": "学费多少钱", "expectTitle": "收费标准与缴费方式" },
+  { "id": "q03", "question": "专升本有哪些专业", "expectTitle": "专升本招生专业一览" },
+  { "id": "q04", "question": "怎么联系招生老师", "expectTitle": "招生咨询联系方式" },
+  { "id": "q05", "question": "上课时间怎么安排", "expectTitle": "教学安排与上课时间" },
+  { "id": "q06", "question": "学位证什么时候发", "expectTitle": "学位申请与发放时间" },
+  { "id": "q07", "question": "可以退费吗", "expectTitle": "退费政策说明" },
+  { "id": "q08", "question": "考试难不难", "expectTitle": "考试难度与通过率" },
+  { "id": "q09", "question": "函授和业余区别", "expectTitle": "函授与业余学习形式区别" },
+  { "id": "q10", "question": "毕业证国家承认吗", "expectTitle": "学历证书国家承认说明" },
+  { "id": "q11", "question": "报名截止日期", "expectTitle": "报名时间与截止日期" },
+  { "id": "q12", "question": "需要参加入学考试吗", "expectTitle": "入学考试要求" },
+  { "id": "q13", "question": "校区在哪里", "expectTitle": "校区地址与交通" },
+  { "id": "q14", "question": "可以边工作边读吗", "expectTitle": "在职学习可行性说明" },
+  { "id": "q15", "question": "学费可以分期吗", "expectTitle": "学费分期缴纳政策" },
+  { "id": "q16", "question": "网络教育靠谱吗", "expectTitle": "网络教育形式说明" },
+  { "id": "q17", "question": "挂科了怎么办", "expectTitle": "课程补考与重修规定" },
+  { "id": "q18", "question": "能转到别的专业吗", "expectTitle": "转专业办理流程" },
+  { "id": "q19", "question": "学信网能查到吗", "expectTitle": "学信网学籍查询说明" },
+  { "id": "q20", "question": "毕业需要写论文吗", "expectTitle": "毕业论文要求" }
+]

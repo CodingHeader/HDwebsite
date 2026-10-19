@@ -9,6 +9,7 @@ import { getRoutedProviders } from "@/lib/llm-gateway";
 import { decryptField } from "@/lib/crypto";
 import { cozeChat } from "@/lib/coze";
 import type { Knowledge } from ".prisma/client";
+import type { LlmKind } from "@/contracts/kinds";
 
 export type KbHit = {
   source: "local" | "coze";
@@ -80,10 +81,13 @@ export function formatKbContext(hits: KbHit[]): string {
   return hits.map((h) => `[${h.title}]\n${h.content}`).join("\n\n");
 }
 
-/** Coze 检索测试：通过默认 Coze 供应商的 bot 发起问答，返回其回答作为检索证据 */
+/** Coze 检索测试：通过默认 Coze 供应商的 bot 发起问答，返回其回答作为检索证据
+ * C-01：kind 比较经具名常量（LLMProviderAdapter 注册表的取值口径；避免字面量分支扩散） */
+const COZE_KIND: LlmKind = "coze";
+
 export async function searchViaCoze(query: string): Promise<{ ok: boolean; answer?: string; errMsg?: string }> {
   const providers = await getRoutedProviders();
-  const cozeProvider = providers.find((p) => p.kind === "coze");
+  const cozeProvider = providers.find((p) => p.kind === COZE_KIND);
   if (!cozeProvider) {
     return { ok: false, errMsg: "未配置 Coze 类型供应商（模型供应商页可添加）" };
   }

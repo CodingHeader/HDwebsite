@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
-import { error, notFound, serverError } from "@/lib/api-response";
+import { notFound, serverError } from "@/lib/api-response";
 import { decryptField } from "@/lib/crypto";
-import { cozeChat } from "@/lib/coze";
-import { idParamSchema } from "@/contracts";
+import { getAdapter } from "@/lib/llm/registry";
+import { parseId, withApi } from "@/lib/api-handler";
 import { providerTestSchema } from "@/contracts/resources";
 
 export const runtime = "nodejs";
@@ -11,62 +10,37 @@ export const dynamic = "force-dynamic";
 
 type TestResult = { ok: boolean; latencyMs: number; reply?: string; errMsg?: string };
 
-/** POST /api/llm/providers/[id]/test：连通性测试（延迟 + 回复；失败也以 data.ok=false 返回） */
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const guard = await requireAuth(request, "llm:edit");
-  if (!guard.ok) return guard.response;
-  const parsedId = idParamSchema.safeParse((await params).id);
-  if (!parsedId.success) return error("非法 ID", 400);
-  let body: unknown = {};
-  try { body = await request.json(); } catch { /* 空体允许 */ }
-  const parsed = providerTestSchema.safeParse(body ?? {});
-  const prompt = parsed.success ? parsed.data.prompt : "你好，请回复“连通正常”四个字。";
+/** POST /api/llm/providers/[id]/test：连通性测试（延迟 + 回复；失败也以 data.ok=false 返回）
+ * C-01：复用适配器注册表（去 kind 分支与原生超时信号），超时 60s 与原实现一致 */
+export const POST = withApi<{ id: string }>(
+  async ({ request, params }) => {
+    const id = parseId(params.id);
+    // 空体允许（与原实现一致，不用 parseBody 的 400 语义）
+    let body: unknown = {};
+    try { body = await request.json(); } catch { /* 空体允许 */ }
+    const parsed = providerTestSchema.safeParse(body ?? {});
+    const prompt = parsed.success ? parsed.data.prompt : "你好，请回复“连通正常”四个字。";
 
-  try {
-    const provider = await prisma.lLMProvider.findUnique({ where: { id: parsedId.data } });
-    if (!provider) return notFound("供应商不存在");
-    const apiKey = provider.apiKey.startsWith("v1:") ? decryptField(provider.apiKey) ?? "" : provider.apiKey;
-    if (!apiKey) return error("API Key 解密失败", 400);
+    try {
+      const provider = await prisma.lLMProvider.findUnique({ where: { id } });
+      if (!provider) return notFound("供应商不存在");
+      const apiKey = provider.apiKey.startsWith("v1:") ? decryptField(provider.apiKey) ?? "" : provider.apiKey;
+      if (!apiKey) return Response.json({ code: 400, data: null, message: "API Key 解密失败" });
 
-    const start = Date.now();
-    let result: TestResult;
-    if (provider.kind === "coze") {
-      const coze = await cozeChat(
-        { pat: apiKey, botId: provider.botId ?? "", apiBase: provider.endpoint, timeoutMs: 60_000 },
-        prompt
-      );
-      result = coze.ok
-        ? { ok: true, latencyMs: Date.now() - start, reply: coze.reply }
-        : { ok: false, latencyMs: Date.now() - start, errMsg: coze.errMsg };
-    } else {
-      const endpoint = provider.endpoint.replace(/\/+$/, "");
+      const start = Date.now();
+      let result: TestResult;
       try {
-        const res = await fetch(`${endpoint}/chat/completions`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: provider.model,
-            messages: [{ role: "user", content: prompt }],
-            temperature: provider.temperature,
-            max_tokens: 100,
-          }),
-          signal: AbortSignal.timeout(60_000),
-        });
-        const latencyMs = Date.now() - start;
-        if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          result = { ok: false, latencyMs, errMsg: `上游 ${res.status}：${text.slice(0, 200)}` };
-        } else {
-          const body2 = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-          result = { ok: true, latencyMs, reply: body2.choices?.[0]?.message?.content ?? "" };
-        }
+        // C-01：复用适配器（openai/coze 的调用细节全部在适配器内）
+        const r = await getAdapter(provider.kind).chat(provider, apiKey, [{ role: "user", content: prompt }], 60_000);
+        result = { ok: true, latencyMs: Date.now() - start, reply: r.reply };
       } catch (err) {
         result = { ok: false, latencyMs: Date.now() - start, errMsg: err instanceof Error ? err.message : String(err) };
       }
+      return Response.json({ code: 200, data: result, message: "测试完成" });
+    } catch (err) {
+      console.error("[llm/test] 测试失败：", err);
+      return serverError("测试失败");
     }
-    return Response.json({ code: 200, data: result, message: "测试完成" });
-  } catch (err) {
-    console.error("[llm/test] 测试失败：", err);
-    return serverError("测试失败");
-  }
-}
+  },
+  { permission: "llm:edit", route: "llm/providers/test", errorMessage: "测试失败" }
+);
