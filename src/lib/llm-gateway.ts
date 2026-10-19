@@ -9,11 +9,13 @@
 import { prisma } from "@/lib/prisma";
 import { getAllSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）；C-01：去 as 别名（B-01 语义单一化）
 import { decryptField } from "@/lib/crypto";
+import { isRateLimited, recordRateCall, usageDate } from "./llm/limits";
 import type { LLMProvider } from ".prisma/client";
 import type { ChatMessage } from "./llm/types";
 import { getAdapter } from "./llm/registry";
 
 export type { ChatMessage };
+export { usageDate } from "./llm/limits";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -24,6 +26,8 @@ export type GatewayResult = {
   providerName?: string;
   errMsg?: string;
   tokensUsed?: number;
+  /** C-09：失败时区分 502（上游失败/未配置）与 503（全部超配额/限频） */
+  status?: 502 | 503;
 };
 
 const FAILURE_CIRCUIT = 3;
@@ -76,7 +80,8 @@ export function orderProviders<T extends { id: number; isDefault: boolean; isFal
 }
 
 async function recordUsage(providerId: number, tokensIn: number, tokensOut: number, failure: boolean): Promise<void> {
-  const date = new Date().toISOString().slice(0, 10);
+  // C-09：日界统一为 Asia/Shanghai（原为 UTC，ADR-029 §2 D4）
+  const date = usageDate();
   const data: any = { calls: { increment: 1 }, tokensIn: { increment: tokensIn }, tokensOut: { increment: tokensOut } };
   if (failure) data.failures = { increment: 1 };
   await prisma.lLMUsage.upsert({
@@ -92,7 +97,7 @@ export async function recordGatewayFailure(providerId: number): Promise<void> {
 }
 
 async function failureCount(providerId: number): Promise<number> {
-  const date = new Date().toISOString().slice(0, 10);
+  const date = usageDate();
   const row = await prisma.lLMUsage.findUnique({
     where: { date_providerId: { date, providerId } },
     select: { failures: true },
@@ -100,24 +105,63 @@ async function failureCount(providerId: number): Promise<number> {
   return row?.failures ?? 0;
 }
 
+/** C-09：当日调用量（calls）；查不到 → 0 */
+async function dailyCalls(providerId: number): Promise<number> {
+  const row = await prisma.lLMUsage.findUnique({
+    where: { date_providerId: { date: usageDate(), providerId } },
+    select: { calls: true },
+  }).catch(() => null);
+  return row?.calls ?? 0;
+}
+
+/**
+ * C-09：配额/限频闸门。
+ * 返回 reason 时该供应商本轮被跳过（不记失败、不计费）；null = 放行。
+ * - dailyQuota：当日 calls ≥ dailyQuota（DB 口径，跨进程一致）
+ * - rateLimit：进程内 60 秒滑动窗口 ≥ rateLimit
+ */
+async function quotaSkipReason(provider: LLMProvider): Promise<string | null> {
+  const quota = provider.dailyQuota ?? 0;
+  if (quota > 0 && (await dailyCalls(provider.id)) >= quota) {
+    return `${provider.name}: 当日调用量已达上限（${quota} 次），今日跳过`;
+  }
+  const limit = provider.rateLimit ?? 0;
+  if (limit > 0 && isRateLimited(provider.id, limit)) {
+    return `${provider.name}: 调用频率超限（${limit} 次/分钟），请稍后再试`;
+  }
+  return null;
+}
+
 /**
  * 非流式对话（测试端点/内部调用）
+ * C-09：配额/限频在调度前检查；全部超限 → status 503（由路由映射 HTTP 503）
  */
 export async function gatewayChat(messages: ChatMessage[], opts: RouteOptions = {}): Promise<GatewayResult> {
   const providers = await getRoutedProviders(opts);
   if (providers.length === 0) {
-    return { ok: false, reply: "", errMsg: "尚未配置可用的 AI 模型供应商" };
+    return { ok: false, reply: "", errMsg: "尚未配置可用的 AI 模型供应商", status: 502 };
   }
   const settings = await getAllSettings();
   const timeoutMs = Number(settings.llmTimeoutMs || 30000);
   const errors: string[] = [];
+  // C-09：区分 503（全部超配额/限频，未真正尝试任何供应商）与 502（存在真实上游失败）
+  let attemptedAny = false;
 
   for (const provider of providers) {
-    // 熔断：当日连续失败 ≥3 次的供应商跳过
+    // C-09：配额/限频闸门（跳过不记失败、不计费）
+    const quotaReason = await quotaSkipReason(provider);
+    if (quotaReason) {
+      errors.push(quotaReason);
+      continue;
+    }
+    // 熔断：当日连续失败 ≥3 次的供应商跳过（先判熔断，被熔断跳过的供应商不占滑窗名额）
     if ((await failureCount(provider.id)) >= FAILURE_CIRCUIT && !provider.isFallback) {
       errors.push(`${provider.name}: 今日失败次数达熔断阈值，已跳过`);
       continue;
     }
+    // 放行才记入滑窗（真正要尝试的供应商）
+    recordRateCall(provider.id);
+    attemptedAny = true;
     try {
       const apiKey = await resolveKey(provider);
       if (!apiKey) throw new Error("API Key 解密失败");
@@ -132,30 +176,48 @@ export async function gatewayChat(messages: ChatMessage[], opts: RouteOptions = 
       errors.push(`${provider.name}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
-  return { ok: false, reply: "", errMsg: errors.join("；") || "全部供应商调用失败" };
+  // C-09：全部超配额/限频（未真正尝试任何供应商）→ 503；否则（有真实上游失败）→ 502
+  const status: 502 | 503 = attemptedAny ? 502 : 503;
+  return { ok: false, reply: "", errMsg: errors.join("；") || "全部供应商调用失败", status };
 }
 
 /**
  * 流式对话：按路由逐个尝试，返回首个成功供应商的文本增量流。
  * 上层（SSE 路由）负责把 Uint8Array 增量转为事件帧。
+ * C-09：配额/限频在调度前检查；全部超限 → status 503
  */
 export async function gatewayChatStream(
   messages: ChatMessage[],
   opts: RouteOptions = {}
-): Promise<{ ok: true; stream: ReadableStream<Uint8Array>; providerId: number; providerName: string } | { ok: false; errMsg: string }> {
+): Promise<
+  | { ok: true; stream: ReadableStream<Uint8Array>; providerId: number; providerName: string }
+  | { ok: false; errMsg: string; status?: 502 | 503 }
+> {
   const providers = await getRoutedProviders(opts);
   if (providers.length === 0) {
-    return { ok: false, errMsg: "尚未配置可用的 AI 模型供应商" };
+    return { ok: false, errMsg: "尚未配置可用的 AI 模型供应商", status: 502 };
   }
   const settings = await getAllSettings();
   const timeoutMs = Number(settings.llmTimeoutMs || 30000);
   const errors: string[] = [];
+  // C-09：区分 503（全部超配额/限频）与 502（存在真实上游失败）
+  let attemptedAny = false;
 
   for (const provider of providers) {
-    if ((await failureCount(provider.id)) >= FAILURE_CIRCUIT && !provider.isFallback) {
-      errors.push(`${provider.name}: 熔断跳过`);
+    // C-09：配额/限频闸门（跳过不记失败、不计费）
+    const quotaReason = await quotaSkipReason(provider);
+    if (quotaReason) {
+      errors.push(quotaReason);
       continue;
     }
+    // 熔断：当日连续失败 ≥3 次的供应商跳过（先判熔断，被熔断跳过的供应商不占滑窗名额）
+    if ((await failureCount(provider.id)) >= FAILURE_CIRCUIT && !provider.isFallback) {
+      errors.push(`${provider.name}: 今日失败次数达熔断阈值，已跳过`);
+      continue;
+    }
+    // 放行才记入滑窗（真正要尝试的供应商）
+    recordRateCall(provider.id);
+    attemptedAny = true;
     try {
       const apiKey = await resolveKey(provider);
       if (!apiKey) throw new Error("API Key 解密失败");
@@ -169,5 +231,6 @@ export async function gatewayChatStream(
       errors.push(`${provider.name}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
-  return { ok: false, errMsg: errors.join("；") || "全部供应商调用失败" };
+  const status: 502 | 503 = attemptedAny ? 502 : 503;
+  return { ok: false, errMsg: errors.join("；") || "全部供应商调用失败", status };
 }

@@ -8,7 +8,7 @@
  * - 流中途失败只发一条 error（catch 与 finally 去重，ChatWidget 只显示一条）
  */
 import { prisma } from "@/lib/prisma";
-import { error, tooManyRequests } from "@/lib/api-response";
+import { error, serviceUnavailable, tooManyRequests } from "@/lib/api-response";
 import { gatewayChatStream, recordGatewayFailure } from "@/lib/llm-gateway";
 import { buildChatContext, findScene, recordMessage } from "@/lib/chat-service";
 import { withApi } from "@/lib/api-handler";
@@ -63,7 +63,8 @@ export const POST = withApi(
     });
     if (!routed.ok) {
       await recordMessage({ sessionId, channel: "website", role: "assistant", message: "", model: "gateway", metadata: JSON.stringify({ error: routed.errMsg }) });
-      return error(`AI 服务暂时不可用：${routed.errMsg}`, 502);
+      // C-09：全部供应商超配额/限频 → 503；其余上游失败 → 502
+      return routed.status === 503 ? serviceUnavailable(routed.errMsg) : error(`AI 服务暂时不可用：${routed.errMsg}`, 502);
     }
 
     const stream = new ReadableStream<Uint8Array>({
