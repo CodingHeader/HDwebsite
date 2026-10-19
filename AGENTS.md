@@ -38,15 +38,15 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 - 只在当前方向提示词"允许修改"路径内写入；必须越界时在证据中写明文件与理由。
 - 契约唯一源 `src/contracts/**`（zod）：改代码前先补本方向契约；禁止在路由/组件内重复定义 DTO。
 - **迁移只允许 P04（`p04_data_integrity`）、P06（`p06_collect_kb_review`）、P12（`p12_knowledge_base`）各新增 1 个**，按顺序串行；其他方向需改表 → 写 ADR 并停止该子项。已有迁移目录不得修改。
-- **编排（V0.6，2026-10-16）**：Wave 0（W0-01~W0-09，tag `w1-base`=0cb699b）已完成；Wave 0.6（W0-10~W0-13）在 `w0/*` 分支补齐冻结面并由集成者合入 `upgrade`，产出 tag `w1-base-ccr-1`；Wave 1 **五条 lane 并行**，一律从 `w1-base-ccr-1` 建分支：`lane/a-manager-ui`、`lane/e-manager-pages`、`lane/b-api-platform`、`lane/c-ai-kb`、`lane/d-ops`（所有权矩阵见 `docs/V0.6-20261016/07-所有权矩阵.md`，重叠 0、越权 0）；分工 Hark=A+E+W0-13+Wave 2 集成终审，P1=W0-10+B，P2=C，P3=W0-11/12+D+Wave 2 后端段。当前规划入口：`docs/V0.6-20261016/README.md`（历史包 `04_planning/parallel-w1/`、`docs/V0.5-20261015/` 仅供追溯）。
-- **冻结面**：`w1-base` 之后 `src/contracts/**`、`prisma/schema.prisma` 与迁移、依赖（`package.json`/锁文件）、`vitest.config.ts`/Playwright 配置全部只读；任何线需要改动 → 停止该子项并写《契约变更请求》（`04_planning/parallel-w1/11-验收与审查规程.md` §4），批准后由契约员在 `upgrade` 上最小提交并打 `w1-base-ccr-<n>`。
-- **所有权不相交**：各线只在自己 lane 分支的"允许修改"路径内写入；越界即 FAIL。两条线的唯一共享物是 tag `w1-base` 上冻结的契约、迁移、依赖与本规划包。
+- **编排（V0.7，2026-10-19 单主线）**：Wave 0（W0-01~W0-09，基线 0cb699b）已完成；Wave 0.6（W0-10~W0-13）合入 `upgrade`，产出基线 f158501；Wave 1 五条 lane（`lane/a-manager-ui`、`lane/e-manager-pages`、`lane/b-api-platform`、`lane/c-ai-kb`、`lane/d-ops`）已于 4cbd9c1 全部集成并删除，**此后不再新建 lane 分支**。Wave 2 起改为 `upgrade` 单主线：每卡开工前 `git pull --ff-only origin upgrade`，完工小提交即推送；推送被拒只 rebase，禁止 force。当前规划入口：`docs/V0.7-20261019/README.md`（历史包 `04_planning/parallel-w1/`、`docs/V0.6-20261016/` 仅供追溯）。
+- **冻结面**：f158501 之后 `src/contracts/**`、`prisma/schema.prisma` 与迁移、依赖（`package.json`/锁文件）、`vitest.config.ts`/Playwright 配置全部只读；任何改动需要触及 → 停止该子项并写《契约变更请求》（`docs/V0.7-20261019/` 附录与 `04_planning/parallel-w1/11-验收与审查规程.md` §4），批准后由契约员在 `upgrade` 上最小提交（打 `V7-CCR-<n>` 记录）。
+- **所有权不相交**：各卡只在自己"允许修改"路径内写入；越界即 FAIL。唯一共享物是 f158501 上冻结的契约、迁移、依赖与本规划包。
 
 ## 5. 禁止事项
 
 - 改变前台视觉风格；把管理端令牌写到全局作用域。
 - 提交 `.env*`、`prisma/dev.db`、`backups/`、运行时上传文件、任何密钥；把 token 写进 remote URL、文件、日志或输出。
-- 未经独立验证即推送。**推送规则（D8，V0.6 更新）**：W0-13 独立验证 PASS 后推送 `upgrade` 与 tag `w1-base-ccr-1`；Wave 1 期间各线只推自己的 lane 分支，`upgrade` 只由集成者在 Wave 2 推送。**禁止跨线大提交直接进 `upgrade`**：任何跨所有权的改动必须走 lane 分支 + 独立验证（827646b 教训）。
+- 未经独立验证即推送。**推送规则（D8，V0.7 更新）**：`upgrade` 单主线；每卡独立验证 PASS 后小提交即推送，推送被拒只 rebase，禁止 force。Wave 1 期间各线只推自己的 lane 分支、`upgrade` 只由集成者推送的规则**已废止**（lane 已于 4cbd9c1 全部删除）。**禁止跨所有权大提交直接进 `upgrade`**：任何跨所有权的改动必须逐卡小提交 + 独立验证（827646b 教训）。
 - 引入 Redis/MQ/无头浏览器/独立 worker（REQ-C-003）；群发接口。
 - 并行修改 `src/contracts/**` 或同一迁移。
 - 读取或迁移凭据类文件（如 main 的 `website_error/.token.txt`）。
@@ -82,5 +82,5 @@ npm run test:e2e           # P05 起（如该方向提示词要求）
 
 - 小而聚焦的提交，信息前缀 `feat(PXX)` / `fix(PXX)` / `docs(PXX)`；提交作者不改全局 git config。
 - 证据写入 `docs/design/06_validation/evidence/PXX-execution.md`（分析 5W1H 简版、改动文件、验收逐条结果与命令输出摘要、UNKNOWN 及原因、后续方向待办）。
-- 并行编排期间（2026-10-13 起）证据目录按波次/执行线分桶：Wave 0 → `evidence/W0/<卡号>/`；Wave 1 → `evidence/W1-B/<卡号>/`、`evidence/W1-C/…`、`evidence/W1-D/…`、`evidence/W1-A/…`、`evidence/W1-E/…`；Wave 2 → `evidence/W2/`。独立验证报告 `<卡号>-verify.md` 由被验证方原样提交进自己的证据目录（`docs(<卡号>): verify report`）。
+- 并行编排期间（2026-10-13 起）证据目录按波次/执行线分桶：Wave 0 → `evidence/W0/<卡号>/`；Wave 1 → `evidence/W1-B/<卡号>/`、`evidence/W1-C/…`、`evidence/W1-D/…`、`evidence/W1-A/…`、`evidence/W1-E/…`；Wave 2 → `evidence/W2/`；V0.7 起（单主线）→ `evidence/V7/<卡号>/`。独立验证报告 `<卡号>-verify.md` 由被验证方原样提交进自己的证据目录（`docs(<卡号>): verify report`）。
 - 熔断：同一件事失败两次即停止并上报；同一方向连续 2 次独立验证 FAIL → 停止改代码，改写提示词/升级档位/标 blocked。
