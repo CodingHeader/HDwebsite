@@ -98,7 +98,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
-/** DELETE /api/users/[id]：删除（user:delete）；不可删除自己与最后一名 SuperAdmin */
+/** DELETE /api/users/[id]：删除（user:delete）；不可删除自己、非超管不可删超管、不可删最后一名 SuperAdmin */
 export async function DELETE(request: Request, { params }: RouteParams) {
   const guard = await requireAuth(request, "user:delete");
   if (!guard.ok) return guard.response;
@@ -108,6 +108,10 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     const existing = await prisma.user.findUnique({ where: { id: parsedId.data }, include: { role: true } });
     if (!existing) return notFound("用户不存在");
     if (existing.id === guard.session.id) return error("不能删除当前登录账号", 400);
+    // V7-SEC-02：E4——非超管不得删除超管账号（角色写入越权的 DELETE 变体）
+    if (!guard.session.role.isSuper && existing.role.isSuper) {
+      return error("不能删除超级管理员账号", 403);
+    }
     if (existing.role.isSuper) {
       const supers = await prisma.user.count({ where: { isActive: true, role: { isSuper: true } } });
       if (supers <= 1) return error("不能删除最后一名超级管理员", 400);
