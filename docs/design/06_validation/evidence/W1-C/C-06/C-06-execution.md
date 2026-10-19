@@ -20,7 +20,7 @@
 | `src/app/api/knowledge-files/[id]/reparse/route.ts` | POST 重解析（重读磁盘原文 → 重建切片） |
 | `src/app/api/knowledge-files/[id]/progress/route.ts` | GET 进度（本地 localParse/chunkCount + Coze 实时状态；Coze 未配置 → error 不抛错） |
 | `src/app/api/kb/test/route.ts` | **删除内联 z.object**，改用契约 `kbSearchRequestSchema`；本地轨改走 C-05 `searchLocalWeighted`（baseIds/topK） |
-| `src/lib/__tests__/lane-c/kb-api.test.ts` | 19 条路由测试（api-contract harness + 临时 SQLite + 临时 DATA_DIR） |
+| `src/lib/__tests__/lane-c/kb-api.test.ts` | 21 条路由测试（api-contract harness + 临时 SQLite + 临时 DATA_DIR） |
 
 ## 2. 关键设计决策
 
@@ -45,7 +45,7 @@
 ```bash
 $ npx vitest run src/lib/__tests__/lane-c/kb-api.test.ts
   Test Files  1 passed (1)
-       Tests  19 passed (19)
+       Tests  21 passed (21)
   Duration    1.2s
   EXIT=0
 
@@ -59,7 +59,7 @@ $ npm run typecheck
 
 $ npm test
   Test Files  29 passed (29)
-       Tests  405 passed (405)
+       Tests  408 passed (408)
   EXIT=0
 
 $ npm run build
@@ -79,9 +79,9 @@ $ npm run build
 
 | # | 标准 | 结果 | 证据 |
 |---|---|---|---|
-| 1 | kb-api.test.ts 全绿 | **PASS** | 19 passed；覆盖 400（.pdf/.png/.jpg/.exe/超数量/空查询/topK 越界/code 不合法）、201（.md/.txt/.docx）、200（全重复）、401/403/404、级联删除、磁盘落盘、kb/test baseIds/topK |
+| 1 | kb-api.test.ts 全绿 | **PASS** | 21 passed；覆盖 400（.pdf/.png/.jpg/.exe/>10MB/超数量/空查询/topK 越界/code 不合法）、201（.md/.txt/.docx）、200（全重复）、401/403/404、级联删除、磁盘落盘、kb/test baseIds/topK |
 | 2 | `grep -n "z.object" src/app/api/kb/test/route.ts` 为空 | **PASS** | grep 无匹配；route.ts 改用 `kbSearchRequestSchema`（DR-23） |
-| 3 | 通用门禁 4 项 exit 0 | **PASS** | 见 §4 原始命令输出摘要 |
+| 3 | 通用门禁 4 项 exit 0 | **PASS** | 见 §4 原始命令输出摘要（lint 0 error / typecheck 0 / test 408 / build exit 0） |
 | 4 | 越界检查 | **PASS** | `git status --short` 改动仅：`src/app/api/kb/test/route.ts`、`src/lib/kb/coze.ts`（修改）+ `src/app/api/knowledge-bases/**`、`src/app/api/knowledge-files/**`、`src/lib/kb/{bases,ingest}.ts`、`src/lib/__tests__/lane-c/kb-api.test.ts`（新增）；未触碰 `src/contracts/**`、`prisma/**`、`package.json`、前台（`src/app/(web)/**`、`src/components/web/**`、`public/**`、`src/app/globals.css`） |
 
 ## 6. 未覆盖 / UNKNOWN

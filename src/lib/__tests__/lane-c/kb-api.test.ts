@@ -199,6 +199,8 @@ describe("C-06 知识库 API", () => {
     // 删除
     const del = await baseDELETE(req(`/api/knowledge-bases/${baseId}`, { method: "DELETE", token: ADMIN }), ctx({ id: String(baseId) }));
     expect(del.status).toBe(200);
+    const delj = await json(del);
+    expect(delj.data.orphanChunks).toBe(0); // 无孤儿切片（本库未上传文件）
     const after = await baseGET(req(`/api/knowledge-bases/${baseId}`, { token: ADMIN }), ctx({ id: String(baseId) }));
     expect(after.status).toBe(404);
   });
@@ -357,6 +359,34 @@ describe("C-06 知识库 API", () => {
       expect(j.data.localParse).toBe("ok");
       expect(j.data.chunkCount).toBeGreaterThan(0);
       expect(j.data.cozeStatus).toBeNull();
+    });
+
+    it("删除库（含孤儿切片）：orphanChunks > 0", async () => {
+      // 建库 → 上传文件 → 直接删 KnowledgeFile 记录（遗留孤儿切片）→ 删库断言孤儿被兜底清除
+      const c = await basesPOST(
+        req("/api/knowledge-bases", { method: "POST", token: ADMIN, body: { name: "孤儿库", code: "orphan-test" } }),
+        ctx()
+      );
+      const bid = (await json(c)).data.id as number;
+      const up = await filesPOST(multipartRequest("/api/knowledge-files", bid, [txtFile("orphan.txt", "孤儿内容孤儿内容孤儿内容")], ADMIN), ctx());
+      const fid = (await json(up)).data.list[0].file.id as number;
+      // 制造孤儿：直接删文件记录（模拟异常残留），切片仍存在
+      await prisma.knowledgeFile.delete({ where: { id: fid } });
+      expect(await prisma.knowledge.count({ where: { baseId: bid } })).toBeGreaterThan(0);
+
+      const del = await baseDELETE(req(`/api/knowledge-bases/${bid}`, { method: "DELETE", token: ADMIN }), ctx({ id: String(bid) }));
+      expect(del.status).toBe(200);
+      const delj = await json(del);
+      expect(delj.data.orphanChunks).toBeGreaterThan(0);
+      expect(await prisma.knowledge.count({ where: { baseId: bid } })).toBe(0);
+      expect(await prisma.knowledgeBase.findUnique({ where: { id: bid } })).toBeNull();
+    });
+
+    it("上传 >10MB 单文件 → 400（size 校验）", async () => {
+      const big = new File([new Uint8Array(10 * 1024 * 1024 + 1)], "big.txt", { type: "text/plain" });
+      const res = await filesPOST(multipartRequest("/api/knowledge-files", baseId, [big], ADMIN), ctx());
+      expect(res.status).toBe(400);
+      expect((await json(res)).message).toContain("不能超过");
     });
   });
 
