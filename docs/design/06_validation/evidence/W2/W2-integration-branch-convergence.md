@@ -140,3 +140,63 @@ $ npm test          → 43 files / 599 tests passed     exit 0
 - **test:e2e / test:visual**：Windows 环境无法运行（D16 裁决），与 W0-08 同口径，待 Linux/Docker 环境在 Wave 2 集成终审补齐。
 - **Coze 真实端点 / 微信公众号 / SMTP**：凭据缺失，真实联调标 UNKNOWN（与 ADR-025/用户裁决同口径）。
 - **后续**：`upgrade` 现为唯一开发主线，后续任务直接在 `upgrade` 上开展，不再新建 lane 分支。
+---
+
+## 7. 断点续跑（追加）：先拉再推 + tag 清理 + main 对齐（2026-10-19 续）
+
+用户指令："仓库代码已更新，使用 10808 端口，先拉再推，使用标准流程完成双端一致；一并删除 w1-base / w1-base-ccr-1 / w1-ui-kit 三个残留 tag"。
+
+### 7.1 先拉（10808 代理）
+```
+$ https_proxy=http://127.0.0.1:10808 git fetch origin --tags --prune
+  → 4cbd9c1..4b9b788  upgrade -> origin/upgrade    exit 0
+```
+远端 `upgrade` 已更新至 `4b9b788 docs(V0.7): 统一规划 V0.7`（纯文档，38 张卡）。本地工作区干净，`git rev-list --left-right --count` = `1 0`（本地仅落后 1）。
+
+### 7.2 upgrade fast-forward 同步
+```
+$ git merge --ff-only origin/upgrade   → exit 0
+  local  upgrade: 4b9b788   origin upgrade: 4b9b788   diff=0/0
+```
+
+### 7.3 main 真分叉处置（关键判断）
+- 本地 `main` 领先远端 5 commits（含 `5b72fb7 docs: 收录任务分配与完整规划指令（用户提供，623 行）`）。
+- 首次 `push main` 报 `non-fast-forward`。
+- `merge-tree --write-tree main origin/main` → **`fatal: refusing to merge unrelated histories`**。远端 `main` 根 commit 是 `c6ff40b chore: initial project sync - HDwebsite`，与本仓库 `0a09a2f` 无共同祖先——远端 `main` 是用户手动 sync 上来的老站代码快照。
+- **保全**：先 `git tag tmp-local-main-backup main`（SHA `5b72fb7`）留退路。
+- **内容已双重保全验证**：`git rev-parse upgrade:docs/design/规划总指令-任务分配与完整规划.md` = `271b109b`，与 `main:5b72fb7` 同一文件的 sha **完全相同**；`git merge-base --is-ancestor main upgrade` = YES，`git rev-list --count upgrade..main` = **0**（`upgrade` 已含本地 `main` 全部历史）。
+- **执行**：`git branch -f main origin/main`（本地 main 对齐远端 94dbbbb 老站代码，符合"main 存老代码"意图）。
+
+### 7.4 删 3 个 tag（10808 代理 + 内嵌 PAT）
+```
+$ git push origin --delete tag w1-base tag w1-base-ccr-1 tag w1-ui-kit
+  → 3 个 tag 全部 [deleted]    exit 0
+$ git tag -d w1-base w1-base-ccr-1 w1-ui-kit tmp-local-main-backup
+  → 全部删除   本地 tag 列表为空
+```
+（`tmp-local-main-backup` 为临时保全，内容已确认落于 upgrade，一并删除。）
+
+### 7.5 凭据清理（安全铁律）
+```
+remote URL: https://github.com/CodingHeader/HDwebsite.git（无凭据）✅
+~/.git-askpass.sh 无  ✅   ~/.git-pat 无  ✅   ~/.git-credentials 无  ✅
+```
+
+### 7.6 最终双端一致性（10808 代理 `ls-remote` 实测）
+```
+$ git ls-remote --heads --tags origin
+  94dbbbb  refs/heads/main
+  4b9b788  refs/heads/upgrade
+  （无 tag）
+```
+| 分支 | local | origin | diff |
+|---|---|---|---|
+| main | 94dbbbb | 94dbbbb | 0/0 |
+| upgrade | 4b9b788 | 4b9b788 | 0/0 |
+
+本地分支：`main` + `upgrade`（2 条）；本地 tag：空；工作区：干净。
+
+### 7.7 结论
+- 远端分支：`main` + `upgrade`（2 条），tag 全部清空。
+- 双端完全一致：两分支 `diff=0/0`。
+- 本地 main 那份规划文档内容 sha `271b109b` 已确认完整保全于 `upgrade`，无丢失。
