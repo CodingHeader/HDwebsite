@@ -8,6 +8,7 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { decryptField, encryptField } from "@/lib/crypto";
+import { invalidateWebContent, webTagsForModel } from "@/lib/cache-tags";
 import {
   getDefaultValues,
   getPublicSettingKeys,
@@ -79,6 +80,10 @@ export async function setSettings(
       },
     });
     updated.push(key);
+  }
+  if (updated.length > 0) {
+    // D-06：设置更新后失效前台设置与首页缓存（前台 getWebSettings/getHomeData ≤5s 可见）
+    invalidateWebContent(webTagsForModel("setting"));
   }
   return { updated, skipped };
 }

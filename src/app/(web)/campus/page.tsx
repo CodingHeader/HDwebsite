@@ -7,8 +7,8 @@ import Link from "next/link";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 import type { Metadata } from "next";
 
-// 前台内容由后台 CMS 驱动：每次请求动态渲染，避免构建期静态化导致改动不生效（upgrade 基本目标：全部动态数据）
-export const dynamic = "force-dynamic";
+// D-06：前台数据（getWebSettings 等）经 WEB_TAGS 缓存并按后台写操作失效；本页无 searchParams/headers/cookies，
+// 可被稳定缓存，故移除 force-dynamic（CMS 改动后 ≤5s 可见）。
 
 export const metadata: Metadata = {
   title: "校区环境",

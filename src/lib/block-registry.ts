@@ -7,7 +7,9 @@
  *   DB 无模板/模板停用/模板下无已知区块 → 回落 main 默认顺序（公开页外观不变）。
  * - 启用判定：ContentBlock.status === "active" 且 TemplateBlock.config.enabled !== false；未知 code 忽略。
  */
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { WEB_TAGS, withWebCacheFallback } from "@/lib/cache-tags";
 import {
   DEFAULT_HOME_BLOCK_ORDER,
   getBlockDefinition,
@@ -37,7 +39,7 @@ function defaults(): ResolvedBlock[] {
  * 首页区块解析：模板（code=home, status=active）→ TemplateBlock 按 sort 升序 → 过滤停用/未知 → 合并默认 props。
  * 读库失败也回落默认（公开页不能因配置读失败而白屏）。
  */
-export async function resolveHomeBlocks(templateCode = "home"): Promise<ResolvedBlock[]> {
+async function resolveHomeBlocksUncached(templateCode = "home"): Promise<ResolvedBlock[]> {
   try {
     const template = await prisma.pageTemplate.findUnique({
       where: { code: templateCode },
@@ -62,4 +64,19 @@ export async function resolveHomeBlocks(templateCode = "home"): Promise<Resolved
     console.error("[block-registry] 读取首页区块配置失败，回落默认顺序：", err);
     return defaults();
   }
+}
+
+/**
+ * resolveHomeBlocks（D-06）：以 WEB_TAGS.home 缓存区块配置。
+ * 生产/请求上下文命中缓存；非 Next 请求上下文（单测/脚本）下 unstable_cache 抛 Invariant，
+ * 由 withWebCacheFallback 识别后回退未缓存实现，不影响直读。
+ */
+const resolveHomeBlocksCached: (templateCode?: string) => Promise<ResolvedBlock[]> = unstable_cache(
+  resolveHomeBlocksUncached,
+  ["web:home-blocks"],
+  { tags: [WEB_TAGS.home], revalidate: false }
+);
+
+export function resolveHomeBlocks(templateCode = "home"): Promise<ResolvedBlock[]> {
+  return withWebCacheFallback(() => resolveHomeBlocksCached(templateCode), () => resolveHomeBlocksUncached(templateCode));
 }

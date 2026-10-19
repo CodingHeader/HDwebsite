@@ -15,8 +15,9 @@ import Link from "next/link";
 import { getHomeData, type HomeData } from "@/components/web/data/home";
 import { resolveHomeBlocks } from "@/lib/block-registry";
 
-// 强制每次请求动态渲染，保证后台 CMS（服务指南/轮播图/热门专业等）改动后前台立即生效
-export const dynamic = "force-dynamic";
+// D-06：首页数据（getHomeData）与区块配置（resolveHomeBlocks）经 WEB_TAGS.home 缓存并由后台写操作按标签失效，
+// 故移除 force-dynamic；页面仍由后台 CMS 驱动（改后 ≤5s 可见），首页可命中缓存。
+//（首页数据全部来自 unstable_cache 缓存函数，无 headers()/cookies() 调用，可被稳定缓存。）
 
 /**
  * 首页区块（ADR-024）：区块数组 → 依次渲染。

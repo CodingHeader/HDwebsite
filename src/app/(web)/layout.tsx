@@ -10,8 +10,8 @@ import { UserActionTracker } from "@/components/web/UserActionTracker";
 import { ChatWidget } from "@/components/web/ChatWidget";
 import type { Metadata } from "next";
 
-// 站点框架（设置/导航）来自 CMS：整段动态渲染
-export const dynamic = "force-dynamic";
+// D-06：站点框架（设置/导航）数据已按 WEB_TAGS.settings 缓存（data/settings.ts、data/navigation.ts），
+// 后台写设置/导航后经标签失效 → 前台 ≤5s 可见；layout 段不再强制动态，让子路由可命中缓存。
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();

@@ -3,10 +3,15 @@ import { WEB_SETTING_DEFAULTS } from "./setting-defaults";
  * 首页数据适配层（P02 / REQ-F-014、ADR-024 铺路）
  * 查询与映射口径逐条复刻 main `src/app/(web)/page.tsx`，把 upgrade 模型（可空列、Article.channel 等）
  * 映射为 main 首页组件的 props；空值按 main schema 的列默认值兜底，保证同数据同外观。
+ *
+ * D-06：getHomeData 以 WEB_TAGS.home 缓存（unstable_cache），后台写操作经 crud 工厂按标签失效，
+ * 前台 ≤5s 可见最新数据；TTFB 不劣化（首页数据复用）。
  */
 import path from "node:path";
 import { stat } from "node:fs/promises";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { WEB_TAGS, withWebCacheFallback } from "@/lib/cache-tags";
 import { getWebSettings } from "./settings";
 
 async function localImageExists(url: string) {
@@ -93,7 +98,7 @@ export interface HomeData {
   ctaPhone: string;
 }
 
-export async function getHomeData(): Promise<HomeData> {
+async function getHomeDataUncached(): Promise<HomeData> {
   // 分组串行：绕过 libsql 并发 race condition（main 同口径）
   const [hotMajorsRaw, articles, bannersRaw] = await Promise.all([
     prisma.hotMajor.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 12 }),
@@ -228,4 +233,18 @@ export async function getHomeData(): Promise<HomeData> {
     placeholderImage: settingsMap.defaultPlaceholderImage || "/images/logo_card.png",
     ctaPhone: settingsMap.contactPhone || WEB_SETTING_DEFAULTS.contactPhone,
   };
+}
+
+/**
+ * getHomeData（D-06）：以 WEB_TAGS.home 缓存，后台写操作（crud 工厂 / settings API / setSettings）按标签失效。
+ * 生产/请求上下文命中缓存；非 Next 请求上下文（单测/脚本）下 unstable_cache 抛 Invariant，
+ * 由 withWebCacheFallback 识别后回退未缓存实现，不影响直读。
+ */
+const getHomeDataCached: () => Promise<HomeData> = unstable_cache(getHomeDataUncached, ["web:home-data"], {
+  tags: [WEB_TAGS.home],
+  revalidate: false,
+});
+
+export function getHomeData(): Promise<HomeData> {
+  return withWebCacheFallback(getHomeDataCached, getHomeDataUncached);
 }

@@ -9,6 +9,7 @@
 import { prisma } from "@/lib/prisma";
 import { created, error, notFound, success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
+import { invalidateWebContent, webTagsForModel } from "@/lib/cache-tags";
 import { ApiHttpError, parseBody, parseId, parseQuery, withApi } from "@/lib/api-handler";
 import { ZodError } from "zod";
 import { listQuerySchema } from "@/contracts";
@@ -112,6 +113,7 @@ export function crudCreate(spec: CrudSpec) {
       if (spec.beforeCreate) data = await runHook(() => spec.beforeCreate!(data, session));
       if (spec.extraCreate) data = { ...data, ...spec.extraCreate(session) };
       const row = await delegate(spec.model).create({ data, include: spec.include });
+      invalidateWebContent(webTagsForModel(spec.model));
       await logOperation({
         userId: session.id,
         username: session.username,
@@ -161,6 +163,7 @@ export function crudUpdate(spec: CrudSpec) {
       let data = input as AnyRecord;
       if (spec.beforeUpdate) data = await runHook(() => spec.beforeUpdate!(data, existing as AnyRecord, session));
       const row = await delegate(spec.model).update({ where: { id }, data, include: spec.include });
+      invalidateWebContent(webTagsForModel(spec.model));
       await logOperation({
         userId: session.id,
         username: session.username,
@@ -190,6 +193,7 @@ export function crudDelete(spec: CrudSpec) {
       const existing = await delegate(spec.model).findUnique({ where: { id } });
       if (!existing) return notFound(`${spec.label}不存在`);
       await delegate(spec.model).delete({ where: { id } });
+      invalidateWebContent(webTagsForModel(spec.model));
       await logOperation({
         userId: session.id,
         username: session.username,

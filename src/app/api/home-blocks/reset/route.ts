@@ -3,6 +3,7 @@ import { success } from "@/lib/api-response";
 import { parseBody, withApi } from "@/lib/api-handler";
 import { homeBlocksResetRequestSchema } from "@/contracts/blocks";
 import { DEFAULT_HOME_BLOCK_ORDER, getBlockDefinition } from "@/lib/block-registry";
+import { invalidateWebContent, webTagsForModel } from "@/lib/cache-tags";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ export const POST = withApi(
       await prisma.templateBlock.create({ data: { templateId: template.id, blockId: block.id, sort: (i + 1) * 10, config: null } });
       created += 1;
     }
+    // D-06：恢复默认区块配置后立即失效首页区块缓存（front resolveHomeBlocks ≤5s 可见）
+    invalidateWebContent(webTagsForModel("templateBlock"));
     // 契约冻结包 §home-blocks/reset：响应 data = { templateCode, blocks: number }
     return success({ templateCode: input.templateCode, blocks: created }, "已恢复默认区块配置");
   },

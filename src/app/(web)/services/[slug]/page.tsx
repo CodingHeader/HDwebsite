@@ -9,7 +9,8 @@ import { Breadcrumb } from "@/components/web/Breadcrumb";
 import { resolveServiceGuideIcon } from "@/components/web/data/service-guide-icons";
 import { getWebSettings as getSettings } from "@/components/web/data/settings";
 
-export const dynamic = "force-dynamic";
+// D-06：本页是动态路由段且无 generateStaticParams，本就按请求时 SSR；settings 已按 WEB_TAGS 缓存，
+// 故移除 force-dynamic（数据失效后 ≤5s 可见，服务指南列表/详情由 serviceGuide 写操作经 crud 工厂失效）。
 
 interface PageProps {
   params: Promise<{ slug: string }>;
