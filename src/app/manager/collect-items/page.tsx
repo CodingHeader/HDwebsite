@@ -10,8 +10,10 @@ import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { FilterTabs } from "@/components/manager/FilterTabs";
 import { StatusBadge, type Tone } from "@/components/manager/StatusBadge";
-import { Pagination, tableCls } from "@/components/manager/Pagination";
-import { Forbidden, TableState, btnCls, confirmDialog, inputCls, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
+import { Button, Input, Textarea } from "@/components/manager/ui";
+import { Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Item = {
   id: number; title: string; url: string; source?: { name: string } | null;
@@ -76,6 +78,22 @@ export default function ManagerCollectItemsPage() {
   if (isForbidden(error)) return <Forbidden message={error.message} />;
   const list = data?.list ?? [];
 
+  const columns: DataColumn<Item>[] = [
+    {
+      key: "title",
+      label: "标题",
+      primary: true,
+      render: (it) => (
+        <span className="line-clamp-1 font-medium" title={it.title}>
+          {it.title}
+        </span>
+      ),
+    },
+    { key: "source", label: "来源", render: (it) => it.source?.name ?? "—" },
+    { key: "status", label: "状态", render: (it) => <StatusBadge tone={TONES[it.status] ?? "muted"}>{STATUS_TABS.find((t) => t.key === it.status)?.label ?? it.status}</StatusBadge> },
+    { key: "createdAt", label: "抓取时间", render: (it) => it.createdAt?.slice(0, 16).replace("T", " ") },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -92,70 +110,40 @@ export default function ManagerCollectItemsPage() {
           />
         }
       />
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>标题</th>
-              <th scope="col" className={tableCls.th}>来源</th>
-              <th scope="col" className={tableCls.th}>状态</th>
-              <th scope="col" className={tableCls.th}>抓取时间</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody className={refreshing ? "opacity-60 transition-opacity" : undefined}>
-            <TableState
-              columns={5}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle={status === "new" ? "没有待审核的内容" : "暂无采集内容"}
-              emptyDescription="在「采集源」中试抓或立即执行后，新条目会出现在这里。"
-            />
-            {!error &&
-              list.map((it) => (
-                <tr key={it.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                  <td className={`${tableCls.td} max-w-[420px]`}>
-                    <span className="line-clamp-1 font-medium" title={it.title}>{it.title}</span>
-                  </td>
-                  <td className={tableCls.td}>{it.source?.name ?? "—"}</td>
-                  <td className={tableCls.td}>
-                    <StatusBadge tone={TONES[it.status] ?? "muted"}>{STATUS_TABS.find((t) => t.key === it.status)?.label ?? it.status}</StatusBadge>
-                  </td>
-                  <td className={`${tableCls.td} tabular-nums text-mgr-muted-fg`}>{it.createdAt?.slice(0, 16).replace("T", " ")}</td>
-                  <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                    <div className="inline-flex items-center gap-2">
-                      <button
-                        type="button"
-                        className={linkCls("primary")}
-                        onClick={() => {
-                          setViewing(it);
-                          setDraftTitle(it.title);
-                          setDraft(it.contentMd ?? "");
-                          setServerError("");
-                        }}
-                      >
-                        审阅
-                      </button>
-                      {it.status === "new" && (
-                        <>
-                          <button type="button" disabled={busy === it.id} onClick={() => void review(it, "approved")} className={linkCls("primary")} aria-label={`通过 ${it.title}`}>
-                            通过
-                          </button>
-                          <button type="button" disabled={busy === it.id} onClick={() => void review(it, "rejected")} className={linkCls("danger")} aria-label={`拒绝 ${it.title}`}>
-                            拒绝
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-      {data && !error && <Pagination page={page} totalPages={data.pagination.totalPages} total={data.pagination.total} onChange={setPage} />}
+      <DataTable<Item>
+        caption="采集审核"
+        rows={list}
+        columns={columns}
+        rowKey={(it) => String(it.id)}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle={status === "new" ? "没有待审核的内容" : "暂无采集内容"}
+        emptyDescription="在「采集源」中试抓或立即执行后，新条目会出现在这里。"
+        rowName={(it) => it.title}
+        rowActions={(it) => [
+          {
+            key: "review",
+            label: "审阅",
+            tone: "primary",
+            onClick: () => {
+              setViewing(it);
+              setDraftTitle(it.title);
+              setDraft(it.contentMd ?? "");
+              setServerError("");
+            },
+          },
+          ...(it.status === "new"
+            ? [
+                { key: "approve", label: "通过", tone: "primary" as const, ariaLabel: `通过 ${it.title}`, onClick: () => void review(it, "approved"), disabled: busy === it.id },
+                { key: "reject", label: "拒绝", tone: "danger" as const, ariaLabel: `拒绝 ${it.title}`, onClick: () => void review(it, "rejected"), disabled: busy === it.id },
+              ]
+            : []),
+        ]}
+        pagination={data && !error ? { page, limit: 15, totalPages: data.pagination.totalPages, total: data.pagination.total ?? list.length, onPageChange: setPage } : undefined}
+        data-testid="collect-items-table"
+      />
 
       <FormDialog
         open={viewing !== null}
@@ -172,13 +160,13 @@ export default function ManagerCollectItemsPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="ci-title" className="mb-1.5 block text-[13px] font-medium">标题</label>
-              <input id="ci-title" className={inputCls} value={draftTitle} disabled={viewing.status !== "new"} onChange={(e) => setDraftTitle(e.target.value)} />
+              <Input id="ci-title" value={draftTitle} disabled={viewing.status !== "new"} onChange={(e) => setDraftTitle(e.target.value)} />
             </div>
             <div>
               <label htmlFor="ci-body" className="mb-1.5 block text-[13px] font-medium">正文（Markdown）</label>
-              <textarea
+              <Textarea
                 id="ci-body"
-                className={`${inputCls.replace("h-9 ", "")} py-2 font-mono leading-5`}
+                className="font-mono leading-5"
                 rows={16}
                 value={draft}
                 disabled={viewing.status !== "new"}
@@ -187,9 +175,9 @@ export default function ManagerCollectItemsPage() {
             </div>
             {viewing.status === "new" && (
               <div className="flex justify-start">
-                <button type="button" className={btnCls("secondary", "sm")} disabled={busy !== null} onClick={() => void review(viewing, "rejected")}>
+                <Button type="button" variant="secondary" size="sm" disabled={busy !== null} onClick={() => void review(viewing, "rejected")}>
                   拒绝此条
-                </button>
+                </Button>
               </div>
             )}
           </div>

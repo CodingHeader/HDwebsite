@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 对话框原语（P07）：base-ui Dialog 的薄封装，替代 @radix-ui/react-dialog（依赖统一到 base-ui）。
+ * 对话框原语（P07）：base-ui Dialog 的薄封装（依赖统一到 base-ui，旧 Radix 方案已移除）。
  * 提供 Root/Portal/Overlay/Content/Title/Description/Close，保留焦点陷阱、Esc 关闭、遮罩关闭。
  * 管理端组件（Dialog/Drawer/FormDialog/ConfirmDialog/DetailDialog/AppShell 抽屉/命令面板）均基于此。
  */

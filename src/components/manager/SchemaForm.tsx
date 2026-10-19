@@ -10,14 +10,20 @@
  * - W0-04（ADR-028）：`FieldSpec.visibleTo === "super"` 的字段对非超管整块不渲染，且不参与必填校验
  */
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { ChevronRight } from "lucide-react";
 import { FormField } from "@/components/manager/ui/form-field";
 import { Input, Select, Switch, Textarea, Checkbox, DateTimeInput } from "@/components/manager/ui/input";
 import { SectionTitle } from "@/components/manager/ui/misc";
 import { ImageField } from "@/components/manager/fields/ImageField";
 import { MarkdownField } from "@/components/manager/fields/MarkdownField";
-import { RichTextField } from "@/components/manager/fields/RichTextField";
 import { RelationField } from "@/components/manager/fields/RelationField";
+import { Skeleton } from "@/components/manager/ui/misc";
+// A-05：RichTextField（TipTap 编辑器）经 next/dynamic 懒加载——/manager 首屏包体不因 TipTap 增长
+const RichTextField = dynamic(() => import("@/components/manager/fields/RichTextField").then((m) => m.RichTextField), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[240px]" />,
+});
 import { sanitizeRichContent } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";

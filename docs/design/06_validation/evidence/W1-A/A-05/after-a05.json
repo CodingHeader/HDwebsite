@@ -1,0 +1,18 @@
+{
+  "measuredAt": "2026-10-17T02:21:59.566Z",
+  "sha": "9d5dc7af08009700aa42be563e380e4296b5a2a3",
+  "platform": "win32",
+  "port": 6795,
+  "notes": [
+    "win32 无 standalone（next.config.ts 有意关闭，E-12 同口径）→ standalone 启动未测",
+    "script 数：home=12 manager=12 manager/articles=13；/manager 按跳转后登录页计量"
+  ],
+  "startToReadyStandaloneMs": null,
+  "startToReadyNpmStartMs": 24,
+  "homeTtfbColdMs": 43,
+  "homeTtfbWarmMs": 42,
+  "apiArticlesTtfbMs": 8,
+  "homeJsGzip": 126174,
+  "managerJsGzip": 126964,
+  "managerArticlesJsGzip": 125120
+}

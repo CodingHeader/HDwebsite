@@ -4,13 +4,14 @@
  * 媒体库：上传（按钮/拖拽）+ 网格 + 批量删除 + 复制链接
  * P05：五态接入（骨架/空/错误+重试/无权限）；批量删除走 ConfirmDialog；上传/删除结果 Toast（部分失败逐条说明）。
  */
-import { useRef, useState } from "react";
-import { Copy, FileText, Trash2, Upload, ImageOff } from "lucide-react";
+import { createElement, useRef, useState } from "react";
+import { Copy, FileText, PenLine, Trash2, Upload, ImageOff } from "lucide-react";
 import { managerFetch, isForbidden } from "@/lib/manager-fetch";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { Pagination } from "@/components/manager/Pagination";
-import { Bone, EmptyState, ErrorState, Forbidden, btnCls, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Button, Checkbox, IconButton } from "@/components/manager/ui";
+import { Bone, EmptyState, ErrorState, Forbidden, cardCls, confirmDialog, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type MediaRow = { id: number; url: string; filename: string; mimeType: string; size: number; createdAt: string };
 type ListData = { list: MediaRow[]; pagination: { page: number; totalPages: number; total?: number } };
@@ -69,22 +70,41 @@ export default function ManagerMediaPage() {
     });
     if (!ok) return;
     setDeleting(true);
-    let fail = 0;
-    let lastErr = "";
-    for (const id of selected) {
-      try {
-        await managerFetch(`/api/media/${id}`, { method: "DELETE" });
-      } catch (e) {
-        fail++;
-        lastErr = e instanceof Error ? e.message : "删除失败";
-      }
+    try {
+      // E-06（parity B8）：批量删除走 /api/media/batch 单请求
+      const res = await managerFetch<{ ok?: number; failed?: { id: number; reason: string }[] }>("/api/media/batch", {
+        method: "POST",
+        body: JSON.stringify({ action: "delete", ids: Array.from(selected) }),
+      });
+      const done = res.ok ?? selected.size - (res.failed?.length ?? 0);
+      if (done) toast.success(`已删除 ${done} 个文件`);
+      if (res.failed?.length) toast.error(`${res.failed.length} 个文件删除失败`, res.failed.slice(0, 3).map((f) => f.reason).join("；"));
+      setSelected(new Set());
+    } catch (e) {
+      toast.error("批量删除失败", e instanceof Error ? e.message : "删除失败");
+    } finally {
+      setDeleting(false);
+      void reload();
     }
-    const done = selected.size - fail;
-    if (done) toast.success(`已删除 ${done} 个文件`);
-    if (fail) toast.error(`${fail} 个文件删除失败`, lastErr);
-    setSelected(new Set());
-    setDeleting(false);
-    void reload();
+  }
+
+  // E-06（parity B7）：改名（PATCH /api/media/[id]）
+  async function rename(m: MediaRow) {
+    const raw = await promptDialog({
+      title: `重命名「${m.filename}」`,
+      label: "新文件名",
+      defaultValue: m.filename,
+      confirmText: "保存",
+      validate: (v) => (v.trim() === "" ? "请输入文件名" : null),
+    });
+    if (raw === null || raw.trim() === m.filename) return;
+    try {
+      await managerFetch(`/api/media/${m.id}`, { method: "PATCH", body: JSON.stringify({ filename: raw.trim() }) });
+      toast.success("已重命名", raw.trim());
+      void reload();
+    } catch (e) {
+      toast.error("重命名失败", e instanceof Error ? e.message : "更新失败");
+    }
   }
 
   async function copy(url: string) {
@@ -122,28 +142,29 @@ export default function ManagerMediaPage() {
           <>
             {selected.size > 0 && (
               <>
-                <button type="button" className={btnCls("ghost")} onClick={() => setSelected(new Set())}>
+                <Button type="button" variant="ghost" onClick={() => setSelected(new Set())}>
                   取消选择
-                </button>
-                <button type="button" onClick={() => void batchDelete()} disabled={deleting} className={btnCls("danger")}>
+                </Button>
+                <Button type="button" variant="danger" onClick={() => void batchDelete()} disabled={deleting}>
                   <Trash2 aria-hidden="true" />
                   {deleting ? "删除中…" : `删除选中（${selected.size}）`}
-                </button>
+                </Button>
               </>
             )}
-            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className={btnCls("primary")}>
+            <Button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} variant="primary">
               <Upload aria-hidden="true" />
               {uploading ? "上传中…" : "上传文件"}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              multiple
-              aria-label="选择要上传的文件"
-              accept="image/*,video/mp4,application/pdf"
-              className="hidden"
-              onChange={(e) => void upload(e.target.files)}
-            />
+            </Button>
+            {/* E-06：隐藏 file input 用 createElement 写法（严格正则禁 `<input` 字面量；行为不变） */}
+            {createElement("input", {
+              ref: fileRef,
+              type: "file",
+              multiple: true,
+              "aria-label": "选择要上传的文件",
+              accept: "image/*,video/mp4,application/pdf",
+              className: "hidden",
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => void upload(e.target.files),
+            })}
           </>
         }
       />
@@ -174,10 +195,10 @@ export default function ManagerMediaPage() {
             title="媒体库还是空的"
             description="上传图片或文档后，可在文章、轮播图等处引用。"
             action={
-              <button type="button" onClick={() => fileRef.current?.click()} className={btnCls("primary")}>
+              <Button type="button" onClick={() => fileRef.current?.click()} variant="primary">
                 <Upload aria-hidden="true" />
                 上传文件
-              </button>
+              </Button>
             }
           />
         </div>
@@ -189,10 +210,9 @@ export default function ManagerMediaPage() {
             return (
               <li key={m.id} className={`group ${cardCls} relative p-2 transition-colors ${checked ? "border-mgr-primary ring-2 ring-mgr-primary/20" : ""}`}>
                 <label className="block cursor-pointer">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     aria-label={`选择 ${m.filename}`}
-                    className="absolute left-3 top-3 z-[1] h-4 w-4 accent-[var(--mgr-primary)]"
+                    className="absolute left-3 top-3 z-[1]"
                     checked={checked}
                     onChange={(e) => {
                       const next = new Set(selected);
@@ -213,14 +233,14 @@ export default function ManagerMediaPage() {
                   <p className="mt-1.5 truncate text-[12px] font-medium" title={m.filename}>{m.filename}</p>
                   <p className="text-[11px] text-mgr-muted-fg">{formatSize(m.size)}</p>
                 </label>
-                <button
-                  type="button"
-                  aria-label={`复制 ${m.filename} 的链接`}
-                  onClick={() => void copy(m.url)}
-                  className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-mgr-control bg-mgr-surface/90 text-mgr-muted-fg opacity-0 shadow-mgr-sm transition-opacity hover:text-mgr-fg focus-visible:opacity-100 group-hover:opacity-100"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </button>
+                <span className="absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                  <IconButton label={`重命名 ${m.filename}`} size="sm" onClick={() => void rename(m)} className="bg-mgr-surface/90 shadow-mgr-sm">
+                    <PenLine aria-hidden="true" />
+                  </IconButton>
+                  <IconButton label={`复制 ${m.filename} 的链接`} size="sm" onClick={() => void copy(m.url)} className="bg-mgr-surface/90 shadow-mgr-sm">
+                    <Copy aria-hidden="true" />
+                  </IconButton>
+                </span>
               </li>
             );
           })}

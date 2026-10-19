@@ -3,27 +3,32 @@
 /**
  * 文章管理：列表（搜索/频道筛选/分页）+ 双模编辑（Markdown / HTML）
  * P05：五态接入；编辑前拉取详情（修复原实现编辑时正文被清空的问题）；分类改为下拉；删除走 ConfirmDialog；Toast 反馈。
+ * E-05：设计系统组件化（DataTable/Select/Button/LinkButton，严格正则 0 原生控件）+ 行操作「上线/下线」
+ *   调用 PATCH /api/articles/[id]（article:publish，main parity B3；首次发布写 publishedAt）。
  */
 import { useState } from "react";
-import { Pencil, Plus, Trash2, ExternalLink } from "lucide-react";
+import { ArrowDownToLine, Pencil, Plus, Trash2, ExternalLink } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
 import type { ArticleSummary, Pagination as PaginationData } from "@/contracts";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
-import { Pagination, tableCls } from "@/components/manager/Pagination";
+import { DataTable } from "@/components/manager/DataTable";
+import type { DataColumn } from "@/components/manager/DataTable";
 import { SearchInput } from "@/components/manager/SearchInput";
+import { Select, Button } from "@/components/manager/ui";
+import { Badge } from "@/components/manager/ui/misc";
 import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
-import { Bone, Forbidden, TableState, btnCls, confirmDialog, inputCls, linkCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Bone, Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Row = ArticleSummary & { category?: { name: string } | null };
 type ListData = { list: Row[]; pagination: PaginationData };
 
-const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  published: { label: "已发布", cls: "text-mgr-success" },
-  draft: { label: "草稿", cls: "text-mgr-muted-fg" },
-  archived: { label: "已归档", cls: "text-mgr-warning" },
+const STATUS_TONE: Record<string, { label: string; tone: "success" | "neutral" | "warning" }> = {
+  published: { label: "已发布", tone: "success" },
+  draft: { label: "草稿", tone: "neutral" },
+  archived: { label: "已归档", tone: "warning" },
 };
 
 const CHANNELS = [
@@ -50,6 +55,22 @@ export default function ManagerArticlesPage() {
   const [serverError, setServerError] = useState("");
   const [categories, setCategories] = useState<{ label: string; value: number }[]>([]);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [toggling, setToggling] = useState<number | null>(null);
+
+  // E-05：一键上下线（PATCH /api/articles/[id]；published→draft 下线，其余→published 上线）
+  async function toggleStatus(a: Row) {
+    const next = a.status === "published" ? "draft" : "published";
+    setToggling(a.id);
+    try {
+      await managerFetch(`/api/articles/${a.id}`, { method: "PATCH", body: JSON.stringify({ status: next }) });
+      toast.success(next === "published" ? "已上线" : "已下线", a.title);
+      void reload();
+    } catch (e) {
+      toast.fromError(e, next === "published" ? "上线失败" : "下线失败");
+    } finally {
+      setToggling(null);
+    }
+  }
 
   async function loadCategories() {
     try {
@@ -169,6 +190,30 @@ export default function ManagerArticlesPage() {
   const list = data?.list ?? [];
   const create = () => begin(null, { ...EMPTY_FORM });
 
+  const columns: DataColumn<Row>[] = [
+    {
+      key: "title",
+      label: "标题",
+      primary: true,
+      render: (a) => (
+        <span className="line-clamp-1 font-medium text-mgr-fg" title={a.title}>
+          {a.title}
+        </span>
+      ),
+    },
+    { key: "channel", label: "频道", render: (a) => (a.channel === "news" ? "新闻" : "资讯") },
+    { key: "contentType", label: "类型", render: (a) => (a.contentType === "markdown" ? "Markdown" : "HTML") },
+    {
+      key: "status",
+      label: "状态",
+      render: (a) => {
+        const st = STATUS_TONE[a.status] ?? { label: a.status, tone: "neutral" as const };
+        return <Badge tone={st.tone} dot>{st.label}</Badge>;
+      },
+    },
+    { key: "viewCount", label: "浏览", align: "right" },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -176,21 +221,16 @@ export default function ManagerArticlesPage() {
         description="管理官网「新闻」与「资讯」频道的文章，发布后前台即时可见。"
         actions={
           <>
-            <select
+            <Select
               aria-label="按频道筛选"
-              className={`${inputCls.replace("w-full ", "")} w-auto sm:w-32`}
+              className="w-auto sm:w-32"
               value={channel}
               onChange={(e) => {
                 setChannel(e.target.value);
                 setPage(1);
               }}
-            >
-              {CHANNELS.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              options={CHANNELS.map((c) => ({ label: c.label, value: c.key }))}
+            />
             <SearchInput
               value={keyword}
               placeholder="搜索标题/内容…"
@@ -199,95 +239,45 @@ export default function ManagerArticlesPage() {
                 setPage(1);
               }}
             />
-            <button type="button" onClick={create} className={btnCls("primary")} data-testid="article-create">
+            <Button type="button" onClick={create} variant="primary" data-testid="article-create">
               <Plus aria-hidden="true" />
               新建文章
-            </button>
+            </Button>
           </>
         }
       />
 
-      <div className={tableCls.wrap} aria-busy={loading || refreshing}>
-        <table className={tableCls.table}>
-          <thead className={tableCls.thead}>
-            <tr>
-              <th scope="col" className={tableCls.th}>标题</th>
-              <th scope="col" className={tableCls.th}>频道</th>
-              <th scope="col" className={tableCls.th}>类型</th>
-              <th scope="col" className={tableCls.th}>状态</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>浏览</th>
-              <th scope="col" className={`${tableCls.th} text-right`}>操作</th>
-            </tr>
-          </thead>
-          <tbody className={refreshing ? "opacity-60 transition-opacity" : undefined}>
-            <TableState
-              columns={6}
-              loading={loading}
-              error={error}
-              empty={!!data && list.length === 0}
-              onRetry={reload}
-              emptyTitle={keyword ? `没有找到与「${keyword}」相关的文章` : "还没有文章"}
-              emptyDescription={keyword ? "换个关键词试试。" : "写下第一篇新闻或资讯吧。"}
-              emptyAction={
-                keyword ? undefined : (
-                  <button type="button" onClick={create} className={btnCls("primary")}>
-                    <Plus aria-hidden="true" />
-                    新建文章
-                  </button>
-                )
-              }
-            />
-            {!error &&
-              list.map((a) => {
-                const st = STATUS_LABEL[a.status] ?? { label: a.status, cls: "" };
-                return (
-                  <tr key={a.id} className={tableCls.tr} style={{ height: "var(--mgr-row-h)" }}>
-                    <td className={`${tableCls.td} max-w-[420px]`}>
-                      <span className="line-clamp-1 font-medium text-mgr-fg" title={a.title}>
-                        {a.title}
-                      </span>
-                    </td>
-                    <td className={tableCls.td}>{a.channel === "news" ? "新闻" : "资讯"}</td>
-                    <td className={`${tableCls.td} text-mgr-muted-fg`}>{a.contentType === "markdown" ? "Markdown" : "HTML"}</td>
-                    <td className={tableCls.td}>
-                      <span className={`inline-flex items-center gap-1.5 text-[12px] font-medium ${st.cls}`}>
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
-                        {st.label}
-                      </span>
-                    </td>
-                    <td className={`${tableCls.td} text-right tabular-nums`}>{a.viewCount}</td>
-                    <td className={`${tableCls.td} whitespace-nowrap text-right`}>
-                      <div className="inline-flex items-center gap-2">
-                        {a.status === "published" && (
-                          <a href={`/articles/${a.id}`} target="_blank" rel="noreferrer" className={linkCls("muted")} aria-label={`在前台查看 ${a.title}`}>
-                            <ExternalLink className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                            查看
-                          </a>
-                        )}
-                        <button type="button" className={linkCls("primary")} onClick={() => void openEdit(a)} aria-label={`编辑 ${a.title}`}>
-                          <Pencil className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                          编辑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void handleDelete(a)}
-                          disabled={deleting === a.id}
-                          className={linkCls("danger")}
-                          aria-label={`删除 ${a.title}`}
-                        >
-                          <Trash2 className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
-                          {deleting === a.id ? "删除中…" : "删除"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </div>
-
-      {data && !error && <Pagination page={page} totalPages={data.pagination.totalPages} total={data.pagination.total} onChange={setPage} />}
+      <DataTable<Row>
+        caption="文章列表"
+        rows={list}
+        columns={columns}
+        rowKey={(a) => String(a.id)}
+        loading={loading}
+        refreshing={refreshing}
+        error={error}
+        onRetry={reload}
+        emptyTitle={keyword ? `没有找到与「${keyword}」相关的文章` : "还没有文章"}
+        emptyDescription={keyword ? "换个关键词试试。" : "写下第一篇新闻或资讯吧。"}
+        emptyAction={
+          keyword ? undefined : (
+            <Button type="button" onClick={create} variant="primary">
+              <Plus aria-hidden="true" />
+              新建文章
+            </Button>
+          )
+        }
+        rowName={(a) => a.title}
+        rowActions={(a) => [
+          ...(a.status === "published"
+            ? [{ key: "view", label: "查看", href: `/articles/${a.id}`, ariaLabel: `在前台查看 ${a.title}`, tone: "muted" as const, icon: <ExternalLink aria-hidden="true" /> }]
+            : []),
+          { key: "toggle", label: a.status === "published" ? "下线" : "上线", ariaLabel: `${a.status === "published" ? "下线" : "上线"} ${a.title}`, tone: "primary" as const, icon: <ArrowDownToLine aria-hidden="true" />, onClick: () => void toggleStatus(a), disabled: toggling === a.id },
+          { key: "edit", label: "编辑", ariaLabel: `编辑 ${a.title}`, tone: "primary" as const, icon: <Pencil aria-hidden="true" />, onClick: () => void openEdit(a) },
+          { key: "delete", label: deleting === a.id ? "删除中…" : "删除", ariaLabel: `删除 ${a.title}`, tone: "danger" as const, icon: <Trash2 aria-hidden="true" />, onClick: () => void handleDelete(a), disabled: deleting === a.id },
+        ]}
+        pagination={data && !error ? { page, limit: 10, totalPages: data.pagination.totalPages, total: data.pagination.total, onPageChange: setPage } : undefined}
+        data-testid="articles-table"
+      />
 
       <FormDialog
         open={editing !== null}

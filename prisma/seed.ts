@@ -153,14 +153,24 @@ async function seedMenus() {
     { parent: 'group-site', code: 'home-cards', label: '首页卡片', path: '/manager/home-cards', sort: 2, permission: 'banner:list' },
     { parent: 'group-site', code: 'campus', label: '校区管理', path: '/manager/campus', sort: 3, permission: 'campus:list' },
     { parent: 'group-site', code: 'gallery', label: '证书风采', path: '/manager/gallery', sort: 4, permission: 'gallery:list' },
+    // E-03（ADR-024）：首页区块配置三页
+    { parent: 'group-site', code: 'home-blocks', label: '首页区块', path: '/manager/home-blocks', sort: 5, permission: 'block:list' },
+    { parent: 'group-site', code: 'page-templates', label: '页面模板', path: '/manager/page-templates', sort: 6, permission: 'block:list' },
+    { parent: 'group-site', code: 'element-configs', label: '元素配置', path: '/manager/element-configs', sort: 7, permission: 'block:list' },
     { parent: 'group-ai', code: 'content-hub', label: '内容中枢', path: '/manager/content-hub', sort: 0, permission: 'content:list' },
     { parent: 'group-ai', code: 'chat-scenes', label: 'AI 场景', path: '/manager/chat-scenes', sort: 1, permission: 'setting:list' },
     { parent: 'group-ai', code: 'knowledge', label: '知识库', path: '/manager/knowledge', sort: 2, permission: 'kb:list' },
+    // E-04（ADR-025）：知识库管理页（库级：Coze 绑定/文件上传/检索测试）
+    { parent: 'group-ai', code: 'knowledge-bases', label: '知识库管理', path: '/manager/knowledge-bases', sort: 2, permission: 'kb:list' },
     { parent: 'group-ai', code: 'llm-providers', label: '模型供应商', path: '/manager/llm-providers', sort: 3, permission: 'llm:list' },
     { parent: 'group-ai', code: 'collect-sources', label: '采集源', path: '/manager/collect-sources', sort: 4, permission: 'collect:list' },
     { parent: 'group-ai', code: 'collect-items', label: '采集审核', path: '/manager/collect-items', sort: 5, permission: 'collect:list' },
     { parent: 'group-ai', code: 'publish-jobs', label: '发布任务', path: '/manager/publish-jobs', sort: 6, permission: 'publish:list' },
     { parent: 'group-ai', code: 'wechat-accounts', label: '公众号账号', path: '/manager/wechat-accounts', sort: 7, permission: 'wechat:list' },
+    // E-02（P-2）：/manager/collect-tasks 页面已存在，补登记菜单（P-2 与 notify-rules 同批）
+    { parent: 'group-ai', code: 'collect-tasks', label: '采集任务', path: '/manager/collect-tasks', sort: 8, permission: 'collect:list' },
+    // E-02：通知规则页（规则配置入口，置于通知组首位）
+    { parent: 'group-notify', code: 'notify-rules', label: '通知规则', path: '/manager/notify-rules', sort: 0, permission: 'notify:list' },
     { parent: 'group-notify', code: 'notify-recipients', label: '提醒接收人', path: '/manager/notify-recipients', sort: 1, permission: 'notify:list' },
     { parent: 'group-notify', code: 'notify-templates', label: '邮件模板', path: '/manager/notify-templates', sort: 2, permission: 'notify:list' },
     { parent: 'group-notify', code: 'notify-records', label: '通知记录', path: '/manager/notify-records', sort: 3, permission: 'notify:list' },
