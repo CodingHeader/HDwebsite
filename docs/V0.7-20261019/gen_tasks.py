@@ -137,7 +137,7 @@ t("V7-G-01", "AGENTS.md 与入口文档对齐单主线（lane 废止）", "S1", 
   "AGENTS.md §4/§5/§8 不再引用 lane 分支与 V0.6 入口，改指 docs/V0.7-20261019/README.md；推送规则改为'upgrade 单主线 + 每卡独立验收后推送'",
   ["证据：AGENTS.md §4 仍写五条 lane 并行；4cbd9c1 记录'不再新建 lane 分支'"],
   ["AGENTS.md"], ["只替换 §4 编排段、§5 推送规则、§8 证据分桶（W1-* 保留，新增 V7/）", "不改 §2/§3/§6"],
-  ["grep -c 'lane/' AGENTS.md = 0（历史引用除外需注明'已废止'）", "入口指向 V0.7"],
+  ["grep -c 'lane/' AGENTS.md = 0（历史引用除外需注明'已废止'）", "入口指向 V0.7", "AGENTS.md 不再以 tag w1-base / w1-base-ccr-1 / w1-ui-kit 为基线（三者已于 2026-10-19 删除），改写为提交号 0cb699b / f158501 / c6a2cb4"],
   ["grep -n 'lane/\\|V0.7' AGENTS.md"], ["AGENTS.md"], ["src/**", "docs/V0.*/**"], [], "haiku", "文本替换", "涉及规则语义变化 → opus", "小", "P3")
 
 # ---------------- 输出 ----------------
@@ -153,6 +153,8 @@ def carry_card(cid, slice_, dep, owner, tier, note):
     head = (f"> **V0.7 重校准（2026-10-19，HEAD 4cbd9c1）**：所属切片 {slice_}；执行者 {owner}；建议档位 {tier}；"
             f"V0.7 依赖：{', '.join(dep) or '无'}。\n> 实测前提：{note}。\n> 分支：lane 已废止，直接在 `upgrade` 上小提交；"
             f"开工前 `git pull --ff-only`；证据目录改为 `docs/design/06_validation/evidence/V7/{cid}/`。\n\n")
+    body = re.sub(r"tag ?`?w1-base-ccr-1`?", "`f158501`（原 tag w1-base-ccr-1，2026-10-19 已删）", body)
+    body = body.replace("w1-base-ccr-1", "f158501（原 tag w1-base-ccr-1）").replace("w1-ui-kit", "c6a2cb4（原 tag w1-ui-kit）")
     if cid == "D-13":
         body = body.replace("- [ ] workflow 中不出现任何真实密钥或 .env 内容", "- [ ] workflow 中不出现任何真实密钥或 .env 内容\n- [ ] （V0.7 追加）workflow 含密钥扫描步骤：`git grep -nE '(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|github_pat_|AKIA[0-9A-Z]{16})' -- ':!docs/**'`（排除规划文档自身的正则示例） 有输出即失败；不新增依赖")
     lines = body.split("\n", 1)
