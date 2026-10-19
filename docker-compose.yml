@@ -1,0 +1,79 @@
+# hdwebsite 生产部署编排（D-08）
+# 说明：
+#   - app 服务基于本仓库 Dockerfile 构建 standalone 镜像，非 root 运行；
+#   - DATA_DIR 卷 hdwebsite-data：上传/切片/导出等运行时文件（D-09 起生效）+ 数据库文件
+#     （db 与 prisma 代码分离，避免命名卷遮蔽镜像内 schema/migrations）；
+#   - 凭证走 env_file（.env.local / .env，Compose ≥ 2.24），不写入 compose。
+#
+# 首次启动迁移（一次性容器，基于 builder target——builder 内含 prisma CLI + schema）：
+#   docker compose run --rm migrate
+# 之后正常启动：
+#   docker compose up -d
+#   curl -fsS http://localhost:6789/api/health   # 期望 {"status":"ok","db":"up"}
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    image: hdwebsite:latest
+    container_name: hdwebsite
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-6789}:${APP_PORT:-6789}"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - PORT=${APP_PORT:-6789}
+      - HOSTNAME=0.0.0.0
+      # 数据库文件落 DATA_DIR 卷，不遮蔽镜像内 prisma/schema 与 migrations
+      - DATABASE_URL=${DATABASE_URL:-file:/app/data/db/dev.db}
+      # 运行时数据目录（D-09 起生效）
+      - DATA_DIR=${DATA_DIR:-/app/data}
+    env_file:
+      - path: .env.local
+        required: false
+      - path: .env
+        required: false
+    volumes:
+      - hdwebsite-data:/app/data
+    healthcheck:
+      # 镜像内已声明 HEALTHCHECK；此显式声明保持 compose 可读性
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||6789)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # 一次性迁移容器：基于 builder target（内含完整 node_modules + prisma CLI + schema）
+  # 用法：docker compose run --rm migrate
+  # 注意：builder 阶段以 root 运行，migrate 写出的 db 文件属 root；
+  #       migrate deploy 后 chown 给 node，避免 app 容器（node 用户）写库失败。
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: hdwebsite:migrate
+    restart: "no"
+    command: ["sh", "-c", "npx prisma migrate deploy && chown -R node:node /app/data"]
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - DATABASE_URL=${DATABASE_URL:-file:/app/data/db/dev.db}
+      - DATA_DIR=${DATA_DIR:-/app/data}
+    env_file:
+      - path: .env.local
+        required: false
+      - path: .env
+        required: false
+    volumes:
+      - hdwebsite-data:/app/data
+
+volumes:
+  hdwebsite-data:

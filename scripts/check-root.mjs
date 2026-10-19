@@ -16,6 +16,7 @@ const root = process.cwd();
 /** 根目录污染守卫：只允许白名单内的条目 */
 const WHITELIST = new Set([
   // 工程文件
+  ".dockerignore",
   ".env",
   ".env.example",
   ".env.local",
@@ -36,7 +37,7 @@ const WHITELIST = new Set([
   ".verify-prod.log",
   // 项目目录
   "AGENTS.md",
-  "CLAUDIA.md",
+  "CLAUDE.md",
   "Dockerfile",
   "Dockerfile.dev",
   "README.md",
