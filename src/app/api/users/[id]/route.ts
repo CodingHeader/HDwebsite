@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { hashPassword } from "@/lib/auth";
 import { error, notFound, serverError, success, validationError } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
+import { assertUserWriteAllowed } from "@/lib/authz/escalation";
 import { idParamSchema } from "@/contracts";
 import { userUpdateSchema } from "@/contracts/resources";
 
@@ -35,6 +36,40 @@ export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const existing = await prisma.user.findUnique({ where: { id: parsedId.data }, include: { role: true } });
     if (!existing) return notFound("用户不存在");
+    // V7-SEC-01：E4/E5——非超管不得触碰超管账号/不得重置超管密码/不得自改角色；
+    // 不得把最后一名超管改离超管角色
+    let requestedRoleIsSuper = existing.role.isSuper;
+    if (input.roleId != null && input.roleId !== existing.roleId) {
+      const targetRole = await prisma.role.findUnique({ where: { id: input.roleId } });
+      if (!targetRole) return error("目标角色不存在", 400);
+      requestedRoleIsSuper = targetRole.isSuper;
+    }
+    // 若本次变更会把系统超管数降为 0，判为"最后一名超管"
+    let lastSuper = false;
+    if (existing.role.isSuper && requestedRoleIsSuper === false) {
+      const supers = await prisma.user.count({ where: { isActive: true, role: { isSuper: true } } });
+      lastSuper = supers <= 1;
+    }
+    {
+      const denial = assertUserWriteAllowed(
+        {
+          isSuper: guard.session.role.isSuper,
+          permissions: guard.session.role.permissions,
+          callerRoleId: guard.session.role.id,
+          callerUserId: guard.session.id,
+        },
+        {
+          targetUserId: existing.id,
+          // E4/E5 用"当前角色"，E3 用"请求目标角色"——分别判定
+          targetRoleIsSuper: existing.role.isSuper,
+          requestedRoleId: input.roleId ?? null,
+          requestedRoleIsSuper: requestedRoleIsSuper,
+          resetsPassword: !!input.password,
+        },
+        { isLastActiveSuperAdmin: lastSuper },
+      );
+      if (denial) return error(denial.message, denial.code);
+    }
     if (existing.role.isSuper && input.isActive === false) {
       const supers = await prisma.user.count({ where: { isActive: true, role: { isSuper: true } } });
       if (supers <= 1) return error("不能停用最后一名超级管理员", 400);

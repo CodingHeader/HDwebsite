@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { created, error, serverError, success, validationError } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
+import { assertRoleWriteAllowed } from "@/lib/authz/escalation";
 import { listQuerySchema } from "@/contracts";
 import { roleCreateSchema } from "@/contracts/resources";
 
@@ -46,7 +47,17 @@ export async function POST(request: Request) {
   const parsed = roleCreateSchema.safeParse(body);
   if (!parsed.success) return validationError(parsed.error.issues);
   const input = parsed.data;
-  if (input.isSuper && !guard.session.role.isSuper) return error("仅超级管理员可创建超管角色", 403);
+  {
+    const denial = assertRoleWriteAllowed(
+      {
+        isSuper: guard.session.role.isSuper,
+        permissions: guard.session.role.permissions,
+        callerRoleId: guard.session.role.id,
+      },
+      { targetRoleId: undefined, isSuper: input.isSuper, permissions: input.permissions },
+    );
+    if (denial) return error(denial.message, denial.code);
+  }
   try {
     const exists = await prisma.role.findFirst({
       where: { OR: [{ name: input.name }, ...(input.slug ? [{ slug: input.slug }] : [])] },

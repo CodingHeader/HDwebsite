@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { error, notFound, serverError, success, validationError } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
+import { assertRoleWriteAllowed } from "@/lib/authz/escalation";
 import { idParamSchema } from "@/contracts";
 import { roleCreateSchema } from "@/contracts/resources";
 
@@ -35,6 +36,17 @@ export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const existing = await prisma.role.findUnique({ where: { id: parsedId.data } });
     if (!existing) return notFound("角色不存在");
+    {
+      const denial = assertRoleWriteAllowed(
+        {
+          isSuper: guard.session.role.isSuper,
+          permissions: guard.session.role.permissions,
+          callerRoleId: guard.session.role.id,
+        },
+        { targetRoleId: existing.id, isSuper: input.isSuper, permissions: input.permissions },
+      );
+      if (denial) return error(denial.message, denial.code);
+    }
     if (existing.slug === "super-admin" && (input.isSuper === false || input.permissions)) {
       return error("内置超管角色的权限不可修改", 400);
     }
@@ -45,7 +57,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
         description: input.description,
         isSuper: input.isSuper,
         status: input.status,
-        ...(input.permissions ? { permissions: JSON.stringify(input.permissions) } : {}),
+        // V7-SEC-01 观察项：zod4 的 .partial() 保留 .default([])，只提交 description 时
+        // permissions 会被填成 []，必须用 !== undefined 判断，避免误覆写原权限
+        ...(input.permissions !== undefined ? { permissions: JSON.stringify(input.permissions) } : {}),
       },
     });
     await logOperation({

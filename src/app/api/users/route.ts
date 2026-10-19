@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { hashPassword } from "@/lib/auth";
 import { created, error, serverError, success, validationError } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
+import { assertUserWriteAllowed } from "@/lib/authz/escalation";
 import { listQuerySchema } from "@/contracts";
 import { userCreateSchema } from "@/contracts/resources";
 
@@ -49,6 +50,21 @@ export async function POST(request: Request) {
   try {
     const exists = await prisma.user.findUnique({ where: { username: input.username } });
     if (exists) return error("用户名已存在", 400);
+    // V7-SEC-01：E3——非超管不得指派超管角色
+    const targetRole = input.roleId ? await prisma.role.findUnique({ where: { id: input.roleId } }) : null;
+    {
+      const denial = assertUserWriteAllowed(
+        {
+          isSuper: guard.session.role.isSuper,
+          permissions: guard.session.role.permissions,
+          callerRoleId: guard.session.role.id,
+          callerUserId: guard.session.id,
+        },
+        { targetUserId: -1, targetRoleIsSuper: false, requestedRoleId: input.roleId, requestedRoleIsSuper: !!targetRole?.isSuper },
+        { isLastActiveSuperAdmin: false },
+      );
+      if (denial) return error(denial.message, denial.code);
+    }
     const user = await prisma.user.create({
       data: {
         username: input.username,
