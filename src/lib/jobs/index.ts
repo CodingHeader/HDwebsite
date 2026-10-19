@@ -1,8 +1,7 @@
 /**
  * 任务注册表（registry SSOT，TN-007）
- * M1 注册：backup（每日 03:00 备份）
- * 后续切片注册：collect.run(S4) / publish.scan(S5) / notify.scan(S5) /
- *              retry.failed(S5) / llm.balance-check(S3)
+ * 已注册：backup（每日 03:00 备份）、collect.run（采集）、publish.scan（发布扫描）、
+ *         notify.scan（发布前/后通知）、retry.failed（重试失败）、llm.balance-check（模型余额检查）。
  * 未注册切片的任务行 enabled 保持 true 但无执行器 → 扫描自动跳过（getRegisteredJobNames 缺席）。
  */
 import { registerJob } from "@/lib/scheduler";

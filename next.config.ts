@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // R0 接入 /api/file/[...path]（路径白名单文件服务）后生效；当前为预留
+      // /uploads/:path* → /api/file/:path*（路径白名单文件服务）
       {
         source: "/uploads/:path*",
         destination: "/api/file/:path*",
