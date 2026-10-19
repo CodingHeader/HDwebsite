@@ -26,7 +26,7 @@ let PROVIDERS: { id: number }[] = [];
 beforeAll(async () => {
   await initTestDb();
   ADMIN = (await createActor(prisma, "admin", ["llm:edit"], true)).token;
-  VIEWER = (await createActor(prisma, "staff", ["content:list"], false)).token; // 无 llm:update
+  VIEWER = (await createActor(prisma, "staff", ["content:list"], false)).token; // 无 llm:edit
 
   const ids = [];
   for (const name of ["ProviderA", "ProviderB", "ProviderC"]) {
