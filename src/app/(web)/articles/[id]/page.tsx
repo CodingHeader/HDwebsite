@@ -9,6 +9,7 @@ import { sanitizeRichContent } from "@/lib/markdown";
 import { MarkdownRenderer } from "@/components/web/MarkdownRenderer";
 import type { Metadata } from "next";
 import { getWebSettings as getSettings } from "@/components/web/data/settings";
+import { buildArticleJsonLdScript } from "./json-ld";
 
 interface ArticlePageProps {
   params: Promise<{ id: string }>;
@@ -78,6 +79,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* D-15：NewsArticle JSON-LD（结构化数据，不改变可见像素） */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: buildArticleJsonLdScript({
+            id: article.id,
+            title: article.title,
+            excerpt: article.excerpt,
+            coverImage: article.coverImage,
+            publishedAt: article.publishedAt,
+            updatedAt: article.updatedAt,
+            authorName: article.author?.nickname || article.author?.username || null,
+            categoryName: article.category?.name || null,
+          }),
+        }}
+      />
       {/* 面包屑导航 */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
