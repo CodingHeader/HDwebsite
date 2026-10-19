@@ -36,6 +36,9 @@ const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "hdw-c06-"));
 
 beforeAll(async () => {
   await initTestDb();
+  // V7-T-01 隔离：mammoth 为动态 import，首次加载慢会让 docx 用例 5s 超时；
+  // 在 beforeAll 预热一次，实际用例不再触发冷加载（不改全局 vitest.config.ts）
+  await import("mammoth");
   const admin = await createActor(prisma, "admin", ["kb:list", "kb:create", "kb:edit", "kb:delete"], true);
   ADMIN = admin.token;
   NOPERM = (await createActor(prisma, "noperm", [])).token;

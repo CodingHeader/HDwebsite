@@ -130,11 +130,18 @@ describe("C-04 Coze 知识库客户端", () => {
 
 describe("C-04 无凭证：队列记录原因而非抛错", () => {
   it("未配置 kbCozeProviderId/kbCozeSpaceId → skipped + reason（不抛）", async () => {
+    // V7-T-01 隔离：processKbSyncQueue 经 pendingKbSync / configureCozeBackendFromSettings
+    // 依赖真 prisma（Setting / Knowledge 表），干净检出时 dev.db 未迁移会抛
+    // "no such column Knowledge.baseId"。这里 spyOn prisma 让查询走 mock，不触真实库。
+    const { prisma } = await import("@/lib/prisma");
+    vi.spyOn(prisma.setting, "findMany").mockResolvedValue([]);
+    vi.spyOn(prisma.knowledge, "findMany").mockResolvedValue([]);
     const { processKbSyncQueue } = await import("@/lib/kb-sync");
     const r = await processKbSyncQueue(5);
     expect(r.adapter).toBeNull();
     expect(r.failed).toBe(0);
     expect(typeof r.reason).toBe("string");
     expect(r.reason).toMatch(/未配置|Coze/);
+    vi.restoreAllMocks();
   });
 });
