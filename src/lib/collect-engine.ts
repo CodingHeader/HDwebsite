@@ -16,7 +16,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
-import { UPLOAD_ROOT } from "@/app/api/upload/route";
+import { uploadsDir } from "@/lib/storage";
 import { ingestCollectItem } from "@/lib/kb-sync";
 import { logOperation } from "@/lib/log";
 import { markdownExcerpt } from "@/lib/markdown";
@@ -112,14 +112,15 @@ async function transferImage(imageUrl: string, timeoutMs: number, ua: string): P
     if (!ext) return null;
     const now = new Date();
     const relDir = `collect/${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const absDir = path.resolve(UPLOAD_ROOT, relDir);
+    const uploadRoot = uploadsDir();
+    const absDir = path.resolve(uploadRoot, relDir);
     mkdirSync(absDir, { recursive: true });
     const filename = `${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}${ext}`;
     const relPath = `${relDir}/${filename}`;
-    writeFileSync(path.resolve(UPLOAD_ROOT, relPath), buffer);
+    writeFileSync(path.resolve(uploadRoot, relPath), buffer);
     if (contentType.startsWith("image/") && contentType !== "image/gif") {
-      await sharp(path.resolve(UPLOAD_ROOT, relPath)).resize({ width: 1200, withoutEnlargement: true }).toBuffer()
-        .then((out) => writeFileSync(path.resolve(UPLOAD_ROOT, relPath), out))
+      await sharp(path.resolve(uploadRoot, relPath)).resize({ width: 1200, withoutEnlargement: true }).toBuffer()
+        .then((out) => writeFileSync(path.resolve(uploadRoot, relPath), out))
         .catch(() => undefined);
     }
     await prisma.media.create({

@@ -71,9 +71,11 @@ export async function ingestFile(baseId: number, file: File): Promise<IngestOutc
   if (dup) return { status: "existing", file: dup, chunks: dup.chunkCount };
 
   // 落盘
-  const dir = path.join(kbDir(), String(baseId));
+  // turbopackIgnore：`kbDir()` 是函数调用，Turbopack 无法静态解析其返回值，会过度追踪整个项目根（11991 文件）。
+  // 加 turbopackIgnore 注释使构建期不追踪该动态路径；运行时路径由 storage.ts 解析。
+  const dir = path.join(/* turbopackIgnore: true */ kbDir(), String(baseId));
   const storagePath = `${baseId}/${sha}.${check.ext}`;
-  const abs = path.join(kbDir(), storagePath);
+  const abs = path.join(/* turbopackIgnore: true */ kbDir(), storagePath);
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(abs, Buffer.from(buf));
 

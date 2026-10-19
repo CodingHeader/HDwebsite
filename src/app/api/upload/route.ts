@@ -9,6 +9,7 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { created, error, serverError } from "@/lib/api-response";
+import { uploadsDir } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,16 +23,16 @@ const ALLOWED_TYPES: Record<string, string> = {
   "application/pdf": ".pdf",
 };
 const MAX_SIZE = 20 * 1024 * 1024; // 20MB
-export const UPLOAD_ROOT = path.resolve(process.cwd(), "uploads");
 
 type ThumbnailSet = { thumb?: string; small?: string; medium?: string };
 
 async function makeThumbnails(absPath: string, relDir: string, base: string): Promise<ThumbnailSet> {
+  const root = uploadsDir();
   const sizes: ["thumb" | "small" | "medium", number][] = [["thumb", 160], ["small", 480], ["medium", 1080]];
   const out: ThumbnailSet = {};
   for (const [name, width] of sizes) {
     const thumbRel = `${relDir}/${base}_${name}.webp`;
-    await sharp(absPath).resize({ width, withoutEnlargement: true }).webp({ quality: 80 }).toFile(path.resolve(UPLOAD_ROOT, thumbRel));
+    await sharp(absPath).resize({ width, withoutEnlargement: true }).webp({ quality: 80 }).toFile(path.resolve(root, thumbRel));
     out[name] = `/uploads/${thumbRel}`;
   }
   return out;
@@ -58,12 +59,12 @@ export async function POST(request: Request) {
   try {
     const now = new Date();
     const relDir = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")}`;
-    const absDir = path.resolve(UPLOAD_ROOT, relDir);
+    const absDir = path.resolve(uploadsDir(), relDir);
     mkdirSync(absDir, { recursive: true });
     const base = `${Date.now().toString(36)}-${crypto.randomBytes(6).toString("hex")}`;
     const filename = `${base}${ext}`;
     const relPath = `${relDir}/${filename}`;
-    const absPath = path.resolve(UPLOAD_ROOT, relPath);
+    const absPath = path.resolve(uploadsDir(), relPath);
     const buffer = Buffer.from(await file.arrayBuffer());
     writeFileSync(absPath, buffer);
 

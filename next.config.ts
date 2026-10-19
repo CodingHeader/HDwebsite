@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
     optimizeCss: false,
     cssChunking: false,
   },
+  // D-09：standalone 不打包运行时写入目录（uploads/backups/data 经 DATA_DIR 化后由部署侧卷承载）
+  outputFileTracingExcludes: {
+    "*": ["uploads/**/*", "backups/**/*", "data/**/*"],
+  },
   images: {
     // 图片域名白名单（SOL-001 §3.3）：本站 + 已知采集/微信域随切片收紧，不再全放行 https
     remotePatterns: [

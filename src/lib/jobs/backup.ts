@@ -7,13 +7,15 @@ import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
 import { createClient } from "@libsql/client";
 import type { JobContext } from "@/lib/scheduler";
+import { backupsDir } from "@/lib/storage";
 
 const KEEP_COUNT = 14;
 
 function resolveDbPath(): string {
   const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
   const raw = url.replace(/^file:/, "");
-  return path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
+  // turbopackIgnore：process.cwd() 是运行时动态值，Turbopack 无法静态分析会过度追踪整个项目根
+  return path.isAbsolute(raw) ? raw : path.resolve(/* turbopackIgnore: true */ process.cwd(), raw);
 }
 
 function pruneOldBackups(backupRoot: string): void {
@@ -42,8 +44,10 @@ export async function backupJob(_ctx: JobContext): Promise<void> {
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0"),
   ].join("");
-  const backupRoot = path.resolve(process.cwd(), "backups");
-  const targetDir = path.join(backupRoot, yyyymmdd);
+  const backupRoot = backupsDir();
+  // turbopackIgnore：`backupRoot` 由 storage.ts 运行时解析（DATA_DIR 或 cwd），Turbopack 无法静态分析，
+  // 会过度追踪整个项目根；fs 目录操作为运行时行为，构建期无需追踪。
+  const targetDir = path.join(/* turbopackIgnore: true */ backupRoot, yyyymmdd);
   mkdirSync(targetDir, { recursive: true });
   const target = path.join(targetDir, path.basename(dbPath));
   try {

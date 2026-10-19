@@ -1,24 +1,45 @@
 /**
  * 存储根与路径安全（`src/lib/storage.ts`，W0-03 冻结签名）—— 磁盘位置的唯一来源 + 防目录穿越。
  *
- * W0 默认实现 = 现有行为（全部相对 `process.cwd()`）：`data/`、`uploads/`、`backups/`、`data/kb/`。
- * 「环境变量 DATA_DIR 化」由 D 线 D-09 在同一签名下替换实现（调用方无需改动）。
+ * D-09：DATA_DIR 化实现。磁盘根不再直接硬编码 `process.cwd()`：
+ * - 未设置 DATA_DIR → 各目录相对 `process.cwd()`（与 W0 默认行为完全一致，零破坏，
+ *   本地开发/测试路径不变：`data/`、`uploads/`、`backups/`、`data/kb/`）。
+ * - 设置 DATA_DIR=/opt/hdw/data → 全部落到该根下：`/opt/hdw/data/{data,uploads,backups}/…`。
+ *   生产部署建议显式设置 DATA_DIR，使运行时写入集中在单一数据卷（D-08 卷 hdwebsite-data），
+ *   与构建产物（standalone）彻底分离——standalone 不再携带 uploads（I14）。
+ *
+ * 设计约束：
+ * - 保持 `dataDir()`/`uploadsDir()`/`backupsDir()`/`kbDir()` 公开签名与语义不变；
+ *   新增 `dataRoot()` 作为 DATA_DIR 的解析点（内部使用，未导出以免扩大 API 面）。
+ * - `resolveInside` 防目录穿越逻辑不变（词法规范化；符号链接由部署侧文件权限约束）。
  */
 import path from "node:path";
 
-/** 数据根（备份、知识库文件、运行时数据） */
+/**
+ * 数据根：环境变量 DATA_DIR 显式设置时以其为根（解析为绝对路径）；否则回退项目根。
+ * 各公开 Dir 函数统一经此解析，实现"路径与 cwd 解耦"。
+ */
+function dataRoot(): string {
+  const dir = process.env.DATA_DIR;
+  if (typeof dir === "string" && dir.trim().length > 0) {
+    return path.resolve(dir.trim());
+  }
+  return process.cwd();
+}
+
+/** 数据子目录（备份、知识库文件、运行时数据） */
 export function dataDir(): string {
-  return path.resolve(process.cwd(), "data");
+  return path.resolve(dataRoot(), "data");
 }
 
 /** 媒体上传根（`/uploads/:path*` rewrite 目标） */
 export function uploadsDir(): string {
-  return path.resolve(process.cwd(), "uploads");
+  return path.resolve(dataRoot(), "uploads");
 }
 
 /** 数据库备份根（保留最近 14 份） */
 export function backupsDir(): string {
-  return path.resolve(process.cwd(), "backups");
+  return path.resolve(dataRoot(), "backups");
 }
 
 /** 知识库文件根（`<kbDir>/<baseId>/<sha256>.<ext>`，不对外公开） */
