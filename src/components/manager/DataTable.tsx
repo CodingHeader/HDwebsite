@@ -202,7 +202,7 @@ function sortKey<T>(col: DataColumn<T>, row: T): string | number {
 
 const actionTone = {
   primary: "text-mgr-primary",
-  muted: "text-mgr-muted-fg hover:text-mgr-fg",
+  muted: "text-[oklch(0.44_0_0)] hover:text-mgr-fg",
   danger: "text-mgr-danger",
 } as const;
 
@@ -365,7 +365,7 @@ export function DataTable<T>({
               className="absolute right-0 top-10 z-20 w-48 rounded-mgr-card border border-mgr-border bg-mgr-surface p-2 shadow-mgr-lg"
               onKeyDown={(e) => e.key === "Escape" && setColMenu(false)}
             >
-              <p className="px-2 pb-1 text-[12px] text-mgr-muted-fg">显示的列</p>
+              <p className="px-2 pb-1 text-[12px] text-[oklch(0.44_0_0)]">显示的列</p>
               {columns.map((c) => (
                 <label key={c.key} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-[13px] hover:bg-mgr-subtle">
                   <Checkbox
@@ -441,7 +441,7 @@ export function DataTable<T>({
                       scope="col"
                       style={{ width: c.width }}
                       aria-sort={active ? (sort!.dir === "asc" ? "ascending" : "descending") : c.sortable ? "none" : undefined}
-                      className={cn("h-10 whitespace-nowrap px-4 text-[12px] font-medium text-mgr-muted-fg", c.align === "right" && "text-right")}
+                      className={cn("h-10 whitespace-nowrap px-4 text-[12px] font-medium text-[oklch(0.44_0_0)]", c.align === "right" && "text-right")}
                     >
                       {c.sortable ? (
                         <button
@@ -460,7 +460,7 @@ export function DataTable<T>({
                   );
                 })}
                 {hasActions && (
-                  <th scope="col" className="sticky right-0 h-10 whitespace-nowrap bg-mgr-subtle px-4 text-right text-[12px] font-medium text-mgr-muted-fg shadow-[-1px_0_0_var(--mgr-border)]">
+                  <th scope="col" className="sticky right-0 h-10 whitespace-nowrap bg-mgr-subtle px-4 text-right text-[12px] font-medium text-[oklch(0.44_0_0)] shadow-[-1px_0_0_var(--mgr-border)]">
                     操作
                   </th>
                 )}
@@ -570,7 +570,7 @@ export function DataTable<T>({
       {pagination && !error && !loading && (
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {pagination.onLimitChange ? (
-            <label className="flex items-center gap-2 text-[13px] text-mgr-muted-fg">
+            <label className="flex items-center gap-2 text-[13px] text-[oklch(0.44_0_0)]">
               每页
               <Select
                 aria-label="每页条数"

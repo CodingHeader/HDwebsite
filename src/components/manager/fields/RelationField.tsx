@@ -97,6 +97,7 @@ export function RelationField({
           {...a11y}
           role="combobox"
           aria-expanded={open}
+          aria-controls="relation-field-listbox"
           aria-autocomplete="list"
           autoComplete="off"
           disabled={disabled}
@@ -116,6 +117,7 @@ export function RelationField({
       </div>
       {open && (
         <div
+          id="relation-field-listbox"
           role="listbox"
           aria-label="搜索结果"
           className="absolute left-0 right-0 top-10 z-30 max-h-56 overflow-auto rounded-mgr-card border border-mgr-border bg-mgr-surface p-1 shadow-mgr-lg"

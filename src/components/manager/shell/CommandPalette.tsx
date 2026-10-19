@@ -89,7 +89,7 @@ function PaletteBody({ items, onDone }: { items: FlatMenuItem[]; onDone: () => v
           aria-activedescendant={results[active] ? `mgr-cmd-${results[active].code}` : undefined}
           className="h-12 flex-1 bg-transparent text-[14px] text-mgr-fg outline-none placeholder:text-mgr-muted-fg"
         />
-        <kbd className="rounded border border-mgr-border px-1.5 text-[11px] text-mgr-muted-fg">Esc</kbd>
+        <kbd className="rounded border border-mgr-border px-1.5 text-[11px] text-[oklch(0.44_0_0)]">Esc</kbd>
       </div>
       <ul id="mgr-command-list" role="listbox" aria-label="页面" className="max-h-[50vh] overflow-y-auto p-2">
         {results.length === 0 && (
