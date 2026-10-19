@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { getWebSettings as getSettings } from "@/components/web/data/settings";
 import { prisma } from "@/lib/prisma";
@@ -23,8 +24,8 @@ export default async function ContactPage() {
   ]);
 
   const schoolName = settings.schoolShortName || "弘道教育";
-  const contactPhone = settings.contactPhone || "400-001-5729";
-  const contactPhone1 = settings.contactPhone1 || "132-1945-5550";
+  const contactPhone = settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone;
+  const contactPhone1 = settings.contactPhone1 || WEB_SETTING_DEFAULTS.contactPhone1;
   const contactPhone2 = settings.contactPhone2 || "028-6167-5329";
   const contactEmail = settings.contactEmail || "contact@hdaomanager.com";
   const address = settings.address || "成都市青羊区大石西路12号";

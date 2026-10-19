@@ -1,5 +1,6 @@
 "use client";
 
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -26,7 +27,7 @@ interface HeaderProps {
  */
 export function Header({ 
   siteLogoIcon = "/images/logo_card.png",
-  contactPhone1 = "132-1945-5550",
+  contactPhone1 = WEB_SETTING_DEFAULTS.contactPhone1,
   contactPhone2 = "028-6167-5329"
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import { createElement } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -94,7 +95,7 @@ export default async function ServicePage({ params }: PageProps) {
                   <p className="text-lg mb-2">该指南暂未配置详细内容</p>
                   <p className="text-sm">请前往{" "}
                     <Link href="/apply?source=guide" className="text-blue-600 underline">在线咨询</Link>{" "}
-                    获取权威解答，或拨打 {settings.contactPhone || "132-1945-5550"}。
+                    获取权威解答，或拨打 {settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone1}。
                   </p>
                 </div>
               )}
@@ -114,10 +115,10 @@ export default async function ServicePage({ params }: PageProps) {
                       在线咨询 →
                     </Link>
                     <a
-                      href={`tel:${(settings.contactPhone || "13219455550").replace(/-/g, "")}`}
+                      href={`tel:${(settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone).replace(/-/g, "")}`}
                       className="inline-flex items-center px-4 py-2 rounded-lg border border-red-200 text-red-700 text-sm font-medium hover:bg-white transition-colors"
                     >
-                      电话咨询：{settings.contactPhone || "132-1945-5550"}
+                      电话咨询：{settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone1}
                     </a>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
@@ -54,7 +55,7 @@ export function Footer({
   footerSlogan = "专注学历提升教育",
   footerDescription = "弘道教育致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。",
   address = "成都市青羊区大石西路12号",
-  contactPhone = "400-001-5729",
+  contactPhone = WEB_SETTING_DEFAULTS.contactPhone,
   contactEmail = "contact@hdaomanager.com",
   icp = "蜀ICP备XXXXXXXX号",
   workHours = "周一至周日 9:00-18:00"

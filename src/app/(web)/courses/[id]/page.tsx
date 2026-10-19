@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Clock, BookOpen, User, ChevronLeft } from "lucide-react";
@@ -51,7 +52,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
     getCourse(id),
     getSettings(),
   ]);
-  const contactPhone = settings.contactPhone || "400-001-5729";
+  const contactPhone = settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone;
 
   if (!course) {
     notFound();

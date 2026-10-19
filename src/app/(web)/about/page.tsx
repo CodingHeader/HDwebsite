@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import { Award, Users, Clock, MapPin, Phone, Mail } from "lucide-react";
 import { getWebSettings as getSettings } from "@/components/web/data/settings";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
@@ -16,7 +17,7 @@ export default async function AboutPage() {
 
   const schoolName = settings.schoolShortName || "弘道教育";
   const companyIntro = settings.companyIntro || `${schoolName}是经教育主管部门批准成立的专业教育培训机构，致力于为专科毕业生提供优质的专升本教育服务。学院自成立以来，始终秉承"弘道励学，知行合一"的办学理念，累计帮助数万名学员成功通过专升本考试。`;
-  const contactPhone = settings.contactPhone || "400-001-5729";
+  const contactPhone = settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone;
   const contactEmail = settings.contactEmail || "contact@hdaomanager.com";
   const address = settings.address || "成都市青羊区大石西路12号";
   const years = settings.yearsOfEstablishment || "26";

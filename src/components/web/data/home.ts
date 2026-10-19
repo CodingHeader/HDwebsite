@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "./setting-defaults";
 /**
  * 首页数据适配层（P02 / REQ-F-014、ADR-024 铺路）
  * 查询与映射口径逐条复刻 main `src/app/(web)/page.tsx`，把 upgrade 模型（可空列、Article.channel 等）
@@ -172,7 +173,7 @@ export async function getHomeData(): Promise<HomeData> {
     })),
     cardShowOverlay: settingsMap.cardShowOverlay !== "false",
     topNoticeText: settingsMap.topNoticeText || "2026成人高考火热报名中",
-    topNoticePhone: settingsMap.topNoticePhone || "132-1945-5550",
+    topNoticePhone: settingsMap.topNoticePhone || WEB_SETTING_DEFAULTS.topNoticePhone,
     entranceNews: articles.map((n) => ({
       id: n.id,
       title: n.title,
@@ -225,6 +226,6 @@ export async function getHomeData(): Promise<HomeData> {
       images: c.images.map((img) => ({ id: img.id, image: img.image, caption: img.caption })),
     })),
     placeholderImage: settingsMap.defaultPlaceholderImage || "/images/logo_card.png",
-    ctaPhone: settingsMap.contactPhone || "400-001-5729",
+    ctaPhone: settingsMap.contactPhone || WEB_SETTING_DEFAULTS.contactPhone,
   };
 }

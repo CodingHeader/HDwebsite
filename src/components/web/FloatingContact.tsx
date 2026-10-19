@@ -1,5 +1,6 @@
 "use client";
 
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import { useState, useEffect } from "react";
 import { MessageCircle, Phone, ArrowUp } from "lucide-react";
 
@@ -18,7 +19,7 @@ interface FloatingContactProps {
  * FLOAT-016~020: Hover效果 (cursor: pointer, scale, 背景加深)
  */
 
-export function FloatingContact({ phone = "132-1945-5550" }: FloatingContactProps) {
+export function FloatingContact({ phone = WEB_SETTING_DEFAULTS.contactPhone1 }: FloatingContactProps) {
   const [showWechat, setShowWechat] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
 

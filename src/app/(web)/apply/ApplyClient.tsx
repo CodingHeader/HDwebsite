@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/components/web/data/useSettings";
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 
 interface Message {
@@ -230,7 +231,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
       let reply = "";
       if (!res.ok || !res.body) {
         const json = await res.json().catch(() => null);
-        reply = json?.message || `AI 暂时不可用（HTTP ${res.status}），请稍后重试或拨打 132-1945-5550。`;
+        reply = json?.message || `AI 暂时不可用（HTTP ${res.status}），请稍后重试或拨打 ${WEB_SETTING_DEFAULTS.contactPhone1}。`;
       } else {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -257,7 +258,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
             else if (event === "error" && typeof payload.message === "string") streamError = payload.message;
           }
         }
-        if (!reply.trim()) reply = streamError || "AI 暂时不可用，请稍后重试或拨打 132-1945-5550。";
+        if (!reply.trim()) reply = streamError || `AI 暂时不可用，请稍后重试或拨打 ${WEB_SETTING_DEFAULTS.contactPhone1}。`;
       }
 
       setMessages((prev) => [
@@ -274,8 +275,8 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
       const isAbort = (err as Error | undefined)?.name === "AbortError";
       console.warn("[chat/completion] failed", err);
       const fallback = isAbort
-        ? "AI 响应超时（可能模型冷启动），已为您转接人工。请拨打 132-1945-5550 或加微信 xgnedu 咨询。"
-        : "网络异常，请稍后重试。如需加急可拨打 132-1945-5550。";
+        ? `AI 响应超时（可能模型冷启动），已为您转接人工。请拨打 ${WEB_SETTING_DEFAULTS.contactPhone1} 或加微信 xgnedu 咨询。`
+        : `网络异常，请稍后重试。如需加急可拨打 ${WEB_SETTING_DEFAULTS.contactPhone1}。`;
       setMessages((prev) => [
         ...prev,
         {
@@ -477,7 +478,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    <span>{getSetting("contactPhone", "132-1945-5550")}</span>
+                    <span>{getSetting("contactPhone", WEB_SETTING_DEFAULTS.contactPhone1)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />

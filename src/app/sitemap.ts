@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { BRAND_DEFAULTS } from "@/config/brand";
 
 export const dynamic = "force-dynamic";
 
-const domain = process.env.APP_DOMAIN ?? "www.hd1994.com";
+const domain = process.env.APP_DOMAIN ?? BRAND_DEFAULTS.siteDomain;
 
 /** 站点地图（REQ-NF-003）：首页 + 已发布文章（C1 后单源，不再双源） */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

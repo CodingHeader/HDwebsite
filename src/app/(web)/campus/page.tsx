@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getWebSettings as getSettings } from "@/components/web/data/settings";
@@ -26,7 +27,7 @@ export default async function CampusPage() {
 
   const schoolShortName = settings.schoolShortName || "弘道教育";
   const address = settings.address || "成都市青羊区大石西路12号";
-  const contactPhone = settings.contactPhone || "400-001-5729";
+  const contactPhone = settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone;
 
   return (
     <div className="min-h-screen bg-gray-50">

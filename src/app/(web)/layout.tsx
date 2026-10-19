@@ -1,3 +1,4 @@
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 import { TopBar } from "@/components/web/TopBar";
 import { Header } from "@/components/web/Header";
 import { Navbar } from "@/components/web/Navbar";
@@ -38,7 +39,7 @@ export default async function WebLayout({
   const welcomeText = settings.welcomeText || `${schoolShortName} 欢迎您!`;
   const siteLogo = settings.siteLogo || "/images/logo.png";
   const siteLogoIcon = settings.siteLogoIcon || "/images/logo_card.png";
-  const contactPhone1 = settings.contactPhone1 || "132-1945-5550";
+  const contactPhone1 = settings.contactPhone1 || WEB_SETTING_DEFAULTS.contactPhone1;
   const contactPhone2 = settings.contactPhone2 || "028-6167-5329";
   const footerSlogan = settings.footerSlogan || "专注学历提升教育";
   const footerDescription = settings.footerDescription || "弘道教育致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。";
