@@ -1,7 +1,8 @@
 /**
  * 设置服务：DB 读取 + Registry 默认值合并 + 加密字段处理
- * - getSettings()：请求级缓存（React cache），公开字段集合
+ * - getPublicSettings()：请求级缓存（React cache），公开字段集合（前台/公开接口用）——B-01 更名
  * - getAllSettings()：后台用，含非公开（解密后脱敏回显由路由层决定）
+ * - getSettings()：{@link getPublicSettings} 的已弃用别名（P08 #5：与 getAllSettings 同名不同义已收敛）——B 线自有文件改用新名，别名在 W2-03 统一移除
  * - setSettings()：校验 key 属于 Registry；isEncrypted 字段落库前加密
  */
 import { cache } from "react";
@@ -13,7 +14,8 @@ import {
   getSettingDefinition,
 } from "@/lib/settings-registry";
 
-export const getSettings = cache(async (): Promise<Record<string, string>> => {
+/** 公开字段集合（请求级缓存；不含 isPublic=false 的键） */
+export const getPublicSettings = cache(async (): Promise<Record<string, string>> => {
   const defaults = getDefaultValues();
   const publicKeys = new Set(getPublicSettingKeys());
   const rows = await prisma.setting.findMany();
@@ -29,6 +31,9 @@ export const getSettings = cache(async (): Promise<Record<string, string>> => {
   }
   return merged;
 });
+
+/** @deprecated 已更名 {@link getPublicSettings}（B-01：语义单一化）；B 线自有文件一律用新名 */
+export const getSettings = getPublicSettings;
 
 export async function getAllSettings(): Promise<Record<string, string>> {
   const defaults = getDefaultValues();

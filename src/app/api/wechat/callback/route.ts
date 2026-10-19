@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { handleCallback, verifySignature } from "@/lib/wechat";
-import { getSettings } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +11,6 @@ export async function GET(request: Request) {
   const timestamp = url.searchParams.get("timestamp") ?? "";
   const nonce = url.searchParams.get("nonce") ?? "";
   const echostr = url.searchParams.get("echostr") ?? "";
-  const settings = await getSettings();
   const account = await prisma.wechatAccount.findFirst({ where: { status: "active" } });
   const token = account?.verifyToken || process.env.WECHAT_MP_VERIFY_TOKEN;
   if (!token) return new Response("token 未配置", { status: 500 });
@@ -28,7 +26,6 @@ export async function POST(request: Request) {
   const signature = url.searchParams.get("signature") ?? "";
   const timestamp = url.searchParams.get("timestamp") ?? "";
   const nonce = url.searchParams.get("nonce") ?? "";
-  const settings = await getSettings();
   const account = await prisma.wechatAccount.findFirst({ where: { status: "active", type: "service" } });
   const token = account?.verifyToken || process.env.WECHAT_MP_VERIFY_TOKEN;
   if (!token || !verifySignature(token, signature, timestamp, nonce)) {
