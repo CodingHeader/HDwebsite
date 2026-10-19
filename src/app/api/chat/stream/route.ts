@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { error, serviceUnavailable, tooManyRequests } from "@/lib/api-response";
 import { gatewayChatStream, recordGatewayFailure } from "@/lib/llm-gateway";
 import { buildChatContext, findScene, recordMessage } from "@/lib/chat-service";
+import { GUARD_FALLBACK_REPLY } from "@/lib/llm/guard";
 import { withApi } from "@/lib/api-handler";
 import { clientIp } from "@/lib/log";
 import { sseFrame, reduceSseError } from "@/lib/llm/sse";
@@ -19,6 +20,35 @@ import { chatRequestSchema } from "@/contracts/chat";
 export const dynamic = "force-dynamic";
 
 const RATE_LIMIT_PER_MINUTE = 10;
+
+/** C-10：敏感词命中时的兜底流（meta → delta(固定回复) → done），不调用模型 */
+function guardFallbackStream(input: {
+  sessionId: string;
+  scene: { code: string | null; name: string | null } | null;
+  reply: string;
+}): Response {
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      controller.enqueue(
+        sseFrame("meta", {
+          scene: { code: input.scene?.code ?? "float", name: input.scene?.name ?? "智能客服" },
+          provider: "guard",
+        })
+      );
+      controller.enqueue(sseFrame("delta", { text: input.reply }));
+      controller.enqueue(sseFrame("done", { conversationId: input.sessionId }));
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
 
 /** POST /api/chat/stream：SSE 流式 AI 客服（公开 + IP 限频 + 敏感词挡板 + chat-service 场景装配） */
 export const POST = withApi(
@@ -48,9 +78,21 @@ export const POST = withApi(
       return error("消息包含不允许的内容", 400);
     }
 
-    // 场景装配 + 知识检索 + 历史裁剪（chat-service，与公众号共用）
+    // 场景装配 + 知识检索 + 历史裁剪 + 风控（chat-service，与公众号共用同一入口）
     const scene = await findScene({ code: sceneCode });
     const ctx = await buildChatContext({ scene, sessionId, message });
+
+    // C-10：风控结果分派（黑名单/限频 → 429；敏感词 → 固定兜底回复，不调用模型）
+    if (ctx.guard.kind === "blacklist") {
+      return tooManyRequests("当前会话已被拒绝，请联系招生老师");
+    }
+    if (ctx.guard.kind === "rate") {
+      return tooManyRequests();
+    }
+    if (ctx.guard.kind === "sensitive") {
+      return guardFallbackStream({ sessionId, scene, reply: GUARD_FALLBACK_REPLY });
+    }
+
     if (!ctx.isRetry) {
       // 重试同一失败问题时不重复写入（ChatWidget 重试去重，P06）
       await recordMessage({ sessionId, channel: "website", role: "user", message, ipAddress: ip, userAgent: request.headers.get("user-agent") });
