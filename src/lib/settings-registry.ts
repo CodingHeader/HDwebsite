@@ -7,6 +7,7 @@
  */
 import type { SettingDefinition } from "@/contracts";
 import { BRAND_DEFAULTS, BRAND_SITE_URL } from "@/config/brand";
+import { WEB_SETTING_DEFAULTS } from "@/components/web/data/setting-defaults";
 
 type RegistryItem = Omit<SettingDefinition, "group"> & { group: string };
 
@@ -32,13 +33,17 @@ function def(
 export const SETTINGS_REGISTRY: RegistryItem[] = [
   // ── site 站点 ──
   def("siteName", "站点名称", "site", "弘道教育"),
-  def("siteDescription", "站点描述", "site", "专注专升本学历提升"),
+  def("siteDescription", "站点描述", "site", "专注专升本教育，助力学历提升"),
   def("siteLogo", "站点 Logo", "site", "/images/logo.png"),
   def("schoolFullName", "学校全称", "site", "弘道教育"),
-  def("schoolShortName", "学校简称", "site", "弘道"),
-  def("welcomeText", "欢迎语", "site", "欢迎来到弘道教育"),
-  def("defaultPlaceholderImage", "默认占位图", "site", "/images/placeholder.svg"),
-  def("siteFavicon", "站点图标", "site", "/favicon.ico", { isPublic: false }),
+  def("schoolShortName", "学校简称", "site", "弘道教育"),
+  def("welcomeText", "欢迎语", "site", "弘道教育 欢迎您!"),
+  // D-04：默认占位图改为仓库内存在的 logo_card.png（原 placeholder.svg 不存在）；main 口径
+  def("defaultPlaceholderImage", "默认占位图", "site", "/images/logo_card.png"),
+  // D-04：Header 左侧图标（main 键对等，默认 logo_card.png）
+  def("siteLogoIcon", "站点小图标", "site", "/images/logo_card.png"),
+  // D-04：站点图标默认空（main 口径；浏览器标签图标由 Next 从 public/favicon-*.png 自动注入）
+  def("siteFavicon", "站点图标", "site", "", { isPublic: false }),
   def("siteUrl", "站点地址", "site", BRAND_SITE_URL, {
     description: "对外链接（邮件、公众号回复、采集 UA）使用的站点根地址；环境变量 APP_ORIGIN 优先",
   }),
@@ -46,48 +51,66 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("topNoticeText", "顶栏公告", "topbar", "2026成人高考火热报名中"),
   def("topNoticePhone", "顶栏电话", "topbar", "132-1945-5550"),
   // ── banner 首页横幅 ──
-  def("bannerBgImage", "横幅背景图", "banner", "/images/banner-bg.jpg"),
-  def("bannerTitle", "横幅标题", "banner", "学历提升 一站式服务"),
-  def("bannerSubtitle", "横幅副标题", "banner", "自考 · 成考 · 开放大学"),
+  // D-04：banner-bg.jpg 在仓库与 main 均不存在，默认空（前台无背景图时走红色渐变）；main 口径
+  def("bannerBgImage", "横幅背景图", "banner", ""),
+  def("bannerTitle", "横幅标题", "banner", "弘道教育"),
+  def("bannerSubtitle", "横幅副标题", "banner", "专注专升本教育，助力学历提升"),
   def("bannerBtnText", "横幅按钮文字", "banner", "立即咨询"),
   def("bannerBtnLink", "横幅按钮链接", "banner", "/apply"),
+  def("bannerOverlayColor", "遮罩颜色", "banner", "#000000"),
   def("bannerOverlayOpacity", "遮罩透明度", "banner", "40", { type: "number" }),
+  def("bannerTextAlign", "文字水平位置", "banner", "center"),
+  def("bannerTextVerticalAlign", "文字垂直位置", "banner", "middle"),
   def("bannerShowContent", "显示横幅内容", "banner", "true", { type: "boolean" }),
+  def("bannerShowTitle", "显示主标题", "banner", "true", { type: "boolean" }),
+  def("bannerShowSubtitle", "显示副标题", "banner", "true", { type: "boolean" }),
+  def("bannerShowBtn", "显示按钮", "banner", "true", { type: "boolean" }),
   // ── stats 统计 ──
   def("yearsOfEstablishment", "办学年限", "stats", "26", { type: "number" }),
   def("totalGraduates", "累计毕业学员", "stats", "11万"),
+  def("statsLabel", "统计标题", "stats", "年培养输送各类人才"),
   def("statsText", "统计文案", "stats", "11年办学经验|10000+服务学员|98%通过率", {
-    description: "竖线分隔的统计项（B 分支合并口径）",
+    description: "竖线分隔的统计项（B 分支合并口径，main 无此键）",
   }),
+  // ── advantage 旧优势项（main 已废弃，保留兼容 DB 数据） ──
+  def("advantage1", "优势1（旧）", "stats", "正规可靠"),
+  def("advantage2", "优势2（旧）", "stats", "国家承认"),
+  def("advantage3", "优势3（旧）", "stats", "管家服务"),
+  def("advantage4", "优势4（旧）", "stats", "终生可查"),
   // ── cards 首页四宫格 ──
   def("cardShowOverlay", "卡片显示遮罩", "cards", "true", { type: "boolean" }),
   def("cardZikaoTitle", "自考卡片标题", "cards", "自考"),
+  def("cardZikaoSubtitle", "自考卡片副标题", "cards", "自助者天助之"),
   def("cardZikaoLink", "自考卡片链接", "cards", "/courses?cat=zikao"),
   def("cardChengkaoTitle", "成考卡片标题", "cards", "成考"),
+  def("cardChengkaoSubtitle", "成考卡片副标题", "cards", "成就学员梦想"),
   def("cardChengkaoLink", "成考卡片链接", "cards", "/courses?cat=chengkao"),
   def("cardKaifangTitle", "开大卡片标题", "cards", "开放大学"),
+  def("cardKaifangSubtitle", "开大卡片副标题", "cards", "终身学习伙伴"),
   def("cardKaifangLink", "开大卡片链接", "cards", "/courses?cat=kaifang"),
   // ── footer 页脚 ──
   def("footerLogo", "页脚 Logo（空回退主 Logo）", "footer", ""),
-  def("footerSlogan", "页脚口号", "footer", "让每一次学历提升都值得信赖"),
-  def("footerDescription", "页脚描述", "footer", "弘道教育专注成人学历提升"),
+  def("footerSlogan", "页脚口号", "footer", "专注学历提升教育"),
+  def("footerDescription", "页脚描述", "footer", "弘道教育致力于为社会人士提供优质的学历提升教育服务，助力学历提升，成就美好未来。"),
   def("workHours", "工作时间", "footer", "周一至周日 9:00-18:00"),
   // ── company 公司 ──
-  def("companySlogan", "公司口号", "company", "厚德弘道 笃行致远"),
-  def("companyIntro", "公司简介", "company", "弘道教育致力于为学员提供专业的学历提升服务。", {
+  def("companySlogan", "公司口号", "company", "弘道教育，百年大计，教育为本！"),
+  def("companyIntro", "公司简介", "company", "弘道教育成立于2004年2月，是一家专注于学历提升、职业证书考试培训的成人教育机构。", {
     type: "text",
   }),
   def("companyVideoUrl", "公司视频地址", "company", ""),
   // ── contact 联系 ──
+  // D-04：contactPhone 保持 BRAND_DEFAULTS（ADR-010 品牌基准，环境可覆盖），
+  // 覆盖循环会跳过 contactPhone，其余 contact 键按 main 快照对齐
   def("contactPhone", "联系电话", "contact", BRAND_DEFAULTS.contactPhone),
-  def("contactPhone1", "备用电话", "contact", ""),
+  def("contactPhone1", "备用电话", "contact", "132-1945-5550"),
   def("contactPhone2", "座机", "contact", "028-6167-5329"),
   def("contactEmail", "联系邮箱", "contact", ""),
   def("address", "地址", "contact", "成都市青羊区大石西路12号"),
   // ── seo ──
-  def("seoTitle", "SEO 标题", "seo", "弘道教育 - 专升本学历提升"),
+  def("seoTitle", "SEO 标题", "seo", "弘道教育 - 专注专升本学历提升"),
   def("seoKeywords", "SEO 关键词", "seo", "专升本,学历提升,成人教育,自考,成考"),
-  def("seoDescription", "SEO 描述", "seo", "弘道教育提供自考、成考、开放大学等学历提升服务。", {
+  def("seoDescription", "SEO 描述", "seo", "弘道教育专注专升本学历提升，提供自考、成考等多种学历提升方案。", {
     type: "text",
   }),
   // ── other ──
@@ -156,6 +179,25 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
     description: "审核通过后延迟多久自动发布；延迟 ≥ 发布前提醒提前量时可先收到提醒邮件再发布",
   }),
 ];
+
+/**
+ * D-04：默认值单一来源——前台相关分组（视觉冻结面）的 defaultValue 从
+ * `WEB_SETTING_DEFAULTS`（main@94dbbbb 快照，见 setting-defaults.ts）覆盖。
+ *
+ * 覆盖范围 = 前台分组（site/topbar/banner/stats/cards/footer/company/contact/seo/other）；
+ * 后台分组（email/wechat-mp/collect/kb/llm/notify/publish）与 upgrade 独有键（statsText）不覆盖。
+ * contactPhone 保持 BRAND_DEFAULTS（ADR-010 品牌基准，环境可覆盖），跳过覆盖。
+ * WEB_SETTING_DEFAULTS 中不存在的键（如 siteUrl、statsText）保持 registry 字面量值。
+ */
+const WEB_GROUPS = new Set(["site", "topbar", "banner", "stats", "cards", "footer", "company", "contact", "seo", "other"]);
+const SKIP_WEB_OVERRIDE = new Set(["contactPhone", "siteUrl", "statsText"]);
+
+for (const item of SETTINGS_REGISTRY) {
+  if (!WEB_GROUPS.has(item.group)) continue;
+  if (SKIP_WEB_OVERRIDE.has(item.key)) continue;
+  const webDefault = WEB_SETTING_DEFAULTS[item.key];
+  if (webDefault !== undefined) item.defaultValue = webDefault;
+}
 
 export function getRegistry(): RegistryItem[] {
   return SETTINGS_REGISTRY;
