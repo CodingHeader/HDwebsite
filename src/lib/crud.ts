@@ -42,6 +42,8 @@ export type CrudSpec = {
   beforeCreate?: (input: AnyRecord, session: SessionUser) => Promise<AnyRecord>;
   /** 更新前钩子 */
   beforeUpdate?: (input: AnyRecord, existing: AnyRecord, session: SessionUser) => Promise<AnyRecord>;
+  /** 删除后钩子（如物理文件清理）；钩子失败不回滚 DB 删除，只记日志 */
+  afterDelete?: (existing: AnyRecord, session: SessionUser) => Promise<void>;
   /** 列表行收尾（如补关联标题）；在分页查询后执行 */
   mapList?: (rows: AnyRecord[]) => Promise<AnyRecord[]>;
   /** 创建数据收尾（authorId 等） */
@@ -204,6 +206,14 @@ export function crudDelete(spec: CrudSpec) {
         ip: clientIp(request),
         userAgent: request.headers.get("user-agent"),
       });
+      if (spec.afterDelete) {
+        try {
+          await spec.afterDelete(existing as AnyRecord, session);
+        } catch (err) {
+          // 物理文件清理失败不回滚 DB 删除，只记日志（D-11 卡要求）
+          console.error(`[crud] ${spec.label} afterDelete 钩子失败（不阻断删除）：`, err);
+        }
+      }
       return success({ id }, `删除${spec.label}成功`);
     },
     {
