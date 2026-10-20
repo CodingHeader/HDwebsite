@@ -21,6 +21,7 @@ const WHITELIST = new Set([
   ".env.example",
   ".env.local",
   ".git",
+  ".github", // D-13：CI workflow（工程文件）
   ".gitattributes",
   ".gitignore",
   ".box-agent",

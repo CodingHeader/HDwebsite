@@ -1,0 +1,82 @@
+name: CI
+
+# D-13（V0.7）：push 到 upgrade 与 指向 upgrade 的 PR 时在 Ubuntu 跑全门禁。
+# - 不跑 visual：参照机是 Windows，Linux 字体渲染会出现 11 处固定差异（V0.4 门禁证据）。
+# - 不含任何 secrets / .env 内容：JWT_SECRET、ENCRYPTION_KEY 由 tests/e2e/global-setup.ts 内部生成
+#   （tests/e2e/fixtures/env.ts 的 e2e-* 值，仅用于 e2e.db，非真实凭据）。
+# - V0.7 追加：密钥扫描步骤 `git grep -nE ...`（排除 docs/**），有输出即失败；不新增依赖。
+on:
+  push:
+    branches: [upgrade]
+  pull_request:
+    branches: [upgrade]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # 测试期固定值；都是 ≥32 位的 e2e 测试占位（非真实凭据），global-setup 会按 e2e.db 覆盖 DATABASE_URL/JWT_SECRET/ENCRYPTION_KEY。
+      # 必要性：Next build 阶段会运行 instrumentation.register() → assertProductionEnv()（NODE_ENV=production 时缺失即 exit 1）。
+      NODE_ENV: test
+      JWT_SECRET: e2e-jwt-secret-0123456789abcdef-0123456789abcdef
+      ENCRYPTION_KEY: e2e-encryption-key-0123456789abcdef-0123456789abcdef
+      DATABASE_URL: file:./prisma/ci-build.db
+      APP_ORIGIN: http://127.0.0.1:6789
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Asset / root guards
+        run: npm run check:assets && npm run check:root
+
+      - name: Secret scan
+        run: |
+          set -o pipefail
+          if git grep -nE '(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|github_pat_|AKIA[0-9A-Z]{16})' -- ':!docs/**' > /tmp/secret-scan.txt; then
+            echo "::error::检测到疑似密钥，CI 失败"; cat /tmp/secret-scan.txt; exit 1
+          fi
+          echo "密钥扫描通过（无命中）"
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E (Linux)
+        run: npm run test:e2e
+
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ github.run_id }}
+          path: .cache/e2e/
+          if-no-files-found: ignore
+          retention-days: 7
