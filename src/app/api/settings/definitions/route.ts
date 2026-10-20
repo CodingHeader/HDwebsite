@@ -1,6 +1,6 @@
 import { getRegistry, getGroups } from "@/lib/settings-registry";
-import { requireAuth } from "@/lib/api-auth";
-import { serverError, success } from "@/lib/api-response";
+import { success } from "@/lib/api-response";
+import { withApi } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -12,22 +12,15 @@ const GROUP_LABELS: Record<string, string> = {
 };
 
 /** GET /api/settings/definitions：Registry 分组定义（驱动后台设置页） */
-export async function GET(request: Request) {
-  const guard = await requireAuth(request, "setting:list");
-  if (!guard.ok) return guard.response;
-  try {
-    const registry = getRegistry();
-    const groups = getGroups().map((g) => ({
-      group: g,
-      label: GROUP_LABELS[g] ?? g,
-      isPublic: registry.filter((d) => d.group === g).every((d) => d.isPublic),
-      items: registry
-        .filter((d) => d.group === g)
-        .map((d) => ({ key: d.key, label: d.label, type: d.type, isEncrypted: d.isEncrypted })),
-    }));
-    return success({ groups }, "获取设置定义成功");
-  } catch (err) {
-    console.error("[settings/definitions] 读取失败：", err);
-    return serverError("获取设置定义失败");
-  }
-}
+export const GET = withApi(async () => {
+  const registry = getRegistry();
+  const groups = getGroups().map((g) => ({
+    group: g,
+    label: GROUP_LABELS[g] ?? g,
+    isPublic: registry.filter((d) => d.group === g).every((d) => d.isPublic),
+    items: registry
+      .filter((d) => d.group === g)
+      .map((d) => ({ key: d.key, label: d.label, type: d.type, isEncrypted: d.isEncrypted })),
+  }));
+  return success({ groups }, "获取设置定义成功");
+}, { permission: "setting:list", errorMessage: "获取设置定义失败", route: "settings/definitions/GET" });

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
-import { serverError, success } from "@/lib/api-response";
+import { success } from "@/lib/api-response";
 import { hasPermission } from "@/lib/auth";
+import { withApi } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +19,8 @@ type MenuNode = {
 };
 
 /** GET /api/manager-menus：后台菜单树（按当前用户权限过滤；Sidebar 表驱动渲染） */
-export async function GET(request: Request) {
-  const guard = await requireAuth(request);
-  if (!guard.ok) return guard.response;
-  const { session } = guard;
-
-  try {
+export const GET = withApi(
+  async ({ session }) => {
     const rows = await prisma.managerMenu.findMany({
       where: { isVisible: true },
       orderBy: [{ level: "asc" }, { sort: "asc" }],
@@ -69,8 +65,6 @@ export async function GET(request: Request) {
         .map((n) => ({ ...n, children: filterTree(n.children) }));
 
     return success(filterTree(tree), "获取后台菜单成功");
-  } catch (err) {
-    console.error("[manager-menus/GET] 查询失败：", err);
-    return serverError("获取后台菜单失败");
-  }
-}
+  },
+  { auth: true, errorMessage: "获取后台菜单失败", route: "manager-menus/GET" }
+);
