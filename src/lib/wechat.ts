@@ -2,7 +2,8 @@
  * 公众号对接模块（SOL-006，ADR-002/013：按官方 API 全量设计开发，凭证后补即插桩生效）
  * - access_token：/cgi-bin/token 缓存 7200s 过期前 5min 刷新（tokenCache JSON-in-String）
  * - 服务器回调验签：node:crypto sha1 排序（GET echostr / POST XML 事件分发）
- * - 发布：图片转永久素材 → draft/add → freepublish/submit（频控 ≥60s、每日上限默认 20）
+ * - 发布：图片转永久素材 → 正文外链图转存(uploadimg) → draft/add → freepublish/submit + get 轮询
+ *   （频控 ≥60s、每日上限默认 20；节流抛 ChannelThrottledError 由 executor 重排期）
  * - AI 客服：5s 内被动回复话术 + 48h 客服消息接口异步补发（ADR-006）；P06 起答案走 chat-service
  *   （账号绑定场景的提示词 + 知识库 + 会话历史 + 场景模型），兜底文案取 Setting wechatFallbackReply
  * 凭证未配置时所有对外调用返回明确 errMsg（不抛裸错），真实联调在 M4。
@@ -16,6 +17,7 @@ import { chatOnce, findScene } from "@/lib/chat-service";
 import { decryptField } from "@/lib/crypto";
 import { httpFetch } from "@/lib/http-client";
 import { parseJsonField } from "@/lib/json-field";
+import { ChannelThrottledError, isThrottledError } from "@/lib/channels/errors";
 import type { WechatAccount, ContentItem } from ".prisma/client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -283,21 +285,32 @@ export async function getPublishResult(
   return { status: "timeout", errMsg: `轮询 ${maxAttempts} 次仍未得到发布结果` };
 }
 
-export type WechatPublishResult = { ok: boolean; mediaId?: string; publishId?: string; url?: string; errMsg?: string };
+export type WechatPublishResult = { ok: boolean; mediaId?: string; publishId?: string; url?: string; errMsg?: string; throttled?: boolean };
+
+/**
+ * 节流检查（跨进程）：距 ContentChannel(wechat) 最近一次 publishedAt 不足 PUBLISH_MIN_INTERVAL_MS 时
+ * 抛 ChannelThrottledError（语义化错误，executor 识别后重排期不增 attemptCount、不写 failed 渠道行）。
+ */
+export async function assertWechatInterval(accountId: number): Promise<void> {
+  const lastPub = await prisma.contentChannel.findFirst({
+    where: { channel: "wechat", accountId, status: "published", publishedAt: { not: null } },
+    orderBy: { publishedAt: "desc" },
+  });
+  if (!lastPub?.publishedAt) return;
+  const elapsed = Date.now() - lastPub.publishedAt.getTime();
+  if (elapsed < PUBLISH_MIN_INTERVAL_MS) {
+    const remainingMs = PUBLISH_MIN_INTERVAL_MS - elapsed;
+    throw new ChannelThrottledError(
+      `公众号发布节流：距上次发布不足 60 秒（还需 ${Math.ceil(remainingMs / 1000)}s）`,
+      remainingMs
+    );
+  }
+}
 
 export async function publishDraftToWechat(account: WechatAccount, secret: string, item: ContentItem): Promise<WechatPublishResult> {
   try {
     // 同账号发布节流 ≥60s：以 ContentChannel(wechat) 最近一次 publishedAt 为判据，持久化故跨进程有效
-    const lastPub = await prisma.contentChannel.findFirst({
-      where: { channel: "wechat", accountId: account.id, status: "published", publishedAt: { not: null } },
-      orderBy: { publishedAt: "desc" },
-    });
-    if (lastPub?.publishedAt) {
-      const elapsed = Date.now() - lastPub.publishedAt.getTime();
-      if (elapsed < PUBLISH_MIN_INTERVAL_MS) {
-        return { ok: false, errMsg: `公众号发布节流：距上次发布不足 60 秒（${Math.round(elapsed / 1000)}s）` };
-      }
-    }
+    await assertWechatInterval(account.id);
     const settings = await getAllSettings();
     // 每日上限（Q10 口径默认 20）
     const dailyCount = await prisma.contentChannel.count({
@@ -333,6 +346,7 @@ export async function publishDraftToWechat(account: WechatAccount, secret: strin
     }
     return { ok: true, mediaId: draftId };
   } catch (err) {
+    if (isThrottledError(err)) return { ok: false, throttled: true, errMsg: err.message };
     return { ok: false, errMsg: err instanceof Error ? err.message : String(err) };
   }
 }

@@ -2,11 +2,14 @@
  * 公众号渠道实现（B-05，ADR-030）：委托公众号模块发布草稿（SOL-006），
  * 结果写 ContentChannel(wechat)；失败复用既有 failed 渠道行防重试堆积。
  * B-07：发布成功后由公众号模块轮询 freepublish/get 回写 externalUrl。
+ * 节流（60s）：publishDraftToWechat 返回 throttled 时抛 WechatThrottledError，
+ * executor 识别后重排期（不增 attemptCount、不写 failed ContentChannel）。
  *
  * 行为等价迁移自 publish-executor.ts 的 publishToWechat。
  */
 import { prisma } from "@/lib/prisma";
 import { getWechatAccountSecret, publishDraftToWechat } from "@/lib/wechat";
+import { ChannelThrottledError } from "./errors";
 import type { PublishJob } from ".prisma/client";
 
 export async function publishToWechat(job: PublishJob): Promise<"published" | "failed"> {
@@ -21,6 +24,11 @@ export async function publishToWechat(job: PublishJob): Promise<"published" | "f
   if (!secret) throw new Error("AppSecret 解密失败，请在后台重新保存凭证");
 
   const result = await publishDraftToWechat(account, secret, item);
+  // 节流：抛语义错误，executor 识别后重排期（不写 failed ContentChannel，不增 attemptCount）
+  if (result.throttled) {
+    const m = result.errMsg?.match(/还需 (\d+)s/);
+    throw new ChannelThrottledError(result.errMsg ?? "公众号发布节流", m ? Number(m[1]) * 1000 : 60_000);
+  }
   // 失败复用既有 failed 渠道行，防重试堆积重复记录（P2-8）
   const existingFailed = await prisma.contentChannel.findFirst({
     where: { itemId: item.id, channel: "wechat", accountId: account.id, status: "failed" },

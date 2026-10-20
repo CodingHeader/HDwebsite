@@ -11,6 +11,7 @@ import { notifyBeforePublish, notifyEvent } from "@/lib/notify-gateway";
 import { managerLink } from "@/lib/app-origin";
 import { canTransitionPublishJob } from "@/contracts/events";
 import { getChannel } from "@/lib/channels/registry";
+import { isThrottledError } from "@/lib/channels/errors";
 import type { PublishJob } from ".prisma/client";
 
 const MAX_ATTEMPTS = 3;
@@ -43,6 +44,11 @@ export async function executePublishJob(job: PublishJob): Promise<"published" | 
     }
     return result;
   } catch (err) {
+    // B-07：公众号发布节流（距上次发布不足 60s）→ 重排期，不算失败
+    if (isThrottledError(err)) {
+      await markThrottled(job, err.message, err.remainingMs);
+      return "failed"; // 保持 executor 返回值契约（published/failed）
+    }
     await markFailed(job, err instanceof Error ? err.message : String(err));
     return "failed";
   }
@@ -68,6 +74,24 @@ async function markFailed(job: PublishJob, errMsg: string): Promise<void> {
       link: await managerLink("publish-jobs"),
     });
   }
+}
+
+/**
+ * 节流重排（B-07，P2-1 修复）：距上次发布不足 60s 时不视为失败——
+ * 保持 scheduled，推迟到节流窗口后，attemptCount 不变（不累计失败）。
+ */
+async function markThrottled(job: PublishJob, errMsg: string, remainingMs: number): Promise<void> {
+  const delayMs = Math.max(remainingMs + 5_000, 60_000); // 至少 60s，落在窗口之后
+  await prisma.publishJob.update({
+    where: { id: job.id },
+    data: {
+      status: "scheduled",
+      scheduledAt: new Date(Date.now() + delayMs),
+      attemptCount: job.attemptCount, // 不累计
+      errMsg,
+    },
+  });
+  console.warn(`[publish] 任务 #${job.id} 公众号发布节流，重排到 ${new Date(Date.now() + delayMs).toISOString()}：${errMsg}`);
 }
 
 /** publish.scan 任务：到点任务逐个执行（串行，防频控） */
