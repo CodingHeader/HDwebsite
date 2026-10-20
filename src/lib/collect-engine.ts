@@ -1,62 +1,34 @@
 /**
  * 采集引擎（SOL-004）：可配置源抓取 → 清洗去重 → 审核队列
- * - 类型：html（cheerio + 每源 CSS 选择器）/ rss（rss-parser）；限速 ≥2s、超时可配
+ * - 类型：html / rss（统一经 `collect/parsers.ts` 注册表 getParser(type)，禁止业务代码硬判断类型）
  * - 去重：urlHash（sha1）唯一约束为主；标题相似度（bigram Jaccard ≥0.9）辅助
- * - 图片默认转存本地（Q10-D5）：下载 → uploads + Media 记录，正文链接替换，失败留原链
+ * - 图片默认转存本地（Q10-D5）：流式下载 → 超过 COLLECT_IMAGE_MAX_SIZE 立即中止留原链
  * - 产物默认 status=new 待人工审核（RISK-005）；失败 → collect_failed 邮件事件
- * - P06：源 autoToKb（默认 true）→ 新条目立即入本地知识库并进入远端同步队列（kb-sync，P12 接 Coze）；
- *   源 autoApprove（默认 false）→ 视为 SuperAdmin 预授权：直接生成 approved 内容 + OperationLog(review/auto_approve)
- *   + 按设置自动建发布任务
+ * - D-12：批次超时（REQ-NF-001 §3 AC3）—— 单个源运行超过 COLLECT_BATCH_TIMEOUT_MS（30 分钟）中止，
+ *   tasks 标记 collect_failed 并触发 notifyCollectFailed（外层 jobs/index.ts 统一处理）。
  */
 import crypto from "node:crypto";
 import * as cheerio from "cheerio";
-import Parser from "rss-parser";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
-import { uploadsDir } from "@/lib/storage";
+import { uploadsDir, COLLECT_IMAGE_MAX_SIZE, COLLECT_IMAGE_TYPES } from "@/lib/storage";
+import { getParser, parseRule, fetchHtmlDetails, type ParsedItem, type ParserRule } from "@/lib/collect/parsers";
 import { ingestCollectItem } from "@/lib/kb-sync";
 import { logOperation } from "@/lib/log";
 import { markdownExcerpt } from "@/lib/markdown";
 import { scheduleAutoPublish } from "@/lib/content-workflow";
 import { appOrigin } from "@/lib/app-origin";
+import { notifyCollectFailed } from "@/lib/notify-gateway";
 import type { CollectSource } from ".prisma/client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type ParsedItem = { title: string; url: string; contentMd?: string; publishTime?: Date };
+/** 单个源批次最大运行时长（30 分钟）；超时中止并标记失败（D-12） */
+export const COLLECT_BATCH_TIMEOUT_MS = 30 * 60 * 1000;
 
-
-type ParserRule = {
-  listSelector?: string;
-  titleSelector?: string;
-  linkSelector?: string;
-  timeSelector?: string;
-  contentSelector?: string;
-};
-
-function parseRule(source: CollectSource): ParserRule {
-  try {
-    return source.parser ? (JSON.parse(source.parser) as ParserRule) : {};
-  } catch {
-    return {};
-  }
-}
-
-async function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-async function fetchText(url: string, timeoutMs: number, ua: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: { "User-Agent": ua, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.text();
-}
 
 /** 标题相似度（字符 bigram Jaccard） */
 export function titleSimilarity(a: string, b: string): number {
@@ -98,18 +70,34 @@ function htmlToMarkdown(html: string, baseUrl: string): string {
   return parts.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/** 图片转存：下载 → uploads + Media 记录；返回新 URL（失败返回 null 留原链） */
+/**
+ * 图片转存：流式下载（累计超过 COLLECT_IMAGE_MAX_SIZE 立即中止）→ uploads + Media 记录；
+ * 返回新 URL（失败/超限返回 null 留原链）。
+ */
 async function transferImage(imageUrl: string, timeoutMs: number, ua: string): Promise<string | null> {
   try {
     const res = await fetch(imageUrl, { headers: { "User-Agent": ua }, signal: AbortSignal.timeout(timeoutMs) });
     if (!res.ok) return null;
-    const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.startsWith("image/")) return null;
-    const buffer = Buffer.from(await res.arrayBuffer());
-    if (buffer.length > 10 * 1024 * 1024) return null;
-    const extMap: Record<string, string> = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif" };
-    const ext = extMap[contentType.split(";")[0]];
+    const contentType = (res.headers.get("content-type") ?? "").split(";")[0].trim();
+    const ext = COLLECT_IMAGE_TYPES[contentType];
     if (!ext) return null;
+    if (!res.body) return null;
+    // 流式累计：超过上限立即中止（D-12：不把超大图整体驻留内存）
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > COLLECT_IMAGE_MAX_SIZE) {
+        await reader.cancel().catch(() => undefined);
+        return null;
+      }
+      chunks.push(value);
+    }
+    if (total === 0) return null;
+    const buffer = Buffer.concat(chunks);
     const now = new Date();
     const relDir = `collect/${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
     const uploadRoot = uploadsDir();
@@ -118,7 +106,7 @@ async function transferImage(imageUrl: string, timeoutMs: number, ua: string): P
     const filename = `${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}${ext}`;
     const relPath = `${relDir}/${filename}`;
     writeFileSync(path.resolve(uploadRoot, relPath), buffer);
-    if (contentType.startsWith("image/") && contentType !== "image/gif") {
+    if (contentType !== "image/gif") {
       await sharp(path.resolve(uploadRoot, relPath)).resize({ width: 1200, withoutEnlargement: true }).toBuffer()
         .then((out) => writeFileSync(path.resolve(uploadRoot, relPath), out))
         .catch(() => undefined);
@@ -149,7 +137,36 @@ async function transferImagesInMarkdown(md: string, timeoutMs: number, ua: strin
   return out;
 }
 
-/** 单源执行：抓列表 → 逐条抓正文 → 去重入库（status=new） */
+/** 短延时（保留在引擎内，供限速使用） */
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * 带超时 + 可选外部 AbortSignal 的 fetch（D-12：批次超时可中断）。
+ * 超时优先用内部 AbortController；外部 signal 仅注册一次，避免重复 listener 泄漏。
+ */
+async function fetchWithSignal(url: string, timeoutMs: number, ua: string, outer?: AbortSignal): Promise<string> {
+  const inner = new AbortController();
+  const timeoutId = setTimeout(() => inner.abort(new Error(`请求超时 ${timeoutMs}ms`)), timeoutMs);
+  const onAbort = () => inner.abort();
+  outer?.addEventListener("abort", onAbort, { once: true });
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": ua, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
+      signal: inner.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.text();
+  } finally {
+    clearTimeout(timeoutId);
+    outer?.removeEventListener("abort", onAbort);
+  }
+}
+
+/** 单源执行：抓列表 → 逐条抓正文 → 去重入库（status=new）
+ * D-12：批次超时 COLLECT_BATCH_TIMEOUT_MS（30 分钟）→ 中止并标记 collect_failed + 触发通知
+ */
 export async function runSource(source: CollectSource): Promise<{ newCount: number; skipCount: number; fetched: number; failed: number }> {
   const settings = await getSettings();
   const origin = await appOrigin();
@@ -159,48 +176,34 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
   const rule = parseRule(source);
   const task = await prisma.collectTask.create({ data: { sourceId: source.id, status: "running" } });
 
+  // 批次超时守卫：到点 abort，让进行中的 fetch 抛 AbortError，外层标记 collect_failed
+  const timer = new AbortController();
+  const deadline = Date.now() + COLLECT_BATCH_TIMEOUT_MS;
+  const deadlineTimer = setInterval(() => {
+    if (Date.now() > deadline) timer.abort();
+  }, 5000);
+  deadlineTimer.unref?.();
+
   let items: ParsedItem[] = [];
   try {
-    if (source.type === "rss") {
-      const parser = new Parser({ timeout: timeoutMs, headers: { "User-Agent": ua } });
-      const feed = await parser.parseURL(source.url);
-      items = feed.items
-        .filter((i) => i.title && i.link)
-        .map((i) => ({ title: i.title!, url: i.link!, contentMd: i.contentSnippet ?? undefined, publishTime: i.isoDate ? new Date(i.isoDate) : undefined }));
-    } else {
-      const html = await fetchText(source.url, timeoutMs, ua);
-      const $ = cheerio.load(html);
-      const listSel = rule.listSelector ?? "ul.list li";
-      const entries: { title: string; url: string; time?: string }[] = [];
-      $(listSel).each((_, el) => {
-        const node = $(el);
-        const a = node.find(rule.linkSelector ?? "a").first();
-        const href = a.attr("href");
-        const title = (node.find(rule.titleSelector ?? "a").attr("title") || a.text() || "").trim();
-        if (!href || !title) return;
-        const abs = new URL(href, source.url).href;
-        entries.push({ title, url: abs, time: rule.timeSelector ? node.find(rule.timeSelector).first().text().trim() : undefined });
+    const parser = getParser(source.type);
+    items = await parser({
+      source: { type: source.type, url: source.url, parser: source.parser },
+      timeoutMs,
+      ua,
+      fetchText: (url) =>
+        fetchWithSignal(url, timeoutMs, ua, timer.signal),
+    });
+    if (source.type === "html") {
+      items = await fetchHtmlDetails(items, {
+        timeoutMs,
+        ua,
+        rule,
+        rateLimitMs,
+        sleep,
+        fetchText: (url) => fetchWithSignal(url, timeoutMs, ua, timer.signal),
+        toMarkdown: htmlToMarkdown,
       });
-      // 正文抓取（限速）
-      for (const entry of entries.slice(0, 20)) {
-        await sleep(rateLimitMs);
-        try {
-          const detailHtml = await fetchText(entry.url, timeoutMs, ua);
-          const $$ = cheerio.load(detailHtml);
-          const contentSel = rule.contentSelector ?? ".content, .article-content, #content, main";
-          const contentHtml = $$(contentSel).first().html() ?? detailHtml;
-          const parsedTime = entry.time ? new Date(entry.time) : undefined;
-          const validTime = parsedTime && !Number.isNaN(parsedTime.getTime()) ? parsedTime : undefined;
-          items.push({
-            title: entry.title,
-            url: entry.url,
-            contentMd: htmlToMarkdown(contentHtml, entry.url),
-            publishTime: validTime,
-          });
-        } catch {
-          items.push({ title: entry.title, url: entry.url });
-        }
-      }
     }
 
     let newCount = 0;
@@ -208,6 +211,7 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
     let failed = 0;
     const appDomain = process.env.APP_DOMAIN ? `https://${process.env.APP_DOMAIN}` : origin;
     for (const item of items) {
+      if (timer.signal.aborted) throw new Error("采集批次超时（30 分钟）");
       const urlHash = crypto.createHash("sha1").update(item.url).digest("hex");
       const exists = await prisma.collectItem.findUnique({ where: { urlHash } });
       if (exists) {
