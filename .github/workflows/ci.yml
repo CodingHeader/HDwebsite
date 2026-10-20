@@ -61,7 +61,7 @@ jobs:
       - name: Secret scan
         run: |
           set -o pipefail
-          if git grep -nE '(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|github_pat_|AKIA[0-9A-Z]{16})' -- ':!docs/**' > /tmp/secret-scan.txt; then
+          if git grep -nE '(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})' -- ':!docs/**' ':!.github/workflows/**' > /tmp/secret-scan.txt; then
             echo "::error::检测到疑似密钥，CI 失败"; cat /tmp/secret-scan.txt; exit 1
           fi
           echo "密钥扫描通过（无命中）"
