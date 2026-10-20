@@ -1,11 +1,10 @@
-import { getSession } from "@/lib/auth";
-import { success, unauthorized } from "@/lib/api-response";
+import { success } from "@/lib/api-response";
+import { withApi } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/auth/me：当前登录用户（含角色权限） */
-export async function GET(request: Request) {
-  const session = await getSession(request);
-  if (!session) return unauthorized("未提供认证令牌");
-  return success(session, "获取成功");
-}
+/** GET /api/auth/me：当前登录用户（含角色权限；仅要求登录） */
+export const GET = withApi(
+  async ({ session }) => success(session, "获取成功"),
+  { auth: true, errorMessage: "获取当前用户失败", route: "auth/me/GET" }
+);

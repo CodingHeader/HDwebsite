@@ -1,9 +1,10 @@
 import { crudList } from "@/lib/crud";
 import { crudSpecs } from "@/lib/crud-resources";
-import { created, error, serverError, validationError } from "@/lib/api-response";
+import { created } from "@/lib/api-response";
 import { clientIp } from "@/lib/log";
 import { prisma } from "@/lib/prisma";
 import { userActionCreateSchema } from "@/contracts";
+import { parseBody, withApi } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -11,18 +12,9 @@ export const dynamic = "force-dynamic";
 export const GET = crudList(crudSpecs["user-actions"]);
 
 /** POST：公开埋点写入（ASM-008 最小埋点：表单提交 + 关键页浏览）——M1 口径保留 */
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return error("请求体不是合法 JSON");
-  }
-  const parsed = userActionCreateSchema.safeParse(body);
-  if (!parsed.success) return validationError(parsed.error.issues);
-  const input = parsed.data;
-
-  try {
+export const POST = withApi(
+  async ({ request }) => {
+    const input = await parseBody(request, userActionCreateSchema);
     const action = await prisma.userAction.create({
       data: {
         actionType: input.actionType,
@@ -37,8 +29,6 @@ export async function POST(request: Request) {
       },
     });
     return created({ id: action.id }, "已记录");
-  } catch (err) {
-    console.error("[user-actions/POST] 写入失败：", err);
-    return serverError("记录失败");
-  }
-}
+  },
+  { errorMessage: "记录失败", route: "user-actions/POST" }
+);

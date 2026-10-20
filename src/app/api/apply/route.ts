@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { created, error, serverError } from "@/lib/api-response";
-import { z } from "zod";
+import { created } from "@/lib/api-response";
 import { clientIp } from "@/lib/log";
+import { ApiHttpError, withApi } from "@/lib/api-handler";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
@@ -13,23 +14,22 @@ const applySchema = z.object({
   sessionId: z.string().max(64).optional(),
 });
 
-/** POST /api/apply：公开报名提交（防刷频控：同 IP 每分钟 5 次） */
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return error("请求体不是合法 JSON");
-  }
-  const parsed = applySchema.safeParse(body);
-  if (!parsed.success) {
-    return error(parsed.error.issues[0]?.message ?? "参数错误", 400);
-  }
-  const input = parsed.data;
-  const ip = clientIp(request);
+/** POST /api/apply：公开报名提交（防刷频控：同 IP 每分钟 5 次；全站每分钟 100 条） */
+export const POST = withApi(
+  async ({ request }) => {
+    // 公开路由：保留 M1 文案「请填写姓名/有效电话」——不用 parseBody 默认「参数校验失败」
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      throw new ApiHttpError(400, "请求体不是合法 JSON");
+    }
+    const parsed = applySchema.safeParse(body);
+    if (!parsed.success) throw new ApiHttpError(400, parsed.error.issues[0]?.message ?? "参数错误");
+    const input = parsed.data;
+    const ip = clientIp(request);
 
-  try {
-    // 简易频控：1 分钟内同 IP 超过 5 条提交则拒绝
+    // 简易频控：1 分钟内同 IP 超过 5 条提交则拒绝（沿用 M1 口径与中文文案）
     const recent = await prisma.student.count({
       where: { createdAt: { gte: new Date(Date.now() - 60_000) } },
     });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       where: { actionType: "submit", actionTarget: "apply", ipAddress: ip, createdAt: { gte: new Date(Date.now() - 60_000) } },
     });
     if (ipRecent >= 5 || recent >= 100) {
-      return error("提交过于频繁，请稍后再试", 400);
+      throw new ApiHttpError(400, "提交过于频繁，请稍后再试");
     }
 
     const student = await prisma.student.create({
@@ -63,9 +63,6 @@ export async function POST(request: Request) {
     }).catch(() => undefined);
 
     return created({ id: student.id }, "报名提交成功");
-  } catch (err) {
-    console.error("[apply] 提交失败：", err);
-    return serverError("提交失败");
-  }
-}
-
+  },
+  { errorMessage: "提交失败", route: "apply/POST" }
+);

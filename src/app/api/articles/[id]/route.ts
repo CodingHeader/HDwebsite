@@ -117,8 +117,8 @@ export const PUT = withApi<{ id: string }>(
         "更新文章成功"
       );
     } catch (err) {
-      // 保持迁移前契约：P2002/P2003 → 400（同文案）；其余错误原样上抛，交给 withApi 映射 / system_error 告警
-      if (isPrismaConflictCode(err)) throw new ApiHttpError(400, "数据校验失败：字段重复或关联数据不存在");
+      // ADR-028（B-03 统一）：P2002/P2003 交由 withApi 全局映射（409/400），不再本地 400
+      console.error("[articles/PUT:id] 更新失败：", err);
       throw err;
     }
   },
@@ -184,13 +184,3 @@ export const PATCH = withApi<{ id: string }>(
   { permission: "article:publish", errorMessage: "切换文章状态失败", route: "articles/PATCH:id" }
 );
 
-/** 是否为 Prisma 唯一/外键冲突错误（P2002/P2003） */
-function isPrismaConflictCode(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    typeof (err as { code: string }).code === "string" &&
-    ["P2002", "P2003"].includes((err as { code: string }).code)
-  );
-}

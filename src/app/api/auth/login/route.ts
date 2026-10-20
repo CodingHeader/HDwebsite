@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { comparePassword, claimsFromSession, signToken, toSessionUser } from "@/lib/auth";
-import { error, success, validationError } from "@/lib/api-response";
+import { success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { loginRequestSchema } from "@/contracts";
+import { ApiHttpError, parseBody, withApi } from "@/lib/api-handler";
 import type { Role, User } from ".prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -19,30 +20,22 @@ function isRateLimited(ip: string): boolean {
 }
 
 /** POST /api/auth/login：用户名密码 → JWT（7d） */
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return error("请求体不是合法 JSON");
-  }
-  const parsed = loginRequestSchema.safeParse(body);
-  if (!parsed.success) return validationError(parsed.error.issues);
-  const { username, password } = parsed.data;
-  if (isRateLimited(clientIp(request) ?? "unknown")) {
-    return error("尝试过于频繁，请稍后再试", 400);
-  }
+export const POST = withApi(
+  async ({ request }) => {
+    const { username, password } = await parseBody(request, loginRequestSchema);
+    if (isRateLimited(clientIp(request) ?? "unknown")) {
+      throw new ApiHttpError(400, "尝试过于频繁，请稍后再试");
+    }
 
-  try {
     const user = (await prisma.user.findUnique({
       where: { username },
       include: { role: true },
     })) as (User & { role: Role }) | null;
     if (!user || !user.isActive || user.status !== "active") {
-      return error("用户名或密码错误", 400);
+      throw new ApiHttpError(400, "用户名或密码错误");
     }
     const ok = await comparePassword(password, user.passwordHash);
-    if (!ok) return error("用户名或密码错误", 400);
+    if (!ok) throw new ApiHttpError(400, "用户名或密码错误");
 
     const session = toSessionUser(user, user.role);
     const token = signToken(claimsFromSession(session));
@@ -65,8 +58,6 @@ export async function POST(request: Request) {
     });
 
     return success({ token, user: session }, "登录成功");
-  } catch (err) {
-    console.error("[auth/login] 登录失败：", err);
-    return error("登录失败", 500, 500);
-  }
-}
+  },
+  { errorMessage: "登录失败", route: "auth/login/POST" }
+);

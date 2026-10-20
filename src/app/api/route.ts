@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { success } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 
-/** 根探活（原项目口径） */
+/** 根探活（原项目口径；改用契约信封 success()） */
 export async function GET() {
-  return NextResponse.json({ code: 200, data: { ok: true }, message: "HDwebsite API" });
+  return success({ ok: true }, "HDwebsite API");
 }

@@ -1,31 +1,27 @@
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
-import { getSession } from "@/lib/auth";
-import { created, error, serverError, success, validationError } from "@/lib/api-response";
+import { created, success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { applyContentHooks } from "@/lib/markdown";
 import { uniqueSlug } from "@/lib/slug";
 import { articleCreateSchema, articleListQuerySchema } from "@/contracts";
+import { ApiHttpError, parseBody, parseQuery, withApi } from "@/lib/api-handler";
 import type { Prisma } from ".prisma/client";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/articles：分页列表（keyword OR 模糊；排序 isTop → publishedAt → createdAt） */
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const parsedQuery = articleListQuerySchema.safeParse(
-    Object.fromEntries(url.searchParams.entries())
-  );
-  if (!parsedQuery.success) return validationError(parsedQuery.error.issues);
-  const { page, limit, keyword, channel, categoryId, status, tagId } = parsedQuery.data;
+/** GET /api/articles：分页列表（keyword OR 模糊；排序 isTop → publishedAt → createdAt）
+ * 未登录（或无 article:list 权限）一律只看已发布内容，防草稿泄露（auth: optional）
+ */
+export const GET = withApi(
+  async ({ request, session }) => {
+    const { page, limit, keyword, channel, categoryId, status, tagId } = parseQuery(request, articleListQuerySchema);
 
-  try {
-    // 未登录（或无 article:list 权限）一律只看已发布内容，防草稿泄露
-    const session = await getSession(request);
     const canReadAll =
       !!session &&
-      ((session.role.isSuper || session.role.permissions.includes("article:list") ||
-        session.role.permissions.includes("article:*") || session.role.permissions.includes("*")));
+      (session.role.isSuper ||
+        session.role.permissions.includes("article:list") ||
+        session.role.permissions.includes("article:*") ||
+        session.role.permissions.includes("*"));
     const where: Prisma.ArticleWhereInput = {};
     if (!canReadAll) {
       where.status = "published";
@@ -65,31 +61,18 @@ export async function GET(request: Request) {
       },
       "获取文章列表成功"
     );
-  } catch (err) {
-    console.error("[articles/GET] 查询失败：", err);
-    return serverError("获取文章列表失败");
-  }
-}
+  },
+  { auth: "optional", errorMessage: "获取文章列表失败", route: "articles/GET" }
+);
 
 /** POST /api/articles：创建（鉴权 article:create；excerpt/cover 入库钩子） */
-export async function POST(request: Request) {
-  const guard = await requireAuth(request, "article:create");
-  if (!guard.ok) return guard.response;
+export const POST = withApi(
+  async ({ request, session }) => {
+    const input = await parseBody(request, articleCreateSchema);
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return error("请求体不是合法 JSON");
-  }
-  const parsed = articleCreateSchema.safeParse(body);
-  if (!parsed.success) return validationError(parsed.error.issues);
-  const input = parsed.data;
-
-  try {
     if (input.slug) {
       const exists = await prisma.article.findUnique({ where: { slug: input.slug } });
-      if (exists) return error("slug 已存在", 400);
+      if (exists) throw new ApiHttpError(400, "slug 已存在");
     }
     const slug =
       input.slug ??
@@ -104,6 +87,7 @@ export async function POST(request: Request) {
       coverImage: input.coverImage ?? null,
     });
 
+    // withApi 全局 ADR-028：P2002 → 409、P2003 → 400（不再自兜；B-02 遗留的 400 语义在此统一）
     const article = await prisma.article.create({
       data: {
         title: input.title,
@@ -113,7 +97,7 @@ export async function POST(request: Request) {
         channel: input.channel,
         excerpt: hooks.excerpt,
         coverImage: hooks.coverImage,
-        authorId: guard.session.id,
+        authorId: session.id,
         categoryId: input.categoryId ?? null,
         status: input.status,
         isTop: input.isTop,
@@ -131,8 +115,8 @@ export async function POST(request: Request) {
     });
 
     await logOperation({
-      userId: guard.session.id,
-      username: guard.session.username,
+      userId: session.id,
+      username: session.username,
       module: "article",
       action: "create",
       title: input.title,
@@ -145,22 +129,6 @@ export async function POST(request: Request) {
       { ...article, tags: article.tags.map((t) => t.tag) },
       "创建文章成功"
     );
-  } catch (err) {
-    console.error("[articles/POST] 创建失败：", err);
-    return prismaKnownErrorTo400(err) ?? serverError("创建文章失败");
-  }
-}
-
-/** Prisma 已知请求错误 → 400 响应（唯一约束/外键约束等业务性失败） */
-function prismaKnownErrorTo400(err: unknown): Response | null {
-  if (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    typeof (err as { code: string }).code === "string" &&
-    ["P2002", "P2003"].includes((err as { code: string }).code)
-  ) {
-    return error("数据校验失败：字段重复或关联数据不存在", 400);
-  }
-  return null;
-}
+  },
+  { permission: "article:create", errorMessage: "创建文章失败", route: "articles/POST" }
+);
