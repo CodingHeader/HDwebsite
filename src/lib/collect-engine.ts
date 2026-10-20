@@ -185,7 +185,10 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
   const timer = new AbortController();
   const deadline = Date.now() + COLLECT_BATCH_TIMEOUT_MS;
   const deadlineTimer = setInterval(() => {
-    if (Date.now() > deadline) timer.abort();
+    if (Date.now() > deadline) {
+      clearInterval(deadlineTimer);
+      timer.abort();
+    }
   }, 5000);
   deadlineTimer.unref?.();
 
