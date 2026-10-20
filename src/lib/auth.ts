@@ -55,7 +55,7 @@ export function toSessionUser(user: User, role: Role): SessionUser {
       id: role.id,
       name: role.name,
       slug: role.slug,
-      permissions,
+      permissions: safePerms,
       isSuper: role.isSuper,
     },
   });

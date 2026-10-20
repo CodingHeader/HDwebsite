@@ -24,7 +24,7 @@
 3. **`uploadThumb` 的封面图下载**：原来手动 `if (!res.ok) return null`；`httpFetch` + `throwOnHttpError: false` 保留该语义（`res.ok` 判断不抛错）。
 4. **`parseTokenCache` 的 `parseJsonField`**：原代码要求 `accessToken` 为 string、`expiresAt` 为 number，否则返回 null；`parseJsonField<{accessToken?: unknown; expiresAt?: unknown} | null>` 之后同样做 typeof 校验，行为等价（空/null/非法 JSON → null）。
 5. **notify-gateway 的组过滤**：原代码 `try { JSON.parse(rule.recipientGroups); if Array → groups } catch { 默认 ["publish"] }`；`parseJsonField<string[] | null>(rule.recipientGroups, null)` 后同样 `Array.isArray` 检查。接收人 `r.groups` 同理，`parseJsonField<unknown>(r.groups, null)` + `Array.isArray(gs)`。
-6. **auth 的 permissions 解析**：原代码 catch → `[]`；`parseJsonField<string[] | null>(role.permissions, null)` 后 `Array.isArray` 检查，失败回落 `[]`，等价。
+6. **auth 的 permissions 解析（P1 修复后）**：原代码 catch → `[]`；`parseJsonField<string[] | null>(role.permissions, null)` 后经 `Array.isArray` + `filter(typeof === "string")` 生成 `safePerms`，**传给 `sessionUserSchema.parse()` 的是 `safePerms`（恒为数组，失败回落 `[]`）**。修复前错误地把可空的 `permissions` 传给 schema，遇到 `role.permissions` 坏 JSON 时会在运行时抛 ZodError（`sessionUserSchema.role.permissions` 是 `z.array(z.string())` 非 nullable），使 `getSession` 从"宽容降级"变成"抛异常"。见 commit `fix(B-04): toSessionUser 权限回落 safePerms` 与回归测试 `src/lib/__tests__/lane-b/auth-session.test.ts`。
 
 ## 验收逐条结果
 
@@ -33,7 +33,8 @@
 | 验收1 `grep -n "AbortSignal.timeout\|JSON.parse" src/lib/{wechat,notify-gateway,auth}.ts` 为空 | PASS | grep exit 1，无输出 |
 | 验收2 wechat-chat.test.ts + notify-before-publish.test.ts 通过 | PASS | `npx vitest run src/lib/__tests__/wechat-chat.test.ts src/lib/__tests__/notify-before-publish.test.ts` → 2 files / 11 tests passed |
 | 验收3 通用门禁 | PASS | lint 0 errors / 55 warnings(既有) / tsc 0 / test 59 files·760 passed / build exit 0 |
-| 验收4 diff 落允许路径 | PASS | 仅 `src/lib/{wechat,notify-gateway,auth}.ts` 3 个文件 |
+| 验收4 diff 落允许路径 | PASS | 仅 `src/lib/{wechat,notify-gateway,auth}.ts` 3 个文件 + `src/lib/__tests__/lane-b/auth-session.test.ts`（lane-b 允许路径内） |
+| 验收5 P1-1 回归测试（坏 JSON → 无异常 → 空数组） | PASS | `npx vitest run src/lib/__tests__/lane-b/auth-session.test.ts` → 1 file / 5 tests passed（非法 JSON / null / 非数组 JSON / 含非 string 元素 / 正常数组 5 例全绿） |
 
 ## 门禁实测输出摘要
 
