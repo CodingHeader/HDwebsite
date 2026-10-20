@@ -18,6 +18,12 @@ export const PATCH = withApi<{ id: string }>(
         enabled: input.enabled ?? undefined,
         templateId: input.templateId ?? undefined,
         recipientGroups: input.recipientGroups ? JSON.stringify(input.recipientGroups) : undefined,
+        quietHours:
+          input.quietHours === null
+            ? null
+            : input.quietHours
+              ? JSON.stringify(input.quietHours)
+              : undefined,
       },
       include: { template: true },
     });

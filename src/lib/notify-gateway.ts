@@ -40,7 +40,10 @@ async function transport(): Promise<any> {
 // 聚合类事件进程内串行化：并发异常同时到达时，"查最近记录 → 建记录"不被交错，保证 10 分钟只建 1 条
 let aggregateChain: Promise<unknown> = Promise.resolve();
 
-/** 事件入口：查规则 → 组收件人 → 渲染模板 → 建 NotifyRecord（异步发送由 retry.failed 兜底重试） */
+/** 事件入口：查规则 → 组收件人 → 渲染模板 → 建 NotifyRecord（异步发送由 retry.failed 兜底重试）
+ * B-06：静默时段（规则级 quietHours 优先于全局 notifyQuietHours）内只建 deferred 记录不发信；
+ *       聚合类事件去重改为单条 SQL 条件插入（跨进程原子），不再"查后建"竞态。
+ */
 export async function notifyEvent(event: NotifyEvent, vars: NotifyVars): Promise<void> {
   if (AGGREGATED_EVENTS.includes(event)) {
     const run = aggregateChain.then(() => notifyEventInner(event, vars));
@@ -50,19 +53,94 @@ export async function notifyEvent(event: NotifyEvent, vars: NotifyVars): Promise
   return notifyEventInner(event, vars);
 }
 
+// ── B-06：静默时段 ─────────────────────────────────────────────
+type QuietWindow = { start: number; end: number }; // 单位分钟 0..1439
+
+/** "HH:mm" → 当日分钟数；格式非法返回 null */
+function parseHm(text: string): number | null {
+  const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(text);
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+/** 解析静默时段 JSON（`{start,end}`）；空/非法 → null（DR-14：无效时刻按"无静默"处理并记 warning） */
+function parseQuietWindow(raw: string | null | undefined): QuietWindow | null {
+  if (!raw) return null;
+  const obj = parseJsonField<{ start?: unknown; end?: unknown } | null>(raw, null);
+  if (!obj || typeof obj.start !== "string" || typeof obj.end !== "string") return null;
+  const s = parseHm(obj.start);
+  const e = parseHm(obj.end);
+  if (s == null || e == null) {
+    console.warn(`[notify] 静默时段格式无效（按无静默处理）：${raw}`);
+    return null;
+  }
+  return { start: s, end: e };
+}
+
+/** 上海当前时刻（分钟 0..1439）；nowProvider 可注入（测试用，Intl 不受 vi.setSystemTime 影响） */
+let nowProvider: () => Date = () => new Date();
+export function __setNotifyClock(provider: (() => Date) | null): void {
+  nowProvider = provider ?? (() => new Date());
+}
+function shanghaiNowMinutes(): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(nowProvider());
+  const h = Number(parts.find((p) => p.type === "hour")?.value ?? 0);
+  const m = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+  return h * 60 + m;
+}
+
+/** 时刻是否落在静默窗内（start<=end 同日内；start>end 跨夜，如 22:00→07:00） */
+function inQuietWindow(win: QuietWindow, minute: number): boolean {
+  return win.start <= win.end ? minute >= win.start && minute < win.end : minute >= win.start || minute < win.end;
+}
+
+/** 取某事件的生效静默窗：规则级 quietHours 优先，其次全局 notifyQuietHours；都无效 → null */
+async function effectiveQuietWindow(event: string, ruleQuietRaw: string | null | undefined): Promise<QuietWindow | null> {
+  const ruleWin = parseQuietWindow(ruleQuietRaw);
+  if (ruleWin) return ruleWin;
+  const settings = await getAllSettings();
+  return parseQuietWindow(settings.notifyQuietHours);
+}
+
+// ── B-06：去重 ───────────────────────────────────────────────
+
+/**
+ * 跨进程原子去重：单条 INSERT...SELECT...WHERE NOT EXISTS——SQLite 单语句原子，
+ * 两进程并发时仅一个的 WHERE 为真（另一返回空）。RETURNING 原子取回新行 id。
+ * 去重键 = event + subject（渲染后含 {title}，title 承载"路由/任务名"标识）+ 10 分钟窗（卡定义）。
+ * 时间窗用 SQLite `datetime('now','-10 minutes')`：createdAt 由 CURRENT_TIMESTAMP 写入
+ * （`YYYY-MM-DD HH:MM:SS`，UTC），若把 Date 绑定成 ISO（`T` 分隔）则字典序比较会误判。
+ * 不依赖唯一索引、不污染 errMsg。返回新记录 id；未插入（并发已处理）返回 null。
+ */
+async function insertDeduplicated(record: { ruleId: number; event: string; toEmails: string; subject: string; content: string; status: string }): Promise<number | null> {
+  const rows = await prisma.$queryRawUnsafe<{ id: number }[]>(
+    `INSERT INTO "NotifyRecord" ("ruleId","event","toEmails","subject","content","status","retries","createdAt")
+     SELECT ?,?,?,?,?,?,'0',CURRENT_TIMESTAMP WHERE NOT EXISTS (
+       SELECT 1 FROM "NotifyRecord" WHERE "event"=? AND "subject"=? AND "createdAt">=datetime('now','-10 minutes')
+     ) RETURNING "id"`,
+    record.ruleId, record.event, record.toEmails, record.subject, record.content, record.status, record.event, record.subject
+  );
+  return rows.length > 0 ? Number(rows[0].id) : null;
+}
+
+/** 邮件正文脱敏：token/key/password/secret 等形态字串替换为 ***（B-06，P06-verify:90） */
+export function sanitizeSensitive(text: string): string {
+  return text
+    .replace(/(?:v1:)?[A-Za-z0-9_-]{20,}/g, "***")
+    .replace(/\b(?:sk-[A-Za-z0-9]{8,})/g, "***")
+    .replace(/(password|passwd|secret|token|api[_-]?key|access[_-]?token)\s*[=:]\s*\S+/gi, "$1=***");
+}
+
 async function notifyEventInner(event: NotifyEvent, vars: NotifyVars): Promise<void> {
   try {
     const rule = await prisma.notifyRule.findUnique({ where: { event } });
     if (!rule || !rule.enabled) return;
 
-    // system_error 事件不得再派生 system_error（防通知风暴）；失败类事件 10 分钟聚合
-    // （聚合条件含未成功记录：SMTP 故障时护栏依然生效）
-    if (AGGREGATED_EVENTS.includes(event)) {
-      const recent = await prisma.notifyRecord.findFirst({
-        where: { event, createdAt: { gte: new Date(Date.now() - 10 * 60_000) } },
-      });
-      if (recent) return;
-    }
+    // B-06：静默时段判定（规则级 quietHours 优先，其次全局 notifyQuietHours；无效时刻按无静默处理）
+    const quiet = await effectiveQuietWindow(event, rule.quietHours);
+    const deferred = quiet ? inQuietWindow(quiet, shanghaiNowMinutes()) : false;
 
     const template =
       (rule.templateId ? await prisma.notifyTemplate.findUnique({ where: { id: rule.templateId } }) : null) ??
@@ -86,15 +164,48 @@ async function notifyEventInner(event: NotifyEvent, vars: NotifyVars): Promise<v
     const render = (text: string) =>
       text.replaceAll("{title}", vars.title).replaceAll("{time}", time).replaceAll("{detail}", vars.detail ?? "—").replaceAll("{link}", vars.link ?? "—");
 
-    const record = await prisma.notifyRecord.create({
-      data: {
-        ruleId: rule.id, event, toEmails: toEmails.join(","),
-        subject: render(template.subject), content: render(template.body), status: "pending",
-      },
-    });
-    await deliver(record.id, 0);
+    const recordData = {
+      ruleId: rule.id, event, toEmails: toEmails.join(","),
+      subject: sanitizeSensitive(render(template.subject)),
+      content: sanitizeSensitive(render(template.body)),
+      status: (deferred ? "deferred" : "pending") as "deferred" | "pending",
+    };
+
+    let recordId: number;
+    if (AGGREGATED_EVENTS.includes(event)) {
+      // B-06：跨进程原子去重——单条 INSERT...RETURNING WHERE NOT EXISTS（event + 10 分钟窗），
+      // 替代"查最近记录→建记录"的进程间竞态；进程内链仅作同进程串行的兜底。
+      const insertedId = await insertDeduplicated(recordData);
+      if (insertedId == null) return; // 其他进程已建同类记录
+      recordId = insertedId;
+    } else {
+      const rec = await prisma.notifyRecord.create({ data: recordData });
+      recordId = rec.id;
+    }
+
+    if (!deferred) await deliver(recordId, 0);
   } catch (err) {
     console.error(`[notify] 事件 ${event} 处理失败：`, err);
+  }
+}
+
+/**
+ * B-06：补发静默时段内 deferred 的通知记录（notify.scan 调用；jobs 属 D 线，本卡不注册新任务）。
+ * 只处理仍为 deferred 的记录；时段结束后再次判定，若仍静默则跳过。
+ */
+export async function flushDeferred(): Promise<void> {
+  const deferredList = await prisma.notifyRecord.findMany({
+    where: { status: "deferred" },
+    orderBy: { id: "asc" },
+    take: 20,
+  });
+  for (const rec of deferredList) {
+    const rule = rec.ruleId ? await prisma.notifyRule.findUnique({ where: { id: rec.ruleId } }) : null;
+    const quiet = await effectiveQuietWindow(rec.event, rule?.quietHours);
+    if (quiet && inQuietWindow(quiet, shanghaiNowMinutes())) continue;
+    await prisma.notifyRecord.update({ where: { id: rec.id }, data: { status: "pending" } });
+    await deliver(rec.id, rec.retries);
+    await new Promise((r) => setTimeout(r, 2000));
   }
 }
 
@@ -148,8 +259,12 @@ async function deliver(recordId: number, attempt: number): Promise<void> {
   }
 }
 
-/** notify.scan 任务：重试失败/未发送的通知记录 */
+/**
+ * notify.scan 任务：重试失败/未发送的通知记录；同时补发静默时段内 deferred 的记录（B-06）。
+ * 先跑 flushDeferred 把已结束静默窗的 deferred 转 pending，再统一投递 pending。
+ */
 export async function notifyRetryScan(): Promise<void> {
+  await flushDeferred();
   const pending = await prisma.notifyRecord.findMany({
     where: { status: "pending" }, // failed 由退避定时器接管；dead 为终态
     orderBy: { id: "asc" },
