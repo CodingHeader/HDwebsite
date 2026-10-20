@@ -165,10 +165,139 @@ async function sendCustomerMessage(account: WechatAccount, secret: string, openI
 
 // ── 发布链路：素材 → 草稿 → 发布 ─────────────────────────────
 
+/** 微信正文图片域名（已转存/已合规，无需再转存） */
+const WECHAT_IMG_HOSTS = new Set(["mmbiz.qpic.cn", "mmbiz.qlogo.cn"]);
+/** 单篇最多转存张数（防失控） */
+const MAX_IMG_TRANSFER = 20;
+/** 同账号发布最小间隔（毫秒）；持久化于 ContentChannel.publishedAt，跨进程有效 */
+const PUBLISH_MIN_INTERVAL_MS = 60_000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * 正文外链图转存微信（media/uploadimg，B-07）
+ * - 仅接受 ≤1MB 图片；超限直接跳过并记 warning（不阻塞发布，ADR-030 降级原则）
+ * - 返回微信 URL；失败/超限返回 null（调用方保留原外链）
+ * - 微信要求文件名为 jpg/png，用 magic bytes 判断而非 Content-Type（更可靠）
+ */
+export async function uploadContentImage(token: string, url: string): Promise<string | null> {
+  try {
+    const res = await httpFetch(url, { timeoutMs: 15_000, logTag: "wechat", throwOnHttpError: false });
+    if (!res.ok) {
+      console.warn(`[wechat] uploadimg 源图下载失败（HTTP ${res.status}）：${url.slice(0, 80)}`);
+      return null;
+    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length > 1024 * 1024) {
+      console.warn(`[wechat] uploadimg 源图 ${(buffer.length / 1024).toFixed(0)}KB 超 1MB 限制，跳过：${url.slice(0, 80)}`);
+      return null;
+    }
+    const sig = buffer.subarray(0, 8);
+    const isPng = sig.length >= 8 && sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47;
+    const form = new FormData();
+    form.append(
+      "media",
+      new Blob([new Uint8Array(buffer)]),
+      isPng ? "img.png" : "img.jpg"
+    );
+    const uploaded = (await httpFetch(`${API}/cgi-bin/media/uploadimg?access_token=${token}`, {
+      method: "POST",
+      body: form,
+      timeoutMs: 30_000,
+      logTag: "wechat",
+      throwOnHttpError: false,
+    }).then((r) => r.json())) as { url?: string; errcode?: number; errmsg?: string };
+    if (uploaded.errcode && uploaded.errcode !== 0) {
+      console.warn(`[wechat] uploadimg 失败：${uploaded.errcode} ${uploaded.errmsg ?? ""}`);
+      return null;
+    }
+    return uploaded.url ?? null;
+  } catch (err) {
+    console.warn("[wechat] uploadimg 异常：", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+/**
+ * 正文外链图转存（B-07）：扫描 <img src>，非微信域名的外链图转存为微信 URL；
+ * 同 URL 只转存一次复用；已合规或非外链的 <img> 保留原样；失败保持原外链（降级）。
+ */
+export async function rewriteWechatImages(content: string, token: string): Promise<string> {
+  const srcs = Array.from(content.matchAll(/<img\b[^>]*\bsrc="([^"]+)"[^>]*>/gi), (m) => m[1]);
+  const pending = [...new Set(srcs)]
+    .filter((u) => {
+      try {
+        return !WECHAT_IMG_HOSTS.has(new URL(u).hostname);
+      } catch {
+        return false; // 相对路径/非 URL 一律视为已可访问，不转存
+      }
+    })
+    .slice(0, MAX_IMG_TRANSFER);
+  const map = new Map<string, string>();
+  for (const u of pending) {
+    if (map.has(u)) continue;
+    const wechatUrl = await uploadContentImage(token, u);
+    if (wechatUrl) map.set(u, wechatUrl);
+  }
+  if (map.size === 0) return content;
+  let out = content;
+  for (const [from, to] of map) out = out.split(from).join(to);
+  return out;
+}
+
+/**
+ * freepublish/get 轮询发布结果（B-07）：最多 5 次、指数退避（1s/2s/4s/8s/16s）。
+ * 返回 { itemUrl } 成功 / { status: "failed"|"timeout" } / { errMsg } 出错。
+ */
+export async function getPublishResult(
+  token: string,
+  publishId: string,
+  maxAttempts = 5
+): Promise<{ itemUrl?: string; status?: string; errMsg?: string }> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const res = (await httpFetch(`${API}/cgi-bin/freepublish/get?access_token=${token}&publish_id=${publishId}`, {
+      timeoutMs: 15_000,
+      logTag: "wechat",
+      throwOnHttpError: false,
+    }).then((r) => r.json())) as {
+      publish_status?: number;
+      errcode?: number;
+      errmsg?: string;
+      publish_task_info?: { article_detail?: { url?: string }[] };
+    };
+    if (res.errcode && res.errcode !== 0) return { errMsg: `freepublish/get 失败：${res.errcode} ${res.errmsg ?? ""}` };
+    // 0=成功 1=发布中 2=原始失败 3=平台审核不通过 4=平台审核失败 5=成功
+    const status = res.publish_status;
+    if (status === 0 || status === 5) {
+      const url = res.publish_task_info?.article_detail?.find((a) => a.url)?.url ?? null;
+      return { status: "success", itemUrl: url ?? undefined };
+    }
+    if (status === 2 || status === 3 || status === 4) {
+      return { status: "failed", errMsg: res.errmsg ?? `发布失败（publish_status=${status}）` };
+    }
+    // 1 = 发布中：指数退避后继续
+    if (i < maxAttempts - 1) await sleep(2 ** i * 1000);
+  }
+  return { status: "timeout", errMsg: `轮询 ${maxAttempts} 次仍未得到发布结果` };
+}
+
 export type WechatPublishResult = { ok: boolean; mediaId?: string; publishId?: string; url?: string; errMsg?: string };
 
 export async function publishDraftToWechat(account: WechatAccount, secret: string, item: ContentItem): Promise<WechatPublishResult> {
   try {
+    // 同账号发布节流 ≥60s：以 ContentChannel(wechat) 最近一次 publishedAt 为判据，持久化故跨进程有效
+    const lastPub = await prisma.contentChannel.findFirst({
+      where: { channel: "wechat", accountId: account.id, status: "published", publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+    });
+    if (lastPub?.publishedAt) {
+      const elapsed = Date.now() - lastPub.publishedAt.getTime();
+      if (elapsed < PUBLISH_MIN_INTERVAL_MS) {
+        return { ok: false, errMsg: `公众号发布节流：距上次发布不足 60 秒（${Math.round(elapsed / 1000)}s）` };
+      }
+    }
     const settings = await getAllSettings();
     // 每日上限（Q10 口径默认 20）
     const dailyCount = await prisma.contentChannel.count({
@@ -193,7 +322,14 @@ export async function publishDraftToWechat(account: WechatAccount, secret: strin
       if (publishRes.errcode && publishRes.errcode !== 0) {
         return { ok: false, mediaId: draftId, errMsg: `freepublish 失败：${publishRes.errcode} ${publishRes.errmsg ?? ""}` };
       }
-      return { ok: true, mediaId: draftId, publishId: publishRes.publish_id };
+      // B-07：轮询发布结果，回写文章外链（最多 5 次、指数退避；失败降级为无外链并 warning）
+      let url: string | undefined;
+      if (publishRes.publish_id) {
+        const poll = await getPublishResult(token, publishRes.publish_id);
+        if (poll.status === "success" && poll.itemUrl) url = poll.itemUrl;
+        else if (poll.errMsg) console.warn(`[wechat] freepublish/get 结果获取失败：${poll.errMsg}`);
+      }
+      return { ok: true, mediaId: draftId, publishId: publishRes.publish_id, url };
     }
     return { ok: true, mediaId: draftId };
   } catch (err) {
@@ -225,7 +361,9 @@ async function uploadThumb(token: string, coverImage: string | null): Promise<st
 }
 
 async function addDraft(token: string, item: ContentItem, thumbMediaId: string | null): Promise<string> {
-  const content = item.contentType === "markdown" ? mdToWechatHtml(item.content) : item.content;
+  const rawContent = item.contentType === "markdown" ? mdToWechatHtml(item.content) : item.content;
+  // B-07：正文外链图转存微信（uploadimg）；失败保留原外链（降级，不阻塞发布）
+  const content = await rewriteWechatImages(rawContent, token);
   const draft = (await httpFetch(`${API}/cgi-bin/draft/add?access_token=${token}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
