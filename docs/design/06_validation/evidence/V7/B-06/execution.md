@@ -36,6 +36,14 @@
 | 通用门禁四连 | PASS | lint 0 errors/54 warnings（基线）、tsc exit 0、test 62 files/779 passed、build exit 0 |
 | diff 落允许路径 | PASS | `src/lib/notify-gateway.ts`、`src/app/api/notify-rules/[id]/route.ts`、`src/lib/__tests__/lane-b/notify.test.ts`（均在允许清单） |
 
+## 独立复审结果
+
+- 复审报告：`docs/design/06_validation/evidence/V7/B-06/review.md`（独立子代理 + 主代理补齐）。
+- 结论：**PASS with findings**，完成度 ≈ 95%。
+- 判定：A 静默时段 / B deferred 语义 / C 原子去重 SQL / D 脱敏 / E PATCH 三分支 / F 回归 / G 越界 全部 PASS（行级证据齐全）；H 测试有效性 PASS with findings。
+- 主代理补做：`git diff --name-only a00f513..6e607ba` = 仅 5 文件，冻结面零触碰。
+- P2：跨进程原子性仅单进程 `Promise.all` 验证（无 P1）；P3×4 为改进项，不阻塞。
+
 ## 门禁实测输出摘要
 
 ```
