@@ -13,8 +13,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const CONTENT_TYPES: Record<string, string> = {
-  ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif",
-  ".mp4": "video/mp4",
+  ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+  ".webp": "image/webp", ".gif": "image/gif", ".mp4": "video/mp4",
   ".pdf": "application/pdf",
 };
 
