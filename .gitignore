@@ -30,6 +30,9 @@ backups/
 .local/
 tmp/
 .cache/
+# 运行时写入根（D-09 DATA_DIR 化；D-10 迁移出 git）
+uploads/
+data/
 
 # IDE 与系统
 .vscode/
