@@ -63,11 +63,11 @@ vi.mock("@/lib/notify-gateway", () => ({ notifyCollectFailed: mocks.notifyCollec
 vi.mock("rss-parser", () => ({
   default: class {
     constructor(_opts?: unknown) {}
-    async parseURL(url: string) {
+    async parseString(_xml: string) {
       return {
         items: [
-          { title: "RSS-A", link: `${url}#a`, contentSnippet: "snip-a", isoDate: "2026-01-02T00:00:00Z" },
-          { title: "RSS-B", link: `${url}#b`, contentSnippet: null, isoDate: null },
+          { title: "RSS-A", link: "https://feed.example/x.xml#a", contentSnippet: "snip-a", isoDate: "2026-01-02T00:00:00Z" },
+          { title: "RSS-B", link: "https://feed.example/x.xml#b", contentSnippet: null, isoDate: null },
         ],
       };
     }
@@ -152,12 +152,16 @@ describe("D-12 采集解析注册表", () => {
     expect(items[1].url).toContain("/n/2.html");
   });
 
-  it("getParser('rss') 命中 rss-parser（mock feed）", async () => {
+  it("getParser('rss') 经注入 fetchText 取 XML 交给 rss-parser（mock parseString）", async () => {
     const parser = getParser("rss");
     const items = await parser({
       source: { type: "rss", url: "https://feed.example/x.xml", parser: null },
       timeoutMs: 5000,
       ua: "ua",
+      fetchText: async (url) => {
+        expect(url).toBe("https://feed.example/x.xml");
+        return "<rss version='2.0'><channel><item><title>RSS-A</title></item></channel></rss>";
+      },
     });
     expect(items).toHaveLength(2);
     expect(items[0].title).toBe("RSS-A");
@@ -316,7 +320,8 @@ describe("D-12 批次超时（REQ-NF-001 AC3）", () => {
 
     const err = await caught;
     expect(err).toBeInstanceOf(Error);
-    expect(String((err as Error).message)).toMatch(/aborted-by-batch-deadline/);
+    // catch 把 abort 归一化为可读的批次超时信息，不再泄漏内部 AbortError
+    expect(String((err as Error).message)).toContain("采集批次超时（30 分钟）");
     expect(mocks.collectTaskUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 1 }, data: expect.objectContaining({ status: "failed" }) })
     );

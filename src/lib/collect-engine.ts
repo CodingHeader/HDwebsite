@@ -74,9 +74,9 @@ function htmlToMarkdown(html: string, baseUrl: string): string {
  * 图片转存：流式下载（累计超过 COLLECT_IMAGE_MAX_SIZE 立即中止）→ uploads + Media 记录；
  * 返回新 URL（失败/超限返回 null 留原链）。
  */
-async function transferImage(imageUrl: string, timeoutMs: number, ua: string): Promise<string | null> {
+async function transferImage(imageUrl: string, timeoutMs: number, ua: string, outer?: AbortSignal): Promise<string | null> {
   try {
-    const res = await fetch(imageUrl, { headers: { "User-Agent": ua }, signal: AbortSignal.timeout(timeoutMs) });
+    const res = await fetchWithSignalResponse(imageUrl, timeoutMs, ua, outer);
     if (!res.ok) return null;
     const contentType = (res.headers.get("content-type") ?? "").split(";")[0].trim();
     const ext = COLLECT_IMAGE_TYPES[contentType];
@@ -123,14 +123,14 @@ async function transferImage(imageUrl: string, timeoutMs: number, ua: string): P
   }
 }
 
-async function transferImagesInMarkdown(md: string, timeoutMs: number, ua: string, appDomain: string): Promise<string> {
+async function transferImagesInMarkdown(md: string, timeoutMs: number, ua: string, appDomain: string, outer?: AbortSignal): Promise<string> {
   const images = [...md.matchAll(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g)];
   let out = md;
   for (const match of images) {
     const [, alt, src] = match;
     const absolute = src.startsWith("http") ? src : `${appDomain}${src}`;
     if (absolute.includes("/uploads/")) continue;
-    const local = await transferImage(absolute, timeoutMs, ua);
+    const local = await transferImage(absolute, timeoutMs, ua, outer);
     if (local) out = out.replace(match[0], `![${alt}](${local})`);
     await sleep(500);
   }
@@ -143,25 +143,30 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * 带超时 + 可选外部 AbortSignal 的 fetch（D-12：批次超时可中断）。
+ * 带超时 + 可选外部 AbortSignal 的 fetch（D-12：批次超时可中断）——返回 Response。
  * 超时优先用内部 AbortController；外部 signal 仅注册一次，避免重复 listener 泄漏。
  */
-async function fetchWithSignal(url: string, timeoutMs: number, ua: string, outer?: AbortSignal): Promise<string> {
+async function fetchWithSignalResponse(url: string, timeoutMs: number, ua: string, outer?: AbortSignal): Promise<Response> {
   const inner = new AbortController();
   const timeoutId = setTimeout(() => inner.abort(new Error(`请求超时 ${timeoutMs}ms`)), timeoutMs);
   const onAbort = () => inner.abort();
   outer?.addEventListener("abort", onAbort, { once: true });
   try {
-    const res = await fetch(url, {
+    return await fetch(url, {
       headers: { "User-Agent": ua, Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" },
       signal: inner.signal,
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.text();
   } finally {
     clearTimeout(timeoutId);
     outer?.removeEventListener("abort", onAbort);
   }
+}
+
+/** 同上，但直接返回响应文本（列表页/详情页/RSS XML 统一用） */
+async function fetchWithSignal(url: string, timeoutMs: number, ua: string, outer?: AbortSignal): Promise<string> {
+  const res = await fetchWithSignalResponse(url, timeoutMs, ua, outer);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
 }
 
 /** 单源执行：抓列表 → 逐条抓正文 → 去重入库（status=new）
@@ -226,7 +231,7 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
       }
       let contentMd = item.contentMd ?? null;
       if (contentMd && settings.collectDefaultKnowledge !== "false") {
-        contentMd = await transferImagesInMarkdown(contentMd, timeoutMs, ua, appDomain);
+        contentMd = await transferImagesInMarkdown(contentMd, timeoutMs, ua, appDomain, timer.signal);
       }
       try {
         const created = await prisma.collectItem.create({
@@ -259,10 +264,13 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
     await prisma.collectSource.update({ where: { id: source.id }, data: { lastRunAt: new Date(), lastStatus: "done", errMsg: null } });
     return { newCount, skipCount, fetched: items.length, failed };
   } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err);
+    // 批次超时：fetch 可能仍被 abort 兜住；此处统一转成明确错误信息，便于上层通知可读
+    const errMsg = timer.signal.aborted ? "采集批次超时（30 分钟）" : err instanceof Error ? err.message : String(err);
     await prisma.collectTask.update({ where: { id: task.id }, data: { status: "failed", finishedAt: new Date(), errMsg } });
     await prisma.collectSource.update({ where: { id: source.id }, data: { lastRunAt: new Date(), lastStatus: "failed", errMsg } });
-    throw err;
+    throw new Error(errMsg);
+  } finally {
+    clearInterval(deadlineTimer);
   }
 }
 

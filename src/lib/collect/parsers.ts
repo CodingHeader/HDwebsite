@@ -77,14 +77,18 @@ export async function parseHtmlList(ctx: {
   return items;
 }
 
-/** RSS 解析：rss-parser 直接产出条目 */
+/** RSS 解析：先用注入/默认 fetch 取 XML 文本，再交给 rss-parser.parseString 解析。
+ * 通过注入 fetchText（引擎侧接批次超时 AbortSignal）实现与 html 一致的超时口径；
+ * 直接依赖 rss-parser.parseURL 会绕开批次超时（其内部用 http.get + 独立 timeout）。 */
 export async function parseRss(ctx: {
   source: { type: string; url: string; parser: string | null };
   timeoutMs: number;
   ua: string;
+  fetchText?: (url: string) => Promise<string>;
 }): Promise<ParsedItem[]> {
-  const parser = new Parser({ timeout: ctx.timeoutMs, headers: { "User-Agent": ctx.ua } });
-  const feed = await parser.parseURL(ctx.source.url);
+  const xml = await (ctx.fetchText ? ctx.fetchText(ctx.source.url) : fetchTextImpl(ctx.source.url, ctx.timeoutMs, ctx.ua));
+  const parser = new Parser({ timeout: ctx.timeoutMs });
+  const feed = await parser.parseString(xml);
   return feed.items
     .filter((i) => i.title && i.link)
     .map((i) => ({
