@@ -59,3 +59,10 @@ lint warning 55 vs 上卡 54：新增 1 条来自 `src/lib/wechat.ts` 的既有 
 ## 允许进入下一阶段
 
 是。B-04 验收 1/2/3/4 全部 PASS；遗留项均为既有噪声或后续卡范围，不阻塞 B-05/B-06。
+
+## 独立复审（P1-1 修复闭环）
+
+- 复审报告：`docs/design/06_validation/evidence/V7/B-04/verify-p1-fix.md`（复审对象 commit `b771d6d`，2026-10-20）
+- **结论：PASS，完成度 98%**。P1-1 已修复闭环，无新增 P1/P2，仅 1 条 P3 可读性备注。
+- 逐条验收 A–F 全部 PASS：A（恒传数组 `safePerms`）✓；B（7 类边界与"原 catch→[]"等价或更稳）✓；C（5 例中 4 例在修复前版本必失败，真实守住回归）✓；D（`typeof === "string"` 类型守卫，`safePerms: string[]` 与 schema 兼容）✓；E（未触碰冻结面，调用方适配而非放宽契约）✓；F（门禁结论与 evidence 一致）。
+- 复审者工具受限未实跑门禁；主代理补跑实测闭合：`npx vitest run lane-b/auth-session.test.ts` → 1 file / 5 passed；`npx tsc --noEmit` → exit 0；`npm test` → 60 files / 765 tests passed（前述已记录）；`npm run lint` → 0 errors / 54 warnings；`npm run build` → exit 0。
