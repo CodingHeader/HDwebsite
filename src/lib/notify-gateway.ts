@@ -11,6 +11,7 @@ import { decryptField } from "@/lib/crypto";
 import { getAllSettings } from "@/lib/settings";
 import { execute as executeJob } from "@/lib/scheduler";
 import { managerLink } from "@/lib/app-origin";
+import { parseJsonField } from "@/lib/json-field";
 import { AGGREGATED_EVENTS, type NotifyEvent } from "@/contracts/events";
 import type { PublishJob } from ".prisma/client";
 
@@ -69,20 +70,14 @@ async function notifyEventInner(event: NotifyEvent, vars: NotifyVars): Promise<v
     if (!template) return;
 
     let groups: string[] = ["publish"];
-    try {
-      const parsed = JSON.parse(rule.recipientGroups);
-      if (Array.isArray(parsed)) groups = parsed;
-    } catch { /* 默认 */ }
+    const parsedGroups = parseJsonField<string[] | null>(rule.recipientGroups, null);
+    if (Array.isArray(parsedGroups)) groups = parsedGroups;
 
     const recipients = await prisma.notifyRecipient.findMany({ where: { enabled: true } });
     const toEmails = recipients
       .filter((r) => {
-        try {
-          const gs = JSON.parse(r.groups);
-          return Array.isArray(gs) && gs.some((g: string) => groups.includes(g));
-        } catch {
-          return false;
-        }
+        const gs = parseJsonField<unknown>(r.groups, null);
+        return Array.isArray(gs) && gs.some((g: string) => groups.includes(g));
       })
       .map((r) => r.email);
     if (toEmails.length === 0) return;

@@ -14,6 +14,8 @@ import { getAllSettings } from "@/lib/settings";
 import { appOrigin } from "@/lib/app-origin";
 import { chatOnce, findScene } from "@/lib/chat-service";
 import { decryptField } from "@/lib/crypto";
+import { httpFetch } from "@/lib/http-client";
+import { parseJsonField } from "@/lib/json-field";
 import type { WechatAccount, ContentItem } from ".prisma/client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -30,9 +32,9 @@ export function getWechatAccountSecret(account: WechatAccount): string | null {
 async function getAccessToken(account: WechatAccount, secret: string): Promise<string> {
   const cache = parseTokenCache(account.tokenCache);
   if (cache && cache.expiresAt > Date.now() + 5 * 60_000) return cache.accessToken;
-  const res = (await fetch(
+  const res = (await httpFetch(
     `${API}/cgi-bin/token?grant_type=client_credential&appid=${account.appid}&secret=${secret}`,
-    { signal: AbortSignal.timeout(10_000) }
+    { timeoutMs: 10_000, logTag: "wechat", throwOnHttpError: false }
   ).then((r) => r.json())) as { access_token?: string; expires_in?: number; errcode?: number; errmsg?: string };
   if (!res.access_token) throw new Error(`获取 access_token 失败：${res.errcode} ${res.errmsg ?? ""}`);
   await prisma.wechatAccount.update({
@@ -43,14 +45,9 @@ async function getAccessToken(account: WechatAccount, secret: string): Promise<s
 }
 
 function parseTokenCache(json: string | null): { accessToken: string; expiresAt: number } | null {
-  if (!json) return null;
-  try {
-    const parsed = JSON.parse(json);
-    if (typeof parsed.accessToken === "string" && typeof parsed.expiresAt === "number") return parsed;
-    return null;
-  } catch {
-    return null;
-  }
+  const parsed = parseJsonField<{ accessToken?: unknown; expiresAt?: unknown } | null>(json, null);
+  if (!parsed || typeof parsed.accessToken !== "string" || typeof parsed.expiresAt !== "number") return null;
+  return { accessToken: parsed.accessToken, expiresAt: parsed.expiresAt };
 }
 
 // ── 回调验签与事件分发 ────────────────────────────────────────
@@ -149,11 +146,14 @@ export async function answerWechatText(account: WechatAccount, openId: string, c
 
 async function sendCustomerMessage(account: WechatAccount, secret: string, openId: string, content: string): Promise<void> {
   const token = await getAccessToken(account, secret);
-  const res = (await fetch(`${API}/cgi-bin/message/custom/send?access_token=${token}`, {
+  const res = (await httpFetch(`${API}/cgi-bin/message/custom/send?access_token=${token}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ touser: openId, msgtype: "text", text: { content } }),
-    signal: AbortSignal.timeout(10_000),
+    timeoutMs: 10_000,
+    logTag: "wechat",
+    // 微信业务错误在 HTTP 200 body 的 errcode；非 2xx（如网关 5xx）仍解析 body 由调用方处理
+    throwOnHttpError: false,
   }).then((r) => r.json())) as { errcode?: number; errmsg?: string };
   if (res.errcode && res.errcode !== 0) {
     throw new Error(`客服消息发送失败：${res.errcode} ${res.errmsg ?? ""}`);
@@ -182,11 +182,13 @@ export async function publishDraftToWechat(account: WechatAccount, secret: strin
     const draftId = await addDraft(token, item, thumbMediaId);
     // 发布间隔 ≥60s 由 publishScan 串行 + sleep 保证；此处提交 freepublish
     if (account.freepublishEnabled) {
-      const publishRes = (await fetch(`${API}/cgi-bin/freepublish/submit?access_token=${token}`, {
+      const publishRes = (await httpFetch(`${API}/cgi-bin/freepublish/submit?access_token=${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ media_id: draftId }),
-        signal: AbortSignal.timeout(15_000),
+        timeoutMs: 15_000,
+        logTag: "wechat",
+        throwOnHttpError: false,
       }).then((r) => r.json())) as { errcode?: number; publish_id?: string; errmsg?: string };
       if (publishRes.errcode && publishRes.errcode !== 0) {
         return { ok: false, mediaId: draftId, errMsg: `freepublish 失败：${publishRes.errcode} ${publishRes.errmsg ?? ""}` };
@@ -203,15 +205,18 @@ async function uploadThumb(token: string, coverImage: string | null): Promise<st
   if (!coverImage) return null;
   try {
     const abs = coverImage.startsWith("http") ? coverImage : `${process.env.APP_ORIGIN ?? "http://localhost:6789"}${coverImage}`;
-    const res = await fetch(abs, { signal: AbortSignal.timeout(15_000) });
+    // 封面图下载：原实现手动判断 res.ok；用 throwOnHttpError:false 保留非 2xx 返回 null 的语义
+    const res = await httpFetch(abs, { timeoutMs: 15_000, logTag: "wechat", throwOnHttpError: false });
     if (!res.ok) return null;
     const buffer = Buffer.from(await res.arrayBuffer());
     const form = new FormData();
     form.append("media", new Blob([new Uint8Array(buffer)]), `cover${buffer.length % 2 ? ".jpg" : ".png"}`);
-    const uploaded = (await fetch(`${API}/cgi-bin/material/add_material?access_token=${token}&type=image`, {
+    const uploaded = (await httpFetch(`${API}/cgi-bin/material/add_material?access_token=${token}&type=image`, {
       method: "POST",
       body: form,
-      signal: AbortSignal.timeout(30_000),
+      timeoutMs: 30_000,
+      logTag: "wechat",
+      throwOnHttpError: false,
     }).then((r) => r.json())) as { media_id?: string; errcode?: number; errmsg?: string };
     return uploaded.media_id ?? null;
   } catch {
@@ -221,7 +226,7 @@ async function uploadThumb(token: string, coverImage: string | null): Promise<st
 
 async function addDraft(token: string, item: ContentItem, thumbMediaId: string | null): Promise<string> {
   const content = item.contentType === "markdown" ? mdToWechatHtml(item.content) : item.content;
-  const draft = (await fetch(`${API}/cgi-bin/draft/add?access_token=${token}`, {
+  const draft = (await httpFetch(`${API}/cgi-bin/draft/add?access_token=${token}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -237,7 +242,9 @@ async function addDraft(token: string, item: ContentItem, thumbMediaId: string |
         },
       ],
     }),
-    signal: AbortSignal.timeout(20_000),
+    timeoutMs: 20_000,
+    logTag: "wechat",
+    throwOnHttpError: false,
   }).then((r) => r.json())) as { media_id?: string; errcode?: number; errmsg?: string };
   if (!draft.media_id) {
     throw new Error(`draft/add 失败：${draft.errcode} ${draft.errmsg ?? ""}`);

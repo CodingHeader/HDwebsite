@@ -7,6 +7,7 @@ import { signToken, verifyToken, extractBearerToken } from "@/lib/jwt";
 import type { JwtClaims, SessionUser } from "@/contracts";
 import { sessionUserSchema } from "@/contracts";
 import type { Role, User } from ".prisma/client";
+import { parseJsonField } from "@/lib/json-field";
 
 export { signToken, verifyToken, extractBearerToken };
 
@@ -43,13 +44,8 @@ export async function getSession(request: Request): Promise<SessionUser | null> 
 }
 
 export function toSessionUser(user: User, role: Role): SessionUser {
-  let permissions: string[] = [];
-  try {
-    const parsed = JSON.parse(role.permissions);
-    if (Array.isArray(parsed)) permissions = parsed.filter((p) => typeof p === "string");
-  } catch {
-    permissions = [];
-  }
+  const permissions = parseJsonField<string[] | null>(role.permissions, null);
+  const safePerms = Array.isArray(permissions) ? permissions.filter((p) => typeof p === "string") : [];
   return sessionUserSchema.parse({
     id: user.id,
     username: user.username,
