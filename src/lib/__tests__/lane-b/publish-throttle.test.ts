@@ -43,11 +43,11 @@ vi.mock("@/lib/channels/registry", async (orig) => {
 });
 
 // ② wechat 模块打桩：按模式返回 throttled / 普通失败
-const wxMode = vi.hoisted(() => ({ kind: "throttle" as "throttle" | "fail" }));
+const wxMode = vi.hoisted(() => ({ kind: "throttle" as "throttle" | "fail", errMsg: "" as string }));
 vi.mock("@/lib/wechat", () => ({
   getWechatAccountSecret: () => "sec",
   publishDraftToWechat: async () => {
-    if (wxMode.kind === "throttle") return { ok: false, throttled: true, errMsg: "公众号发布节流：还需 12s" };
+    if (wxMode.kind === "throttle") return { ok: false, throttled: true, errMsg: wxMode.errMsg || "公众号发布节流：还需 12s" };
     return { ok: false, errMsg: "freepublish 失败：40001 invalid credential" };
   },
 }));
@@ -89,6 +89,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   mode.kind = "normal";
+  wxMode.errMsg = "";
   await prisma.publishJob.deleteMany({ where: { itemId: item.id } });
   await prisma.contentChannel.deleteMany({ where: { itemId: item.id } });
 });
@@ -139,6 +140,27 @@ describe("channels/wechat：节流结果 → 语义错误", () => {
     expect(caught!.remainingMs).toBe(12_000);
     // 未写 failed ContentChannel（节流不是失败）
     expect(await prisma.contentChannel.count({ where: { itemId: item.id, channel: "wechat", status: "failed" } })).toBe(0);
+    await prisma.publishJob.delete({ where: { id: job.id } });
+    await prisma.wechatAccount.delete({ where: { id: acc.id } });
+  });
+
+  it("throttled 但 errMsg 无'还需 Ns'→ 兜底 60000ms", async () => {
+    wxMode.kind = "throttle";
+    wxMode.errMsg = "公众号发布节流"; // 不含 "还需 Ns"
+    const acc = await prisma.wechatAccount.create({
+      data: { name: "节流号2", appid: "appid", appSecret: "s", type: "service", status: "active" },
+    });
+    const job = await prisma.publishJob.create({
+      data: { itemId: item.id, channel: "wechat", contentType: "wechat", status: "publishing", accountId: acc.id },
+    });
+    let caught: ChannelThrottledError | null = null;
+    try {
+      await publishToWechat(job);
+    } catch (e) {
+      caught = e as ChannelThrottledError;
+    }
+    expect(caught).not.toBeNull();
+    expect(caught!.remainingMs).toBe(60_000);
     await prisma.publishJob.delete({ where: { id: job.id } });
     await prisma.wechatAccount.delete({ where: { id: acc.id } });
   });
