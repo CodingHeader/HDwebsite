@@ -1,17 +1,16 @@
 /**
  * 发布执行器（SOL-005）：PublishJob 状态机
  * draft→(审核略，单级 SuperAdmin 终审在内容态)→scheduled/pending→publishing→published|failed|cancelled
- * website 执行器：ContentItem(markdown) → Article(channel=news|info, contentType=markdown, published)
- * wechat 执行器：委托公众号模块（SOL-006）；凭证未配置 → failed（errMsg 明确，凭证后补即插桩）
+ * 渠道实现经 src/lib/channels 注册表 getChannel(kind) 调用（B-05，ADR-030）；
+ * executor 只做状态机/审核门/提醒/退避，不做渠道差异分支。
  * P06：迁移按 contracts/events PUBLISH_TRANSITIONS 校验；执行前同步发"发布前提醒"（立即发布任务不再跳过提醒）；
  *      publish 动作要求内容已审核（approved/published），否则失败（审核门不可经发布任务绕过，ADR-017）
  */
 import { prisma } from "@/lib/prisma";
-import { uniqueSlug } from "@/lib/slug";
 import { notifyBeforePublish, notifyEvent } from "@/lib/notify-gateway";
 import { managerLink } from "@/lib/app-origin";
 import { canTransitionPublishJob } from "@/contracts/events";
-import { getWechatAccountSecret, publishDraftToWechat } from "@/lib/wechat";
+import { getChannel } from "@/lib/channels/registry";
 import type { PublishJob } from ".prisma/client";
 
 const MAX_ATTEMPTS = 3;
@@ -30,12 +29,7 @@ export async function executePublishJob(job: PublishJob): Promise<"published" | 
     // 发布前提醒：定时任务通常已由 notify.scan 提前发出（notifySentAt 非空则跳过）；立即发布在此同步补发
     await notifyBeforePublish(job).catch((err) => console.error(`[publish] 任务 #${job.id} 发布前提醒失败：`, err));
     await prisma.publishJob.update({ where: { id: job.id }, data: { status: "publishing", startedAt: new Date() } });
-    let result: "published" | "failed";
-    if (job.channel === "website") {
-      result = await publishToWebsite(job);
-    } else {
-      result = await publishToWechat(job);
-    }
+    const result = await getChannel(job.channel).publish(job);
     if (result === "published") {
       await prisma.publishJob.update({
         where: { id: job.id },
@@ -74,99 +68,6 @@ async function markFailed(job: PublishJob, errMsg: string): Promise<void> {
       link: await managerLink("publish-jobs"),
     });
   }
-}
-
-async function publishToWebsite(job: PublishJob): Promise<"published" | "failed"> {
-  if (!job.itemId) throw new Error("任务未关联 ContentItem");
-  if (job.action === "update" || job.action === "offline") {
-    return await updateOrOfflineWebsite(job);
-  }
-  const item = await prisma.contentItem.findUnique({ where: { id: job.itemId } });
-  if (!item) throw new Error("ContentItem 不存在");
-  if (item.contentType !== "markdown" && item.contentType !== "html") throw new Error(`未知内容类型 ${item.contentType}`);
-
-  const article = await prisma.article.create({
-    data: {
-      title: item.title,
-      slug: await uniqueSlug(item.title, (s) => prisma.article.findUnique({ where: { slug: s } }).then((r) => !!r)),
-      content: item.content,
-      contentType: item.contentType,
-      channel: job.contentType === "info" ? "info" : "news",
-      excerpt: item.excerpt,
-      coverImage: item.coverImage,
-      authorId: item.authorId ?? 1,
-      status: "published",
-      publishedAt: new Date(),
-    },
-  });
-  await prisma.contentChannel.create({
-    data: {
-      itemId: item.id, channel: "website", externalId: String(article.id),
-      externalUrl: `/articles/${article.id}`, status: "published", publishedAt: new Date(),
-    },
-  });
-  return "published";
-}
-
-/** update/offline 动作：作用于官网渠道已发布记录（P2-8 语义补全） */
-async function updateOrOfflineWebsite(job: PublishJob): Promise<"published" | "failed"> {
-  const channel = await prisma.contentChannel.findFirst({
-    where: { itemId: job.itemId!, channel: "website", status: "published" },
-  });
-  if (!channel?.externalId) throw new Error("未找到官网已发布记录，无法执行 update/offline");
-  const articleId = Number(channel.externalId);
-  if (job.action === "offline") {
-    await prisma.article.update({ where: { id: articleId }, data: { status: "archived" } });
-    await prisma.contentChannel.update({ where: { id: channel.id }, data: { status: "unsent", errMsg: "offline" } });
-  } else {
-    const item = await prisma.contentItem.findUnique({ where: { id: job.itemId! } });
-    if (!item) throw new Error("ContentItem 不存在");
-    await prisma.article.update({
-      where: { id: articleId },
-      data: {
-        title: item.title,
-        content: item.content,
-        excerpt: item.excerpt,
-        coverImage: item.coverImage,
-        updatedAt: new Date(),
-      },
-    });
-  }
-  return "published";
-}
-
-async function publishToWechat(job: PublishJob): Promise<"published" | "failed"> {
-  if (!job.itemId) throw new Error("任务未关联 ContentItem");
-  const item = await prisma.contentItem.findUnique({ where: { id: job.itemId } });
-  if (!item) throw new Error("ContentItem 不存在");
-  const account = job.accountId
-    ? await prisma.wechatAccount.findUnique({ where: { id: job.accountId } })
-    : await prisma.wechatAccount.findFirst({ where: { status: "active", type: "service" } });
-  if (!account) throw new Error("未配置可用的公众号账号（凭证后补即插桩，ADR-002）");
-  const secret = getWechatAccountSecret(account);
-  if (!secret) throw new Error("AppSecret 解密失败，请在后台重新保存凭证");
-
-  const result = await publishDraftToWechat(account, secret, item);
-  // 失败复用既有 failed 渠道行，防重试堆积重复记录（P2-8）
-  const existingFailed = await prisma.contentChannel.findFirst({
-    where: { itemId: item.id, channel: "wechat", accountId: account.id, status: "failed" },
-  });
-  const channelData = {
-    externalId: result.publishId ?? result.mediaId ?? null,
-    externalUrl: result.url ?? null,
-    status: result.ok ? ("published" as const) : ("failed" as const),
-    errMsg: result.ok ? null : result.errMsg ?? null,
-    publishedAt: result.ok ? new Date() : null,
-  };
-  if (existingFailed) {
-    await prisma.contentChannel.update({ where: { id: existingFailed.id }, data: channelData });
-  } else {
-    await prisma.contentChannel.create({
-      data: { itemId: item.id, channel: "wechat", accountId: account.id, ...channelData },
-    });
-  }
-  if (!result.ok) throw new Error(result.errMsg ?? "公众号发布失败");
-  return "published";
 }
 
 /** publish.scan 任务：到点任务逐个执行（串行，防频控） */

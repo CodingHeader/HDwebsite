@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getAllSettings } from "@/lib/settings";
 import { logOperation } from "@/lib/log";
 import { canTransitionContentItem } from "@/contracts/events";
+import { getChannel, isChannelKind } from "@/lib/channels/registry";
 import { ApiHttpError } from "@/lib/api-handler";
 
 type Actor = { id: number | null; username: string; ip?: string | null; userAgent?: string | null };
@@ -39,14 +40,15 @@ export async function scheduleAutoPublish(itemId: number): Promise<number[]> {
   const channels = (settings.publishAutoChannels ?? "")
     .split(/[,，\s]+/)
     .map((c) => c.trim())
-    .filter((c): c is "website" | "wechat" => c === "website" || c === "wechat");
+    .filter((c): c is "website" | "wechat" => isChannelKind(c));
   if (channels.length === 0) return [];
   const delay = Math.max(0, Number(settings.publishAutoDelayMinutes || 60));
   const scheduledAt = new Date(Date.now() + delay * 60_000);
   const created: number[] = [];
   for (const channel of channels) {
+    const impl = getChannel(channel);
     let accountId: number | null = null;
-    if (channel === "wechat") {
+    if (impl.requiresAccount) {
       const account = await prisma.wechatAccount.findFirst({ where: { status: "active", type: "service", freepublishEnabled: true } });
       if (!account) continue; // 未配置服务号：不建公众号任务（凭证后补，ADR-002）
       accountId = account.id;
@@ -60,7 +62,7 @@ export async function scheduleAutoPublish(itemId: number): Promise<number[]> {
         itemId,
         channel,
         accountId,
-        contentType: channel === "wechat" ? "wechat" : "article",
+        contentType: impl.defaultContentType,
         action: "publish",
         status: "scheduled",
         scheduledAt,
