@@ -143,11 +143,11 @@ type Options = {
 export function withApi<P = Record<string, string>>(
   handler: (ctx: ApiContext<P, true>) => Promise<Response>,
   options: Options & ({ permission: string } | { auth: true })
-): (request: Request, ctx: RouteCtx<P>) => Promise<Response>;
+): (request: Request, ctx?: RouteCtx<P>) => Promise<Response>;
 export function withApi<P = Record<string, string>>(
   handler: (ctx: ApiContext<P, false>) => Promise<Response>,
   options?: Options
-): (request: Request, ctx: RouteCtx<P>) => Promise<Response>;
+): (request: Request, ctx?: RouteCtx<P>) => Promise<Response>;
 export function withApi<P>(
   handler: (ctx: ApiContext<P, boolean>) => Promise<Response>,
   options: Options = {}
