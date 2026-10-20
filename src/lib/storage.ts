@@ -15,6 +15,30 @@
  */
 import path from "node:path";
 
+/** 上传/采集共用的 MIME 类型 → 扩展名白名单（D-12：单一来源，上传与采集共用） */
+export const UPLOAD_MIME_EXT: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "video/mp4": ".mp4",
+  "application/pdf": ".pdf",
+};
+
+/** 上传单文件大小上限（字节） */
+export const UPLOAD_MAX_SIZE = 20 * 1024 * 1024;
+
+/** 采集图片下载大小上限（字节）—— 超过立即中止该图，留原链 */
+export const COLLECT_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
+
+/** 采集图片允许的 MIME 类型（仅图片；PDF/视频不入采集转存） */
+export const COLLECT_IMAGE_TYPES: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+};
+
 /**
  * 数据根：环境变量 DATA_DIR 显式设置时以其为根（解析为绝对路径）；否则回退项目根。
  * 各公开 Dir 函数统一经此解析，实现"路径与 cwd 解耦"。

@@ -9,20 +9,13 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { created, error, serverError } from "@/lib/api-response";
-import { uploadsDir } from "@/lib/storage";
+import { uploadsDir, UPLOAD_MIME_EXT, UPLOAD_MAX_SIZE } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED_TYPES: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-  "video/mp4": ".mp4",
-  "application/pdf": ".pdf",
-};
-const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+const ALLOWED_TYPES = UPLOAD_MIME_EXT;
+const MAX_SIZE = UPLOAD_MAX_SIZE;
 
 type ThumbnailSet = { thumb?: string; small?: string; medium?: string };
 
