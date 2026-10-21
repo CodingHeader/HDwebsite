@@ -39,10 +39,15 @@ registerJob("publish.scan", async () => {
 });
 
 // ── 通知与提醒（S5）──
+// W2-08（B-06 CCR 落地）：notify.scan 除两个扫描外，还要把「静默时段内被推迟」的通知放出来。
+// B-06 的 notifyEvent 在静默时段内不直接发送，而是写入 deferred 队列；
+// 若没有 flushDeferred 的调用点，被推迟的通知将永远滞留（静默期结束后也发不出去）。
 registerJob("notify.scan", async () => {
-  const { notifyRetryScan, publishRemindScan } = await import("@/lib/notify-gateway");
+  const { notifyRetryScan, publishRemindScan, flushDeferred } = await import("@/lib/notify-gateway");
   await publishRemindScan();
   await notifyRetryScan();
+  // 静默期结束后的补偿发送：置于两个扫描之后，保证本轮新产生的 deferred 也尽量被覆盖
+  await flushDeferred();
 });
 
 registerJob("retry.failed", async () => {
