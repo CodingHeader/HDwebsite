@@ -50,9 +50,9 @@ test("键盘排序 → 保存 → 刷新顺序保持", async ({ page }) => {
   expect((await panelAfter.locator("li").first().locator("span").nth(1).innerText()).trim()).toBe(secondName);
 });
 
-test("用量 Tab：C-11 未合并 → 错误态（用量数据断言待 C-11，W2-05 复跑）", async ({ page }) => {
+test("用量 Tab：C-11 已合并 → 用量表格渲染（e2e.db 无用量 → 空态文案）", async ({ page }) => {
   await page.goto("/manager/llm-providers");
   await page.getByRole("tab", { name: "用量统计" }).click();
-  // C-11 未合并：/api/llm/usage 404 → ErrorState（可跑）；用量聚合数据断言待 C-11 合并后复跑
-  await expect(page.getByTestId("error-state").first()).toBeVisible({ timeout: 15_000 });
+  // C-11 已合并：/api/llm/usage 正常返回（e2e.db 无 LLMUsage → 空态文案），不再走错误态
+  await expect(page.getByTestId("usage-table")).toBeVisible({ timeout: 15_000 });
 });
