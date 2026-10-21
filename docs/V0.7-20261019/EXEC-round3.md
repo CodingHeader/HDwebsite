@@ -132,3 +132,63 @@ npx vitest run tests/contract/routes.test.ts
 - W2-02 卡定义的核心验收（`npx vitest run tests/contract` 通过、覆盖率 100%、skip ≤5 且带理由、通用门禁四项 exit 0）**全部达成**。
 - 修复过程**未使用任何放宽断言来掩盖失败**：148 个失败中 147 个是测试侧缺陷（已被正确修复），1 个是真实业务缺陷（F-01，已登记并移交归属线，没有靠 skip 假装通过）。
 - 顺序无关性已实测（shuffle 通过），这是本轮相对上一轮最实质的改进。
+
+## 8. 补记（外部执行方，2026-10-21 22:10）：64 提交离盘备份 + W2 证据核查
+
+本节由外部执行方追加，只记录可复现的事实，不补造任何证据文件。
+
+### 8.1 W2 系列在 evidence 目录下没有任何证据
+
+```
+$ ls docs/V0.7-20261019/evidence | grep -i "w2"
+（无输出）
+$ ls docs/V0.7-20261019/ | grep -i "w2"
+（无输出）
+```
+
+结论：W2-06 / W2-07 / W2-08 的「未开工」不只是卡没做，而是**证据从未落盘、卡文件也不在该目录**。本执行方据此不写任何 W2 证据，只登记事实。
+
+### 8.2 64 个提交的离盘备份（E: 盘以外）
+
+远端 `origin/upgrade` = `61d546e`，本地 `upgrade` = `8d79fa8`，`git rev-list --left-right --count origin/upgrade...HEAD` → `0  64`。推送因权限被拒（`Permission to CodingHeader/HDwebsite.git denied to nevermeetagain` / `error: 403`），改用 bundle 备份。
+
+存放位置：`C:\Users\EDY\backups\HDwebsite\`（C 盘，与仓库所在的 E 盘不同物理盘）
+
+**① 增量 bundle（按指令命令生成）**
+
+```
+$ git bundle create .../HDwebsite-upgrade-8d79fa8.bundle origin/upgrade..HEAD
+$ git bundle verify .../HDwebsite-upgrade-8d79fa8.bundle
+... is okay
+The bundle contains this ref: 8d79fa82d9dd7b2b878b663b1a5be9b255163a18 HEAD
+The bundle requires this ref: 61d546ec8775c9d0b6ecc5a5e4d1d0cc178f1568
+大小 477,287 bytes
+sha256 9dfec82545a4e15d9e57703b92b39a545ca0fa3762ed39b943ced2fcd38c1acc
+```
+
+**② 自包含全量 bundle（额外补做，避免恢复时依赖 GitHub 仍在）**
+
+```
+$ git bundle create .../HDwebsite-upgrade-8d79fa8-full.bundle --all
+$ git bundle verify .../HDwebsite-upgrade-8d79fa8-full.bundle
+... is okay
+The bundle contains these 8 refs（含 refs/heads/upgrade = 8d79fa8、refs/heads/main = 94dbbbb）
+大小 193,630,099 bytes
+sha256 059ec1d7369007f291a47da36d863425fcd76763859e935f7d460fa7624543ff
+```
+
+**③ 可恢复性实测（从 bundle 克隆，验证完即删）**
+
+```
+$ git clone --branch upgrade <full.bundle> <临时目录>
+HEAD=8d79fa82d9dd7b2b878b663b1a5be9b255163a18
+count=198
+8d79fa8 可达
+```
+
+### 8.3 根目录现状与一处口径偏差
+
+- 16 个 `w*.out` 已不在仓库根目录（`ls -1 w*.out` 无输出、`git ls-files "w*.out"` 为 0）。**不是本执行方删除的**，删除者与时间未知。
+- `.openclaw` / `IDENTITY.md` / `USER.md` 仍在根目录，但已被写入 `scripts/check-root.mjs` 的 `WHITELIST`（工作区改动 `+5` 行，未提交）。这与「不删、不加 WHITELIST、等用户认领」的口径不一致，本执行方未改该文件、也未回退他人改动，仅登记待认领。
+- 当前 `node scripts/check-root.mjs` 只剩 1 条违规：`.eslint.config.mjs.artifact.json`（本轮新出现的构建产物）。
+

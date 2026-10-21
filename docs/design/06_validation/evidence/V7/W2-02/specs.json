@@ -1,0 +1,250 @@
+[
+ {
+  "file": "site.ts",
+  "key": "banners",
+  "model": "banner",
+  "permission": "banner",
+  "label": "轮播图",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "campus",
+  "model": "campus",
+  "permission": "campus",
+  "label": "校区",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "campus-images",
+  "model": "campusImage",
+  "permission": "campus",
+  "label": "校区图片",
+  "create": true
+ },
+ {
+  "file": "content.ts",
+  "key": "categories",
+  "model": "category",
+  "permission": "category",
+  "label": "分类",
+  "create": true
+ },
+ {
+  "file": "kb-ai.ts",
+  "key": "chat-scenes",
+  "model": "chatScene",
+  "permission": "setting",
+  "label": "AI 场景",
+  "create": true
+ },
+ {
+  "file": "collect.ts",
+  "key": "collect-sources",
+  "model": "collectSource",
+  "permission": "collect",
+  "label": "采集源",
+  "create": true
+ },
+ {
+  "file": "collect.ts",
+  "key": "collect-tasks",
+  "model": "collectTask",
+  "permission": "collect",
+  "label": "采集任务",
+  "create": false
+ },
+ {
+  "file": "site.ts",
+  "key": "content-blocks",
+  "model": "contentBlock",
+  "permission": "block",
+  "label": "内容区块",
+  "create": true
+ },
+ {
+  "file": "content.ts",
+  "key": "content-items",
+  "model": "",
+  "permission": "",
+  "label": "",
+  "create": true
+ },
+ {
+  "file": "content.ts",
+  "key": "courses",
+  "model": "course",
+  "permission": "course",
+  "label": "课程",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "element-configs",
+  "model": "elementConfig",
+  "permission": "block",
+  "label": "元素配置",
+  "create": true
+ },
+ {
+  "file": "content.ts",
+  "key": "enrollment-offerings",
+  "model": "enrollmentOffering",
+  "permission": "enrollment",
+  "label": "招生计划",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "gallery",
+  "model": "gallery",
+  "permission": "gallery",
+  "label": "证书风采",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "home-cards",
+  "model": "homeCard",
+  "permission": "banner",
+  "label": "首页卡片",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "hot-majors",
+  "model": "hotMajor",
+  "permission": "course",
+  "label": "热门专业",
+  "create": true
+ },
+ {
+  "file": "kb-ai.ts",
+  "key": "knowledge",
+  "model": "knowledge",
+  "permission": "kb",
+  "label": "知识条目",
+  "create": true
+ },
+ {
+  "file": "system.ts",
+  "key": "logs",
+  "model": "operationLog",
+  "permission": "log",
+  "label": "操作日志",
+  "create": false
+ },
+ {
+  "file": "content.ts",
+  "key": "majors",
+  "model": "major",
+  "permission": "major",
+  "label": "专业",
+  "create": true
+ },
+ {
+  "file": "media.ts",
+  "key": "media",
+  "model": "",
+  "permission": "",
+  "label": "",
+  "create": false
+ },
+ {
+  "file": "site.ts",
+  "key": "navigations",
+  "model": "navigation",
+  "permission": "navigation",
+  "label": "导航",
+  "create": true
+ },
+ {
+  "file": "system.ts",
+  "key": "notify-recipients",
+  "model": "notifyRecipient",
+  "permission": "notify",
+  "label": "提醒接收人",
+  "create": true
+ },
+ {
+  "file": "system.ts",
+  "key": "notify-records",
+  "model": "notifyRecord",
+  "permission": "notify",
+  "label": "通知记录",
+  "create": false
+ },
+ {
+  "file": "system.ts",
+  "key": "notify-templates",
+  "model": "notifyTemplate",
+  "permission": "notify",
+  "label": "邮件模板",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "page-templates",
+  "model": "pageTemplate",
+  "permission": "block",
+  "label": "页面模板",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "partners",
+  "model": "partner",
+  "permission": "partner",
+  "label": "合作院校",
+  "create": true
+ },
+ {
+  "file": "collect.ts",
+  "key": "publish-jobs",
+  "model": "publishJob",
+  "permission": "publish",
+  "label": "发布任务",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "service-guides",
+  "model": "serviceGuide",
+  "permission": "service",
+  "label": "服务指南",
+  "create": true
+ },
+ {
+  "file": "content.ts",
+  "key": "students",
+  "model": "student",
+  "permission": "student",
+  "label": "报名线索",
+  "create": true
+ },
+ {
+  "file": "content.ts",
+  "key": "tags",
+  "model": "tag",
+  "permission": "tag",
+  "label": "标签",
+  "create": true
+ },
+ {
+  "file": "site.ts",
+  "key": "template-blocks",
+  "model": "templateBlock",
+  "permission": "block",
+  "label": "模板区块",
+  "create": true
+ },
+ {
+  "file": "system.ts",
+  "key": "user-actions",
+  "model": "userAction",
+  "permission": "log",
+  "label": "行为记录",
+  "create": false
+ }
+]

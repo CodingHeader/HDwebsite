@@ -1,0 +1,1380 @@
+[
+ {
+  "route": "/apply",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/articles",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/articles/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE",
+   "PATCH"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/auth/login",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/auth/logout",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/auth/me",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/auth/refresh",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/banners",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/banners/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/campus",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/campus/:id/images",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/campus/:id/images/:imageId",
+  "methods": [
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/campus/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/campus-images",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/campus-images/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/categories",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/categories/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/chat/stream",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/chat-history",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/chat-history/:id",
+  "methods": [
+   "GET",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/chat-scenes",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/chat-scenes/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/collect-items",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/collect-items/:id",
+  "methods": [
+   "PATCH"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/collect-sources",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/collect-sources/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/collect-sources/:id/run",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/collect-sources/:id/test",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/collect-tasks",
+  "methods": [
+   "GET"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudList"
+  ]
+ },
+ {
+  "route": "/content-blocks",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/content-blocks/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/content-items",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/content-items/:id/review",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/content-items/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/courses",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/courses/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/element-configs",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/element-configs/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/enrollment-offerings",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/enrollment-offerings/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/file/:...path",
+  "methods": [],
+  "kind": "empty",
+  "crudKinds": []
+ },
+ {
+  "route": "/gallery",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/gallery/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/health",
+  "methods": [],
+  "kind": "empty",
+  "crudKinds": []
+ },
+ {
+  "route": "/home-blocks/registry",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/home-blocks/reset",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/home-cards",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/home-cards/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/hot-majors",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/hot-majors/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/kb/test",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/knowledge/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/knowledge-bases",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-bases/sync",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-bases/:id/export",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-bases/:id/rebuild",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-bases/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-bases/:id/stats",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files/batch",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files/trash",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files/:id/chunks/:chunkId",
+  "methods": [
+   "PATCH"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files/:id/progress",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files/:id/reparse",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/knowledge-files/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/llm/providers/order",
+  "methods": [
+   "PUT",
+   "PATCH"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/llm/providers",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/llm/providers/:id/balance",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/llm/providers/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/llm/providers/:id/test",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/llm/usage",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/logs",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/majors",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/majors/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/manager/dashboard",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/manager-menus",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/media/batch",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/media",
+  "methods": [
+   "GET"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudList"
+  ]
+ },
+ {
+  "route": "/media/:id",
+  "methods": [
+   "GET",
+   "DELETE",
+   "PATCH"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudDelete",
+   "crudGet",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/navigations",
+  "methods": [
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/navigations/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/notify-recipients",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/notify-recipients/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/notify-records",
+  "methods": [
+   "GET"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudList"
+  ]
+ },
+ {
+  "route": "/notify-rules",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/notify-rules/:id",
+  "methods": [
+   "PATCH"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/notify-templates",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/notify-templates/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/page-templates",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/page-templates/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/partners",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/partners/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/publish-jobs",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/publish-jobs/:id/cancel",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/publish-jobs/:id/retry",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/publish-jobs/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/roles",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/roles/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/route.ts",
+  "methods": [],
+  "kind": "empty",
+  "crudKinds": []
+ },
+ {
+  "route": "/service-guides",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/service-guides/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/settings/definitions",
+  "methods": [
+   "GET"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/settings/email/test",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/settings",
+  "methods": [
+   "GET",
+   "PUT"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/students",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/students/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/tags",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/tags/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/template-blocks",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudCreate",
+   "crudList",
+   "crudCreate"
+  ]
+ },
+ {
+  "route": "/template-blocks/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudGet",
+   "crudUpdate",
+   "crudDelete",
+   "crudGet",
+   "crudUpdate",
+   "crudDelete"
+  ]
+ },
+ {
+  "route": "/upload",
+  "methods": [],
+  "kind": "empty",
+  "crudKinds": []
+ },
+ {
+  "route": "/user-actions",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "crud",
+  "crudKinds": [
+   "crudList",
+   "crudList"
+  ]
+ },
+ {
+  "route": "/users",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/users/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/wechat/accounts",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/wechat/accounts/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/wechat/accounts/:id/test",
+  "methods": [
+   "POST"
+  ],
+  "kind": "hand",
+  "crudKinds": []
+ },
+ {
+  "route": "/wechat/callback",
+  "methods": [],
+  "kind": "empty",
+  "crudKinds": []
+ }
+]

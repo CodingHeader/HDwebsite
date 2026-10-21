@@ -43,3 +43,8 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI 编码助手的文件写入标记（box-agent 在每个被编辑文件旁生成 .<name>.artifact.json，
+# 内容形如 {"retain_for_chat":true}；属运行时产物，绝不入库）
+**/.*.artifact.json
+
