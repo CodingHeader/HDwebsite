@@ -1,0 +1,1057 @@
+[
+ {
+  "route": "/apply",
+  "methods": [
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/articles/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE",
+   "PATCH"
+  ],
+  "perms": [
+   "article:edit",
+   "article:delete",
+   "article:publish"
+  ]
+ },
+ {
+  "route": "/articles",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "article:create"
+  ]
+ },
+ {
+  "route": "/auth/login",
+  "methods": [
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/auth/logout",
+  "methods": [
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/auth/me",
+  "methods": [
+   "GET"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/auth/refresh",
+  "methods": [
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/banners/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/banners",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/campus-images/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/campus-images",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/campus/:id/images/:imageId",
+  "methods": [
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "campus:edit",
+   "campus:delete"
+  ]
+ },
+ {
+  "route": "/campus/:id/images",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "campus:list",
+   "campus:create"
+  ]
+ },
+ {
+  "route": "/campus/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/campus",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/categories/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/categories",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/chat-history/:id",
+  "methods": [
+   "GET",
+   "DELETE"
+  ],
+  "perms": [
+   "log:list",
+   "log:delete"
+  ]
+ },
+ {
+  "route": "/chat-history",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "log:list"
+  ]
+ },
+ {
+  "route": "/chat-scenes/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/chat-scenes",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/chat/stream",
+  "methods": [
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/collect-items/:id",
+  "methods": [
+   "PATCH"
+  ],
+  "perms": [
+   "review:edit"
+  ]
+ },
+ {
+  "route": "/collect-items",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "collect:list"
+  ]
+ },
+ {
+  "route": "/collect-sources/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/collect-sources/:id/run",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "collect:edit"
+  ]
+ },
+ {
+  "route": "/collect-sources/:id/test",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "collect:edit"
+  ]
+ },
+ {
+  "route": "/collect-sources",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/collect-tasks",
+  "methods": [
+   "GET"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/content-blocks/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/content-blocks",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/content-items/:id/review",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "review:edit"
+  ]
+ },
+ {
+  "route": "/content-items/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/content-items",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/courses/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/courses",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/element-configs/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/element-configs",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/enrollment-offerings/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/enrollment-offerings",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/file/:...path",
+  "methods": [],
+  "perms": []
+ },
+ {
+  "route": "/gallery/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/gallery",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/health",
+  "methods": [],
+  "perms": []
+ },
+ {
+  "route": "/home-blocks/registry",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "block:list"
+  ]
+ },
+ {
+  "route": "/home-blocks/reset",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "block:edit"
+  ]
+ },
+ {
+  "route": "/home-cards/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/home-cards",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/hot-majors/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/hot-majors",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/kb/test",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "kb:list"
+  ]
+ },
+ {
+  "route": "/knowledge-bases/:id/export",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "kb:list"
+  ]
+ },
+ {
+  "route": "/knowledge-bases/:id/rebuild",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "kb:edit"
+  ]
+ },
+ {
+  "route": "/knowledge-bases/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "kb:list",
+   "kb:edit",
+   "kb:delete"
+  ]
+ },
+ {
+  "route": "/knowledge-bases/:id/stats",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "kb:list"
+  ]
+ },
+ {
+  "route": "/knowledge-bases",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "kb:list",
+   "kb:create"
+  ]
+ },
+ {
+  "route": "/knowledge-bases/sync",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "kb:edit"
+  ]
+ },
+ {
+  "route": "/knowledge-files/:id/chunks/:chunkId",
+  "methods": [
+   "PATCH"
+  ],
+  "perms": [
+   "kb:edit"
+  ]
+ },
+ {
+  "route": "/knowledge-files/:id/progress",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "kb:list"
+  ]
+ },
+ {
+  "route": "/knowledge-files/:id/reparse",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "kb:edit"
+  ]
+ },
+ {
+  "route": "/knowledge-files/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "kb:list",
+   "kb:edit",
+   "kb:delete"
+  ]
+ },
+ {
+  "route": "/knowledge-files/batch",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "kb:edit"
+  ]
+ },
+ {
+  "route": "/knowledge-files",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "kb:list",
+   "kb:create"
+  ]
+ },
+ {
+  "route": "/knowledge-files/trash",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "kb:edit"
+  ]
+ },
+ {
+  "route": "/knowledge/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/knowledge",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/llm/providers/:id/balance",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "llm:edit"
+  ]
+ },
+ {
+  "route": "/llm/providers/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "llm:list",
+   "llm:edit"
+  ]
+ },
+ {
+  "route": "/llm/providers/:id/test",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "llm:edit"
+  ]
+ },
+ {
+  "route": "/llm/providers/order",
+  "methods": [
+   "PUT",
+   "PATCH"
+  ],
+  "perms": [
+   "llm:edit"
+  ]
+ },
+ {
+  "route": "/llm/providers",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "llm:list",
+   "llm:edit"
+  ]
+ },
+ {
+  "route": "/llm/usage",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "llm:list"
+  ]
+ },
+ {
+  "route": "/logs",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "log:list"
+  ]
+ },
+ {
+  "route": "/majors/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/majors",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/manager-menus",
+  "methods": [
+   "GET"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/manager/dashboard",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "article:list"
+  ]
+ },
+ {
+  "route": "/media/:id",
+  "methods": [
+   "GET",
+   "DELETE",
+   "PATCH"
+  ],
+  "perms": [
+   "media:edit"
+  ]
+ },
+ {
+  "route": "/media/batch",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "media:list"
+  ]
+ },
+ {
+  "route": "/media",
+  "methods": [
+   "GET"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/navigations/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/navigations",
+  "methods": [
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/notify-recipients/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/notify-recipients",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/notify-records",
+  "methods": [
+   "GET"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/notify-rules/:id",
+  "methods": [
+   "PATCH"
+  ],
+  "perms": [
+   "notify:edit"
+  ]
+ },
+ {
+  "route": "/notify-rules",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "notify:list"
+  ]
+ },
+ {
+  "route": "/notify-templates/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/notify-templates",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/page-templates/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/page-templates",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/partners/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/partners",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/publish-jobs/:id/cancel",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "publish:edit"
+  ]
+ },
+ {
+  "route": "/publish-jobs/:id/retry",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "publish:edit"
+  ]
+ },
+ {
+  "route": "/publish-jobs/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/publish-jobs",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "publish:create"
+  ]
+ },
+ {
+  "route": "/roles/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "role:list",
+   "role:edit",
+   "role:delete"
+  ]
+ },
+ {
+  "route": "/roles",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "role:list",
+   "role:create"
+  ]
+ },
+ {
+  "route": "/route.ts",
+  "methods": [],
+  "perms": []
+ },
+ {
+  "route": "/service-guides/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/service-guides",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/settings/definitions",
+  "methods": [
+   "GET"
+  ],
+  "perms": [
+   "setting:list"
+  ]
+ },
+ {
+  "route": "/settings/email/test",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "setting:edit"
+  ]
+ },
+ {
+  "route": "/settings",
+  "methods": [
+   "GET",
+   "PUT"
+  ],
+  "perms": [
+   "setting:edit"
+  ]
+ },
+ {
+  "route": "/students/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/students",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/tags/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/tags",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/template-blocks/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/template-blocks",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/upload",
+  "methods": [],
+  "perms": []
+ },
+ {
+  "route": "/user-actions",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": []
+ },
+ {
+  "route": "/users/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "user:list",
+   "user:edit",
+   "user:delete"
+  ]
+ },
+ {
+  "route": "/users",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "user:list",
+   "user:create"
+  ]
+ },
+ {
+  "route": "/wechat/accounts/:id",
+  "methods": [
+   "GET",
+   "PUT",
+   "DELETE"
+  ],
+  "perms": [
+   "wechat:list",
+   "wechat:edit"
+  ]
+ },
+ {
+  "route": "/wechat/accounts/:id/test",
+  "methods": [
+   "POST"
+  ],
+  "perms": [
+   "wechat:edit"
+  ]
+ },
+ {
+  "route": "/wechat/accounts",
+  "methods": [
+   "GET",
+   "POST"
+  ],
+  "perms": [
+   "wechat:list",
+   "wechat:edit"
+  ]
+ },
+ {
+  "route": "/wechat/callback",
+  "methods": [],
+  "perms": []
+ }
+]
