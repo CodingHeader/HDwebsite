@@ -67,6 +67,29 @@ test("渠道预览 Tab：官网与公众号渲染", async ({ page, request }) =>
   await expect(dlg.getByTestId("hub-preview-wechat")).toBeVisible();
 });
 
+test("渠道状态列：渲染服务端组装视图（官网/公众号 Badge）", async ({ page, request }) => {
+  const token = await pageToken(page);
+  const id = await createItem(page, request, `E2E 中枢渠道态 ${Date.now()}`);
+  // 审核通过（admin 超管，review:edit）
+  const rv = await request.post(`/api/content-items/${id}/review`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { decision: "approved" },
+  });
+  expect((await rv.json()).code, "审核通过失败").toBe(200);
+  // 建官网发布任务（immediate）
+  const pj = await request.post("/api/publish-jobs", {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { itemId: id, channel: "website", contentType: "article", action: "publish" },
+  });
+  expect((await pj.json()).code, "创建发布任务失败").toBe(200);
+
+  await page.goto("/manager/content-hub");
+  const row = page.getByTestId("content-hub-table").locator("tbody tr").filter({ hasText: `E2E 中枢渠道态` });
+  await expect(row).toBeVisible({ timeout: 15_000 });
+  // 渠道状态列容器已渲染（服务端 channels 视图；具体状态由 scan 异步驱动，不断言值）
+  await expect(row.getByTestId("channel-states").first()).toBeVisible();
+});
+
 test.describe("权限门禁（viewer）", () => {
   test.use({ storageState: viewerState() });
   test("无 publish 权限时发布入口不可见", async ({ page }) => {

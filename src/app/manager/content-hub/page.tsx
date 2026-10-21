@@ -1,17 +1,18 @@
 "use client";
 
 /**
- * 内容中枢统一管理（E-09）：多渠道状态列 + 发布对话框（渠道多选/立即/定时/发布前提醒）+ 渠道预览 Tab
- * - 渠道状态列：GET /api/publish-jobs 按 itemId 聚合各渠道最近任务状态（B-07 多渠道映射：每渠道一条 PublishJob）；
- *   B-07 合并后切换契约聚合视图 GET /api/content-hub（contentHubItemSchema.channels 服务端组装）——W2 复跑调整口径
- * - 发布：POST /api/publish-jobs { channels: [..1~2 个] }（CCR-1 多渠道；后端按渠道各建一条）
+ * 内容中枢统一管理（E-09 + V7-UI-01）：渠道状态列（服务端组装）+ 发布对话框（渠道多选/立即/定时/发布前提醒）+ 渠道预览 Tab
+ * - 渠道状态列：消费 B-07 `/api/content-items` 返回的 `channels`（`channelStateSchema`，ADR-034 派生字段）；
+ *   失败态可重试（POST /api/publish-jobs/[id]/retry，jobId 由本页从列表解析，幂等键沿用契约）
+ * - 发布：POST /api/publish-jobs { channels: [..1~2 个] }（CCR-1 多渠道；后端按渠道各建一条，事务回滚）
  * - 预览：官网 Tab 用前台同款 Markdown 语义样式渲染（不引用 web 组件）；公众号 Tab 简化样式卡片
- * - 权限：无 publish:create 权限（且非超管）时发布入口不可见（SessionUser.role.permissions）
+ * - 权限：无 publish:create 权限（且非超管）时发布入口不可见；重试需 publish:edit（ADR-035）
  */
 import { useMemo, useState } from "react";
 import { Send, Trash2, Eye } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
+import { type ChannelState } from "@/contracts/content-hub";
 import { useAuthStore } from "@/store/authStore";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
@@ -23,22 +24,13 @@ import { Checkbox, DateTimeInput, Select, Switch } from "@/components/manager/ui
 import { SearchInput } from "@/components/manager/SearchInput";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
-import { Badge } from "@/components/manager/ui/misc";
-import { StatusBadge, type Tone } from "@/components/manager/StatusBadge";
+import { ChannelStates } from "@/components/manager/publish/ChannelStates";
+import { StatusBadge } from "@/components/manager/StatusBadge";
 
-type Row = { id: number; title: string; contentType: string; source: string; status: string; author?: string | null; createdAt: string };
+type Row = { id: number; title: string; contentType: string; source: string; status: string; author?: string | null; createdAt: string; channels?: ChannelState[] };
 type ListData = { list: Row[]; pagination: { page: number; totalPages: number; total?: number } };
+/** jobsQ 仅用于解析重试所需 PublishJob.id（契约 channelState 不含 jobId） */
 type Job = { id: number; itemId: number | null; channel: string; status: string; createdAt: string };
-
-const JOB_STATUS: Record<string, { label: string; tone: Tone }> = {
-  draft: { label: "草稿", tone: "muted" },
-  pending: { label: "待发布", tone: "info" },
-  scheduled: { label: "已排期", tone: "warning" },
-  publishing: { label: "发布中", tone: "info" },
-  published: { label: "已发布", tone: "success" },
-  failed: { label: "失败", tone: "danger" },
-  cancelled: { label: "已取消", tone: "muted" },
-};
 
 const CHANNEL_LABEL: Record<string, string> = { website: "官网", wechat: "公众号" };
 const SOURCE_LABEL: Record<string, string> = { manual: "手动", collect: "采集" };
@@ -62,6 +54,7 @@ export default function ContentHubPage() {
 
   const user = useAuthStore((s) => s.user);
   const canPublish = user?.role?.isSuper || user?.role?.permissions?.includes("publish:create") || false;
+  const canRetry = user?.role?.isSuper || user?.role?.permissions?.includes("publish:edit") || false;
 
   const [publishing, setPublishing] = useState<Row | null>(null);
   const [viewing, setViewing] = useState<Row | null>(null);
@@ -81,17 +74,26 @@ export default function ContentHubPage() {
   });
 
   const list = useMemo(() => itemsQ.data?.list ?? [], [itemsQ.data]);
-  const channelsOf = useMemo(() => {
-    const map = new Map<string, Map<string, Job>>();
+  // 仅用于解析重试所需 PublishJob.id（channelState 契约无 jobId）；不做渠道状态展示
+  const failedJobIdsOf = useMemo(() => {
+    const map = new Map<string, number>();
     for (const j of jobsQ.data?.list ?? []) {
-      if (j.itemId == null) continue;
-      const per = map.get(String(j.itemId)) ?? new Map<string, Job>();
-      const prev = per.get(j.channel);
-      if (!prev || j.id > prev.id) per.set(j.channel, j);
-      map.set(String(j.itemId), per);
+      if (j.itemId == null || j.status !== "failed") continue;
+      const key = `${j.itemId}:${j.channel}`;
+      const prev = map.get(key);
+      if (prev == null || j.id > prev) map.set(key, j.id);
     }
     return map;
   }, [jobsQ.data]);
+
+  function resolveJobId(itemId: number, channel: string): number | null {
+    return failedJobIdsOf.get(`${itemId}:${channel}`) ?? null;
+  }
+
+  function onRetried() {
+    void itemsQ.reload();
+    void jobsQ.reload();
+  }
 
   function openPublish(row: Row) {
     setPublishing(row);
@@ -195,22 +197,15 @@ export default function ContentHubPage() {
     {
       key: "channels",
       label: "渠道状态",
-      render: (r) => {
-        const per = channelsOf.get(String(r.id));
-        if (!per || per.size === 0) return <span className="text-mgr-muted-fg">未发布</span>;
-        return (
-          <span className="inline-flex flex-wrap gap-1">
-            {[...per.entries()].map(([ch, job]) => {
-              const st = JOB_STATUS[job.status] ?? { label: job.status, tone: "muted" as Tone };
-              return (
-                <Badge key={ch} tone={st.tone === "muted" ? "neutral" : st.tone} title={`${CHANNEL_LABEL[ch] ?? ch}：${st.label}`}>
-                  {CHANNEL_LABEL[ch] ?? ch}·{st.label}
-                </Badge>
-              );
-            })}
-          </span>
-        );
-      },
+      render: (r) => (
+        <ChannelStates
+          itemId={r.id}
+          channels={r.channels ?? []}
+          canRetry={canRetry}
+          resolveJobId={resolveJobId}
+          onRetried={onRetried}
+        />
+      ),
     },
     { key: "author", label: "作者", render: (r) => (typeof r.author === "string" ? r.author : r.author && typeof r.author === "object" ? String((r.author as { username?: string }).username ?? "—") : "—") },
     { key: "createdAt", label: "创建时间", render: (r) => r.createdAt?.slice(0, 16).replace("T", " ") },
