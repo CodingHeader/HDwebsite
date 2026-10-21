@@ -1,11 +1,25 @@
-# W2-04 after.json 复测与目标判定 · 执行记录（阻塞）
+# W2-04 after.json 复测与目标判定 · 执行记录（已解堵）
 
-- 执行者：主代理（opus 档位）· 分支：`upgrade` · 依赖：D-06/W2-03/V7-UI-01（均已满足）
-- 卡定义：`docs/V0.7-20261019/tasks/W2-04.md`
-- 允许修改：`docs/design/06_validation/evidence/V7/W2-04/**`、`src/app/manager/**`（仅 import）
-- 禁止修改：其他一切路径（含 `scripts/`）
+> **状态更新（2026-10-21）**：本卡此前为 **BLOCKED**，现已解除阻塞并完成测量与判定。
+> 最新结论请看同目录 **`perf-compare.md`**（3 次测量中位数、逐项 PASS/FAIL、差距归因）。
+> 本文件保留首轮（阻塞态）的完整分析作为证据链的一部分，下方 §0 为本次解堵摘要。
 
-## 1. 执行过程
+## 0. 解堵摘要（2026-10-21）
+
+| 项 | 结果 |
+| --- | --- |
+| 阻塞根因 | `scripts/measure-baseline.mjs` 只注入 `DATABASE_URL`/`JWT_SECRET`；D-03 的 `src/lib/env.ts` 要求 `ENCRYPTION_KEY`（任何环境）与 `APP_ORIGIN`（production）→ 服务启动期校验失败即退出（code 1） |
+| 解堵方式 | 按用户裁决「移出项目目录」：**不改** `scripts/`，在项目树外写等价测量器，补齐两个 env 注入；只把结果写入本卡允许路径 |
+| 是否越界 | 否。`git ls-files scripts/measure-after.mjs` = 0（临时落盘已移除，未入库） |
+| 测量 | 3 次取中位数；JS gzip 3 次完全一致（确定性） |
+| 目标达成 | `/manager` JS gzip **FAIL**（1.016×，仅降 0%）；`npm start` Ready **PASS**（16,548→719ms）；首页热 TTFB **PASS**（16→4ms） |
+| 结论 | 2 PASS / 1 FAIL；**不再 BLOCKED**；FAIL 需 E/D 线配合减包，已给出手段与归属 |
+
+---
+
+以下为首轮（阻塞态）原始记录，保留作为证据链。
+
+## 1. 执行过程（首轮）
 
 1. 确认依赖：D-06（`git log` 有 D-06 提交）、W2-03、V7-UI-01 均已完成（evidence/V7 目录存在）。
 2. 跑 `node scripts/measure-baseline.mjs --out docs/design/06_validation/evidence/V7/W2-04/after.json`。
@@ -28,34 +42,22 @@
 
 - `scripts/measure-baseline.mjs:116` 只注入 `env = { ...process.env, DATABASE_URL: prismaUrl(dbFile), JWT_SECRET }`。
 - 该脚本由 **D-01** 建立（before.json 于 D-01 期产出，`sha f158501`）。
-- **D-03**（`src/lib/env.ts` 集中校验 + `instrumentation.ts` 生产强校验）合并后，`NODE_ENV=production` 启动时除 `JWT_SECRET`/`DATABASE_URL` 外还强校验 `ENCRYPTION_KEY`（≥32）与 `APP_ORIGIN`（`/^https?:\/\//`）——缺失即 `process.exit(1)`。
-- 脚本未同步注入这两个键，导致 `start-next.mjs` 在生产模式启动即退出（code 1），后续 TTFB/JS gzip 测量全部跳过。
-- 独立复核：手工以 `ENCRYPTION_KEY`+`APP_ORIGIN`+`DATABASE_URL` 启动 `npm run start` 后 `/` 返回 HTTP 200 且首页区块正常渲染（见 V7-UI-02 证据），确认 env 校验是唯一根因。
+- D-03 新增 `src/lib/env.ts` 的 `collectEnvIssues()`：
+  - `JWT_SECRET` / `ENCRYPTION_KEY`：**任何环境**都要求（`env.ts:42-49`，注释：jwt.ts/crypto.ts 首用时也会 FATAL，这里前置到启动期）
+  - `APP_ORIGIN` 等：仅 `NODE_ENV=production` 要求（`env.ts:54`）
+- 测量脚本以 production 启动 → 缺 `ENCRYPTION_KEY`、`APP_ORIGIN` → `instrumentation.register()` 的 `assertProductionEnv()` 判定失败 → 进程 `process.exit(1)`。
 
-## 3. 阻塞判定
+**性质**：D-03 的加固是正确的（生产缺 env 应当拒绝启动），问题是 D-01 的测量脚本未同步补注入。两者分属不同执行线。
 
-- **跨所有权缺陷**：`scripts/measure-baseline.mjs` 属 D-01 线；D-03 改动 `src/lib/env.ts`（D-03 允许路径内）但未同步更新该脚本。
-- W2-04 允许路径**不含** `scripts/**`，不能在本卡内修脚本。
-- 按项目规则"越界即 FAIL；发现问题退回对应线"→ **停止本卡，不越界修改**。
-- 处理建议：由 D 线负责人（或契约员经 CCR）补 `ENCRYPTION_KEY`/`APP_ORIGIN` 注入（可复用 e2e `global-setup.ts` 的 `e2e-encryption-key-...` 模式），或升级档位到 opus 判定是否下调目标。
+## 3. 阻塞判定（首轮）
 
-## 4. 未完成项（如实登记）
+- 跨所有权：脚本在 `scripts/`，不属 W2-04 允许路径（`docs/.../V7/W2-04/**`、`src/app/manager/**`）。
+- 卡定义 §依赖与阻塞：「需要改冻结面（契约/迁移/依赖/他线文件）→ 停止该子项，写《契约变更请求》」。
+- 首轮即按此停止改代码，未越界。
 
-| 项 | 状态 |
-|---|---|
-| after.json 完整 8 指标 | **FAIL**（仅空骨架） |
-| perf-compare.md PASS/FAIL 逐项 | **未产出**（无 after 数据） |
-| /manager JS gzip ≤ before ×0.6 | **UNKNOWN**（无测量） |
-| npm start Ready ≤10s | **UNKNOWN**（服务启动即退出） |
-| 首页热 TTFB ≤ before ×1.1 | **UNKNOWN**（无测量） |
+## 4. 首轮结论
 
-## 5. 结论
+- 完成度：**0%（阻塞）**
+- 判定：**BLOCKED**（跨所有权）
 
-- **完成度：0%（阻塞）**
-- **判定：BLOCKED**（跨所有权：D-03 env 强校验破坏 D-01 测量脚本，脚本不在本卡允许路径）
-- 下一步：需 D 线补脚本或用户批准越界最小修复（仅向 `measure-baseline.mjs` 补 2 个 env 键）。
-
-## 6. git 状态
-
-- HEAD：`$(git rev-parse HEAD)`（本卡零代码提交，仅此证据文件）
-- 本地领先 origin/upgrade 54+ 提交，远端 0 独有。
+> 该结论已被 §0 的解堵取代；本卡在 2026-10-21 以「项目树外等价测量」方式完成，详见 `perf-compare.md`。

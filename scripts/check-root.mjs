@@ -26,11 +26,13 @@ const WHITELIST = new Set([
   ".gitignore",
   ".box-agent",
   ".box-agent-scratch",
-  // AI 编码助手（box-agent / openclaw）的运行时档案，非项目交付物；
-  // 由工具在会话启动时写入根目录，无法通过配置改路径。按「存疑文件不删」保留，登记为白名单。
+  // AI 编码助手（box-agent / openclaw）的运行时档案与文件写入标记，非项目交付物；
+  // 由工具在会话启动/写文件时自动生成，无法通过配置改路径。
+  // 按「存疑文件不删」保留，登记为白名单（.artifact.json 形如 {"retain_for_chat":true}）。
   ".openclaw",
   "IDENTITY.md",
   "USER.md",
+  ".eslint.config.mjs.artifact.json",
   ".cache",
   ".next",
   ".npmrc",

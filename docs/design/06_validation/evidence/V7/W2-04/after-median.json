@@ -1,0 +1,51 @@
+{
+  "measuredAt": "2026-10-21T15:59:35.841Z",
+  "sha": "8b5e0cd8fbd02e77eea816c4b7b8c6e8f0b00a1d",
+  "platform": "win32",
+  "port": 6797,
+  "runs": 3,
+  "aggregation": "median of 3 runs",
+  "notes": [
+    "win32 无 standalone（next.config.ts 有意关闭，E-12 同口径）→ standalone 启动未测",
+    "script 数：home=14 manager=15 manager/articles=17；/manager 按跳转后登录页计量",
+    "本次复测用项目树外的等价测量器（不修改 scripts/measure-baseline.mjs）",
+    "根因修复：注入 D-03 要求的 ENCRYPTION_KEY / APP_ORIGIN；未改动任何业务代码"
+  ],
+  "startToReadyStandaloneMs": null,
+  "startToReadyNpmStartMs": 719,
+  "homeTtfbColdMs": 307,
+  "homeTtfbWarmMs": 4,
+  "apiArticlesTtfbMs": 14,
+  "homeJsGzip": 320798,
+  "managerJsGzip": 361329,
+  "managerArticlesJsGzip": 470884,
+  "rawRuns": [
+    {
+      "startToReadyNpmStartMs": 752,
+      "homeTtfbColdMs": 307,
+      "homeTtfbWarmMs": 32,
+      "apiArticlesTtfbMs": 13,
+      "homeJsGzip": 320798,
+      "managerJsGzip": 361329,
+      "managerArticlesJsGzip": 470884
+    },
+    {
+      "startToReadyNpmStartMs": 711,
+      "homeTtfbColdMs": 318,
+      "homeTtfbWarmMs": 3,
+      "apiArticlesTtfbMs": 14,
+      "homeJsGzip": 320798,
+      "managerJsGzip": 361329,
+      "managerArticlesJsGzip": 470884
+    },
+    {
+      "startToReadyNpmStartMs": 719,
+      "homeTtfbColdMs": 301,
+      "homeTtfbWarmMs": 4,
+      "apiArticlesTtfbMs": 16,
+      "homeJsGzip": 320798,
+      "managerJsGzip": 361329,
+      "managerArticlesJsGzip": 470884
+    }
+  ]
+}
