@@ -11,8 +11,8 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 ## 1. 读取顺序（开工前必读）
 
 1. `docs/design/规划总指令-任务分配与完整规划.md`——治理标准（其"只读"规则仅约束 P0 规划步；执行方向在提示词允许路径内改代码）。
-2. `docs/design/04_planning/current-plan.md`——当前轮计划（16 节：事实基线、MUST、冲突、未知登记册、迁移编排、所有权矩阵）。
-3. 当前方向提示词 `docs/design/04_planning/review-prompts/PXX-*.md`——本方向的输出、允许/禁止修改路径、验收与验证命令。
+2. `docs/V0.7-20261019/README.md`——当前轮规划入口（V0.7 单主线，2026-10-19 起；含任务索引 `05-任务索引.md`、任务定义 `tasks/`、依赖 DAG `07-依赖DAG与并行判定.md`、所有权矩阵 `08-所有权矩阵与档位成本.md`）；历史轮次包 `docs/design/04_planning/current-plan.md` 与 `docs/V0.6-20261016/` 仅供追溯。
+3. 当前方向任务定义 `docs/V0.7-20261019/tasks/<卡号>.md`（V0.7 起单主线）与 `06-剩余可执行大纲体系.md`——本方向的输出、允许/禁止修改路径、验收与验证命令。
 4. 需求与决策：`docs/design/02_requirements/`（REQ-F-013 对等、REQ-F-014 前台风格冻结、REQ-F-015 管理端顶级体验、`parity-matrix.md`）、`docs/design/03_solution/decisions/`（ADR）。
 5. 前序方向证据：`docs/design/06_validation/evidence/`。
 
