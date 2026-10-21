@@ -16,6 +16,29 @@ related: [PARITY-MATRIX, EVD-P0-BASELINE, PLAN-MASTER, REQ-F-013, REQ-F-014, REQ
 > 执行顺序（用户指定）：P01 需求 → P02 前端 → P03 后端 → P04 数据 → P05 交互 → P06 逻辑 → P07 组件 → P08 复用 → P09 拓展 → P10 性能 → P11 配置 → P12 知识库 → P13 响应 → P14 存储 → P15 资源。每个方向一份可执行提示词：`04_planning/review-prompts/P01-需求.md … P15-资源.md`。
 > 历史轮次记录（2026-10-10 ~ 10-11）完整保留于文末附录 A。
 
+### 2026-10-21 V0.7 单主线终态（W2-06 收口，有约束力）
+
+> 本节由 W2-06 写入，**优先于本文件 §7/§8/§10 中基于 P0~P15 与 Wave 1 双线的旧表述**。V0.7 规划入口为 `docs/V0.7-20261019/README.md`。
+
+| 项 | 终态 |
+| --- | --- |
+| 分支模型 | `upgrade` **单主线**；lane 分支已于 `4cbd9c1` 全部删除并**废止**（不再新建） |
+| 任务卡总数 | 38 张（V0.7 `05-任务索引.md`）；截至 2026-10-21 **35 张已关闭** |
+| 剩余 | 见下"未完项"（W2-04 / W2-06 / W2-07 + K10 裁决） |
+| 对等矩阵 | present 50 / replaced 7 / partial 0 / missing 0（57 行主表缺口清零）；详见 `02_requirements/parity-matrix.md` |
+| 冻结面 | `src/contracts/**`、`prisma/schema.prisma` 与迁移、依赖、vitest/playwright 配置（f158501 之后只读，改动须 CCR） |
+| 门禁 | `npm run lint && npm run typecheck && npm test && npm run build` + `npm run check:assets` + `npm run check:root` 全 exit 0 |
+
+**未完项与归属（截至 2026-10-21）**：
+
+| 项 | 状态 | 归属/阻塞原因 |
+| --- | --- | --- |
+| W2-04 after.json 复测 | BLOCKED | 跨所有权：D-03 的 env 强校验要求 `ENCRYPTION_KEY`/`APP_ORIGIN`，D-01 的 `scripts/measure-baseline.mjs` 未注入 → 服务启动即退出，after.json 只有空骨架 |
+| W2-06 文档收口 | 已完成（本卡） | — |
+| W2-07 独立终审 + 打包 | 待开工 | 依赖 W2-06/W2-08/W2-09/W2-04/D-14/V7-V-* 全部关闭 |
+| K10 依赖升级裁决 | 待用户裁决 | next 16.4.2 修复 1 条 critical RCE；涉依赖冻结面，未擅动 |
+| visual 像素回归 | UNKNOWN | 需 Linux 实机（CI/Docker）；Windows 跨平台渲染差异不可分离 |
+
 ### 2026-10-13 用户裁决（D6~D11，并行编排；规划包已入库）
 
 并行规划包入库于 `docs/design/04_planning/parallel-w1/`（60 张原子任务卡）。编排改为 **Wave 0 串行冻结 → Wave 1 两条执行线并行（`lane/ui`、`lane/backend`）→ Wave 2 集成与终审**；D8 之前 AGENTS.md §4“方向全部串行”的表述由 W0-01 修订。裁决：**D6** 保留 400 错误体 `data.fieldErrors`（不改 `details`）；**D7** `created()` 维持业务 code 200 / HTTP 201；**D8** Wave 0 独立校验 PASS 后推送 `upgrade` 与 tag `w1-base`，Wave 1 各线只推自己的 lane 分支；**D9** 保留前台死组件 `ApplyForm` 及其依赖；**D11** 执行者 **2 名**（X = A→E + 主持 Wave 2；Y = Wave 0 + B→C→D，约 36.5 人天）；**D10**（/manager 包体目标）留待 W2-04 再问。

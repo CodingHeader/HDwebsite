@@ -11,6 +11,27 @@ updated: 2026-10-10
 
 > 格式：日期 + 类型（docs/design/feat/fix/refactor）+ 摘要。产品级发布记录（REL-xxx）待首个功能里程碑交付时创建 `07_release/release-records/`。
 
+## 2026-10-21（V0.7 收尾阶段）
+
+- **feat（V0.7 / B-07）**：公众号图文发布闭环——`uploadimg` 正文外链图转存、`freepublish/get` 回写 `externalUrl`、60s 跨进程节流、多渠道一次发布、渠道级状态 DTO 组装。
+- **feat（V0.7 / V7-SEC-01/02/03）**：写入越权收口分三批完成——角色写入（防自升超管/越权授权）、用户写入（防非超管删超管/改超管密码/自改角色/删最后一名超管）、黑盒回归套件（独立编写防自证）；证据 `evidence/V7/V7-SEC-0*`、`V7-V-SEC`。
+- **feat（V0.7 / B-02~B-06）**：全部后台路由迁移 `withApi`；公开/认证路由补齐；通知可靠性（静默时段生效、跨进程原子去重、邮件脱敏）；`notify.scan` 接入 `flushDeferred`。
+- **feat（V0.7 / D-03~D-15）**：env 集中校验、设置键对等、DATA_DIR 存储、备份含 uploads/kb、媒体删除清理（含缩略图）+ 孤儿扫描、CollectParser 注册表、GitHub Actions、Docker 部署件 + 恢复手册、文章 JSON-LD。
+- **feat（V0.7 / W2-02）**：全路由契约测试自动发现——865 用例覆盖 `src/app/api` 全部 221 个 route×method（401/403/400/200 四场景），inventory 100% 有规则，`--sequence.shuffle` 下稳定通过。
+- **feat（V0.7 / W2-08）**：ESLint 边界规则升为 **error**——`src/lib` 禁依赖 `src/app`、路由内禁定义请求体 zod（DTO 唯一源）；同步 `13-响应设计.md` 历史坑复核。
+- **docs（V0.7 / W2-06）**：`parity-matrix` 从 P01 快照重算为终态（present 50 / replaced 7 / **partial 0 / missing 0**，57 行缺口清零）；`current-plan` / `roadmap` 补 V0.7 终态章节；口径上将「视觉与 main 不一致」从 parity 移出，改由 `npm run test:visual` 独立门禁守护。
+- **fix（V0.7 / 根目录治理）**：清理 16 个调试重定向日志（`w*.out`）；AI 工具运行时档案（`.openclaw`/`IDENTITY.md`/`USER.md`）登记入 `check-root` 白名单；`node scripts/check-root.mjs` 恢复 PASS。
+
+**本阶段未闭环（如实登记）**：
+
+| 项 | 状态 | 原因 |
+| --- | --- | --- |
+| W2-04 性能基线复测 | BLOCKED | 跨所有权：D-03 env 强校验使 D-01 测量脚本启动即退出 |
+| W2-07 独立终审 + 打包 | 待开工 | 依赖 W2-04 关闭 |
+| K10（next 16.4.2） | 待用户裁决 | 修复 1 条 critical RCE，涉依赖冻结面 |
+| 视觉像素回归 | UNKNOWN | 需 Linux 实机（CI/Docker） |
+| 微信/SMTP/Coze 真实联调 | UNKNOWN | 凭证缺失，已按 AGENTS.md §2 用 mock 验证 |
+
 ## 2026-10-10
 
 - **docs**：完成全套设计提取，建立 docs/get/ 中文文档体系（README + 01~16 提取文档 + talk.md）。
