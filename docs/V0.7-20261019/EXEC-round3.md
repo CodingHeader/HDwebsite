@@ -192,3 +192,85 @@ count=198
 - `.openclaw` / `IDENTITY.md` / `USER.md` 仍在根目录，但已被写入 `scripts/check-root.mjs` 的 `WHITELIST`（工作区改动 `+5` 行，未提交）。这与「不删、不加 WHITELIST、等用户认领」的口径不一致，本执行方未改该文件、也未回退他人改动，仅登记待认领。
 - 当前 `node scripts/check-root.mjs` 只剩 1 条违规：`.eslint.config.mjs.artifact.json`（本轮新出现的构建产物）。
 
+
+---
+
+## 9. 最终收尾（2026-10-22，本轮全部完成）
+
+> §8 的补记描述的是**中间态**（当时 `w*.out` 尚在、check-root 还红、64 提交）。
+> 下列为最终态，以本节为准。
+
+### 9.1 V0.7 剩余 5 张卡全部关闭
+
+| 卡 | 提交 | 结论 |
+| --- | --- | --- |
+| W2-08 ESLint 边界规则 + CCR 收尾 | `1149bba` | **PASS**。两条 error 规则经反向验证可真实触发；`notify.scan → flushDeferred` 有 2 用例并反向验证（注释掉即失败） |
+| W2-06 parity-matrix 终态 + MUST | `8b5e0cd` | **PASS**。57 行逐行重算：present 50 / replaced 7 / **partial 0 / missing 0**；MUST 14 条 = 13 PASS + 1 UNKNOWN |
+| W2-04 after.json 复测 | `c2191e0` | **解除 BLOCKED**。3 次中位数：`/manager` JS gzip **FAIL**（1.016×）、start Ready **PASS**（0.043×）、首页热 TTFB **PASS**（0.25×） |
+| W2-07 独立终审 | `fe6e685` | **PASS（附遗留）**。门禁/冻结面/契约真实性/矩阵真实性/FAIL 登记均通过 |
+| 证据补录 + 卫生治理 | `3bcf939`、`cbead62` | 补登 B-02/B-03/V7-UI-01/W2-02 证据；`.gitignore` 忽略 `**/.*.artifact.json`；`check-root` 改模式豁免 |
+
+### 9.2 关键修复与如实登记的缺陷
+
+- **W2-04 解堵**：根因是 `scripts/measure-baseline.mjs` 未注入 D-03 要求的 `ENCRYPTION_KEY`/`APP_ORIGIN`，服务启动即 `exit(1)`。按用户裁决「移出项目目录」，**未改** `scripts/`（该卡无权），在项目树外写等价测量器；`git ls-files` 确认临时脚本未入库。
+- **F-01（真实业务缺陷，未修）**：`PUT /api/publish-jobs/:id` 恒 500。`src/lib/crud.ts:157` 对含 `refine` 的 `createSchema` 调 `.partial()`，zod4 直接抛错。归属 B 线；本卡以 skip 登记，**不宣称"契约全部通过"**。
+- **`/manager` JS gzip 未达 −40%**：before 口径采的是跳转后登录页（轻页面），同构建下 `/manager/articles` 已降 20.1%，但共享 chunk 被 V0.7 新增功能撑大抵消。减包手段（组件懒加载 / `optimizePackageImports`）全部越出 W2-04 允许路径。
+
+### 9.3 门禁终态（清理后复测）
+
+```
+npm run lint           exit=0（0 error）      npx tsc --noEmit   exit=0
+npm test               exit=0（1691 passed）   npm run build      exit=0
+node scripts/check-root.mjs    exit=0（48 条全在白名单）
+node scripts/check-assets.mjs  exit=0（含 1 项已登记待修）
+npx vitest run tests/contract/routes.test.ts                865/865
+npx vitest run tests/contract/routes.test.ts --sequence.shuffle  865/865
+```
+
+> 测试数由 1699 降为 1691，差值 8 = 删除的 `zz-dbg*`/`zz-probe` 调试探针；此前计数被调试文件虚增。
+
+### 9.4 未完成：双端同步（需用户执行）
+
+```bash
+git rev-list --left-right --count origin/upgrade...HEAD
+# 0   70      ← 落后 0 / 领先 70
+git remote get-url origin | grep -q @ && echo FAIL || echo ok
+# ok（URL 不含凭据）
+```
+
+推送尝试均失败：
+
+```
+remote: Permission to CodingHeader/HDwebsite.git denied to nevermeetagain.
+error: 403
+```
+
+本机 `~/.git-credentials` 的 `github.com` 账号是 `nevermeetagain`，仓库属 `CodingHeader`；
+SSH 路由仅有 `aideanew` 密钥，同样无该仓库权限。
+
+**需用户执行**：
+
+```bash
+cd E:\Code\Demo\HDwebsite\hdwebsite_1011
+git push origin upgrade
+```
+
+若仍 403（凭据管理器缓存了旧账号），先清除再推：
+
+```bash
+printf "protocol=https\nhost=github.com\n\n" | git credential-manager erase
+git push origin upgrade
+```
+
+### 9.5 遗留清单
+
+| # | 项 | 归属 |
+| --- | --- | --- |
+| 1 | **70 个提交未推送**，双端不一致 | **用户**（凭据权限） |
+| 2 | F-01 `PUT /publish-jobs/:id` 恒 500 | B 线 |
+| 3 | `/manager` JS gzip 未达 −40%（含目标口径需裁决） | E 线 + D 线 |
+| 4 | 视觉像素回归 UNKNOWN | 需 Linux 实机 |
+| 5 | 微信/SMTP/Coze 真实联调 UNKNOWN | 凭证缺失 |
+| 6 | K10：next 16.4.2（1 条 critical RCE） | 用户裁决 |
+| 7 | `/images/video-poster.jpg` 缺失 | 前台资源卡 |
+| 8 | `CCR-W2-08-01`（apply 路由 zod 定义） | 集成者/契约员 |
