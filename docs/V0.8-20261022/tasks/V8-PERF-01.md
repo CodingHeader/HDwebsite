@@ -6,7 +6,7 @@
 - 执行者：P1
 
 ## 目标
-/manager/articles 首屏 JS gzip ≤ 353,639 B（相对 589,398 −40%），或按 V8-Q3 改口径
+按 V8-Q3=B：/manager/articles 首屏 JS gzip 不回涨（≤372,724 B）且共享 chunk −10%
 
 ## 输入
 - 文档：docs/V0.8-20261022/00-事实基线.md、02-契约增量.md、04-连续执行协议.md
@@ -27,7 +27,7 @@
 4. [ ] 保持 sanitize 默认注入（安全优先，不得为减包移除）
 
 ## 验收标准
-- [ ] W2-04 同口径 3 次中位数达标或 V8-Q3 裁决口径达标
+- [ ] V8-Q3=B：/manager/articles ≤372,724 B 且共享 chunk 较本卡开工时 −10%（W2-04 同口径 3 次中位数）
 - [ ] 门禁 + e2e 全绿
 - [ ] sanitizeRichContent 仍被默认调用（grep + 单测）
 
