@@ -62,7 +62,20 @@ vi.mock("@/lib/llm/registry", async (orig) => {
   const actual = await orig<typeof import("@/lib/llm/registry")>();
   return {
     ...actual,
-    getAdapter: () => ({ chat: async () => ({ reply: "ok" }) }),
+    // V8-T-02：/chat/stream 撤 skip 后，通用四场景会真实走网关，
+    // 因此适配器必须同时提供 chat（非流式，其他路由用）与 stream（SSE 用）
+    getAdapter: () => ({
+      chat: async () => ({ reply: "ok" }),
+      stream: async () => {
+        const enc = new TextEncoder();
+        return new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(enc.encode("契约测试流式回复"));
+            controller.close();
+          },
+        });
+      },
+    }),
   };
 });
 

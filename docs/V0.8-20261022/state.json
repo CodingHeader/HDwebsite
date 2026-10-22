@@ -44,11 +44,12 @@
   "note": "3 条 skip 全部撤除并改真实断言；e2e 10/10 两次通过；撤 skip 暴露并修复生产缺陷：知识库上传端点 404"
  },
  "V8-T-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "契约 skip=0；SSE 独立 4 用例（正常/中途 error/流前失败/请求体非法）；876 passed 默认与 shuffle 一致"
  },
  "V8-T-03": {
   "status": "pending",

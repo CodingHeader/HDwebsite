@@ -653,9 +653,13 @@ export const handRules: RuleTable = {
   "/chat/stream": {
     POST: {
       method: "POST",
-      body: { message: "你好", channel: "website" },
+      // V8-T-02：撤除 skip。SSE 的线格式契约由独立文件覆盖
+      // （tests/contract/chat-stream-sse.test.ts：meta → delta* → done、中途 error 帧、
+      //  流开始前的失败走 JSON 信封），此处只做通用四场景（401/403/400/200）。
+      // 请求体按真实契约 chatRequestSchema：sessionId(8~64) + message(1~2000) + sceneCode
+      body: { sessionId: "sess-w2-02-stream", message: "你好", sceneCode: "float" },
       okStatus: 200,
-      skip: "SSE 流式响应，非 JSON 信封，单独测",
+      bad: { body: { sessionId: "x", message: "" } },
     },
   },
   "/campus/:id/images": {
