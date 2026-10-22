@@ -12,6 +12,8 @@
  * 本文件**不得**引入任何 React 组件或 UI 依赖，只允许类型与纯函数。
  */
 
+import { sanitizeRichContent } from "@/lib/markdown";
+
 export type FieldType =
   | "text" | "textarea" | "number" | "switch" | "select" | "multiselect" | "date" | "datetime"
   | "image" | "tags" | "markdown" | "richtext" | "json" | "secret"
@@ -96,14 +98,17 @@ export function mapFieldErrors(err: unknown): Record<string, string> {
  * 提交前转换：tags 逗号串 → 数组；select 空值删键（让 zod default 生效）；richtext 净化；
  * W0-04（ADR-028）visibleTo="super" 且非超管的字段不提交；隐藏字段不提交；其余空串 → null。
  *
- * @param sanitize 可注入的富文本净化器（由调用方传入，避免本模块静态依赖 xss 净化库；
- *                 不传则 richtext 原样透传——仅影响空串/undefined 归一化，不改其它字段语义）
+ * @param sanitize 可注入的富文本净化器。**默认使用内置 sanitizeRichContent**，
+ *   即与拆分前行为完全一致（richtext 提交前必定净化）。
+ *   独立复核曾指出：拆分后若默认不净化，6 个调用方会静默丢掉这一层纵深防御——
+ *   故此处保持默认净化；xss-filter 是零第三方依赖的自研实现（gzip ≈3.6 KB），
+ *   引入代价远小于「静默削弱安全层」。传 `() => html` 可显式关闭（仅测试用）。
  */
 export function normalizeFormValues(
   fields: FieldSpec[],
   values: FormValues,
   isSuper = true,
-  sanitize?: (html: string) => string
+  sanitize: (html: string) => string = sanitizeRichContent
 ): FormValues {
   const out: FormValues = { ...values };
   for (const f of visibleFields(fields, isSuper)) {
@@ -116,7 +121,7 @@ export function normalizeFormValues(
     if (type === "tags" && typeof v === "string") {
       out[f.key] = v.trim() ? v.split(/[,，]/).map((s) => s.trim()).filter(Boolean) : [];
     }
-    if (type === "richtext" && typeof v === "string" && v && sanitize) {
+    if (type === "richtext" && typeof v === "string" && v) {
       out[f.key] = sanitize(v);
     }
     if (v === "") {

@@ -91,7 +91,7 @@ type IdParams = { id: string };
  *      需要跨字段校验的更新场景，由该资源的 `beforeUpdate` 钩子负责。
  *   4. 若 schema 连 shape 都没有（非 object）→ 退回宽松 record，保证不会 500。
  */
-function resolveUpdateSchema(spec: CrudSpec): z.ZodType {
+export function resolveUpdateSchema(spec: CrudSpec): z.ZodType {
   if (spec.updateSchema) return spec.updateSchema;
   const create = spec.createSchema!;
   try {

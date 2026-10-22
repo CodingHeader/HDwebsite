@@ -102,4 +102,23 @@ describe("F-01 · PUT /api/publish-jobs/:id 不再恒 500", () => {
     );
     expect(res.status).toBe(404);
   });
+  it("scheduledAt 传过去时间 → 400（跨字段时序校验未被 .partial() 兼容路径丢掉）", async () => {
+    const past = new Date(Date.now() - 3600_000).toISOString();
+    const res = await PUT(
+      req("/api/publish-jobs/901", { method: "PUT", token: TOKEN, body: { scheduledAt: past } }),
+      ctx({ id: "901" })
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("scheduledAt 传未来时间 → 200 且落库", async () => {
+    const future = new Date(Date.now() + 3600_000).toISOString();
+    const res = await PUT(
+      req("/api/publish-jobs/901", { method: "PUT", token: TOKEN, body: { scheduledAt: future } }),
+      ctx({ id: "901" })
+    );
+    expect(res.status).toBe(200);
+    const row = await prisma.publishJob.findUnique({ where: { id: 901 } });
+    expect(row?.scheduledAt?.toISOString()).toBe(future);
+  });
 });
