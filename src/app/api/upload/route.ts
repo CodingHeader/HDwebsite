@@ -7,8 +7,8 @@ import path from "node:path";
 import crypto from "node:crypto";
 import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
-import { created, error, serverError } from "@/lib/api-response";
+import { created, error } from "@/lib/api-response";
+import { withApi } from "@/lib/api-handler";
 import { uploadsDir, UPLOAD_MIME_EXT, UPLOAD_MAX_SIZE } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -32,10 +32,8 @@ async function makeThumbnails(absPath: string, relDir: string, base: string): Pr
 }
 
 /** POST /api/upload：multipart 文件上传（鉴权 media:create） */
-export async function POST(request: Request) {
-  const guard = await requireAuth(request, "media:create");
-  if (!guard.ok) return guard.response;
-
+export const POST = withApi(
+  async ({ request, session }) => {
   let form: FormData;
   try {
     form = await request.formData();
@@ -75,7 +73,7 @@ export async function POST(request: Request) {
         size: file.size,
         type: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document",
         category,
-        uploaderId: guard.session.id,
+        uploaderId: session.id,
         metadata: thumbnails ? JSON.stringify(thumbnails) : null,
       },
     });
@@ -88,7 +86,11 @@ export async function POST(request: Request) {
       "上传成功"
     );
   } catch (err) {
-    console.error("[upload] 上传失败：", err);
-    return serverError("上传失败");
+    // 详细原因只留在服务端日志；抛出的错误**不带原始信息**——withApi 的 emitApiError 会把它
+    // 送进 system_error 通知上下文，而 upload 的异常里可能含落盘绝对路径。
+    // 同时不再重复 console.error：withApi 的 emitApiError 已统一记录一次。
+    throw new Error(`上传失败：${err instanceof Error ? err.name : "unknown"}`);
   }
-}
+  },
+  { permission: "media:create", errorMessage: "上传失败", route: "upload/POST" }
+);

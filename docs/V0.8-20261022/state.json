@@ -57,11 +57,12 @@
   "commits": []
  },
  "V8-T-04": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "5 条路由全部迁入 withApi（含 file 原始流/wechat XML 保留），ADR-037 豁免清单为空"
  },
  "V8-VIS-01": {
   "status": "pending",
