@@ -15,11 +15,12 @@
   "note": "Q1=A；G-01 为文档前置，豁免先行；e2e/gzip 待 CI 与 PERF-01"
  },
  "V8-SEC-02": {
-  "status": "ready",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "sharp 0.34.5→0.35.5；运行时依赖 critical 0 / high 0（剩 3 moderate：argparse/mammoth/sprintf-js）"
  },
  "V8-SEC-03": {
   "status": "pending",
