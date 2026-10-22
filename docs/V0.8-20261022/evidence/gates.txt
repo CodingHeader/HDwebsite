@@ -1,0 +1,7 @@
+ci=0
+lint=0
+tc=0
+test=0
+build=0
+audit=1
+done

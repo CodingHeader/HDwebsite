@@ -1,0 +1,390 @@
+{
+ "cards": [
+  {
+   "id": "V8-G-01",
+   "name": "入口对齐 V0.8 + 连续执行协议落地",
+   "slice": "S0",
+   "owner": "P3",
+   "tier": "haiku",
+   "days": 0.25,
+   "deps": [],
+   "blocks": [
+    "V8-SEC-01",
+    "V8-SEC-04",
+    "V8-T-01",
+    "V8-T-02",
+    "V8-T-04",
+    "V8-VIS-01",
+    "V8-INT-01"
+   ],
+   "allow": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs/design/04_planning/current-plan.md"
+   ]
+  },
+  {
+   "id": "V8-SEC-01",
+   "name": "K10-A：next 16.2.1→16.4.2（含 eslint-config-next 同步）",
+   "slice": "S1",
+   "owner": "Hark",
+   "tier": "opus",
+   "days": 1.0,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-SEC-02",
+    "V8-PERF-01",
+    "V8-REL-01"
+   ],
+   "allow": [
+    "package.json",
+    "package-lock.json",
+    "next.config.ts",
+    "src/app/layout.tsx",
+    "docs/design/06_validation/evidence/V8/SEC-01/**"
+   ]
+  },
+  {
+   "id": "V8-SEC-02",
+   "name": "K10-A：sharp 0.34→0.35.5 + 运行时依赖其余 high 收口",
+   "slice": "S1",
+   "owner": "P1",
+   "tier": "sonnect",
+   "days": 0.5,
+   "deps": [
+    "V8-SEC-01"
+   ],
+   "blocks": [
+    "V8-SEC-03"
+   ],
+   "allow": [
+    "package.json",
+    "package-lock.json",
+    "src/lib/storage/**",
+    "docs/design/06_validation/evidence/V8/SEC-02/**"
+   ]
+  },
+  {
+   "id": "V8-SEC-03",
+   "name": "K10-A：vitest 3→5（含 tinypool）开发依赖升级",
+   "slice": "S1",
+   "owner": "P2",
+   "tier": "opus",
+   "days": 1.0,
+   "deps": [
+    "V8-SEC-02"
+   ],
+   "blocks": [
+    "V8-T-03"
+   ],
+   "allow": [
+    "package.json",
+    "package-lock.json",
+    "vitest.config.ts",
+    "docs/design/06_validation/evidence/V8/SEC-03/**"
+   ]
+  },
+  {
+   "id": "V8-SEC-04",
+   "name": "CI 安全审计门禁（官方源，防镜像假阴性）",
+   "slice": "S1",
+   "owner": "P3",
+   "tier": "sonnect",
+   "days": 0.5,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-VIS-02",
+    "V8-V-01"
+   ],
+   "allow": [
+    ".github/workflows/**",
+    "scripts/audit-gate.mjs",
+    "docs/design/06_validation/evidence/V8/SEC-04/**"
+   ]
+  },
+  {
+   "id": "V8-T-01",
+   "name": "撤除 3 条过期 e2e skip（C-06/B-06 已关闭）",
+   "slice": "S2",
+   "owner": "P2",
+   "tier": "sonnect",
+   "days": 0.5,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-UI-01",
+    "V8-V-01"
+   ],
+   "allow": [
+    "tests/e2e/e-knowledge.spec.ts",
+    "tests/e2e/e-notify-rules.spec.ts",
+    "tests/e2e/fixtures/**",
+    "docs/design/06_validation/evidence/V8/T-01/**"
+   ]
+  },
+  {
+   "id": "V8-T-02",
+   "name": "/chat/stream SSE 契约测试（清零最后 1 条契约 skip）",
+   "slice": "S2",
+   "owner": "P2",
+   "tier": "opus",
+   "days": 0.75,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-V-01"
+   ],
+   "allow": [
+    "tests/contract/**",
+    "docs/design/06_validation/evidence/V8/T-02/**"
+   ]
+  },
+  {
+   "id": "V8-T-03",
+   "name": "lint warning 清零并设 --max-warnings 0",
+   "slice": "S2",
+   "owner": "P3",
+   "tier": "haiku",
+   "days": 0.5,
+   "deps": [
+    "V8-SEC-03",
+    "V8-T-04",
+    "V8-PERF-01",
+    "V8-UI-01",
+    "V8-VIS-03"
+   ],
+   "blocks": [
+    "V8-V-01"
+   ],
+   "allow": [
+    "eslint.config.mjs",
+    "package.json#scripts.lint",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+   ]
+  },
+  {
+   "id": "V8-T-04",
+   "name": "非 withApi 路由 5 条核查：迁移或登记豁免",
+   "slice": "S2",
+   "owner": "P1",
+   "tier": "opus",
+   "days": 0.5,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-T-03"
+   ],
+   "allow": [
+    "src/app/api/upload/route.ts",
+    "src/app/api/file/[...path]/route.ts",
+    "src/app/api/wechat/callback/route.ts",
+    "src/app/api/health/route.ts",
+    "src/app/api/route.ts",
+    "docs/design/03_solution/decisions/ADR-037-withApi豁免清单.md"
+   ]
+  },
+  {
+   "id": "V8-VIS-01",
+   "name": "与 main 等量的确定性 seed 数据集",
+   "slice": "S3",
+   "owner": "P1",
+   "tier": "sonnect",
+   "days": 1.0,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-VIS-02",
+    "V8-V-01"
+   ],
+   "allow": [
+    "prisma/seed-visual.ts",
+    "prisma/fixtures/visual/**",
+    "public/uploads/visual-fixtures/**",
+    "docs/design/06_validation/evidence/V8/VIS-01/**"
+   ]
+  },
+  {
+   "id": "V8-VIS-02",
+   "name": "Linux CI visual 作业（官方 playwright 镜像）",
+   "slice": "S3",
+   "owner": "P3",
+   "tier": "sonnect",
+   "days": 0.5,
+   "deps": [
+    "V8-VIS-01",
+    "V8-SEC-04"
+   ],
+   "blocks": [
+    "V8-VIS-03",
+    "V8-REL-01"
+   ],
+   "allow": [
+    ".github/workflows/**",
+    "docs/design/06_validation/evidence/V8/VIS-02/**"
+   ]
+  },
+  {
+   "id": "V8-VIS-03",
+   "name": "visual 差异分诊与前台修复（红色横幅风格一致）",
+   "slice": "S3",
+   "owner": "Hark",
+   "tier": "opus",
+   "days": 1.5,
+   "deps": [
+    "V8-VIS-02"
+   ],
+   "blocks": [
+    "V8-T-03"
+   ],
+   "allow": [
+    "src/app/(web)/**",
+    "src/components/web/**",
+    "src/styles/**",
+    "tests/visual/__screenshots__/**",
+    "docs/design/06_validation/evidence/V8/VIS-03/**"
+   ]
+  },
+  {
+   "id": "V8-PERF-01",
+   "name": "/manager 共享 chunk 再减（目标口径按 V8-Q3）",
+   "slice": "S4",
+   "owner": "P1",
+   "tier": "opus",
+   "days": 1.0,
+   "deps": [
+    "V8-SEC-01"
+   ],
+   "blocks": [
+    "V8-T-03",
+    "V8-UI-01"
+   ],
+   "allow": [
+    "next.config.ts",
+    "src/components/manager/**",
+    "src/app/manager/**",
+    "docs/design/06_validation/evidence/V8/PERF-01/**"
+   ]
+  },
+  {
+   "id": "V8-UI-01",
+   "name": "管理端顶级体验收尾：空/错/无权限态全覆盖 + 视觉一致性",
+   "slice": "S5",
+   "owner": "Hark",
+   "tier": "opus",
+   "days": 1.5,
+   "deps": [
+    "V8-PERF-01",
+    "V8-T-01"
+   ],
+   "blocks": [
+    "V8-T-03"
+   ],
+   "allow": [
+    "src/components/manager/**",
+    "src/app/manager/**",
+    "tests/e2e/ux-states.spec.ts",
+    "docs/design/06_validation/evidence/V8/UI-01/**"
+   ]
+  },
+  {
+   "id": "V8-INT-01",
+   "name": "微信/SMTP/Coze 凭证到位即测：冒烟脚本与操作手册",
+   "slice": "S6",
+   "owner": "P1",
+   "tier": "sonnect",
+   "days": 0.75,
+   "deps": [
+    "V8-G-01"
+   ],
+   "blocks": [
+    "V8-V-01"
+   ],
+   "allow": [
+    "scripts/smoke/**",
+    "docs/design/07_release/真实联调手册.md",
+    "docs/design/06_validation/evidence/V8/INT-01/**"
+   ]
+  },
+  {
+   "id": "V8-REL-01",
+   "name": "Docker 镜像 Linux 构建与冒烟（验证 D-08 声明）",
+   "slice": "S6",
+   "owner": "P3",
+   "tier": "sonnect",
+   "days": 0.5,
+   "deps": [
+    "V8-SEC-01",
+    "V8-VIS-02"
+   ],
+   "blocks": [
+    "V8-V-01"
+   ],
+   "allow": [
+    ".github/workflows/**",
+    "Dockerfile",
+    "docker-compose.yml",
+    "docs/design/06_validation/evidence/V8/REL-01/**"
+   ]
+  },
+  {
+   "id": "V8-V-01",
+   "name": "V0.8 全卡独立验收（只看 diff + 运行结果）",
+   "slice": "S7",
+   "owner": "P2",
+   "tier": "opus",
+   "days": 1.0,
+   "deps": [
+    "V8-SEC-04",
+    "V8-T-01",
+    "V8-T-02",
+    "V8-T-03",
+    "V8-VIS-01",
+    "V8-INT-01",
+    "V8-REL-01"
+   ],
+   "blocks": [
+    "V8-REL-02"
+   ],
+   "allow": [
+    "docs/design/06_validation/evidence/V8/**/verify.md"
+   ]
+  },
+  {
+   "id": "V8-REL-02",
+   "name": "终审、changelog、双端同步与打包",
+   "slice": "S7",
+   "owner": "Hark",
+   "tier": "opus",
+   "days": 0.5,
+   "deps": [
+    "V8-V-01"
+   ],
+   "blocks": [],
+   "allow": [
+    "docs/design/07_release/changelog.md",
+    "docs/design/02_requirements/parity-matrix.md",
+    "docs/V0.8-20261022/EXEC-*.md"
+   ]
+  }
+ ],
+ "critical": [
+  "V8-G-01",
+  "V8-SEC-01",
+  "V8-PERF-01",
+  "V8-UI-01",
+  "V8-T-03",
+  "V8-V-01",
+  "V8-REL-02"
+ ],
+ "critical_days": 5.75,
+ "overlaps": []
+}
