@@ -2,7 +2,8 @@
 /**
  * E-04 KbUpload 组件测试（ADR-025）：选择 .pdf/.png → 不发请求并显示 KB_REJECT_MESSAGE（后端同款中文提示）；
  * 合法文件 → 以 KB_UPLOAD_FIELD 发起 multipart 请求；超数量/超大小拦截。
- * C-06 未合并前 fetch mock（端点路径 /api/knowledge-bases/{baseId}/files）。
+ * V8-T-01：上传端点修正为 /api/knowledge-files?baseId=N（原断言固定的 /api/knowledge-bases/{id}/files 端点并不存在，
+ *   等于把 404 缺陷写进了测试；e2e 撤掉 skip 后才暴露，见 evidence/V8/T-01）。
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -70,7 +71,7 @@ describe("E-04 KbUpload 白名单拦截（ADR-025）", () => {
     await waitFor(() => expect(onUploaded).toHaveBeenCalled());
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0];
-    expect(url).toBe("/api/knowledge-bases/7/files");
+    expect(url).toBe("/api/knowledge-files?baseId=7");
     expect((init as RequestInit).method).toBe("POST");
     expect((init as RequestInit).body).toBeInstanceOf(FormData);
     expect(((init as RequestInit).body as FormData).get(KB_UPLOAD_FIELD)).toBeTruthy();

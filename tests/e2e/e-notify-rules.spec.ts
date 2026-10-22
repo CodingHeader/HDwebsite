@@ -1,7 +1,10 @@
 /**
- * E-02 e2e：通知规则页——切换 enabled 保存后刷新回读一致。
- * quietHours 回读一致（B-06 PATCH 合并前）标 skip：当前 [id]/route.ts 的 update data 不含
- * quietHours（DR-24），保存回读不变——待 B-06 合并后 W2-05 复跑取消 skip。
+ * E-02 e2e：通知规则页（V8-T-01：撤除静默时段 skip）
+ *
+ * 原 skip 理由「PATCH 的 data 丢弃 quietHours（DR-24）」已不成立：
+ *   src/app/api/notify-rules/[id]/route.ts 已合并 quietHours（B-06 落地）。
+ * 本条改为真实断言：设置静默时段 → 保存 → 刷新 → 表格「静默时段」列回读一致。
+ *
  * 依赖：admin storageState（globalSetup 注入）；e2e.db 种子含 7 条 NotifyRule。
  */
 import { expect, test } from "@playwright/test";
@@ -43,6 +46,32 @@ test("切换 enabled 与收件人分组保存后刷新回读一致", async ({ pa
   await expect(firstAfter).toContainText("publish, ops");
 });
 
-test.skip("静默时段保存后刷新回读一致（待 B-06：PATCH 合并 quietHours 后 W2-05 复跑）", async () => {
-  // 当前 PATCH data 丢弃 quietHours（DR-24），保存回读不变——B-06 合并后取消本 skip。
+test("静默时段保存后刷新回读一致（V8-T-01 撤 skip）", async ({ page }) => {
+  await page.goto("/manager/notify-rules");
+
+  const rows = page.getByTestId("notify-rules-table").locator("tbody tr");
+  await expect(rows).toHaveCount(7, { timeout: 15_000 });
+
+  // 取最后一条，避免与上一用例（改第一条）互相影响
+  const target = rows.last();
+  const eventLabel = (await target.locator("td").first().innerText()).split("\n")[0];
+  await target.getByRole("button", { name: "编辑" }).click();
+
+  const dlg = page.getByRole("dialog");
+  await expect(dlg).toBeVisible();
+
+  // 设一个固定的、非默认的静默时段
+  await dlg.getByTestId("notify-rule-quiet-start").fill("22:00");
+  await dlg.getByTestId("notify-rule-quiet-end").fill("07:00");
+  await dlg.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("规则已更新")).toBeVisible({ timeout: 10_000 });
+  await expect(dlg).toBeHidden();
+
+  // 刷新后「静默时段」列必须回读到 22:00 – 07:00（证明 PATCH 真的持久化了 quietHours）
+  await page.reload();
+  const after = page.getByTestId("notify-rules-table").locator("tbody tr").last();
+  await expect(after.locator("td").first()).toContainText(eventLabel, { timeout: 15_000 });
+  await expect(after).toContainText("22:00");
+  await expect(after).toContainText("07:00");
 });

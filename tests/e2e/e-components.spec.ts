@@ -37,15 +37,37 @@ test("筛选：logs 模块下拉改变列表请求", async ({ page }) => {
   await expect(page.getByTestId("data-table")).toBeVisible();
 });
 
-test("批量操作：媒体库选择后出现批量条", async ({ page }) => {
+test("批量操作：媒体库选择后出现批量条（V8-T-01：改为用例内自建素材，不再条件跳过）", async ({ page }) => {
   await page.goto("/manager/media");
   // 等待媒体网格（页面级唯一：grid 容器）
   await expect(page.getByRole("heading", { name: "媒体库" })).toBeVisible({ timeout: 15_000 });
-  await page.waitForTimeout(1200);
-  // 媒体库为网格 + Checkbox：选中一个 → 出现"删除选中（1）"
+
+  // 原实现：媒体库为空就 test.skip——等于「环境不满足就不验」。改为本用例先自建 1 条素材。
+  // 走真实上传接口（页面同源、storageState 已注入登录态），保证不依赖种子数据。
+  const created = await page.evaluate(async () => {
+    const auth = localStorage.getItem("hd-manager-auth");
+    const token = auth ? (JSON.parse(auth)?.state?.token ?? "") : "";
+    const png =
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+    const bin = atob(png);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const fd = new FormData();
+    fd.append("file", new File([bytes], `e2e-media-${Date.now()}.png`, { type: "image/png" }));
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      headers: token ? { authorization: `Bearer ${token}` } : undefined,
+      body: fd,
+    });
+    return res.status;
+  });
+  expect(created, "自建素材应上传成功（201）").toBe(201);
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "媒体库" })).toBeVisible({ timeout: 15_000 });
+
   const boxes = page.getByRole("checkbox", { name: /^选择 / });
-  const count = await boxes.count();
-  if (count === 0) test.skip(true, "媒体库为空（依赖既有素材），批量条断言跳过");
+  await expect(boxes.first()).toBeVisible({ timeout: 15_000 });
   await boxes.first().check();
   await expect(page.getByRole("button", { name: /删除选中/ })).toBeVisible();
 });

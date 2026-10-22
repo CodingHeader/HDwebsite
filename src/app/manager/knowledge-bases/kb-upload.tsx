@@ -58,13 +58,16 @@ export function KbUpload({ baseId, onUploaded }: { baseId: number; onUploaded: (
         for (const f of ok) form.append(KB_UPLOAD_FIELD, f);
         // multipart：不能用 managerFetch（默认 JSON Content-Type 会破坏 boundary），原生 fetch + Bearer token
         const token = useAuthStore.getState().token;
-        const res = await fetch(`/api/knowledge-bases/${baseId}/files`, {
+        // V8-T-01 修复：原先打向 /api/knowledge-bases/{id}/files —— 该端点并不存在，
+        // 上传必然 404（被 e2e 的 skip 长期掩盖）。真实上传端点是 /api/knowledge-files?baseId=N。
+        const res = await fetch(`/api/knowledge-files?baseId=${baseId}`, {
           method: "POST",
           body: form,
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const body = (await res.json().catch(() => null)) as { code: number; message?: string } | null;
-        if (!res.ok || !body || body.code !== 200) {
+        // 契约：重复上传（同 baseId+sha256）返回 200，新建返回 201；两者都算成功
+        if (!res.ok || !body || (body.code !== 200 && body.code !== 201)) {
           throw new Error(body?.message ?? `上传失败（${res.status}）`);
         }
         toast.success("上传完成", `${ok.length} 个文件已入库，处理进度见文件列表`);
