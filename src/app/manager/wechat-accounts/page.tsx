@@ -8,8 +8,15 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
-import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
+import { validateRequired } from "@/components/manager/form-utils";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
+import dynamic from "next/dynamic";
+
+// W2-04 减包：SchemaForm 仅在打开表单弹窗时需要，改为懒加载，不进列表页首屏
+const SchemaForm = dynamic(
+  () => import("@/components/manager/SchemaForm").then((m) => m.SchemaForm),
+  { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-md bg-mgr-muted" /> }
+);
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { StatusBadge } from "@/components/manager/StatusBadge";

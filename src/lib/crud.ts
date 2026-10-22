@@ -11,9 +11,8 @@ import { created, error, notFound, success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { invalidateWebContent, webTagsForModel } from "@/lib/cache-tags";
 import { ApiHttpError, parseBody, parseId, parseQuery, withApi } from "@/lib/api-handler";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { listQuerySchema } from "@/contracts";
-import type { z } from "zod";
 import type { SessionUser } from "@/contracts";
 import type { Prisma } from ".prisma/client";
 
@@ -72,6 +71,45 @@ function buildWhere(spec: CrudSpec, url: URL): AnyRecord {
 }
 
 type IdParams = { id: string };
+
+/**
+ * 求「更新用 schema」——兼容 zod4 的限制。
+ *
+ * 背景（F-01）：zod v4 的 `.partial()` **不能用于含 refine/transform 的 object schema**，会直接抛
+ *   `Error: .partial() cannot be used on object schemas containing refinements`
+ * 而 `crudUpdate` 原先写的是 `spec.createSchema!.partial()`。
+ * `publishJobCreateSchema` 恰好带两条 refine（channels/channel 二选一、scheduledAt 须晚于现在），
+ * 于是 `PUT /api/publish-jobs/:id` 无论传什么都 500 —— 上线功能完全不可用（W2-02 终审发现的 F-01）。
+ *
+ * 修复策略（不动冻结契约、不破坏既有校验语义）：
+ *   1. 显式给了 `updateSchema` → 直接用它（首选，最精确）；
+ *   2. 否则尝试 `.partial()`；成功即用；
+ *   3. `.partial()` 抛错（说明 schema 含 refine）→ 退化到 `safeExtend` + 逐字段 optional：
+ *      用 `schema.shape` 重建一个所有字段 optional 的 object。
+ *      refine 的**跨字段约束在更新时不再强制执行**是合理的：部分更新只带 1~2 个字段，
+ *      用完整创建规则去卡必然误报（例如只改 preNotify 时 channels/channel 都没传）。
+ *      需要跨字段校验的更新场景，由该资源的 `beforeUpdate` 钩子负责。
+ *   4. 若 schema 连 shape 都没有（非 object）→ 退回宽松 record，保证不会 500。
+ */
+function resolveUpdateSchema(spec: CrudSpec): z.ZodType {
+  if (spec.updateSchema) return spec.updateSchema;
+  const create = spec.createSchema!;
+  try {
+    return create.partial();
+  } catch {
+    try {
+      const rawShape = (create as unknown as { shape?: Record<string, z.ZodTypeAny> }).shape;
+      if (!rawShape) return z.record(z.string(), z.unknown());
+      const optionalShape: Record<string, z.ZodTypeAny> = {};
+      for (const [k, v] of Object.entries(rawShape)) {
+        optionalShape[k] = v.optional();
+      }
+      return z.object(optionalShape);
+    } catch {
+      return z.record(z.string(), z.unknown());
+    }
+  }
+}
 
 function conflictMessages(spec: CrudSpec) {
   return { unique: `${spec.label}已存在（唯一字段冲突）`, foreignKey: "关联数据不存在" };
@@ -154,7 +192,7 @@ export function crudUpdate(spec: CrudSpec) {
     async ({ request, params, session }) => {
       const id = parseId(params.id);
       if (!spec.updateSchema && !spec.createSchema) return error(`${spec.label}不支持更新`, 400);
-      const updateSchema = spec.updateSchema ?? spec.createSchema!.partial();
+      const updateSchema = resolveUpdateSchema(spec);
       const raw = await request.clone().json().catch(() => null);
       const parsedInput = (await parseBody(request, updateSchema)) as AnyRecord;
       // P06：zod v4 的 partial() 仍会套用字段默认值（如 status→draft、tags→[]），部分更新只保留请求体里出现的键

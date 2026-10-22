@@ -2,17 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { created } from "@/lib/api-response";
 import { clientIp } from "@/lib/log";
 import { ApiHttpError, withApi } from "@/lib/api-handler";
-import { z } from "zod";
+// CCR-W2-08-01：请求体 DTO 唯一源在 src/contracts，路由内不再自行定义 zod schema
+import { applySubmitSchema } from "@/contracts/resources";
 
 export const dynamic = "force-dynamic";
-
-const applySchema = z.object({
-  name: z.string().min(1, "请填写姓名").max(50),
-  phone: z.string().min(5, "请填写有效电话").max(20),
-  courseId: z.coerce.number().int().positive().nullable().optional(),
-  message: z.string().max(1000).nullable().optional(),
-  sessionId: z.string().max(64).optional(),
-});
 
 /** POST /api/apply：公开报名提交（防刷频控：同 IP 每分钟 5 次；全站每分钟 100 条） */
 export const POST = withApi(
@@ -24,7 +17,7 @@ export const POST = withApi(
     } catch {
       throw new ApiHttpError(400, "请求体不是合法 JSON");
     }
-    const parsed = applySchema.safeParse(body);
+    const parsed = applySubmitSchema.safeParse(body);
     if (!parsed.success) throw new ApiHttpError(400, parsed.error.issues[0]?.message ?? "参数错误");
     const input = parsed.data;
     const ip = clientIp(request);

@@ -8,8 +8,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Lock, Save } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
-import { SchemaForm } from "@/components/manager/SchemaForm";
 import type { FormValues } from "@/components/manager/SchemaForm";
+import dynamic from "next/dynamic";
+
+// W2-04 减包：SchemaForm 仅在实际渲染表单时需要，改为懒加载
+const SchemaForm = dynamic(
+  () => import("@/components/manager/SchemaForm").then((m) => m.SchemaForm),
+  { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-md bg-mgr-muted" /> }
+);
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { ErrorState, Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 import { Button } from "@/components/manager/ui";

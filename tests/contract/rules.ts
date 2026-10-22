@@ -604,7 +604,8 @@ export const handRules: RuleTable = {
       bad: { body: { action: "bad" } },
       needsSeed: true,
       params: { id: ROW.put },
-      skip: "业务缺陷：crudUpdate 对含 refine 的 createSchema 调 .partial() 必抛 → 该端点恒 500；修复属 B 线所有权（见执行记录 F-01）",
+      // F-01 已修复（crud.ts 的 resolveUpdateSchema 兼容 zod4 对含 refine schema 的 .partial() 限制），
+      // 原先的 skip 已撤除 —— 该端点现在有完整的 401/403/400/200 四场景覆盖。
     },
     DELETE: {
       method: "DELETE", okStatus: 200, needsSeed: true,

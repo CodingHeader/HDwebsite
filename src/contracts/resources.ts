@@ -83,6 +83,23 @@ export const studentCreateSchema = z.object({
   status: z.enum(["pending", "contacted", "converted", "invalid"]).default("pending"),
 });
 
+/**
+ * POST /api/apply：公开报名提交（CCR-W2-08-01 落地）
+ *
+ * 与 studentCreateSchema 的差异：本接口是**公开**入口，错误文案要沿用 M1 的
+ * 「请填写姓名」「请填写有效电话」（用户可见），不能用 parseBody 默认的「参数校验失败」，
+ * 故 schema 内置中文 message，路由用 safeParse 取 issues[0].message。
+ * 不含 status（公开提交一律 pending，由服务端写死）。
+ */
+export const applySubmitSchema = z.object({
+  name: z.string().min(1, "请填写姓名").max(50),
+  phone: z.string().min(5, "请填写有效电话").max(20),
+  courseId: z.coerce.number().int().positive().nullable().optional(),
+  message: z.string().max(1000).nullable().optional(),
+  sessionId: z.string().max(64).optional(),
+});
+export type ApplySubmit = z.infer<typeof applySubmitSchema>;
+
 // ── 院校 / 校区 / 图库 / 轮播 ─────────────────────────────────
 export const partnerCreateSchema = z.object({
   name: z.string().min(1).max(100),

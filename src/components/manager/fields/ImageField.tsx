@@ -7,7 +7,13 @@ import { Input } from "@/components/manager/ui/input";
 import { Button, IconButton } from "@/components/manager/ui/button";
 import type { FieldA11y } from "@/components/manager/ui/form-field";
 import { toast } from "@/components/manager/feedback/toast";
-import { MediaPicker } from "./MediaPicker";
+import dynamic from "next/dynamic";
+
+// W2-04 减包：MediaPicker（媒体库选择弹窗 + 列表拉取）只在点「从媒体库选择」时才需要，
+// 改为懒加载；它有 125 行且会引入列表/分页/图片预览逻辑，不再进表单首屏。
+const MediaPicker = dynamic(() => import("./MediaPicker").then((m) => m.MediaPicker), {
+  ssr: false,
+});
 import { uploadFile } from "./upload";
 
 export function ImageField({ a11y, value, onChange, placeholder }: { a11y: FieldA11y; value: string; onChange: (v: string) => void; placeholder?: string }) {

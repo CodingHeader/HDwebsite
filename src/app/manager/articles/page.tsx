@@ -18,8 +18,15 @@ import type { DataColumn } from "@/components/manager/DataTable";
 import { SearchInput } from "@/components/manager/SearchInput";
 import { Select, Button } from "@/components/manager/ui";
 import { Badge } from "@/components/manager/ui/misc";
-import { SchemaForm, validateRequired } from "@/components/manager/SchemaForm";
+import { validateRequired } from "@/components/manager/form-utils";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
+import dynamic from "next/dynamic";
+
+// W2-04 减包：SchemaForm 仅在打开表单弹窗时需要，改为懒加载，不进列表页首屏
+const SchemaForm = dynamic(
+  () => import("@/components/manager/SchemaForm").then((m) => m.SchemaForm),
+  { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-md bg-mgr-muted" /> }
+);
 import { Bone, Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type Row = ArticleSummary & { category?: { name: string } | null };

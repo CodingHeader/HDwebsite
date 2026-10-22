@@ -9,11 +9,26 @@
  * - 五态：骨架 / 空（带下一步）/ 错误 + 重试 / 无权限 / Toast
  */
 import { useCallback, useMemo, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
-import { SchemaForm, mapFieldErrors, normalizeFormValues, validateRequired } from "@/components/manager/SchemaForm";
+import { mapFieldErrors, normalizeFormValues, validateRequired } from "@/components/manager/form-utils";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
+
+/**
+ * W2-04 减包：SchemaForm（366 行表单渲染器）改为懒加载。
+ *
+ * 依据：它只在用户点「新建/编辑」打开弹窗时才需要，却因静态 import 进了每个管理页首屏
+ * （实测 articles 页 470,884 B gzip 中，含 SchemaForm 的 chunk 占 98,510 B）。
+ * 三个纯函数（validateRequired/mapFieldErrors/normalizeFormValues）仍静态引入——
+ * 它们在提交/校验路径上首屏即用，抽出来可避免把整个表单渲染器拉进首屏。
+ * 行为不变：弹窗打开时按需加载，加载期间显示骨架（与既有 A-05 TipTap 懒加载同一模式）。
+ */
+const SchemaForm = dynamic(
+  () => import("@/components/manager/SchemaForm").then((m) => m.SchemaForm),
+  { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-md bg-mgr-muted" /> }
+);
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { DataTable, renderCell, type BadgeMap, type DataColumn, type RowActionItem } from "@/components/manager/DataTable";

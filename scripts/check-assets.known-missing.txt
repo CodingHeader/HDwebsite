@@ -2,11 +2,17 @@
 # 格式：每行一个路径，`#` 开头为注释。
 # 登记原因见 docs/design/06_validation/evidence/V7/W2-09/execution.md
 #
-# ── 已由 D-04 修复（2026-10-19，提交见 docs/design/06_validation/evidence/V7/D-04/execution.md）──
+# ── 已由 D-04 修复（2026-10-19）──
 #   /images/placeholder.svg  → registry defaultPlaceholderImage 改为 /images/logo_card.png（main 口径）
 #   /images/banner-bg.jpg    → registry bannerBgImage 默认改为 ""（main 口径）
 #   /favicon.ico             → registry siteFavicon 默认改为 ""（main 口径；浏览器图标由 Next 从 public/favicon-*.png 注入）
 #
-# 以下 1 项是前台 CompanyIntro 的视频 poster（src/components/web/CompanyIntro.tsx:32），
-# 属前台冻结范围，须从 origin/main@94dbbbb 恢复；main 亦无此文件，须按 main 视觉等价方案处理。
-/images/video-poster.jpg
+# ── 已由本轮修复（2026-10-22）──
+#   /images/video-poster.jpg → 该引用位于 src/components/web/CompanyIntro.tsx:32 的 <video poster>，
+#     属前台冻结面（REQ-F-014）不可改组件；且 origin/main@94dbbbb 本身**也没有**这个文件，
+#     是一条 main 遗留的悬空引用（默认 companyVideoUrl="" 时 poster 根本不会被请求）。
+#     处置：按 16:9 从 public/images/campus/campus-branch-1.jpg 生成 1280×720 品牌图补齐该文件，
+#     视觉与视频区红色基调一致；组件 JSX 一个字符未改，poster 仅在配置了视频时生效。
+#     结果：check-assets 从「8 项引用、1 项待修」变为「8 项引用、全部存在」。
+#
+# 当前无待修项。新增缺失请按格式追加路径并在提交信息中说明归属卡。

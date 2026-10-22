@@ -28,85 +28,25 @@ import { sanitizeRichContent } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
-export type FieldType =
-  | "text" | "textarea" | "number" | "switch" | "select" | "multiselect" | "date" | "datetime"
-  | "image" | "tags" | "markdown" | "richtext" | "json" | "secret"
-  /** A-03：远程搜索关联选择（FieldSpec.relation 提供端点；值=valueKey，显示=labelKey） */
-  | "relation";
+// W2-04 减包：类型与纯函数已拆到 ./form-utils（零 UI 依赖），此处重新导出保持既有 import 路径可用。
+// 调用方 `import { validateRequired } from "@/components/manager/SchemaForm"` 仍有效，
+// 但只有真正需要 <SchemaForm> 组件时才会加载本文件（含一整套 UI 字段组件）。
+import {
+  visibleFields,
+  validateRequired,
+  mapFieldErrors,
+  normalizeFormValues as normalizeFormValuesBase,
+  type FieldSpec,
+  type FormValues,
+} from "./form-utils";
 
-export type FieldSpec = {
-  key: string;
-  label: string;
-  type?: FieldType;
-  options?: { label: string; value: string | number; description?: string }[];
-  required?: boolean;
-  placeholder?: string;
-  /** 帮助说明：告诉使用者这个字段做什么、填什么 */
-  help?: string;
-  colSpan?: 1 | 2;
-  rows?: number;
-  /** 分区名（同名字段归入一组） */
-  section?: string;
-  sectionDescription?: string;
-  /** 收进「高级设置」折叠区 */
-  advanced?: boolean;
-  hidden?: (values: FormValues) => boolean;
-  disabled?: boolean | ((values: FormValues) => boolean);
-  /** 可见性（ADR-028/W0-04）：`"super"` = 仅超级管理员可见/可编辑（非超管整块不渲染，也不参与必填校验） */
-  visibleTo?: "super";
-  /** A-03：type="relation" 时的远程搜索配置（端点 + 显示/值键 + 额外参数） */
-  relation?: { path: string; labelKey?: string; valueKey?: string; params?: string };
-};
+export type { FieldType, FieldSpec, FormValues } from "./form-utils";
+export { visibleFields, validateRequired, mapFieldErrors } from "./form-utils";
 
-export type FormValues = Record<string, unknown>;
-
-function isEmpty(v: unknown) {
-  return v === undefined || v === null || (typeof v === "string" && v.trim() === "") || (Array.isArray(v) && v.length === 0);
-}
-
-/**
- * 按可见性过滤字段（ADR-028/W0-04）：`visibleTo: "super"` 的字段在非超管下整块不渲染。
- * 供 SchemaForm 与调用方的校验共用（避免"隐藏字段仍触发必填错误"）。
- */
-export function visibleFields(fields: FieldSpec[], isSuper: boolean): FieldSpec[] {
-  return fields.filter((f) => f.visibleTo !== "super" || isSuper);
-}
-
-/**
- * 必填 + JSON 格式校验：返回 { fieldKey: 错误文案 }，空对象表示通过。
- * 先做 visibleTo 过滤（非超管不校验 super 字段），再做 hidden(values) 过滤。
- */
-export function validateRequired(fields: FieldSpec[], values: FormValues, isSuper = true): Record<string, string> {
-  const errors: Record<string, string> = {};
-  for (const f of visibleFields(fields, isSuper)) {
-    if (f.hidden?.(values)) continue;
-    const v = values[f.key];
-    if (f.required && isEmpty(v)) {
-      errors[f.key] = `请填写「${f.label.replace(/（.*?）/g, "")}」`;
-      continue;
-    }
-    if (f.type === "json" && typeof v === "string" && v.trim()) {
-      try {
-        JSON.parse(v);
-      } catch {
-        errors[f.key] = "JSON 格式不正确，请检查括号与引号";
-      }
-    }
-  }
-  return errors;
-}
-
-/** 后端 400 的 data.fieldErrors（{ "a.b": "说明" }）→ 表单字段错误（按顶层键归并） */
-export function mapFieldErrors(err: unknown): Record<string, string> {
-  const raw = (err as { fieldErrors?: Record<string, string> } | null)?.fieldErrors;
-  if (!raw) return {};
-  const out: Record<string, string> = {};
-  for (const [path, msg] of Object.entries(raw)) {
-    const key = path.split(".")[0] || path;
-    if (!out[key]) out[key] = msg;
-  }
-  return out;
-}
+// 组件内部还需要用到这几个符号的本地绑定（导出与本地使用分开写，避免 TS 同名冲突）
+void visibleFields;
+void validateRequired;
+void mapFieldErrors;
 
 export function SchemaForm({
   fields,
@@ -338,30 +278,14 @@ function toLocalInput(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/**
- * 提交前转换：tags 逗号串 → 数组；select 空值删键（让 zod default 生效）；richtext 净化；
- * W0-04（ADR-028）visibleTo="super" 且非超管的字段不提交；隐藏字段不提交；其余空串 → null。
- */
-export function normalizeFormValues(fields: FieldSpec[], values: FormValues, isSuper = true): FormValues {
-  const out: FormValues = { ...values };
-  for (const f of visibleFields(fields, isSuper)) {
-    const type = f.type ?? "text";
-    if (f.hidden?.(values)) {
-      delete out[f.key];
-      continue;
-    }
-    const v = out[f.key];
-    if (type === "tags" && typeof v === "string") {
-      out[f.key] = v.trim() ? v.split(/[,，]/).map((s) => s.trim()).filter(Boolean) : [];
-    }
-    if (type === "richtext" && typeof v === "string" && v) out[f.key] = sanitizeRichContent(v);
-    if (v === "") {
-      if (type === "select") delete out[f.key];
-      else out[f.key] = null;
-    }
-  }
-  return out;
+// normalizeFormValues 已由 ./form-utils 提供。这里保留一个「带净化器」的默认包装：
+// 调用方直接 import 本文件的 normalizeFormValues 时，richtext 仍会走 sanitizeRichContent 净化，
+// 与拆分前行为一致；而只想做无副作用归一的调用方可改从 ./form-utils 引入。
+function normalizeFormValuesWithSanitize(fields: FieldSpec[], values: FormValues, isSuper = true): FormValues {
+  return normalizeFormValuesBase(fields, values, isSuper, sanitizeRichContent);
 }
+
+export { normalizeFormValuesWithSanitize as normalizeFormValues };
 
 /** ResourceForm = SchemaForm（P07 命名；保留旧名向后兼容） */
 export const ResourceForm = SchemaForm;

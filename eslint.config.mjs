@@ -34,10 +34,10 @@ const eslintConfig = defineConfig([
   {
     // 目标 2：路由内不得自行定义请求体 zod schema（DTO 唯一源是 src/contracts/**）。
     //   背景：ADR 契约唯一源——路由内重复定义会导致「契约改了、路由没改」的静默漂移。
-    //   已知存量违例登记在 CCR-W2-08-01（src/app/api/apply/route.ts），
-    //   该文件属 B 线所有权，本卡不得越界修改，故对该文件单独豁免直至 CCR 裁决。
+    //   CCR-W2-08-01 已落地：原唯一存量违例 src/app/api/apply/route.ts 的 applySchema
+    //   已迁至 src/contracts/resources.ts 的 applySubmitSchema，故此处**不再有任何豁免**，
+    //   规则对全部路由 100% 生效。
     files: ["src/app/api/**/route.ts"],
-    ignores: ["src/app/api/apply/route.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
@@ -53,12 +53,6 @@ const eslintConfig = defineConfig([
         },
       ],
     },
-  },
-  {
-    // 目标 2 的补充：apply 的存量违例仅针对「对象型请求体 schema」。
-    // 这里不放宽任何其他规则，只让已知违例不阻断门禁。
-    files: ["src/app/api/apply/route.ts"],
-    rules: { "no-restricted-syntax": "off" },
   },
   globalIgnores([
     ".next/**",
