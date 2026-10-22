@@ -23,11 +23,12 @@
   "note": "sharp 0.34.5→0.35.5；运行时依赖 critical 0 / high 0（剩 3 moderate：argparse/mammoth/sprintf-js）"
  },
  "V8-SEC-03": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "vitest 3.2.7→5.0.5；critical 2→0；5 个 high 是 audit 给的降级建议（14.2.35<16.4.2）按 Q1 拒绝"
  },
  "V8-SEC-04": {
   "status": "pending",

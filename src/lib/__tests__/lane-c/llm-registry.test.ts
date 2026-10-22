@@ -83,10 +83,10 @@ describe("C-01 适配器注册表", () => {
 
   it("gatewayChat 经注册表调度（无类型分支）：openai 供应商成功返回并记录用量", async () => {
     dbCalls.usage = [];
-    vi.mock("@/lib/llm-gateway", async (orig) => {
-      const real = await orig<typeof import("@/lib/llm-gateway")>();
-      return real;
-    });
+    // V8-SEC-03：原此处有一个嵌套在 it() 内的 vi.mock("@/lib/llm-gateway")，
+    // 其实现只是 `return real`（等于不 mock），且 vitest 5 起明确禁止非顶层 vi.mock，
+    // 会直接抛「defined outside of the module's top level scope」。
+    // 该 mock 无实际作用，删除后语义不变。
     // getRoutedProviders 内部走 prisma.lLMProvider.findMany（mock 返回 []）→ 空供应商路径；
     // 这里只断言空路径语义与注册表导入可用（路由+适配器联调由 wechat-chat/e2e 覆盖）
     const r = await gatewayChat([{ role: "user", content: "hi" }]);
