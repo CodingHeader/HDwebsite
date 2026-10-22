@@ -7,14 +7,15 @@
   "commits": []
  },
  "V8-SEC-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "Q1=A；G-01 为文档前置，豁免先行；e2e/gzip 待 CI 与 PERF-01"
  },
  "V8-SEC-02": {
-  "status": "pending",
+  "status": "ready",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,

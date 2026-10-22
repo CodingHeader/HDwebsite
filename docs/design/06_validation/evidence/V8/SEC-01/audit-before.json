@@ -1,0 +1,76 @@
+{
+ "all": {
+  "info": 0,
+  "low": 0,
+  "moderate": 4,
+  "high": 7,
+  "critical": 3,
+  "total": 14
+ },
+ "omit_dev": {
+  "info": 0,
+  "low": 0,
+  "moderate": 3,
+  "high": 2,
+  "critical": 1,
+  "total": 6
+ },
+ "pkgs": {
+  "@next/eslint-plugin-next": [
+   "high",
+   "{'name': 'eslint-config-next', 'version': '14.2.35', 'isSemVerMajor': True}"
+  ],
+  "@vitest/mocker": [
+   "moderate",
+   "{'name': 'vitest', 'version': '5.0.5', 'isSemVerMajor': True}"
+  ],
+  "argparse": [
+   "moderate",
+   "{'name': 'mammoth', 'version': '0.3.29', 'isSemVerMajor': True}"
+  ],
+  "braces": [
+   "high",
+   "{'name': 'eslint-config-next', 'version': '14.2.35', 'isSemVerMajor': True}"
+  ],
+  "eslint-config-next": [
+   "high",
+   "{'name': 'eslint-config-next', 'version': '14.2.35', 'isSemVerMajor': True}"
+  ],
+  "fast-glob": [
+   "high",
+   "{'name': 'eslint-config-next', 'version': '14.2.35', 'isSemVerMajor': True}"
+  ],
+  "mammoth": [
+   "moderate",
+   "{'name': 'mammoth', 'version': '0.3.29', 'isSemVerMajor': True}"
+  ],
+  "micromatch": [
+   "high",
+   "{'name': 'eslint-config-next', 'version': '14.2.35', 'isSemVerMajor': True}"
+  ],
+  "next": [
+   "critical",
+   "{'name': 'next', 'version': '16.4.2', 'isSemVerMajor': False}"
+  ],
+  "postcss": [
+   "high",
+   "{'name': 'next', 'version': '16.4.2', 'isSemVerMajor': False}"
+  ],
+  "sharp": [
+   "high",
+   "{'name': 'sharp', 'version': '0.35.5', 'isSemVerMajor': True}"
+  ],
+  "sprintf-js": [
+   "moderate",
+   "{'name': 'mammoth', 'version': '0.3.29', 'isSemVerMajor': True}"
+  ],
+  "tinypool": [
+   "critical",
+   "{'name': 'vitest', 'version': '5.0.5', 'isSemVerMajor': True}"
+  ],
+  "vitest": [
+   "critical",
+   "{'name': 'vitest', 'version': '5.0.5', 'isSemVerMajor': True}"
+  ]
+ }
+}

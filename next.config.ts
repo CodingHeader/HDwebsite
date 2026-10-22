@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   experimental: {
     optimizeCss: false,
-    cssChunking: false,
+    // V8-SEC-01：next 16.4 的 Turbopack 不支持 cssChunking:false（仅 webpack），已移除；CSS 顺序回归由 V8-VIS-03 在 Linux visual 中核验
   },
   // D-09：standalone 不打包运行时写入目录（uploads/backups/data 经 DATA_DIR 化后由部署侧卷承载）
   outputFileTracingExcludes: {
