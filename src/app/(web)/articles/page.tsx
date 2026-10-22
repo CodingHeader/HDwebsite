@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { ChevronRight, Calendar, Eye } from "lucide-react";
+import { Calendar, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 

@@ -31,7 +31,6 @@ import { GET as healthGET } from "@/app/api/health/route";
 
 let SUPER = "";
 let superId = 0;
-let normalUserId = 0;
 let pubArticleId = 0;
 let draftArticleId = 0;
 
@@ -43,10 +42,9 @@ beforeAll(async () => {
   const normalRole = await prisma.role.create({
     data: { name: "普通", slug: "normal", permissions: JSON.stringify([]) },
   });
-  const u = await prisma.user.create({
+  await prisma.user.create({
     data: { username: "victim", passwordHash: "x", roleId: normalRole.id },
   });
-  normalUserId = u.id;
 
   // login 成功分支需要真实 bcrypt 密码
   const { hashPassword } = await import("@/lib/auth");

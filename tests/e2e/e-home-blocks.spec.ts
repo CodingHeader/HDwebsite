@@ -11,7 +11,7 @@ test.use({ storageState: adminState() });
 
 const TARGET_BLOCK = "home-intro";
 
-test("禁用区块 → 前台不渲染 → 恢复默认恢复渲染", async ({ page, request }) => {
+test("禁用区块 → 前台不渲染 → 恢复默认恢复渲染", async ({ page }) => {
   // 1. 编辑 home-intro：关闭启用开关
   await page.goto("/manager/home-blocks");
   const rows = page.getByTestId("home-blocks-table").locator("tbody tr");

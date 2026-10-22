@@ -54,6 +54,37 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // V8-T-03：`_` 前缀约定。
+    // 项目里有大量「解构剥离字段」的写法，例如
+    //     const { passwordHash: _ph, ...safe } = user;
+    // 目的是**移除敏感字段后返回**，`_ph` 天然不会被使用。
+    // 同理还有未使用的回调参数（`(_req, res)`）与故意丢弃的返回值。
+    // 这些不是遗漏，强制删除反而会改变语义或引入冗余代码。
+    // 约定：以 `_` 开头的标识符不报 no-unused-vars（与 TS/社区通行做法一致）。
+    files: ["**/*.ts", "**/*.tsx", "**/*.mjs"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+  {
+    // V8-T-03：Markdown 渲染器里的原生 <img> 是**必要例外**。
+    // ArticleContent 渲染的是后台富文本/Markdown 转换后的任意图片 URL，
+    // next/image 需要固定 width/height 与 remotePatterns 白名单，
+    // 换成它会导致外部图（采集来的、公众号的）被挡掉或变形。
+    // 已加 loading="lazy" 缓解 LCP，属可接受的取舍。
+    files: ["src/components/web/ArticleContent.tsx"],
+    rules: { "@next/next/no-img-element": "off" },
+  },
   globalIgnores([
     ".next/**",
     "out/**",
@@ -64,6 +95,10 @@ const eslintConfig = defineConfig([
     // CCR-1（W0-11）：.cache 是运行时产物（e2e/visual 的日志、截图、storageState 与临时脚本），
     // 不忽略会导致 lint 计数随缓存内容漂移（W0-08 记 26 条 vs 干净树 18 条）
     ".cache/**",
+    // V8-T-03：AI 助手的临时探查脚本目录（非项目代码，且已被 .gitignore 忽略）。
+    // 不忽略会让 lint 计数随会话临时文件漂移，与 W0-11 忽略 .cache 同理。
+    ".box-agent-scratch/**",
+    ".box-agent/**",
   ]),
 ]);
 

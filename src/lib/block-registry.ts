@@ -56,7 +56,7 @@ async function resolveHomeBlocksUncached(templateCode = "home"): Promise<Resolve
       seen.add(code);
       const config = parseJsonObject(tb.config);
       if (tb.block.status !== "active" || config.enabled === false) continue;
-      const { enabled: _enabled, ...rest } = config; // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { enabled: _enabled, ...rest } = config;
       out.push({ code, definition: getBlockDefinition(code)!, props: { ...getBlockDefaultProps(code), ...rest } });
     }
     return out;

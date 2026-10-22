@@ -14,7 +14,6 @@ import { ApiHttpError, parseBody, parseId, parseQuery, withApi } from "@/lib/api
 import { ZodError, z } from "zod";
 import { listQuerySchema } from "@/contracts";
 import type { SessionUser } from "@/contracts";
-import type { Prisma } from ".prisma/client";
 
 type AnyRecord = Record<string, unknown>;
 

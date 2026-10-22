@@ -5,7 +5,7 @@
  * 并验证 crudDelete 的 afterDelete 钩子与 batch 路由的清理逻辑。
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 

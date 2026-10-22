@@ -15,16 +15,14 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
 import { uploadsDir, COLLECT_IMAGE_MAX_SIZE, COLLECT_IMAGE_TYPES } from "@/lib/storage";
-import { getParser, parseRule, fetchHtmlDetails, type ParsedItem, type ParserRule } from "@/lib/collect/parsers";
+import { getParser, parseRule, fetchHtmlDetails, type ParsedItem } from "@/lib/collect/parsers";
 import { ingestCollectItem } from "@/lib/kb-sync";
 import { logOperation } from "@/lib/log";
 import { markdownExcerpt } from "@/lib/markdown";
 import { scheduleAutoPublish } from "@/lib/content-workflow";
 import { appOrigin } from "@/lib/app-origin";
-import { notifyCollectFailed } from "@/lib/notify-gateway";
 import type { CollectSource } from ".prisma/client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** 单个源批次最大运行时长（30 分钟）；超时中止并标记失败（D-12） */
 export const COLLECT_BATCH_TIMEOUT_MS = 30 * 60 * 1000;

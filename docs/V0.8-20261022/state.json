@@ -55,11 +55,12 @@
   "note": "契约 skip=0；SSE 独立 4 用例（正常/中途 error/流前失败/请求体非法）；876 passed 默认与 shuffle 一致"
  },
  "V8-T-03": {
-  "status": "pending",
+  "status": "done",
   "owner": "P3",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "58→0 warning；lint 锁 --max-warnings 0；清理途中还发现 e-kb-manage 3 个空壳测试并补成真断言"
  },
  "V8-T-04": {
   "status": "done",

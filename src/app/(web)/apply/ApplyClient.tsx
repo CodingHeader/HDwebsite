@@ -121,14 +121,6 @@ function getOrCreateSessionId(): string {
   return id;
 }
 
-/** 根据 URL source 参数推断场景 code：/apply 默认 "apply"，悬浮来源为 "float"，服务指南 "guide" */
-function resolveSceneCode(search: string): string {
-  const sp = new URLSearchParams(search);
-  const src = sp.get("source");
-  if (src === "float") return "float";
-  if (src === "guide") return "guide";
-  return "apply";
-}
 
 interface ApplyClientProps {
   sceneCode: string;

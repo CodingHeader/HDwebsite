@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
-import { error, created, success } from "@/lib/api-response";
+import { created, success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { assertUserWriteAllowed } from "@/lib/authz/escalation";
 import { listQuerySchema } from "@/contracts";
@@ -17,7 +17,7 @@ const publicSelect = {
 
 /** GET /api/users：用户列表（不含密码哈希） */
 export const GET = withApi(
-  async ({ request, session }) => {
+  async ({ request }) => {
     const { page, limit, keyword } = parseQuery(request, listQuerySchema);
     try {
       const where = keyword

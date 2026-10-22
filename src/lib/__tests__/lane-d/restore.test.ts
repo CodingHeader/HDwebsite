@@ -7,7 +7,7 @@
  * 3. dry-run 不做任何落盘。
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
@@ -56,11 +56,6 @@ function makeBackup(srcRoot: string): string {
   mkdirSync(path.join(kbRoot, "1"), { recursive: true });
   writeFileSync(path.join(kbRoot, "1", "abc.md"), "kb content");
 
-  const entries = [
-    { rel: "db/dev.db", abs: path.join(dbDir, "dev.db"), type: "file" as const },
-    ...collectDirEntries(uploadsRoot, "uploads"),
-    ...collectDirEntries(kbRoot, "kb"),
-  ];
   const backupsRoot = path.join(tmpRoot, "backups", "20261020");
   mkdirSync(backupsRoot, { recursive: true });
   const archive = path.join(backupsRoot, "dev.tar.gz");

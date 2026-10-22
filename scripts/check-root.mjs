@@ -9,7 +9,6 @@
  * 退出码：0 = 通过；1 = 存在未列入白名单的条目（逐条打印）。
  */
 import { readdirSync } from "node:fs";
-import { join } from "node:path";
 
 const root = process.cwd();
 

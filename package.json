@@ -9,7 +9,7 @@
     "dev": "next dev -p 6789",
     "build": "next build",
     "start": "node scripts/start-next.mjs",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm run build && npm run check:assets && npm run check:root && npm run check:audit",

@@ -1,4 +1,4 @@
-import { getSession, hasPermission } from "@/lib/auth";
+import { hasPermission } from "@/lib/auth";
 import { success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { getSettings, getAllSettings, setSettings } from "@/lib/settings";
@@ -25,7 +25,7 @@ function maskEncrypted(data: Record<string, string>): Record<string, string> {
  * 已登录但无 setting:list → 仍仅 isPublic（修复 Viewer 可读解密密钥的越权缺口）。
  */
 export const GET = withApi(
-  async ({ request, session }) => {
+  async ({ session }) => {
     const canList = !!session && hasPermission(
       { isSuper: session.role.isSuper, permissions: session.role.permissions },
       "setting:list"

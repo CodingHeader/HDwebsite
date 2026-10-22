@@ -15,7 +15,7 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField } from "@/components/manager/ui/form-field";
 import { Button, Input, Select, Switch, Textarea } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { ErrorState, Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 import { Badge, Tabs } from "@/components/manager/ui/misc";
 import { KbUpload } from "./kb-upload";
 import type { KbSearchRequest } from "@/contracts/kb";

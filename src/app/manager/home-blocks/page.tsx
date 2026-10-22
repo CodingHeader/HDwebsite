@@ -7,7 +7,7 @@
  * - 排序：上移/下移按钮（键盘可替代的拖拽）；新增：注册表中尚未加入首页的区块
  * - 恢复默认：POST /api/home-blocks/reset（破坏性操作，二次确认）= main 原样
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, PencilLine, Plus, RotateCcw } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";

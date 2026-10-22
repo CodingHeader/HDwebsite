@@ -4,7 +4,7 @@
  * relation 字段渲染、normalizeFormValues 提交转换。
  */
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import {
   SchemaForm,
   mapFieldErrors,
@@ -48,8 +48,6 @@ describe("A-03 SchemaForm 字段级错误", () => {
         errors={mapped}
       />
     );
-    const slugInput = document.querySelector('[data-testid="schema-form"] input[id$="slug"], #field-slug') as HTMLInputElement
-      ?? (Array.from(document.querySelectorAll("#schema-form input")).find((el) => (el as HTMLInputElement).id.includes("slug")) as HTMLInputElement);
     // aria-invalid 由 FormField 透传（错误字段红色描边）
     const invalidInputs = Array.from(document.querySelectorAll("[aria-invalid='true']"));
     expect(invalidInputs.length).toBeGreaterThanOrEqual(1);

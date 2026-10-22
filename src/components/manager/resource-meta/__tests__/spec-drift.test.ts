@@ -5,14 +5,6 @@
  */
 import { describe, expect, it } from "vitest";
 import { crudPageSpecs as CRUD_SPECS } from "@/components/manager/crud-specs";
-import { collectSourceCreateSchema, chatSceneCreateSchema } from "@/contracts/resources";
-
-/** 冻结契约的 status 枚举真相源（resources.ts:259-261：draft/pending_review/offline） */
-function enumOf(schema: { shape: Record<string, { options?: readonly string[] }> }, key: string): readonly string[] | undefined {
-  const field = schema.shape[key];
-  // zod enum 的 options（zod4：.options；防御性读取）
-  return (field as { options?: readonly string[] } | undefined)?.options;
-}
 
 describe("E-01 spec-drift：content-items 状态枚举", () => {
   const spec = CRUD_SPECS["content-items"];

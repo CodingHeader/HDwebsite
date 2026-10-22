@@ -2,7 +2,7 @@
  * C-01 LLM 适配器注册表测试：openai/coze 适配器注册、getAdapter 未知 kind 抛错、
  * chat/stream 形态（http mock）、llm-gateway 经注册表调度（无类型分支）。
  */
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 const fetchCalls = vi.hoisted(() => ({ list: [] as { url: string; init?: RequestInit }[] }));
 
@@ -26,7 +26,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     lLMProvider: { findMany: async () => [], findUnique: async () => null },
     lLMUsage: {
-      upsert: async ({ where, update, create }: { where: { date_providerId: { providerId: number } }; update: Record<string, unknown>; create: { providerId: number; tokensIn: number; tokensOut: number; failures: number } }) => {
+      upsert: async ({ where, update: _update, create }: { where: { date_providerId: { providerId: number } }; update: Record<string, unknown>; create: { providerId: number; tokensIn: number; tokensOut: number; failures: number } }) => {
         dbCalls.usage.push({
           providerId: where.date_providerId.providerId,
           tokensIn: create.tokensIn,

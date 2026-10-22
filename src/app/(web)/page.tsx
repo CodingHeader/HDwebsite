@@ -26,22 +26,25 @@ import { resolveHomeBlocks } from "@/lib/block-registry";
  *   本文件只做组合（取舍/排序），区块 JSX 与 className 不变。
  * - 视觉与 main 逐字一致：包裹层为无样式 div，不改变任何区块的盒模型。
  */
-const HOME_BLOCK_ORDER = [
-  "home-banner",
-  "home-cards",
-  "home-topbar",
-  "home-entrance",
-  "home-stats",
-  "home-partners",
-  "home-courses",
-  "home-intro",
-  "home-news",
-  "home-certificates",
-  "home-campus",
-  "home-cta",
-] as const;
-
-type HomeBlockCode = (typeof HOME_BLOCK_ORDER)[number];
+/**
+ * 首页区块 code 联合类型（V8-T-03）。
+ * 原先写成 `const HOME_BLOCK_ORDER = [...] as const; type X = (typeof HOME_BLOCK_ORDER)[number]`，
+ * 但该常量只用于取类型、运行时从不读取，会被 no-unused-vars 判为「仅作类型使用」。
+ * 直接内联为联合类型：语义完全等价，且不产生永不使用的运行时常量。
+ */
+type HomeBlockCode =
+  | "home-banner"
+  | "home-cards"
+  | "home-topbar"
+  | "home-entrance"
+  | "home-stats"
+  | "home-partners"
+  | "home-courses"
+  | "home-intro"
+  | "home-news"
+  | "home-certificates"
+  | "home-campus"
+  | "home-cta";
 
 type HomeBlock = { code: HomeBlockCode; render: (d: HomeData) => ReactNode };
 

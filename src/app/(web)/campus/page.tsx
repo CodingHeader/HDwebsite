@@ -25,7 +25,6 @@ export default async function CampusPage() {
     getSettings(),
   ]);
 
-  const schoolShortName = settings.schoolShortName || "弘道教育";
   const address = settings.address || "成都市青羊区大石西路12号";
   const contactPhone = settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone;
 

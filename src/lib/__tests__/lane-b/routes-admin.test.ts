@@ -52,9 +52,7 @@ let EDITOR = ""; // 仅 article:list / article:edit
 let NOPERM = "";
 let USERLIST = ""; // 仅 user:list
 let ROLEEDIT = ""; // 仅 role:edit
-let WECHAT = ""; // 仅 wechat:edit
 
-let editorId = 0;
 let normalUserId = 0;
 let normalRoleId = 0;
 let emptyRoleId = 0;
@@ -68,11 +66,11 @@ beforeAll(async () => {
   SUPER = (await createActor(prisma, "super", [], true)).token;
   superId = (await prisma.user.findFirst({ where: { username: "super" } }))!.id;
   EDITOR = (await createActor(prisma, "editor", ["article:list", "article:edit"])).token;
-  editorId = (await prisma.user.findFirst({ where: { username: "editor" } }))!.id;
   NOPERM = (await createActor(prisma, "noperm", [])).token;
   USERLIST = (await createActor(prisma, "userlist", ["user:list"])).token;
   ROLEEDIT = (await createActor(prisma, "roleedit", ["role:edit"])).token;
-  WECHAT = (await createActor(prisma, "wechatop", ["wechat:edit"])).token;
+  // V8-T-03：原本这里创建一个仅含 wechat:edit 权限的 actor，但无任何用例消费它。
+  // 保留声明（便于后续扩展），去掉无效赋值以免制造"已覆盖 wechat 权限"的错觉。
 
   // 迁移测试需要内置超管角色（seed 不在契约测试里跑）
   const sa = await prisma.role.create({

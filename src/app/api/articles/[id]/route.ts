@@ -7,8 +7,6 @@ import { ApiHttpError, parseBody, parseId, withApi } from "@/lib/api-handler";
 
 export const dynamic = "force-dynamic";
 
-type RouteParams = { params: Promise<{ id: string }> };
-
 function canReadAll(session: { role: { isSuper: boolean; permissions: string[] } } | null): boolean {
   if (!session) return false;
   const p = session.role.permissions;

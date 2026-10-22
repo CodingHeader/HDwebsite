@@ -72,6 +72,11 @@ export async function managerFetch<T>(
   if (res.status === 401) {
     useAuthStore.getState().clear();
     if (typeof window !== "undefined" && !window.location.pathname.startsWith("/manager/login")) {
+      // V8-T-03：此处刻意用整页跳转而非 next/navigation 的 router.push。
+      // 401 意味着 token 已失效，必须**丢弃当前整棵客户端状态**（zustand persist 已 clear，
+      // 但内存中的组件状态、进行中的请求都要作废）；router.push 只做客户端导航，会留下脏状态。
+      // 因此保留原写法并显式豁免该规则（此文件是唯一允许的位置）。
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = "/manager/login";
     }
     throw new ApiError(401, "登录已过期，请重新登录");

@@ -52,15 +52,12 @@ vi.mock("@/lib/llm-gateway", async (orig) => {
 });
 
 import { prisma } from "@/lib/prisma";
-import { cleanupTestDb, createActor, ctx, initTestDb, json, req } from "../api-contract/harness";
+import { cleanupTestDb, ctx, initTestDb, json } from "../api-contract/harness";
 import { POST as streamPOST } from "@/app/api/chat/stream/route";
 import { orderProviders } from "@/lib/llm-gateway";
 import { buildChatContext, chatOnce, parseIdListField } from "@/lib/chat-service";
-import { cozeStreamMessages } from "@/lib/llm/coze";
 import { parseSseFrame, reduceSseError } from "@/lib/llm/sse";
 import { chatSseEventSchema } from "@/contracts/chat";
-
-let ADMIN = "";
 
 const PROVIDERS = [
   { id: 1, name: "A", isDefault: false, isFallback: false },
@@ -85,7 +82,6 @@ async function seedScene(over: Record<string, unknown> = {}) {
 
 beforeAll(async () => {
   await initTestDb();
-  ADMIN = (await createActor(prisma, "admin", [], true)).token;
 });
 
 afterAll(async () => {

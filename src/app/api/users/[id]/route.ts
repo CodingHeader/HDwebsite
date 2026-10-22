@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
-import { error, notFound, success } from "@/lib/api-response";
+import { notFound, success } from "@/lib/api-response";
 import { clientIp, logOperation } from "@/lib/log";
 import { assertUserWriteAllowed } from "@/lib/authz/escalation";
-import { idParamSchema } from "@/contracts";
 import { userUpdateSchema } from "@/contracts/resources";
 import { ApiHttpError, parseBody, parseId, withApi } from "@/lib/api-handler";
 
@@ -11,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 /** GET /api/users/[id]：详情（user:list） */
 export const GET = withApi<{ id: string }>(
-  async ({ params, session }) => {
+  async ({ params }) => {
     const id = parseId(params.id, "非法 ID");
     const user = await prisma.user.findUnique({ where: { id }, include: { role: true } });
     if (!user) return notFound("用户不存在");

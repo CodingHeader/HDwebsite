@@ -20,7 +20,6 @@ import { parseJsonField } from "@/lib/json-field";
 import { ChannelThrottledError, isThrottledError } from "@/lib/channels/errors";
 import type { WechatAccount, ContentItem } from ".prisma/client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const API = "https://api.weixin.qq.com";
 
