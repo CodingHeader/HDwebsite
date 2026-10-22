@@ -1,10 +1,11 @@
 {
  "V8-G-01": {
-  "status": "ready",
+  "status": "done",
   "owner": "P3",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "AGENTS/CLAUDE/current-plan 三处入口对齐 V0.8；AGENTS 新增 3.1 连续执行协议行"
  },
  "V8-SEC-01": {
   "status": "done",

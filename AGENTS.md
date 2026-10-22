@@ -11,8 +11,9 @@ This version (Next 16) has breaking changes — APIs, conventions, and file stru
 ## 1. 读取顺序（开工前必读）
 
 1. `docs/design/规划总指令-任务分配与完整规划.md`——治理标准（其"只读"规则仅约束 P0 规划步；执行方向在提示词允许路径内改代码）。
-2. `docs/V0.7-20261019/README.md`——当前轮规划入口（V0.7 单主线，2026-10-19 起；含任务索引 `05-任务索引.md`、任务定义 `tasks/`、依赖 DAG `07-依赖DAG与并行判定.md`、所有权矩阵 `08-所有权矩阵与档位成本.md`）；历史轮次包 `docs/design/04_planning/current-plan.md` 与 `docs/V0.6-20261016/` 仅供追溯。
-3. 当前方向任务定义 `docs/V0.7-20261019/tasks/<卡号>.md`（V0.7 起单主线）与 `06-剩余可执行大纲体系.md`——本方向的输出、允许/禁止修改路径、验收与验证命令。
+2. `docs/V0.8-20261022/README.md`——**当前轮规划入口**（V0.8 单主线，2026-10-22 起；含任务索引 `05-任务索引.md`、任务定义 `tasks/`、依赖 DAG `06-DAG-所有权-档位.md`、连续执行协议 `04-连续执行协议.md`、状态机 `state.json`）。历史轮次包 `docs/V0.7-20261019/`、`docs/V0.6-20261016/`、`docs/design/04_planning/current-plan.md` 仅供追溯。
+3. 当前方向任务定义 `docs/V0.8-20261022/tasks/<卡号>.md`——本方向的输出、允许/禁止修改路径、验收与验证命令。
+3.1 **执行者按 `docs/V0.8-20261022/04-连续执行协议.md` 循环取卡**：拉代码 → 读 `state.json` → 领一张就绪卡 → 执行 → 门禁 → 留证据 → 推送 → 写心跳，然后回到开头。不阻塞（无裁决按默认方案、缺凭证做 dry-run、缺环境交 CI）；同一张卡连续 2 次 FAIL 即熔断升档；**只有剩余卡全部卡在授权/凭证等外部条件时才允许停下**。
 4. 需求与决策：`docs/design/02_requirements/`（REQ-F-013 对等、REQ-F-014 前台风格冻结、REQ-F-015 管理端顶级体验、`parity-matrix.md`）、`docs/design/03_solution/decisions/`（ADR）。
 5. 前序方向证据：`docs/design/06_validation/evidence/`。
 

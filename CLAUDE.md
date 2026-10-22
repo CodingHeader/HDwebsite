@@ -2,16 +2,13 @@
 
 本文件是 Claude Code 等工具在 HDwebsite `upgrade` 分支上的入口指引。
 
-- 核心规则以根目录 `AGENTS.md` 为唯一权威**（parity E2：本文件与 main 分支 `CLAUDE.md` 内容对等）。
+- **核心规则以根目录 `AGENTS.md` 为唯一权威**（parity E2：本文件与 main 分支 `CLAUDE.md` 内容对等）。
+- 本文件不重复、也不覆盖 AGENTS.md 的任何规则。**如发现两处表述不一致，一律以 AGENTS.md 为准**，
+  并提 PR 修正本文件——不得在此另立分支/端口/门禁规则。
+
+## 当前轮入口
+
+- 规划包：`docs/V0.8-20261022/`（README 为入口，`state.json` 为状态机，`04-连续执行协议.md` 为取卡循环）。
+- 任务卡：`docs/V0.8-20261022/tasks/<卡号>.md`；证据：`docs/design/06_validation/evidence/V8/<卡号>/`。
 
 @AGENTS.md
-
----
-
-## 使用说明
-
-- 开工前先按 `AGENTS.md` §1「读取顺序」加载规划与方向提示词。
-- 前台视觉冻结（REQ-F-014）与所有权矩阵（`docs/V0.7-20261019/08-所有权矩阵与档位成本.md`）为硬约束。
-- 冻结面（`src/contracts/**`、`prisma/schema.prisma` 与迁移、`package.json`/锁、vitest/Playwright 配置）只读；需改动必须先提《契约变更请求》。
-- 验证门禁：`npm run lint && npm run typecheck && npm test && npm run build`，P02 起加 `npm run test:visual`。
-- 每张规划卡完成后必须产出证据（`docs/design/06_validation/evidence/V7/<卡号>/`）并经独立验证者复审。
