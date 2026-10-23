@@ -57,7 +57,7 @@ E2E 首跑暴露 3 例（run 39982327648：70/73）：
 | C | T-02、T-03、T-04、VIS-01、UI-01 | 5/5 PASS（契约 876 双序亲跑、e2e 20/20、a11y 12/12 亲跑） |
 | V9 | CI-01、VIS-03、T-05、E2E-01 | 4/4 PASS（CI run 结论 API 取证；seed 12/12 亲跑；e2e 73/73 亲跑） |
 
-verify.md 计数：V8 15 张（含 REL-01 以 docker job 结论 PASS）+ V9 4 张（REL-02 本卡验证随终稿出具）。**14+4=18 份 verify.md，0 FAIL 遗留。**
+verify.md 计数：V8 15 张（含 REL-01 独立 verify，PASS，附 2 项 UNKNOWN 子项：重启持久化/restore 演练待真实环境演练）+ V9 5 张（含 REL-02 终验 PASS）。**20 份 verify.md，0 FAIL 遗留。**
 
 ## 8. V9-REL-02（done）
 
