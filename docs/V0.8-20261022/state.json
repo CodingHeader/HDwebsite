@@ -119,11 +119,12 @@
   "note": "3 个冒烟脚本 dry-run 默认 + --live 出网；无凭证 exit 3 列出缺失键；手册含失败对照表；凭证读 DB 不读 env；无硬编码密钥"
  },
  "V8-REL-01": {
-  "status": "pending",
+  "status": "blocked",
   "owner": "P3",
   "verify": null,
-  "blocked_reason": null,
-  "commits": []
+  "blocked_reason": "本机 Docker daemon 可用(OSType=linux)但容器内无法访问任何 npm registry（npm view next 超时 exit 124，官方源与 npmmirror 均不通）→ docker build 在 npm ci 阶段失败。属网络环境限制，非 Dockerfile 缺陷。交 CI 验证。",
+  "commits": [],
+  "note": "Dockerfile 静态核验全通过：多阶段/非 root/EXPOSE 6789/HEALTHCHECK 打 /api/health/CMD server.js/standalone 复制完整"
  },
  "V8-V-01": {
   "status": "pending",
