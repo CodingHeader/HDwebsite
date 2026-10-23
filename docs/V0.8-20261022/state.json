@@ -110,11 +110,12 @@
   "commits": []
  },
  "V8-INT-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "3 个冒烟脚本 dry-run 默认 + --live 出网；无凭证 exit 3 列出缺失键；手册含失败对照表；凭证读 DB 不读 env；无硬编码密钥"
  },
  "V8-REL-01": {
   "status": "pending",
