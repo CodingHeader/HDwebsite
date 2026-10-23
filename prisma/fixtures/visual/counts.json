@@ -1,7 +1,7 @@
 {
-  "_comment": "V8-VIS-01：visual 回归用的确定性数据集基线。来源 = 同级参考仓库 hdwebsite_0429/prisma/dev.db 的实测行数（main 系真实数据，2026-05-20）。",
+  "_comment": "V8-VIS-01：visual 回归用的确定性数据集基线。来源 = 同级参考仓库 hdwebsite_0429/prisma/dev.db 的实测行数（main 系真实数据，2026-05-20）。V9-VIS-03 增补 ServiceGuide/HotMajor（同源实测）。",
   "_source": "../hdwebsite_0429/prisma/dev.db",
-  "_measuredAt": "2026-10-22",
+  "_measuredAt": "2026-10-22；ServiceGuide/HotMajor 增测于 2026-10-23",
   "_why": "V0.7 的 visual 比对失败根因是 dev.db 内容表全 0（首页高度 3389px vs 参照图 5529px）。本文件固定各表应有行数，使 seed 后可复现同一份页面高度。",
   "counts": {
     "Article": 25,
@@ -12,7 +12,10 @@
     "Partner": 10,
     "Major": 16,
     "HomeCard": 4,
-    "CampusImage": 8
+    "CampusImage": 8,
+    "ServiceGuide": 6,
+    "HotMajor": 10
   },
-  "_note_CampusImage": "Campus(4) × 2 张/校区 = 8。main 的 dev.db 未单独统计该表，按 CampusSection 渲染需要（每校区至少 1 张，否则区块高度为 0）设为 2。"
+  "_note_CampusImage": "Campus(4) × 2 张/校区 = 8。main 的 dev.db 未单独统计该表，按 CampusSection 渲染需要（每校区至少 1 张，否则区块高度为 0）设为 2。",
+  "_note_V9_VIS_03": "CI run 39979767004 分诊：home 的 ServiceGuide 区块与 HotMajor 区块整段缺失、/services/[slug] 详情页 3 宽度导航失败（首页无 /services/* 链接）。两表行数取 main 参考库实测（6/10），slug 用 visual- 前缀避免与 prisma/seed.ts 示例行冲突。"
 }

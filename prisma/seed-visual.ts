@@ -378,6 +378,62 @@ const homeCards = () => {
   return rows;
 };
 
+// V9-VIS-03：以下两表为 CI 分诊发现的数据面缺口（41 fail 的归因之一）——
+// home 读 serviceGuide/home.ts:127 与 hotMajor/home.ts:104，/services/[slug]
+// 详情测试依赖首页存在 /services/* 链接；空表导致整段缺失 + service-detail
+// 3 宽度全部导航失败。行数基线取 main 参考库实测（ServiceGuide=6、HotMajor=10）。
+// slug 用 visual- 前缀：与 prisma/seed.ts 的示例行（baoming-liucheng 等）以及
+// main 真实 slug 都不冲突，任何环境可安全幂等重跑。
+const serviceGuides = () => {
+  const guides = [
+    { slug: "visual-process", title: "报名流程", icon: "FileText" },
+    { slug: "visual-faq", title: "常见问题", icon: "HelpCircle" },
+    { slug: "visual-fee", title: "报名费用", icon: "DollarSign" },
+    { slug: "visual-exam", title: "考试时间", icon: "Calendar" },
+    { slug: "visual-contact", title: "联系我们", icon: "Phone" },
+    { slug: "visual-consult", title: "在线咨询", icon: "MessageSquare" },
+  ];
+  return guides.map((g, i) => ({
+    id: ID_BASE + 700 + i,
+    slug: g.slug,
+    title: g.title,
+    subtitle: `视觉回归副标题 ${i + 1}`,
+    content: `<p>这是「${g.title}」的视觉回归占位正文第一段，用于稳定页面高度。</p><p>固定内容第二段：具体报名流程与政策以当年最新公告为准，本段为确定性测试数据。</p>`,
+    contentType: "html",
+    icon: g.icon,
+    link: `/services/${g.slug}`,
+    sort: i + 1,
+    status: "active",
+    createdAt: T0,
+    updatedAt: T0,
+  }));
+};
+
+const hotMajors = () => {
+  // 专业名为通用学科名（与 main 一致的确定性集合），iconImage 指向本地占位图
+  const names = [
+    "汉语言文学", "学前教育", "会计学", "工商管理", "计算机科学与技术",
+    "法学", "心理学", "金融学", "护理学", "行政管理",
+  ];
+  return names.map((name, i) => ({
+    id: ID_BASE + 750 + i,
+    title: name,
+    subtitle: "自考·本科",
+    description: `视觉回归用热门专业描述 ${i + 1}`,
+    duration: "2年",
+    iconType: "image",
+    iconImage: img(i + 1),
+    iconColor: null,
+    backgroundImage: null,
+    link: "/apply",
+    majorId: null,
+    sort: i + 1,
+    status: "active",
+    createdAt: T0,
+    updatedAt: T0,
+  }));
+};
+
 // ── 写入 / 校验 ────────────────────────────────────────────────
 
 const PLAN = [
@@ -393,6 +449,9 @@ const PLAN = [
   { model: "gallery" as const, rows: galleries, key: "Gallery", deleteKey: "id" },
   { model: "partner" as const, rows: partners, key: "Partner", deleteKey: "id" },
   { model: "homeCard" as const, rows: homeCards, key: "HomeCard", deleteKey: "id" },
+  // V9-VIS-03：数据面缺口补齐（行数基线 = main 参考库实测）
+  { model: "serviceGuide" as const, rows: serviceGuides, key: "ServiceGuide", deleteKey: "id" },
+  { model: "hotMajor" as const, rows: hotMajors, key: "HotMajor", deleteKey: "id" },
 ];
 
 async function main() {
