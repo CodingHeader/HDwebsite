@@ -33,12 +33,16 @@ afterAll(async () => {
 
 describe("内容审核门", () => {
   it("content:edit 经 PUT 置 published → 400", async () => {
-    const res = await itemPUT(req(`/api/content-items/${itemId}`, { method: "PUT", token: EDITOR, body: { status: "published" } }), ctx({ id: String(itemId) }));
+    // V9-T-05：自建稿——共享 itemId 会被「超管通过」用例置为 approved，shuffle 下
+    // 状态不变断言会漂移；自建后本用例完全自包含。
+    const row = await prisma.contentItem.create({ data: { title: "守门稿1", content: "正文", status: "pending_review" } });
+    const res = await itemPUT(req(`/api/content-items/${row.id}`, { method: "PUT", token: EDITOR, body: { status: "published" } }), ctx({ id: String(row.id) }));
     expect(res.status).toBe(400);
-    expect((await prisma.contentItem.findUnique({ where: { id: itemId } }))?.status).toBe("pending_review");
+    expect((await prisma.contentItem.findUnique({ where: { id: row.id } }))?.status).toBe("pending_review");
   });
   it("content:edit 经 PUT 置 approved → 400", async () => {
-    const res = await itemPUT(req(`/api/content-items/${itemId}`, { method: "PUT", token: EDITOR, body: { status: "approved" } }), ctx({ id: String(itemId) }));
+    const row = await prisma.contentItem.create({ data: { title: "守门稿2", content: "正文", status: "pending_review" } });
+    const res = await itemPUT(req(`/api/content-items/${row.id}`, { method: "PUT", token: EDITOR, body: { status: "approved" } }), ctx({ id: String(row.id) }));
     expect(res.status).toBe(400);
   });
   it("content:create 经 POST 直接建 approved → 400", async () => {
@@ -46,7 +50,10 @@ describe("内容审核门", () => {
     expect(res.status).toBe(400);
   });
   it("content:edit 可在 draft/pending_review/offline 之间切换", async () => {
-    const res = await itemPUT(req(`/api/content-items/${itemId}`, { method: "PUT", token: EDITOR, body: { status: "pending_review", title: "改标题" } }), ctx({ id: String(itemId) }));
+    // V9-T-05：自建稿——共享 itemId 会被「超管通过」用例置为 approved，
+    // shuffle 下先跑 approved 再跑本用例会撞状态门禁；自建 draft 稿解除顺序依赖。
+    const row = await prisma.contentItem.create({ data: { title: "切换稿", content: "正文", status: "draft" } });
+    const res = await itemPUT(req(`/api/content-items/${row.id}`, { method: "PUT", token: EDITOR, body: { status: "pending_review", title: "改标题" } }), ctx({ id: String(row.id) }));
     expect(res.status).toBe(200);
   });
   it("非超管调用 /review → 403；未登录 → 401", async () => {
@@ -58,14 +65,20 @@ describe("内容审核门", () => {
   it("超管 /review 非法参数 → 400；通过 → approved 且留痕", async () => {
     const bad = await reviewPOST(req(`/api/content-items/${itemId}/review`, { method: "POST", token: SUPER, body: { decision: "published" } }), ctx({ id: String(itemId) }));
     expect(bad.status).toBe(400);
+    // V9-T-05：日志断言改增量式——shuffle 下其他用例可能已产生 approve 留痕，
+    // 绝对计数会随用例顺序漂移；这里只断言本用例自己 +1。
+    const before = await prisma.operationLog.count({ where: { module: "review", action: "approve" } });
     const ok = await reviewPOST(req(`/api/content-items/${itemId}/review`, { method: "POST", token: SUPER, body: { decision: "approved" } }), ctx({ id: String(itemId) }));
     expect(ok.status).toBe(200);
     expect((await json(ok)).data.status).toBe("approved");
     expect((await prisma.contentItem.findUnique({ where: { id: itemId } }))?.status).toBe("approved");
-    expect(await prisma.operationLog.count({ where: { module: "review", action: "approve" } })).toBe(1);
+    expect(await prisma.operationLog.count({ where: { module: "review", action: "approve" } })).toBe(before + 1);
   });
   it("已 approved 再审 → 400（非法迁移）", async () => {
-    const res = await reviewPOST(req(`/api/content-items/${itemId}/review`, { method: "POST", token: SUPER, body: { decision: "rejected" } }), ctx({ id: String(itemId) }));
+    // V9-T-05：自建 approved 稿——原实现依赖前一个用例把共享 itemId 审成 approved，
+    // shuffle 下先跑本用例时 item 还是 pending_review，400 断言失败（V8-SEC-03 返工）。
+    const row = await prisma.contentItem.create({ data: { title: "已审稿", content: "正文", status: "approved" } });
+    const res = await reviewPOST(req(`/api/content-items/${row.id}/review`, { method: "POST", token: SUPER, body: { decision: "rejected" } }), ctx({ id: String(row.id) }));
     expect(res.status).toBe(400);
   });
 });

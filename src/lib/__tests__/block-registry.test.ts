@@ -51,16 +51,29 @@ describe("block-registry", () => {
   });
 
   it("无 home 模板 → main 默认顺序", async () => {
+    // 自包含：先清掉 home 模板（TemplateBlock 级联删除），不依赖用例执行顺序
+    await prisma.pageTemplate.deleteMany({ where: { code: "home" } });
     expect((await resolveHomeBlocks()).map((b) => b.code)).toEqual(MAIN_ORDER);
   });
 
   it("home 模板存在但无 TemplateBlock → main 默认顺序", async () => {
-    await prisma.pageTemplate.create({ data: { code: "home", name: "首页", templateFile: "app/(web)/page.tsx" } });
+    const home = await prisma.pageTemplate.upsert({
+      where: { code: "home" },
+      update: { status: "active" },
+      create: { code: "home", name: "首页", templateFile: "app/(web)/page.tsx" },
+    });
+    await prisma.templateBlock.deleteMany({ where: { templateId: home.id } });
     expect((await resolveHomeBlocks()).map((b) => b.code)).toEqual(MAIN_ORDER);
   });
 
   it("按 TemplateBlock.sort 排序；禁用（block.status=inactive 或 config.enabled=false）不渲染；未知 code 忽略", async () => {
-    const home = (await prisma.pageTemplate.findUnique({ where: { code: "home" } }))!;
+    const home = await prisma.pageTemplate.upsert({
+      where: { code: "home" },
+      update: { status: "active" },
+      create: { code: "home", name: "首页", templateFile: "app/(web)/page.tsx" },
+    });
+    // 只保留本用例创建的模板区块
+    await prisma.templateBlock.deleteMany({ where: { templateId: home.id } });
     const codes = [...MAIN_ORDER, "legacy-unknown"];
     for (const [i, code] of codes.entries()) {
       const b = await prisma.contentBlock.create({ data: { code, name: code, type: "x" } });
@@ -85,9 +98,17 @@ describe("block-registry", () => {
   });
 
   it("home 模板停用 → 回落 main 默认顺序", async () => {
+    await prisma.pageTemplate.upsert({
+      where: { code: "home" },
+      update: { status: "active" },
+      create: { code: "home", name: "首页", templateFile: "app/(web)/page.tsx" },
+    });
     await prisma.pageTemplate.update({ where: { code: "home" }, data: { status: "inactive" } });
-    expect((await resolveHomeBlocks()).map((b) => b.code)).toEqual(MAIN_ORDER);
-    await prisma.pageTemplate.update({ where: { code: "home" }, data: { status: "active" } });
+    try {
+      expect((await resolveHomeBlocks()).map((b) => b.code)).toEqual(MAIN_ORDER);
+    } finally {
+      await prisma.pageTemplate.update({ where: { code: "home" }, data: { status: "active" } });
+    }
   });
 });
 

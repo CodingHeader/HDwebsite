@@ -91,16 +91,18 @@ describe("采集默认入知识库", () => {
       expect(f).not.toBeNull();
       expect(f!.baseId).toBe(collectBaseId);
     }
-    // 反向可查：由文件 → 采集条目
-    const files = await prisma.knowledgeFile.findMany({ where: { collectItemId: { not: null } } });
+    // 反向可查：由文件 → 采集条目（范围限定本源 items，不依赖其他用例留下的数据）
+    const files = await prisma.knowledgeFile.findMany({ where: { collectItemId: { in: items.map((i) => i.id) } } });
     expect(files.length).toBe(2);
     const back = await prisma.collectItem.findUnique({ where: { id: files[0].collectItemId! } });
     expect(back?.knowledgeId).not.toBeNull();
     // 本地检索命中（本地兜底轨行为不变）
     const hits = await searchLocal("KBHITa");
     expect(hits.length).toBeGreaterThan(0);
+    // 本源的 2 条新知识全部进入同步队列（队列可能含其他用例的条目，按 id 范围断言）
     const queue = await pendingKbSync();
-    expect(queue.map((k) => k.id).sort()).toEqual(items.map((i) => i.knowledgeId!).sort());
+    const queuedIds = queue.filter((k) => items.some((i) => i.knowledgeId === k.id)).map((k) => k.id).sort();
+    expect(queuedIds).toEqual(items.map((i) => i.knowledgeId!).sort());
   });
 
   it("C-08：源指定 knowledgeBaseId 优先于默认 collect 库", async () => {
@@ -120,8 +122,21 @@ describe("采集默认入知识库", () => {
   });
 
   it("C-08：mock Coze 收到 file_type=txt，且 dataset_id 取目标库 cozeDatasetId", async () => {
+    // 自包含 arrange：清空遗留队列状态（pending/failed → synced），再造 collect 库源A + 未绑定 dataset 的 custom 库源B
+    await prisma.knowledge.updateMany({ where: { syncStatus: { in: ["pending", "failed"] } }, data: { syncStatus: "synced" } });
+    // "远端适配器"用例的清理（registerKbRemoteAdapter(null)）会注销 coze 后端，这里确保已注册
+    registerKnowledgeBackend(
+      makeCozeBackend(() => ({ pat: "test-pat", spaceId: "space-1", apiBase: "https://api.coze.cn", timeoutMs: 30_000 }))
+    );
     const ds = "coze-ds-collect";
     await prisma.knowledgeBase.update({ where: { id: collectBaseId }, data: { cozeDatasetId: ds } });
+    const custom = await prisma.knowledgeBase.create({ data: { name: "定制库C08", code: `custom-c08-${Date.now()}` } });
+    const sourceA = await prisma.collectSource.create({ data: { name: "源A-C08", type: "html", url: `${base}/a2/list.html` } });
+    await runSource(sourceA);
+    const sourceB = await prisma.collectSource.create({
+      data: { name: "源B-C08", type: "html", url: `${base}/b2/list.html`, knowledgeBaseId: custom.id },
+    });
+    await runSource(sourceB);
     const seen: { dataset_id?: string; file_type?: string; name?: string }[] = [];
     setCozeFetch(async (url, init) => {
       void url;
@@ -135,7 +150,7 @@ describe("采集默认入知识库", () => {
     try {
       const r = await processKbSyncQueue(50);
       expect(r.adapter).toBe("coze");
-      // 队列含 源A（collect 库）与 源B（custom 库）共 4 条
+      // 队列含 源A-C08（collect 库）与 源B-C08（custom 库）共 4 条
       //  - collect 库已绑定 dataset → 推送到 ds 并 synced（2 条）
       //  - custom 库未绑定 dataset → 记 failed + syncErr（不静默成功，也不推送到 "default"）
       expect(r.synced).toBe(2);
@@ -146,9 +161,8 @@ describe("采集默认入知识库", () => {
       const failedCustom = await prisma.knowledge.findMany({ where: { syncStatus: "failed" } });
       expect(failedCustom).toHaveLength(2);
       expect(failedCustom.every((k) => k.syncErr?.includes("未绑定 Coze dataset"))).toBe(true);
-      // 源A 的 2 条已 synced
-      const sourceA = await prisma.collectSource.findFirst({ where: { name: "源A" } });
-      const aItems = await prisma.collectItem.findMany({ where: { sourceId: sourceA!.id } });
+      // 源A-C08 的 2 条已 synced
+      const aItems = await prisma.collectItem.findMany({ where: { sourceId: sourceA.id } });
       for (const it of aItems) {
         const k = await prisma.knowledge.findUnique({ where: { id: it.knowledgeId! } });
         expect(k?.syncStatus).toBe("synced");
@@ -160,7 +174,19 @@ describe("采集默认入知识库", () => {
   });
 
   it("远端适配器注册后处理队列：成功 → synced 且回写 kbSyncedAt（薄包装兼容）", async () => {
-    // C-08 用例已清空队列；再造一个 autoToKb 源
+    // 自包含 arrange：清空遗留队列状态；再造"未绑定 dataset → failed"（源F）与"pending"（源C）两组
+    await prisma.knowledge.updateMany({ where: { syncStatus: { in: ["pending", "failed"] } }, data: { syncStatus: "synced" } });
+    registerKnowledgeBackend(
+      makeCozeBackend(() => ({ pat: "test-pat", spaceId: "space-1", apiBase: "https://api.coze.cn", timeoutMs: 30_000 }))
+    );
+    const custom = await prisma.knowledgeBase.create({ data: { name: "定制库F", code: `custom-f-${Date.now()}` } });
+    const sourceF = await prisma.collectSource.create({
+      data: { name: "源F", type: "html", url: `${base}/f/list.html`, knowledgeBaseId: custom.id },
+    });
+    await runSource(sourceF);
+    // 未绑定 dataset 在 push 前即抛错（不外呼），2 条记 failed（failed 仍在队列）
+    await processKbSyncQueue(50);
+    expect(await prisma.knowledge.count({ where: { source: "collect", syncStatus: "failed" } })).toBe(2);
     const source = await prisma.collectSource.create({ data: { name: "源C", type: "html", url: `${base}/c/list.html` } });
     await runSource(source);
     const items = await prisma.collectItem.findMany({ where: { sourceId: source.id } });
@@ -168,7 +194,7 @@ describe("采集默认入知识库", () => {
     registerKbRemoteAdapter({ name: "mock", push: async (k) => { pushed.push(k.title); return { externalId: `doc-${k.id}` }; } });
     try {
       const r = await processKbSyncQueue();
-      // 队列 = 源B 的 2 条 failed（未绑定 dataset）+ 源C 的 2 条 pending；mock 适配器全部成功
+      // 队列 = 源F 的 2 条 failed（未绑定 dataset）+ 源C 的 2 条 pending；mock 适配器全部成功
       expect(r.synced).toBe(4);
       expect(pushed).toHaveLength(4);
       expect(await pendingKbSync()).toHaveLength(0);

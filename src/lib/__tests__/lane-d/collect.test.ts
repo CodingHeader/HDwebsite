@@ -178,12 +178,15 @@ describe("D-12 采集解析注册表", () => {
       { title: "一", url: `${base}/n/1.html` },
       { title: "二", url: `${base}/n/2.html` },
     ];
+    // fetchText 用注入 fixture（与本文件 getParser 用例同模式）：不依赖共享 server 的 handler，
+    // 该 handler 会被下方"图片流式限长"等 describe 整体替换，用例顺序打乱后不能依赖它
+    const detail = (n: string) => `<html><body><div class="content"><p>详情正文${n}</p></div></body></html>`;
     const out = await fetchHtmlDetails(entries, {
       timeoutMs: 5000,
       ua: "ua",
       rule: {},
       rateLimitMs: 0,
-      fetchText: async (u) => (await fetch(u)).text(),
+      fetchText: async (u) => (u.endsWith("/n/1.html") ? detail("1") : detail("2")),
       toMarkdown: (html) => html.replace(/<[^>]+>/g, ""),
     });
     expect(out).toHaveLength(2);

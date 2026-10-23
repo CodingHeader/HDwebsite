@@ -86,8 +86,10 @@ describe("发布前提醒（立即发布）", () => {
   it("preNotify=false 不提醒", async () => {
     const item = await prisma.contentItem.create({ data: { title: "静默稿", content: "正文", status: "approved" } });
     await prisma.publishJob.create({ data: { itemId: item.id, channel: "website", status: "pending", preNotify: false } });
+    // 差值断言（自包含）：本任务执行后 before_publish_news 记录数不增加，不依赖首个用例是否先建了记录
+    const before = await prisma.notifyRecord.count({ where: { event: "before_publish_news" } });
     await publishScan();
-    expect(await prisma.notifyRecord.count({ where: { event: "before_publish_news" } })).toBe(1);
+    expect(await prisma.notifyRecord.count({ where: { event: "before_publish_news" } })).toBe(before);
   });
   it("未审核内容不得发布（failed，不改内容状态）", async () => {
     const item = await prisma.contentItem.create({ data: { title: "草稿", content: "正文", status: "draft" } });

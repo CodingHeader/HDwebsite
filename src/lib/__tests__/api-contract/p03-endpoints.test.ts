@@ -80,6 +80,18 @@ afterAll(async () => {
   cleanupTestDb();
 });
 
+/** 重建 chat-history 种子（用例自包含：不依赖其他用例是否已删除会话） */
+async function seedChatHistory() {
+  await prisma.aIChatHistory.deleteMany({});
+  await prisma.aIChatHistory.createMany({
+    data: [
+      { sessionId: "sess-aaaa-0001", channel: "website", role: "user", message: "怎么报名自考？" },
+      { sessionId: "sess-aaaa-0001", channel: "website", role: "assistant", message: "您好，自考报名……" },
+      { sessionId: "sess-bbbb-0002", channel: "wechat", role: "user", message: "成考什么时候考试" },
+    ],
+  });
+}
+
 describe("GET /api/logs", () => {
   it("200 分页信封", async () => {
     const res = await logsGET(req("/api/logs", { token: SUPER }), ctx());
@@ -112,6 +124,7 @@ describe("GET /api/logs", () => {
 
 describe("GET /api/chat-history（按会话聚合）", () => {
   it("200 会话列表", async () => {
+    await seedChatHistory();
     const res = await chatGET(req("/api/chat-history", { token: LOGVIEW }), ctx());
     expect(res.status).toBe(200);
     const body = await json(res);
@@ -120,6 +133,7 @@ describe("GET /api/chat-history（按会话聚合）", () => {
     expect(s1).toMatchObject({ channel: "website", messageCount: 2, lastUserMessage: "怎么报名自考？" });
   });
   it("按 channel 筛选", async () => {
+    await seedChatHistory();
     const body = await json(await chatGET(req("/api/chat-history?channel=wechat", { token: SUPER }), ctx()));
     expect(body.data.list.map((r: { sessionId: string }) => r.sessionId)).toEqual(["sess-bbbb-0002"]);
   });
@@ -142,9 +156,12 @@ describe("/api/chat-history/[id]", () => {
     expect((await chatOneGET(req("/x"), ctx({ id: "sess-aaaa-0001" }))).status).toBe(401);
   });
   it("DELETE 403（仅 log:list 不可删）", async () => {
+    await seedChatHistory(); // 确保目标会话存在（权限失败路径不依赖其他用例留下的数据）
     expect((await chatOneDELETE(req("/x", { method: "DELETE", token: LOGVIEW }), ctx({ id: "sess-bbbb-0002" }))).status).toBe(403);
   });
   it("DELETE 200 + 记操作日志", async () => {
+    await seedChatHistory();
+    await prisma.operationLog.deleteMany({ where: { module: "chat-history", action: "delete" } });
     const res = await chatOneDELETE(req("/x", { method: "DELETE", token: SUPER }), ctx({ id: "sess-bbbb-0002" }));
     expect(res.status).toBe(200);
     expect((await json(res)).data).toMatchObject({ deleted: 1 });
@@ -176,10 +193,19 @@ describe("PATCH /api/media/[id]", () => {
   });
 });
 
+/** 建一条测试媒体行（media 用例自包含，不共用 beforeAll 行，避免 delete 类用例改序后相互影响） */
+async function seedMedia(filename: string) {
+  return prisma.media.create({
+    data: { filename, path: `/uploads/${filename}`, url: `/uploads/${filename}`, mimeType: "image/png", size: 10 },
+  });
+}
+
 describe("POST /api/media/batch", () => {
   it("200 move-category", async () => {
+    const m1 = await seedMedia("batch-move-1.png");
+    const m2 = await seedMedia("batch-move-2.png");
     const res = await mediaBatchPOST(
-      req("/x", { method: "POST", token: MEDIAVIEW, body: { action: "move-category", ids: [mediaIds[1], mediaIds[2], 999999], category: "证书" } }),
+      req("/x", { method: "POST", token: MEDIAVIEW, body: { action: "move-category", ids: [m1.id, m2.id, 999999], category: "证书" } }),
       ctx()
     );
     const body = await json(res);
@@ -193,15 +219,17 @@ describe("POST /api/media/batch", () => {
     expect((await mediaBatchPOST(req("/x", { method: "POST", token: SUPER, body: { action: "delete", ids: [] } }), ctx())).status).toBe(400);
   });
   it("401 / 403（无 media:list；有 list 无 delete）", async () => {
-    const body = { action: "delete", ids: [mediaIds[2]] };
+    const m = await seedMedia("batch-auth.png");
+    const body = { action: "delete", ids: [m.id] };
     expect((await mediaBatchPOST(req("/x", { method: "POST", body }), ctx())).status).toBe(401);
     expect((await mediaBatchPOST(req("/x", { method: "POST", token: NOPERM, body }), ctx())).status).toBe(403);
     expect((await mediaBatchPOST(req("/x", { method: "POST", token: MEDIAVIEW, body }), ctx())).status).toBe(403);
   });
   it("200 delete", async () => {
-    const res = await mediaBatchPOST(req("/x", { method: "POST", token: SUPER, body: { action: "delete", ids: [mediaIds[2]] } }), ctx());
+    const m = await seedMedia("batch-del.png");
+    const res = await mediaBatchPOST(req("/x", { method: "POST", token: SUPER, body: { action: "delete", ids: [m.id] } }), ctx());
     expect((await json(res)).data).toMatchObject({ affected: 1 });
-    expect(await prisma.media.count({ where: { id: mediaIds[2] } })).toBe(0);
+    expect(await prisma.media.count({ where: { id: m.id } })).toBe(0);
   });
 });
 
@@ -245,11 +273,9 @@ describe("GET /api/navigations?tree=true", () => {
 });
 
 describe("/api/campus/[id]/images（main 嵌套路径兼容层，B6）", () => {
-  let imageId = 0;
   it("POST 201 + GET 200 数组", async () => {
     const res = await campusImgPOST(req("/x", { method: "POST", token: SUPER, body: { image: "/images/c1.jpg", caption: "大门" } }), ctx({ id: String(campusA) }));
     expect(res.status).toBe(201);
-    imageId = (await json(res)).data.id;
     const list = await json(await campusImgGET(req("/x", { token: SUPER }), ctx({ id: String(campusA) })));
     expect(list.data).toHaveLength(1);
     expect(list.data[0]).toMatchObject({ campusId: campusA, image: "/images/c1.jpg" });
@@ -258,14 +284,22 @@ describe("/api/campus/[id]/images（main 嵌套路径兼容层，B6）", () => {
     expect((await campusImgGET(req("/x"), ctx({ id: String(campusA) }))).status).toBe(401);
     expect((await campusImgGET(req("/x", { token: NOPERM }), ctx({ id: String(campusA) }))).status).toBe(403);
     expect((await campusImgPOST(req("/x", { method: "POST", token: SUPER, body: { caption: "无图" } }), ctx({ id: String(campusA) }))).status).toBe(400);
+    // 跨校区 404：自建 campusA 图片（不依赖 POST 用例是否先执行），经 campusB 路径操作 → 404；随后清理
+    const own = await campusImgPOST(req("/x", { method: "POST", token: SUPER, body: { image: "/images/c-x.jpg", caption: "跨校区" } }), ctx({ id: String(campusA) }));
+    const ownId = (await json(own)).data.id as number;
     expect(
-      (await campusImgDELETE(req("/x", { method: "DELETE", token: SUPER }), ctx({ id: String(campusB), imageId: String(imageId) }))).status
+      (await campusImgDELETE(req("/x", { method: "DELETE", token: SUPER }), ctx({ id: String(campusB), imageId: String(ownId) }))).status
     ).toBe(404);
+    await campusImgDELETE(req("/x", { method: "DELETE", token: SUPER }), ctx({ id: String(campusA), imageId: String(ownId) }));
   });
   it("PUT 200 + DELETE 200", async () => {
-    const put = await campusImgPUT(req("/x", { method: "PUT", token: SUPER, body: { caption: "正门" } }), ctx({ id: String(campusA), imageId: String(imageId) }));
+    // 自包含：本用例自建图片（POST 201），再验证 PUT/DELETE，不依赖 POST 用例先执行
+    const created = await campusImgPOST(req("/x", { method: "POST", token: SUPER, body: { image: "/images/c-putdel.jpg", caption: "旧名" } }), ctx({ id: String(campusA) }));
+    expect(created.status).toBe(201);
+    const ownId = (await json(created)).data.id as number;
+    const put = await campusImgPUT(req("/x", { method: "PUT", token: SUPER, body: { caption: "正门" } }), ctx({ id: String(campusA), imageId: String(ownId) }));
     expect((await json(put)).data.caption).toBe("正门");
-    const del = await campusImgDELETE(req("/x", { method: "DELETE", token: SUPER }), ctx({ id: String(campusA), imageId: String(imageId) }));
+    const del = await campusImgDELETE(req("/x", { method: "DELETE", token: SUPER }), ctx({ id: String(campusA), imageId: String(ownId) }));
     expect(del.status).toBe(200);
   });
 });

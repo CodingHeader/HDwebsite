@@ -72,32 +72,49 @@ afterAll(async () => {
 
 describe("B-06 静默时段", () => {
   it("静默内事件 → 只建 deferred 不发信", async () => {
-    __setNotifyClock(() => shTime(23, 30)); // 上海 23:30
     await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: JSON.stringify({ start: "23:00", end: "07:00" }) } });
-    const before = sent.length;
-    await notifyEvent("llm_balance_low", { title: "静默测试", detail: "d" });
-    const rec = await prisma.notifyRecord.findFirst({ where: { event: "llm_balance_low" }, orderBy: { id: "desc" } });
-    expect(rec?.status).toBe("deferred");
-    expect(sent.length).toBe(before); // 未发信
+    __setNotifyClock(() => shTime(23, 30)); // 上海 23:30
+    try {
+      const before = sent.length;
+      await notifyEvent("llm_balance_low", { title: "静默测试", detail: "d" });
+      const rec = await prisma.notifyRecord.findFirst({ where: { event: "llm_balance_low" }, orderBy: { id: "desc" } });
+      expect(rec?.status).toBe("deferred");
+      expect(sent.length).toBe(before); // 未发信
+    } finally {
+      await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: null } });
+      __setNotifyClock(null);
+    }
   });
 
   it("静默结束后 flushDeferred 补发", async () => {
+    // 自包含：本用例先在静默窗内自建一条 deferred 记录，再把时钟推到窗外验证补发
+    await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: JSON.stringify({ start: "23:00", end: "07:00" }) } });
+    __setNotifyClock(() => shTime(23, 30));
+    await notifyEvent("llm_balance_low", { title: "静默补发", detail: "d" });
     __setNotifyClock(() => shTime(8, 0)); // 已出静默窗
-    const before = sent.length;
-    await notifyRetryScan();
-    expect(sent.length).toBeGreaterThan(before);
-    const rec = await prisma.notifyRecord.findFirst({ where: { event: "llm_balance_low" }, orderBy: { id: "desc" } });
-    expect(rec?.status).toBe("sent");
+    try {
+      const before = sent.length;
+      await notifyRetryScan();
+      expect(sent.length).toBeGreaterThan(before);
+      const rec = await prisma.notifyRecord.findFirst({ where: { event: "llm_balance_low" }, orderBy: { id: "desc" } });
+      expect(rec?.status).toBe("sent");
+    } finally {
+      await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: null } });
+      __setNotifyClock(null);
+    }
   });
 
   it("无效时刻（如 25:00）→ 按无静默处理并发出（DR-14）", async () => {
-    __setNotifyClock(() => shTime(12, 0));
     await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: JSON.stringify({ start: "25:00", end: "07:00" }) } });
-    const before = sent.length;
-    await notifyEvent("llm_balance_low", { title: "无效静默", detail: "d" });
-    expect(sent.length).toBeGreaterThan(before);
-    await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: null } });
-    __setNotifyClock(null);
+    __setNotifyClock(() => shTime(12, 0));
+    try {
+      const before = sent.length;
+      await notifyEvent("llm_balance_low", { title: "无效静默", detail: "d" });
+      expect(sent.length).toBeGreaterThan(before);
+    } finally {
+      await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: null } });
+      __setNotifyClock(null);
+    }
   });
 });
 
@@ -135,6 +152,8 @@ describe("B-06 跨进程原子去重", () => {
 
 describe("B-06 邮件脱敏", () => {
   it("正文中的 password= / token= 形态被替换为 ***", async () => {
+    // 自包含：确保无静默窗（不依赖"无效时刻"用例先清理），任意真实时刻都能立即发信
+    await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: null } });
     __setNotifyClock(null);
     const before = sent.length;
     await notifyEvent("llm_balance_low", { title: "脱敏", detail: "body" });

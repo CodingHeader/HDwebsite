@@ -211,12 +211,16 @@ describe("users/[id]/route.ts", () => {
   });
 
   it("DELETE 正常删普通用户 → 200", async () => {
+    // 自包含：删除本用例自建的用户，不影响其他用例依赖的 normalUserId（victim）
+    const victim2 = await prisma.user.create({
+      data: { username: "victim-del", passwordHash: "x", roleId: normalRoleId },
+    });
     const res = await userDELETE(
-      req(`/api/users/${normalUserId}`, { method: "DELETE", token: SUPER }),
-      ctx({ id: String(normalUserId) })
+      req(`/api/users/${victim2.id}`, { method: "DELETE", token: SUPER }),
+      ctx({ id: String(victim2.id) })
     );
     expect(res.status).toBe(200);
-    expect((await json(res)).data.id).toBe(normalUserId);
+    expect((await json(res)).data.id).toBe(victim2.id);
   });
 });
 
@@ -437,12 +441,16 @@ describe("wechat/accounts/[id]/route.ts", () => {
   });
 
   it("DELETE 删除 → 200", async () => {
+    // 自包含：删除本用例自建的账号，不影响其他用例依赖的 wcId（公众号A）
+    const acc = await prisma.wechatAccount.create({
+      data: { name: "公众号C", type: "service", appid: "wx0003", appSecret: "enc:secret", isEncrypted: true },
+    });
     const res = await wcDELETE(
-      req(`/api/wechat/accounts/${wcId}`, { method: "DELETE", token: SUPER }),
-      ctx({ id: String(wcId) })
+      req(`/api/wechat/accounts/${acc.id}`, { method: "DELETE", token: SUPER }),
+      ctx({ id: String(acc.id) })
     );
     expect(res.status).toBe(200);
-    expect((await json(res)).data.id).toBe(wcId);
+    expect((await json(res)).data.id).toBe(acc.id);
   });
 });
 
@@ -474,18 +482,26 @@ describe("articles/[id]/route.ts", () => {
   });
 
   it("PUT 正常更新 → 200", async () => {
+    // 自包含：更新本用例自建的文章（"GET 已发布匿名"用例断言原始标题，不能被本用例改掉）
+    const own = await prisma.article.create({
+      data: { title: "待更新文章", slug: `b02-put-${Date.now()}`, content: "x", authorId: superId, status: "published" },
+    });
     const res = await articlePUT(
-      req(`/api/articles/${articleId}`, { method: "PUT", token: EDITOR, body: { title: "已发布文章-改" } }),
-      ctx({ id: String(articleId) })
+      req(`/api/articles/${own.id}`, { method: "PUT", token: EDITOR, body: { title: "待更新文章-改" } }),
+      ctx({ id: String(own.id) })
     );
     expect(res.status).toBe(200);
-    expect((await json(res)).data.title).toBe("已发布文章-改");
+    expect((await json(res)).data.title).toBe("待更新文章-改");
   });
 
   it("DELETE 删除 → 200", async () => {
+    // 自包含：删除本用例自建的草稿（草稿 GET 用例依赖 draftId 仍存在）
+    const own = await prisma.article.create({
+      data: { title: "待删草稿", slug: `b02-del-${Date.now()}`, content: "x", authorId: superId, status: "draft" },
+    });
     const res = await articleDELETE(
-      req(`/api/articles/${draftId}`, { method: "DELETE", token: SUPER }),
-      ctx({ id: String(draftId) })
+      req(`/api/articles/${own.id}`, { method: "DELETE", token: SUPER }),
+      ctx({ id: String(own.id) })
     );
     expect(res.status).toBe(200);
   });

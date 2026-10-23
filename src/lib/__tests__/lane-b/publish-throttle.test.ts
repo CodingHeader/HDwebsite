@@ -90,6 +90,8 @@ afterAll(async () => {
 beforeEach(async () => {
   mode.kind = "normal";
   wxMode.errMsg = "";
+  // 共享 item 复位为 approved："成功发布"用例会把它置为 published，用例顺序打乱后不能依赖前序复位
+  await prisma.contentItem.update({ where: { id: item.id }, data: { status: "approved" } });
   await prisma.publishJob.deleteMany({ where: { itemId: item.id } });
   await prisma.contentChannel.deleteMany({ where: { itemId: item.id } });
 });
