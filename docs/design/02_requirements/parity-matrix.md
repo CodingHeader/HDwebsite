@@ -24,7 +24,7 @@ related: [PLAN-CURRENT, EVD-P0-BASELINE, REQ-F-012, REQ-F-013, ADR-001, ADR-012,
 | replaced | 7 | B4、B9、B10、C2、C3、D2、D3（经 ADR 以新实现替代，功能覆盖） |
 | partial（0 行） | 0 | 无 |
 | missing（0 行） | 0 | 无（旧版 11 条已全部关闭，见文末"历史缺口关闭对照"） |
-| UNKNOWN | 2 | 视觉像素回归（需 Linux 实机）、真实微信/SMTP/Coze 联调（凭证缺失）——均非实现缺失 |
+| UNKNOWN | 1 | 真实微信/SMTP/Coze 联调（凭证缺失）——非实现缺失；视觉像素回归已于 V0.9 闭环（见文末复核） |
 | **合计** | **57 = 50 present + 7 replaced** | **对等主表缺口清零**；F 节 11 项新增需求单列：present 11 / partial 0 |
 
 > **与旧版（P01 快照 present 16 / replaced 9 / partial 21 / missing 11）的差异**：旧计数是 P01 期快照，此后 P03、Wave 0、Wave 1、V0.7 各卡持续补齐，但矩阵正文一直未重算（旧文件头已自认"计数为 P01 快照，未重算"）。本次逐行复核后重算。
@@ -145,9 +145,9 @@ npm run test:visual   # tests/visual/web.spec.ts，15 路由 × 1440/768/375，m
 
 **对等主表 missing = 0，partial = 0。**
 
-**UNKNOWN（2 项，均附理由，非实现缺失）**：
-1. **视觉像素回归**：须 Linux 实机（Windows 跨平台渲染差异不可分离）——归属 V7-UI-02 / W2-05。
-2. **真实第三方联调**：微信公众号 API、SMTP、Coze dataset 凭证缺失，全部以 mock 验证——按 AGENTS.md §2 口径标 UNKNOWN。
+**UNKNOWN（2026-10-23 V0.9 复核后余 1 项，非实现缺失）**：
+1. **真实第三方联调**：微信公众号 API、SMTP、Coze dataset 凭证缺失，全部以 mock 验证——按 AGENTS.md §2 口径标 UNKNOWN。
+2. ~~视觉像素回归~~ **已闭环（V0.9 / V9-VIS-03）**：Linux CI visual 门禁 45/45 全绿（run 39986975597），基线重生成自 CI 同源环境并逐张记录理由，`continue-on-error=false` 后 visual 失败阻断主门禁；分诊证实 0 样式回归（`evidence/V9/VIS-03/`）。
 
 **已被后续卡关闭的历史缺口**（对照旧版 11 条 missing / 21 条 partial）：
 - missing → present：A18（redirects 29 条）、A19（public 150 文件）、B8（media/batch）、B11（chat-history）、B12（logs）、C4、C5、C9（ADR-024 恢复）、C10（ADR-024 恢复）、E1（D-08）、E2（D-08）。

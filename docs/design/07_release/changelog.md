@@ -4,12 +4,21 @@ type: changelog
 title: 变更日志
 status: active
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-23
 ---
 
 # 变更日志
 
 > 格式：日期 + 类型（docs/design/feat/fix/refactor）+ 摘要。产品级发布记录（REL-xxx）待首个功能里程碑交付时创建 `07_release/release-records/`。
+
+## 2026-10-22 ~ 10-24（V0.8 重建收尾 + V0.9 CI 真相轮）
+
+- **feat（V0.8 全轮 18 卡）**：upgrade 分支重建收官——依赖安全（next 16.4.2 修 RCE、sharp/vitest 升级、审计门禁 `check:audit`）、测试补强（撤 3 条过期 skip、SSE 契约、lint 0 warning 锁死、全路由 withApi、e2e 撤 skip 修复知识库上传 404）、视觉基线（确定性 seed 数据集 + Linux visual CI job）、管理端五态补齐（7 页 ErrorState + 5 页骨架）、微信/SMTP/Coze 冒烟脚本（dry-run 默认）、Docker 部署件。证据 `evidence/V8/**`（15 卡 execution + 全部 verify.md）。
+- **fix（V0.9 / CI-01）**：CI 门禁三重修复——gate 构建前 migrate（ci-build.db 无表致静态导出炸）、visual job `npm ci --include=dev`（NODE_ENV=production 跳过 devDeps）、Dockerfile builder 加一次性已迁移库 + `.dockerignore` 取消 scripts 排除；**新增 docker job：镜像构建+探活全绿，V8-REL-01 解除阻塞**。
+- **fix（V0.9 / VIS-03）**：visual 参照基线重生成收口——CI 分诊 41 fail 全部归因为数据差/数据面缺口（0 样式回归，REQ-F-014 结构一致性证实）；seed 数据集补 ServiceGuide(6)/HotMajor(10)；41 张基线在 Linux CI 重生成并逐张记录理由；**`continue-on-error=false`，visual 正式成为阻断性门禁**。
+- **fix（V0.9 / T-05）**：单测顺序耦合自包含化（9 文件）——shuffle 序与默认序同样 1712/1712（V8-SEC-03 验收返工）。
+- **fix（V0.9 / E2E-01）**：E2E 首跑三例修复——通知行选择器按事件名收窄、确认框按 testid 定位 + 上传内容唯一化、**`GET /api/knowledge-files` 补 `trash=1` 视图（生产缺陷：回收站页恒为空，e2e 门禁首次抓出）**。本地 73/73 全绿。
+- **docs（V0.9）**：规划包 `docs/V0.9-20261023/`（CI 真相轮 + 收尾轮，7 卡全部关闭）；独立验收 verify.md 全覆盖（V8 16 卡 + V9 各卡）。
 
 ## 2026-10-21（V0.7 收尾阶段）
 

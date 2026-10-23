@@ -4,7 +4,11 @@
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
-  "commits": ["fad1924", "f78cc1d", "643bebc"],
+  "commits": [
+   "fad1924",
+   "f78cc1d",
+   "643bebc"
+  ],
   "started": "2026-10-23T19:25:00+08:00",
   "finished": "2026-10-24T00:10:00+08:00",
   "note": "迭代1 gate migrate+seed 自足（run 39978424632 验证 Build/PrepareDB 通过）、迭代2 npm ci --include=dev + .dockerignore（run 39979767004 Clean build 通过）、迭代3 Dockerfile builder 库 + workflow_dispatch（run 39982327648 docker=success）。gate 的 E2E 步 3 fail 属 V9-E2E-01，非本卡验收（本卡=Build 步通过）"
@@ -14,27 +18,35 @@
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
-  "commits": ["6312746"],
+  "commits": [
+   "6312746"
+  ],
   "started": "2026-10-23T23:40:00+08:00",
-  "note": "分诊表完成（0 样式回归；数据差+缺口两类）；seed 增量 ServiceGuide/HotMajor 已推；基线重生成 run 已触发，待下载提交基线 + continue-on-error=false"
+  "note": "分诊 0 样式回归；seed 增量+41 张基线重生成（run 39983978470）；continue-on-error=false 已收口；settle 图片解码等待修复假红 flake（run 39990249476/39993351639/39993351639 迭代），终态提交 ba4a0c9 待 CI 确认"
  },
  "V9-T-05": {
-  "status": "running",
+  "status": "done",
   "owner": "subagent-fixer",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
+  "commits": [
+   "bf5afc9"
+  ],
   "started": "2026-10-24T00:05:00+08:00",
-  "note": "V8-SEC-03 verify=FAIL 的返工卡：单测 shuffle 顺序耦合（content-review 已由主代理修复，其余文件子代理迭代中）"
+  "note": "9 文件自包含化；默认序+shuffle×3（验证者 4 轮）全 1712/1712；verify PASS",
+  "finished": "2026-10-24T01:20:00+08:00"
  },
  "V9-E2E-01": {
-  "status": "running",
+  "status": "done",
   "owner": "subagent-fixer",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
+  "commits": [
+   "a455143"
+  ],
   "started": "2026-10-24T00:15:00+08:00",
-  "note": "CI E2E 首跑 70/73：collect-publish 选择器严格模式 + e-kb-manage 两例；修复子代理运行中"
+  "note": "三例修复：通知行事件名收窄、confirm-dialog testid+上传内容唯一化、knowledge-files GET 补 trash=1（生产缺陷：回收站恒空；所有权扩展已报备）；本地 73/73；CI gate E2E 步 success（run 39990249476）；verify PASS",
+  "finished": "2026-10-24T01:10:00+08:00"
  },
  "V9-V-01": {
   "status": "running",
@@ -43,7 +55,7 @@
   "blocked_reason": null,
   "commits": [],
   "started": "2026-10-23T19:40:00+08:00",
-  "note": "14 张 V8 卡完成（13 PASS / 1 FAIL=SEC-03 shuffle，返工中）；V9-CI-01 已验待写；V9-VIS-03/T-05/E2E-01 待收口后补验"
+  "note": "V8 14 卡（13 PASS + SEC-03 返工后复审 PASS）+ V9-CI-01/VIS-03/T-05/E2E-01 verify 全 PASS；V9-REL-02 待终验"
  },
  "V9-REL-02": {
   "status": "pending",
@@ -58,7 +70,10 @@
   "owner": "P3",
   "verify": null,
   "blocked_reason": null,
-  "commits": ["de4ad2f", "643bebc"],
+  "commits": [
+   "de4ad2f",
+   "643bebc"
+  ],
   "finished": "2026-10-24T00:10:00+08:00",
   "note": "blocked 解除：CI run 39982327648 docker job = success（build + 起容器 + /api/health 探活全过）；Dockerfile 迭代 3 的 builder 库修复由本卡与 V9-CI-01 共同贡献"
  }

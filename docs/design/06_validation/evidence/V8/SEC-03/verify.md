@@ -1,10 +1,11 @@
 # V8-SEC-03 独立验证报告（V9-V-01）
 
 - 验证者：子代理（与执行者上下文隔离；仅依据 diff + 可重跑命令）
-- 验证日期：2026-10-23；代码基线：upgrade@fad1924；被验证提交：49a2052
-- **结论：FAIL**
+- 首验：2026-10-23，基线 upgrade@fad1924，被验证提交 49a2052 —— **结论：FAIL**（历史记录，全文保留于下）
+- 复审：2026-10-24，基线 upgrade@ca5303a，返工提交 bf5afc9（V9-T-05）—— **结论：PASS**
+- **最终结论（以返工后当前状态为准）：PASS**
 
-> 安全目标（critical 2→0）已达成且无升级回归；FAIL 仅因验收项「shuffle 结果一致」被独立复现推翻，且卡规定的 shuffle 执行步骤无证据。归因与修复建议见 §备注——该缺陷先于本卡存在，不应由执行者重跑本卡闭合。
+> 首验 FAIL 仅因验收项「shuffle 结果一致」被独立复现推翻（先于本卡的用例内顺序耦合），安全目标（critical 2→0）当时即已达成且无升级回归。V9-T-05 以 bf5afc9「单测顺序耦合自包含化——9 文件」完成返工，本验证者于复审中独立重跑全部通过，见文末「复审」小节。
 
 ## 逐条验收
 
@@ -32,3 +33,47 @@
 3. **修复路由建议**：不应重跑本卡；应另开「测试顺序自洽」卡（为 routes-admin/collect-autokb/content-review/p03-endpoints/notify/block-registry 等补用例内隔离，或按文件显式声明执行顺序），修复范围在测试文件属各文件归属卡。
 4. 执行证据缺口：execution.md 未含 shuffle 输出，属执行步骤漏做且未申报；本报告如实记 FAIL。
 5. tinypool 表述纠偏：lockfile 已无该包（安全结果更优），后续引用应写「已随 vitest 5 移除」。
+
+---
+
+# 复审（V9-T-05 返工后，2026-10-24）
+
+- 验证者：同前（独立验证子代理，与修复者上下文隔离；仅依据 diff + 本人重跑命令）
+- 返工提交：**bf5afc9**「fix(V9-T-05): 单测顺序耦合自包含化——9 文件」；复审时代码基线 upgrade@ca5303a（含 bf5afc9 及其后两张 VIS-03 提交）
+- **复审结论：PASS**（首验 FAIL 项「shuffle 结果一致」已闭合）
+
+## 1. 改动范围核对（git show bf5afc9 --stat）
+
+9 个文件，**全部 ⊆ `src/lib/__tests__/**`**，与授权修改范围一致，未触及业务代码、契约、迁移、依赖：
+
+```
+api-contract/p03-endpoints.test.ts | block-registry.test.ts | collect-autokb.test.ts
+content-review.test.ts             | lane-b/notify.test.ts | lane-b/publish-throttle.test.ts
+lane-b/routes-admin.test.ts        | lane-d/collect.test.ts | notify-before-publish.test.ts
+9 files changed, 194 insertions(+), 58 deletions(-)
+```
+
+## 2. 独立重跑（本验证者亲自执行，2026-10-24）
+
+| 命令 | 结果 |
+| --- | --- |
+| `npx vitest run`（默认序） | `Test Files 72 passed (72) / Tests 1712 passed (1712)`，exit 0 |
+| `npx vitest run --sequence.shuffle` 第 1 次 | `Test Files 72 passed (72) / Tests 1712 passed (1712)`，exit 0 |
+| `npx vitest run --sequence.shuffle` 第 2 次 | `Test Files 72 passed (72) / Tests 1712 passed (1712)`，exit 0 |
+| `npx vitest run --sequence.shuffle` 第 3 次 | `Test Files 72 passed (72) / Tests 1712 passed (1712)`，exit 0 |
+
+4 次运行全绿；shuffle 每次随机序不同（vitest 每次运行重新洗牌），连续 3 次全绿表明首验发现的顺序耦合已消除。用例总数与首验时完全一致（1712），**无用例被删除**。
+
+## 3. 被改文件 diff 抽查（3/9，逐行核对）
+
+| 文件 | 抽查结论 |
+| --- | --- |
+| content-review.test.ts | 3 个用例改为自建 contentItem（守门稿/切换稿/已审稿），解除对共享 itemId 的状态依赖；「已 approved 再审 → 400」原依赖前序用例审成 approved，现自建 approved 稿，断言仍是 `toBe(400)`；审批日志断言由绝对计数 `.toBe(1)` 改为增量 `before + 1`（任意顺序下等价且更精确）。**无删除用例、无 skip、无断言放松** |
+| lane-b/routes-admin.test.ts | DELETE/PUT 类用例（users DELETE、wechat accounts DELETE、articles PUT/DELETE）改为操作本用例自建的 victim2/公众号C/待更新文章/待删草稿，不再动其他用例断言所依赖的共享行；断言值（200、id、title）逐一保留。正是首验失败的「victim 用户被前序用例删除」耦合的正规解法 |
+| collect-autokb.test.ts | C-08 三个用例补自包含 arrange（自建 源A-C08/源B-C08/源F 与时间戳唯一 code 的库；重注册 coze backend；清遗留队列状态），查询范围限定本源 items id；断言数量与文案检查（synced 2 / failed 2 / syncErr 含「未绑定 Coze dataset」）全部保留 |
+
+其余 6 文件（p03-endpoints、block-registry、notify、publish-throttle、lane-d/collect、notify-before-publish）未逐行审读，以全量重跑结果 + 总用例数不变（1712）作为无删除/无 skip 的整体证据。
+
+## 4. 复审遗留
+
+无。首验 §备注 3 的「另开测试顺序自洽卡」建议已由 V9-T-05 落地闭合；卡验收「shuffle 结果一致」现为 PASS。安全口径不变：audit critical=0（官方源，首验已证，依赖此后无变动——bf5afc9 未触及 package.json/lock）。
