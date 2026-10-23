@@ -46,6 +46,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # 时机正确：此刻 schema.prisma 已在镜像内（COPY . . 已包含 prisma/）
 RUN npx prisma generate
 
+# V9-CI-01：构建期静态导出会真实查库（/about 等页 generateMetadata → Setting 表）。
+# builder 阶段没有可用库（.env 被 .dockerignore 排除、运行时库在数据卷上）→
+# 原样 build 必然 P2039 no such table（CI run 39979767004 docker job 取证）。
+# 给 builder 一个一次性已迁移库（空表 → 页面走默认值），/tmp 不进最终镜像。
+ENV DATABASE_URL="file:/tmp/build.db"
+RUN npx prisma migrate deploy
+
 # Build Next.js application
 RUN npm run build
 

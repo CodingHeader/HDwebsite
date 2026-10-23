@@ -10,6 +10,16 @@ on:
     branches: [upgrade]
   pull_request:
     branches: [upgrade]
+  # V9-VIS-03：基线重生成入口。参照图只能在与 CI 相同的 Linux 环境重生成
+  #（Windows 字体渲染差异无法分离，V0.7 实测），因此重生成走 CI 而非本机：
+  # 手动触发并勾选后，visual job 以 --update-snapshots 运行，并把新基线
+  # 作为 artifact 上传，由执行者核对后提交回仓库。
+  workflow_dispatch:
+    inputs:
+      visual_update_ref:
+        description: "重生成 visual 参照基线（tests/visual/reference → artifact）"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -169,7 +179,22 @@ jobs:
           curl -sf http://127.0.0.1:6789/api/health || (cat /tmp/visual-server.log; exit 1)
 
       - name: Visual regression
-        run: VISUAL_BASE_URL=http://127.0.0.1:6789 npx playwright test -c playwright.config.ts
+        run: |
+          if [ "${{ inputs.visual_update_ref }}" = "true" ]; then
+            echo "== 基线重生成模式（V9-VIS-03）：--update-snapshots =="
+            VISUAL_BASE_URL=http://127.0.0.1:6789 npx playwright test -c playwright.config.ts --update-snapshots
+          else
+            VISUAL_BASE_URL=http://127.0.0.1:6789 npx playwright test -c playwright.config.ts
+          fi
+
+      - name: Upload updated reference baselines
+        if: always() && inputs.visual_update_ref == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-reference-${{ github.run_id }}
+          path: tests/visual/reference/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload visual diff artifacts
         if: always()
