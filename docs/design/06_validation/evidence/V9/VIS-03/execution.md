@@ -48,6 +48,26 @@
 3. 重推后 visual 全绿（45/45）→ `continue-on-error: false`（独立小提交）。
 4. 每张更新的基线截图在 evidence 补一行理由（本表 + 重生成 run 记录即为理由源）。
 
+## 6. 基线重生成结果与逐张理由（run 39983978470，提交 40a9331）
+
+workflow_dispatch（visual_update_ref=true）run 39983978470：**visual job 全步成功**（Prepare DB / Clean build / Visual regression --update-snapshots / Upload baselines 均 success）。45 张新基线中 **41 张字节级变化**（4 张原通过案例未变），全部入下表理由（按路由归组，×3 宽度同因）：
+
+| 基线（×1440/768/375） | 变化与理由（逐组一行） |
+|---|---|
+| home-1440/768/375 | 数据集补齐 ServiceGuide(6)/HotMajor(10) 后首页新区块入图；合成文本与 main 真实文本长度差（V9-Q1 方案 A：数据差以数据集口径为准） |
+| about-1440/768/375 | settings.companyIntro 走默认值（不入种），窄屏换行差异随基线固定；结构 1440 高度与旧参照完全一致（1950） |
+| apply-1440/768/375、learning、party、article-detail-1440 | dh=0 渲染噪声级差异（亚像素），随基线归零 |
+| article-detail-375/768 | 文章正文/摘要合成文本换行差 |
+| articles-1440/768/375 | 列表卡标题/摘要文本长度差；版式（分页/侧栏/卡片栅格）与参照逐块对齐（diff 图证实） |
+| campus-1440/768/375 | **参照旧图为空态（"暂无校区信息"）**；升级按动态数据渲染 4 校区+图集，行为正确（全部动态数据要求），基线更正为有数据状态 |
+| contact-1440/768/375 | settings 文本项默认值 vs main 实值 |
+| courses-1440/768/375、course-detail-375/768 | 课程卡/详情合成文本差（course-detail-1440 原本即通过，基线未变） |
+| gallery-1440/768/375 | 图集条目文本差（原 375 缺口 −739 属条目文本行数差） |
+| partners-1440/768/375 | 伙伴名称/描述文本差 |
+| service-detail-1440/768/375 | **新增可用**：ServiceGuide 入种后 /services/[slug] 首次能导航渲染（旧参照为导航失败无图） |
+
+**基线口径声明**：新基线 = 「main 版式结构 + upgrade 确定性数据集」在 Linux CI 的渲染（与 CI 被测环境同源生成，消除 Windows 字体噪声）。此后 visual 门禁守护的是**该口径下的回归**；对照 main 结构一致性的证据 = 分诊表（0 样式回归）+ diff 图逐块对齐记录，见 §2。
+
 ## 复现命令
 
 ```bash

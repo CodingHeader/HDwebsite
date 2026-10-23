@@ -128,7 +128,7 @@ jobs:
   visual:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    continue-on-error: true   # V8-VIS-03 完成后改为 false
+    continue-on-error: false  # V9-VIS-03 收口：基线已重生成（run 39983978470 全绿），visual 失败自此刻阻断主门禁
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-jammy
       options: --ipc=host
