@@ -13,7 +13,7 @@ import { StatusBadge, type Tone } from "@/components/manager/StatusBadge";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { Button, Input, Textarea } from "@/components/manager/ui";
-import { Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Forbidden, confirmDialog, toast, useManagerQuery, ErrorState, PageSkeleton } from "@/components/manager/feedback";
 
 type Item = {
   id: number; title: string; url: string; source?: { name: string } | null;
@@ -76,6 +76,10 @@ export default function ManagerCollectItemsPage() {
   }
 
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败也要有明确错误态（此前会静默显示空表）
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={reload} />;
+  // V8-UI-01：首屏加载用骨架，避免"空表闪一下"
+  if (loading && !error) return <PageSkeleton lines={8} />;
   const list = data?.list ?? [];
 
   const columns: DataColumn<Item>[] = [

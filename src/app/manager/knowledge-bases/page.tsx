@@ -15,7 +15,7 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField } from "@/components/manager/ui/form-field";
 import { Button, Input, Select, Switch, Textarea } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery, ErrorState } from "@/components/manager/feedback";
 import { Badge, Tabs } from "@/components/manager/ui/misc";
 import { KbUpload } from "./kb-upload";
 import type { KbSearchRequest } from "@/contracts/kb";
@@ -302,6 +302,8 @@ export default function KnowledgeBasesPage() {
 
   const error = basesQ.error;
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败也要有明确错误态（此前会静默显示空表）
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={() => void basesQ.reload()} />;
 
   // ── 详情视图 ──
   if (selected) {

@@ -26,7 +26,7 @@ import { StatusBadge } from "@/components/manager/StatusBadge";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { Button, IconButton, Input, Select } from "@/components/manager/ui";
-import { ErrorState, Forbidden, cardCls, confirmDialog, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { ErrorState, Forbidden, PageSkeleton, cardCls, confirmDialog, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 import { Badge, Tabs } from "@/components/manager/ui/misc";
 import type { LlmUsageRow } from "@/contracts/llm";
 
@@ -185,6 +185,10 @@ export default function ManagerLlmProvidersPage() {
   }
 
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败要有明确错误态
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={reload} />;
+  // V8-UI-01：首屏加载用骨架，避免"空表闪一下"
+  if (loading && !error) return <PageSkeleton lines={8} />;
   const list = data?.list ?? [];
   const byPriority = [...list].sort((a, b) => a.priority - b.priority || a.id - b.id);
   const current = order ?? byPriority;

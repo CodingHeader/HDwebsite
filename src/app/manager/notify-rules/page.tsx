@@ -17,7 +17,7 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { FormField, Label } from "@/components/manager/ui/form-field";
 import { Button, Input, Select, Switch } from "@/components/manager/ui";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { Forbidden, cardCls, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Forbidden, cardCls, toast, useManagerQuery, ErrorState, PageSkeleton } from "@/components/manager/feedback";
 import { Badge } from "@/components/manager/ui/misc";
 
 type Rule = {
@@ -144,6 +144,10 @@ export default function NotifyRulesPage() {
 
   const error = rulesQ.error ?? templatesQ.error;
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败也要有明确错误态（此前会静默显示空表）
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={() => { void rulesQ.reload(); void templatesQ.reload(); }} />;
+  // V8-UI-01：首屏加载用骨架，避免"空表闪一下"
+  if (rulesQ.loading && !error) return <PageSkeleton lines={8} />;
 
   const columns: DataColumn<Rule>[] = [
     {

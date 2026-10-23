@@ -103,11 +103,12 @@
   "note": "articles 372,724→284,100（-23.8%）已由 SEC-01（next 16.4.2 + 移除 cssChunking）达成，本卡无需额外改动；三次测量与实际 HTTP 均一致"
  },
  "V8-UI-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "40 页中 39 页五态齐备；login（公开无鉴权）与 settings（表单页无列表空态）属语义例外；ux-states 20/20、a11y 12/12、gzip +0.01%"
  },
  "V8-INT-01": {
   "status": "done",

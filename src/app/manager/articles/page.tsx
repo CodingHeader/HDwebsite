@@ -27,7 +27,7 @@ const SchemaForm = dynamic(
   () => import("@/components/manager/SchemaForm").then((m) => m.SchemaForm),
   { ssr: false, loading: () => <div className="h-[320px] animate-pulse rounded-md bg-mgr-muted" /> }
 );
-import { Bone, Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Bone, Forbidden, confirmDialog, toast, useManagerQuery, ErrorState } from "@/components/manager/feedback";
 
 type Row = ArticleSummary & { category?: { name: string } | null };
 type ListData = { list: Row[]; pagination: PaginationData };
@@ -193,6 +193,8 @@ export default function ManagerArticlesPage() {
   }
 
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败也要有明确错误态（此前会静默显示空表）
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={reload} />;
 
   const list = data?.list ?? [];
   const create = () => begin(null, { ...EMPTY_FORM });

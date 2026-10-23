@@ -23,7 +23,7 @@ import { StatusBadge } from "@/components/manager/StatusBadge";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
 import { Button } from "@/components/manager/ui";
-import { Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Forbidden, confirmDialog, toast, useManagerQuery, ErrorState, PageSkeleton } from "@/components/manager/feedback";
 
 type Account = {
   id: number; name: string; type: string; appid: string; appSecret: string;
@@ -134,6 +134,10 @@ export default function ManagerWechatAccountsPage() {
   }
 
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败也要有明确错误态（此前会静默显示空表）
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={reload} />;
+  // V8-UI-01：首屏加载用骨架，避免"空表闪一下"
+  if (loading && !error) return <PageSkeleton lines={8} />;
   const list = data?.list ?? [];
   const create = () => void begin(null, { name: "", type: "service", appid: "", appSecret: "", sceneId: null, aiEnabled: true, freepublishEnabled: true });
 

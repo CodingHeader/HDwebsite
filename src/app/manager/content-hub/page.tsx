@@ -23,7 +23,7 @@ import { FormField } from "@/components/manager/ui/form-field";
 import { Checkbox, DateTimeInput, Select, Switch } from "@/components/manager/ui";
 import { SearchInput } from "@/components/manager/SearchInput";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
-import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
+import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery, ErrorState } from "@/components/manager/feedback";
 import { ChannelStates } from "@/components/manager/publish/ChannelStates";
 import { StatusBadge } from "@/components/manager/StatusBadge";
 
@@ -180,6 +180,8 @@ export default function ContentHubPage() {
 
   const error = itemsQ.error ?? jobsQ.error;
   if (isForbidden(error)) return <Forbidden message={error.message} />;
+  // V8-UI-01：非 403 的请求失败也要有明确错误态（此前会静默显示空表）
+  if (error && !isForbidden(error)) return <ErrorState message={error.message} onRetry={() => { void itemsQ.reload(); void jobsQ.reload(); }} />;
 
   const columns: DataColumn<Row>[] = [
     {
