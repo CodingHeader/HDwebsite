@@ -72,11 +72,12 @@
   "note": "5 条路由全部迁入 withApi（含 file 原始流/wechat XML 保留），ADR-037 豁免清单为空"
  },
  "V8-VIS-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "10 表行数与 main 基线一致、幂等通过；补 CampusImage 后 clean build，首页高度 5532 vs 参照 5529（差 3px），V0.7 时为 3389（差 2140）"
  },
  "V8-VIS-02": {
   "status": "pending",

@@ -1,0 +1,18 @@
+{
+  "_comment": "V8-VIS-01：visual 回归用的确定性数据集基线。来源 = 同级参考仓库 hdwebsite_0429/prisma/dev.db 的实测行数（main 系真实数据，2026-05-20）。",
+  "_source": "../hdwebsite_0429/prisma/dev.db",
+  "_measuredAt": "2026-10-22",
+  "_why": "V0.7 的 visual 比对失败根因是 dev.db 内容表全 0（首页高度 3389px vs 参照图 5529px）。本文件固定各表应有行数，使 seed 后可复现同一份页面高度。",
+  "counts": {
+    "Article": 25,
+    "Course": 6,
+    "Banner": 1,
+    "Campus": 4,
+    "Gallery": 6,
+    "Partner": 10,
+    "Major": 16,
+    "HomeCard": 4,
+    "CampusImage": 8
+  },
+  "_note_CampusImage": "Campus(4) × 2 张/校区 = 8。main 的 dev.db 未单独统计该表，按 CampusSection 渲染需要（每校区至少 1 张，否则区块高度为 0）设为 2。"
+}
