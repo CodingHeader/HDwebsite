@@ -86,5 +86,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# 脚本（standalone 镜像不含 scripts，构建期也无需）
-scripts
+# 脚本目录不排除（V9-CI-01）：src/lib/__tests__ 下的单测 import 了
+# scripts/start-next-utils.mjs，next build 的类型检查需要它（CI run 39978424632
+# docker job 取证 TS2307）。builder 阶段多几个 .mjs 文件无碍；runner 阶段的
+# COPY 是显式清单，scripts 不会进最终镜像。

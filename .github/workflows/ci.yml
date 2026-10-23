@@ -141,7 +141,10 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        # V9-CI-01 实测：job 级 NODE_ENV=production 会让 npm ci 跳过 devDependencies，
+        # 构建/测试所需的 @tailwindcss/postcss（devDep）缺失 → Clean build 失败。
+        # 显式 --include=dev 覆盖该行为（run 39978424632 visual job 日志取证）。
+        run: npm ci --include=dev
 
       - name: Prisma generate
         run: npx prisma generate

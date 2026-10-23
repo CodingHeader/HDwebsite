@@ -55,3 +55,16 @@ curl -s -H @~/.api-header "https://api.github.com/repos/CodingHeader/HDwebsite/a
 ## UNKNOWN
 
 - CI 三 job 结论：推送后轮询，结论回填 EXEC-round1.md §3（本文件不动，保持执行时点快照）。
+
+## 第 2 次迭代（run 39978424632 取证后的修正，同卡熔断规则内：FAIL 1 次）
+
+run 39978424632（fad1924）结果：**gate 修复被证实**（Prepare build DB → Build → 审计 → 密钥扫描全绿，E2E 进行中）；**visual Prepare DB 修复被证实**（seed 10/10 写入成功）。但暴露两个此前不可见的新失败点：
+
+1. **visual job Clean build 失败**：`Cannot find module '@tailwindcss/postcss'`。
+   根因：job 级 `NODE_ENV: production` 使 `npm ci` 跳过 devDependencies（Tailwind v4 的 PostCSS 插件是 devDep）。
+   修复：Install 步改 `npm ci --include=dev`（含注释）。
+2. **docker job Build image 失败**：`TS2307: Cannot find module '../../../../scripts/start-next-utils.mjs'`。
+   根因：`.dockerignore` 整体排除 `scripts/`，而 `src/lib/__tests__/lane-d/start-next-utils.test.ts` import 了它，`next build` 的类型检查在容器内找不到模块。本地不复现（文件系统完整）。
+   修复：取消 `scripts` 整体排除（builder 阶段需要；runner 阶段 COPY 为显式清单，scripts 不进最终镜像，零运行时成本）。已复核 src/ 无其他指向被排除目录的 import。
+
+**所有权扩展声明（AGENTS §4 越界报备）**：本轮实际改动文件超出 V9-CI-01 原允许路径 —— `.dockerignore`（归 V8-REL-01 遗留物）与 visual job 的 Install 步（`.github/workflows/ci.yml` 内，已在原路径内）。理由：docker job 的结论是本卡验收标准之一，`.dockerignore` 缺陷直接阻断该结论，属 08-风险 V9-Q2 预案的"Dockerfile 相邻缺陷在熔断规则内修正"。state.json note 同步更新。
