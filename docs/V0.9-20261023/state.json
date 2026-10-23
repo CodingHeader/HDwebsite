@@ -1,0 +1,42 @@
+{
+ "V9-CI-01": {
+  "status": "ready",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "CI 门禁修复：gate Build 前 migrate、seed-visual 外键自足、新增 docker job（解 V8-REL-01）"
+ },
+ "V9-VIS-03": {
+  "status": "pending",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "承接 V8-VIS-03：CI visual 分诊 → 基线收口 → continue-on-error=false"
+ },
+ "V9-V-01": {
+  "status": "pending",
+  "owner": "subagent-verifier",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "承接 V8-V-01：全卡 verify.md（旧卡部分可与 CI-01 并行）"
+ },
+ "V9-REL-02": {
+  "status": "pending",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "承接 V8-REL-02：changelog / parity / 双端 0 0 / zip"
+ },
+ "V8-REL-01": {
+  "status": "blocked",
+  "owner": "P3",
+  "verify": null,
+  "blocked_reason": "本机 Docker 容器无 npm 网络（V0.8 第 2 轮）；解除条件 = V9-CI-01 的 docker job 在 CI 出结论",
+  "commits": [],
+  "note": "承接卡不另立：解除动作在 V9-CI-01 T3，verify 归 V9-V-01"
+ }
+}
