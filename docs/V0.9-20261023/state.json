@@ -1,28 +1,49 @@
 {
  "V9-CI-01": {
+  "status": "done",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": ["fad1924", "f78cc1d", "643bebc"],
+  "started": "2026-10-23T19:25:00+08:00",
+  "finished": "2026-10-24T00:10:00+08:00",
+  "note": "迭代1 gate migrate+seed 自足（run 39978424632 验证 Build/PrepareDB 通过）、迭代2 npm ci --include=dev + .dockerignore（run 39979767004 Clean build 通过）、迭代3 Dockerfile builder 库 + workflow_dispatch（run 39982327648 docker=success）。gate 的 E2E 步 3 fail 属 V9-E2E-01，非本卡验收（本卡=Build 步通过）"
+ },
+ "V9-VIS-03": {
   "status": "running",
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
-  "started": "2026-10-23T19:25:00+08:00",
-  "note": "CI 门禁修复：gate Build 前 migrate、seed-visual 外键自足、新增 docker job（解 V8-REL-01）"
+  "commits": ["6312746"],
+  "started": "2026-10-23T23:40:00+08:00",
+  "note": "分诊表完成（0 样式回归；数据差+缺口两类）；seed 增量 ServiceGuide/HotMajor 已推；基线重生成 run 已触发，待下载提交基线 + continue-on-error=false"
  },
- "V9-VIS-03": {
-  "status": "pending",
-  "owner": "main-agent",
+ "V9-T-05": {
+  "status": "running",
+  "owner": "subagent-fixer",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "承接 V8-VIS-03：CI visual 分诊 → 基线收口 → continue-on-error=false"
+  "started": "2026-10-24T00:05:00+08:00",
+  "note": "V8-SEC-03 verify=FAIL 的返工卡：单测 shuffle 顺序耦合（content-review 已由主代理修复，其余文件子代理迭代中）"
+ },
+ "V9-E2E-01": {
+  "status": "running",
+  "owner": "subagent-fixer",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "started": "2026-10-24T00:15:00+08:00",
+  "note": "CI E2E 首跑 70/73：collect-publish 选择器严格模式 + e-kb-manage 两例；修复子代理运行中"
  },
  "V9-V-01": {
-  "status": "pending",
+  "status": "running",
   "owner": "subagent-verifier",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "承接 V8-V-01：全卡 verify.md（旧卡部分可与 CI-01 并行）"
+  "started": "2026-10-23T19:40:00+08:00",
+  "note": "14 张 V8 卡完成（13 PASS / 1 FAIL=SEC-03 shuffle，返工中）；V9-CI-01 已验待写；V9-VIS-03/T-05/E2E-01 待收口后补验"
  },
  "V9-REL-02": {
   "status": "pending",
@@ -30,14 +51,15 @@
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "承接 V8-REL-02：changelog / parity / 双端 0 0 / zip"
+  "note": "承接 V8-REL-02：changelog / parity / 双端 0 0 / zip；等 VIS-03、T-05、E2E-01、V-01 收口"
  },
  "V8-REL-01": {
-  "status": "blocked",
+  "status": "done",
   "owner": "P3",
   "verify": null,
-  "blocked_reason": "本机 Docker 容器无 npm 网络（V0.8 第 2 轮）；解除条件 = V9-CI-01 的 docker job 在 CI 出结论",
-  "commits": [],
-  "note": "承接卡不另立：解除动作在 V9-CI-01 T3，verify 归 V9-V-01"
+  "blocked_reason": null,
+  "commits": ["de4ad2f", "643bebc"],
+  "finished": "2026-10-24T00:10:00+08:00",
+  "note": "blocked 解除：CI run 39982327648 docker job = success（build + 起容器 + /api/health 探活全过）；Dockerfile 迭代 3 的 builder 库修复由本卡与 V9-CI-01 共同贡献"
  }
 }
