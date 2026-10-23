@@ -28,20 +28,22 @@ async function settle(page: Page) {
   await page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => undefined);
   await page.evaluate(async () => {
     await document.fonts.ready;
-    // V9-VIS-03 补强（run 39990249476 实证）：懒加载 + next/image 优化器冷启动在 CI 上
-    // 偶发超过下方逐图 3s 兜底 → 截图里图片区空白、像素门禁假红（home@1440 的 gallery/
-    // campus 图块 10% 像素差）。这里确定性等待所有非忽略图片**解码完成**（naturalWidth>0），
-    // 15s 上限；真加载失败时走超时→截图空白→diff 失败，仍是响亮的失败信号。
-    await page
-      .waitForFunction(
-        () =>
-          Array.from(document.images)
-            .filter((img) => !img.closest("[data-visual-ignore]"))
-            .every((img) => img.complete && img.naturalWidth > 0),
-        undefined,
-        { timeout: 15_000 }
-      )
-      .catch(() => undefined);
+  });
+  // V9-VIS-03 补强（run 39990249476 实证）：懒加载 + next/image 优化器冷启动在 CI 上
+  // 偶发超过下方逐图 3s 兜底 → 截图里图片区空白、像素门禁假红（home@1440 的 gallery/
+  // campus 图块 10% 像素差）。这里在 Node 侧确定性等待所有非忽略图片**解码完成**
+  // （naturalWidth>0），15s 上限；真加载失败时走超时→截图空白→diff 失败，仍是响亮的失败信号。
+  await page
+    .waitForFunction(
+      () =>
+        Array.from(document.images)
+          .filter((img) => !img.closest("[data-visual-ignore]"))
+          .every((img) => img.complete && img.naturalWidth > 0),
+      undefined,
+      { timeout: 15_000 }
+    )
+    .catch(() => undefined);
+  await page.evaluate(async () => {
     await Promise.all(
       Array.from(document.images)
         .filter((img) => !img.complete)
