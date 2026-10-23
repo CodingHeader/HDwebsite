@@ -91,3 +91,82 @@ jobs:
           path: .cache/e2e/
           if-no-files-found: ignore
           retention-days: 7
+  # ══════════════════════════════════════════════════════════════
+  # V8-VIS-02：Linux visual 像素回归
+  #
+  # 为什么必须单独一个 job 且用官方 playwright 镜像：
+  #   1. visual 参照图（tests/visual/reference/*.png，45 张）生成于 Linux/CI；
+  #      Windows 上字体渲染/图片解码差异无法与真实样式差异分离
+  #      （V0.7 实测：19 pass / 26 fail，全部是"高度 5529 vs 3389"这类数据量或渲染差异）。
+  #   2. 官方镜像内已预装匹配版本的浏览器与系统字体，避免 `playwright install --with-deps` 的漂移。
+  #
+  # 关键顺序（V8-VIS-01 实测结论）：**必须先 seed 再 clean build**。
+  #   首页是静态预渲染（○ /），且 getHomeData 的 unstable_cache 配 revalidate: false
+  #   （只靠 tag 失效）。seed 直写 DB 不走 API → 不触发标签失效
+  #   → 若不 clean build，visual 会拿到旧数据，结果毫无意义。
+  #
+  # continue-on-error：V8-VIS-03 完成差异分诊前，本 job 失败不阻断主门禁。
+  # ══════════════════════════════════════════════════════════════
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true   # V8-VIS-03 完成后改为 false
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --ipc=host
+    env:
+      NODE_ENV: production
+      JWT_SECRET: visual-jwt-secret-0123456789abcdef-0123456789abcdef
+      ENCRYPTION_KEY: visual-encryption-key-0123456789abcdef-0123456789abcdef
+      APP_ORIGIN: http://127.0.0.1:6789
+      DATABASE_URL: file:./prisma/dev.db
+      # 容器内 AI 助手 / telemetry 不必要
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+
+      - name: Prepare DB
+        run: |
+          npx prisma migrate deploy
+          npx tsx prisma/seed-visual.ts --check || npx tsx prisma/seed-visual.ts
+
+      - name: Clean build (必须清缓存，否则静态页拿旧数据)
+        run: |
+          rm -rf .next/cache/fetch-cache
+          npm run build
+
+      - name: Start server
+        run: |
+          npx next start -p 6789 > /tmp/visual-server.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:6789/api/health > /dev/null; then echo "server ready"; break; fi
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:6789/api/health || (cat /tmp/visual-server.log; exit 1)
+
+      - name: Visual regression
+        run: VISUAL_BASE_URL=http://127.0.0.1:6789 npx playwright test -c playwright.config.ts
+
+      - name: Upload visual diff artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-results-${{ github.run_id }}
+          path: |
+            .cache/visual/
+            /tmp/visual-server.log
+          if-no-files-found: ignore
+          retention-days: 14

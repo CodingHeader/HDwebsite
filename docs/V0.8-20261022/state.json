@@ -80,11 +80,12 @@
   "note": "10 表行数与 main 基线一致、幂等通过；补 CampusImage 后 clean build，首页高度 5532 vs 参照 5529（差 3px），V0.7 时为 3389（差 2140）"
  },
  "V8-VIS-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "P3",
   "verify": null,
   "blocked_reason": null,
-  "commits": []
+  "commits": [],
+  "note": "CI 新增 visual job（playwright v1.59.1-jammy 与 lock 一致）；含 clean build 步骤；continue-on-error=true 待 VIS-03 改 false；本机无法实跑 Linux 容器"
  },
  "V8-VIS-03": {
   "status": "pending",
