@@ -34,6 +34,8 @@
  *
  * 注意：本脚本**不清理**其它业务数据（如 User/Role/Setting），只用固定 id 段
  * （9000+）写入 visual 数据，避免与 `prisma/seed.ts` 的常规种子冲突。
+ * V9-CI-01 唯一例外：全新库（CI）上会按需创建一个 Role(super-admin)+User 外键
+ * 锚点（见 ensureVisualAuthor），否则 Article.authorId 无落点；已有用户时绝不写。
  */
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
@@ -56,6 +58,58 @@ const T0 = new Date("2026-01-01T00:00:00.000Z");
 /** 本地占位图（由 gen-visual-fixtures.mjs 生成） */
 const IMG = "/uploads/visual-fixtures";
 const img = (n: number) => `${IMG}/ph-${String(n).padStart(2, "0")}.png`;
+
+/**
+ * visual 数据的作者 id（写入前由 ensureVisualAuthor() 解析，见其说明）。
+ */
+let AUTHOR_ID = 1;
+
+/**
+ * V9-CI-01：保证 Article.authorId 外键在全新库上成立。
+ *
+ * 背景（V0.9 取证）：CI visual job 只跑 migrate deploy + 本脚本，从不跑
+ * prisma/seed.ts；旧版把 authorId 写死为 1 并注释「由 seed.ts 保证存在」——
+ * 本地 dev.db 恰好有 admin(id=1) 掩盖了这个隐式跨脚本依赖，CI 全新库
+ * User 表为空 → article.createMany() P2003 外键违反。
+ *
+ * 规则：
+ *   1. 库里已有任何活跃用户 → 直接复用其 id，绝不重复创建、不碰既有账号；
+ *   2. 全空（仅 CI/全新库场景）→ upsert super-admin 角色（与 seed.ts 同 slug）
+ *      后建一个仅作外键锚点的用户；
+ *   3. 该锚点用户不参与任何渲染与登录假设，passwordHash 为固定占位串
+ *      （bcrypt.compare 对任意输入都不匹配，等于不可登录），非凭据。
+ */
+async function ensureVisualAuthor(): Promise<number> {
+  const existing = await prisma.user.findFirst({
+    where: { isActive: true },
+    orderBy: { id: "asc" },
+    select: { id: true },
+  });
+  if (existing) return existing.id;
+
+  const role = await prisma.role.upsert({
+    where: { slug: "super-admin" },
+    update: {},
+    create: {
+      name: "SuperAdmin",
+      slug: "super-admin",
+      description: "visual seed 自建（全新库无 prisma/seed.ts 时保证 Article.authorId 外键成立）",
+      permissions: JSON.stringify(["*"]),
+      isSuper: true,
+    },
+  });
+  const user = await prisma.user.create({
+    data: {
+      username: "admin",
+      passwordHash: "visual-fixture-not-for-login",
+      nickname: "visual-admin",
+      roleId: role.id,
+    },
+    select: { id: true },
+  });
+  console.log(`[seed-visual] 全新库：已创建外键锚点用户 id=${user.id}（仅满足 Article.authorId，不可登录）`);
+  return user.id;
+}
 
 /**
  * 生成占位图（运行时自建，不把二进制塞进仓库）。
@@ -179,7 +233,7 @@ const articles = () => {
       content: `<p>这是视觉回归用的第 ${i} 篇文章正文。</p><p>固定内容，用于稳定页面高度。</p>`,
       excerpt: `视觉回归用摘要 ${i}`,
       coverImage: img(i),
-      authorId: 1, // 由 prisma/seed.ts 保证存在的 admin
+      authorId: AUTHOR_ID, // V9-CI-01：由 ensureVisualAuthor() 在写入前解析（全新库自建锚点）
       categoryId: ID_BASE + ((i - 1) % 14) + 1,
       status: "published",
       isTop: i <= 3,
@@ -346,6 +400,9 @@ async function main() {
   if (!checkOnly) {
     const created = ensurePlaceholderImages();
     console.log(`[seed-visual] 占位图：已存在跳过，新建 ${created} 张 → public/uploads/visual-fixtures/`);
+    // V9-CI-01：article.createMany 之前必须保证 author 外键有落点（全新库自建）
+    AUTHOR_ID = await ensureVisualAuthor();
+    console.log(`[seed-visual] 作者锚点：authorId=${AUTHOR_ID}`);
   }
   const results: { table: string; expected: number; actual: number; ok: boolean }[] = [];
 

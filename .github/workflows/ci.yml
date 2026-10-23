@@ -43,6 +43,14 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
+      # V9-CI-01：构建前让 ci-build.db 就绪。
+      # 因果（V0.9 取证）：Build 期静态导出（如 /about 的 generateMetadata → getWebSettings）
+      # 会真实查库；ci-build.db 是全新文件，不 migrate 就是 P2039 no such table: main.Setting。
+      # 本地从未复现，因为本地 dev.db 已 migrate——这是典型的「本地能跑 ≠ 干净环境能跑」。
+      # 与 visual job 的 Prepare DB 同口径：先准备库，再构建。
+      - name: Prepare build DB
+        run: npx prisma migrate deploy
+
       - name: Lint
         run: npm run lint
 
@@ -170,3 +178,47 @@ jobs:
             /tmp/visual-server.log
           if-no-files-found: ignore
           retention-days: 14
+  # ══════════════════════════════════════════════════════════════
+  # V9-CI-01：Docker 镜像构建 + 探活（解除 V8-REL-01 的本机阻塞）
+  #
+  # 背景（V0.9 取证）：REL-01 已完成 Dockerfile 静态核验（11 项全过），但本机
+  # 容器内无法访问任何 npm registry（npm ci 阶段超时，官方源与 npmmirror 均不通，
+  # 属宿主网络环境限制非镜像缺陷）。GitHub runner 出网正常，在这里跑真实构建。
+  #
+  # 验证点：三阶段镜像能完整 build（npm ci / prisma generate / next build），
+  # 容器以非 root 启动且 /api/health 返回 200（含 DB 探活 SELECT 1）。
+  # env 四键为 e2e 测试占位（≥32 位假值，非真实凭据）；DATABASE_URL 指向
+  # 容器内数据目录（Dockerfile 已预建 /app/data/db）。不推镜像，无 registry 凭据。
+  # ══════════════════════════════════════════════════════════════
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      JWT_SECRET: e2e-jwt-secret-0123456789abcdef-0123456789abcdef
+      ENCRYPTION_KEY: e2e-encryption-key-0123456789abcdef-0123456789abcdef
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t hdwebsite:ci .
+
+      - name: Run container + health check
+        run: |
+          docker run -d --name hd-ci \
+            -p 6789:6789 \
+            -e DATABASE_URL="file:/app/data/db/ci-docker.db" \
+            -e JWT_SECRET="$JWT_SECRET" \
+            -e ENCRYPTION_KEY="$ENCRYPTION_KEY" \
+            -e APP_ORIGIN="http://127.0.0.1:6789" \
+            hdwebsite:ci
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:6789/api/health > /dev/null; then echo "container ready"; break; fi
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:6789/api/health || (docker logs hd-ci; exit 1)
+          docker logs hd-ci 2>&1 | tail -20
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f hd-ci || true
