@@ -1,6 +1,8 @@
 /**
  * C-06：知识库文件列表 + multipart 上传（`/api/knowledge-files`，权限 kb:list / kb:create）。
- * - GET：默认排除软删除（deletedAt IS NULL）；分页 + baseId/keyword 过滤
+ * - GET：默认排除软删除（deletedAt IS NULL）；`trash=1` 只返回软删除行（回收站视图，V9-E2E-01
+ *   修复——原实现硬编码 deletedAt:null 且忽略 trash 参数，回收站页恒为空，e2e 首跑暴露）；
+ *   分页 + baseId/keyword 过滤
  * - POST：multipart，字段名 = 契约 KB_UPLOAD_FIELD（"files"），单次 ≤ KB_MAX_FILES_PER_UPLOAD（10）
  *   - 三重校验（checkIngestFile）：.pdf/.png/.jpg（含伪装）→ 400 + KB_REJECT_MESSAGE
  *   - .md/.docx/.txt → 入库并返回 KnowledgeFile + chunkCount > 0
@@ -22,7 +24,10 @@ export const GET = withApi(
     const url = new URL(request.url);
     const { page, limit, keyword } = parseQuery(request, listQuerySchema);
     const baseIdRaw = url.searchParams.get("baseId");
-    const where: Record<string, unknown> = { deletedAt: null };
+    // trash 视图开关：与 baseId 一样走 searchParams 直读（契约 listQuerySchema 不含该可选参数，
+    // 不触冻结契约面）。默认行为不变：只返回未删除行。
+    const isTrashView = url.searchParams.get("trash") === "1";
+    const where: Record<string, unknown> = isTrashView ? { deletedAt: { not: null } } : { deletedAt: null };
     if (baseIdRaw) {
       const n = Number(baseIdRaw);
       if (!Number.isFinite(n)) throw new ApiHttpError(400, "baseId 必须是数字");

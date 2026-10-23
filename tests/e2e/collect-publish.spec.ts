@@ -104,7 +104,12 @@ test("采集源试抓 → 执行 → 审核通过 → 建发布任务 → 通知
     .toMatch(/skipped|sent|pending|failed/);
 
   await page.goto("/manager/notify-records");
-  const recordRow = page.getByRole("row").filter({ hasText: EMAIL });
+  // V9-E2E-01：CI（无外网）上种子采集源执行失败会向同一 publish 组收件人写 collect_failed 行，
+  // 仅按 EMAIL 过滤会命中多行触发 strict mode violation——再按事件名收窄到本用例的发布前提醒。
+  const recordRow = page
+    .getByRole("row")
+    .filter({ hasText: EMAIL })
+    .filter({ hasText: "before_publish_news" });
   await expect(recordRow).toBeVisible();
   await expect(recordRow).toContainText("before_publish_news");
 });

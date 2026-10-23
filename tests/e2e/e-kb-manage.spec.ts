@@ -24,13 +24,14 @@ async function openFirstBaseDetail(page: import("@playwright/test").Page) {
   await expect(page.getByTestId("kb-upload")).toBeVisible({ timeout: 15_000 });
 }
 
-/** 上传一个 .md，返回文件名 */
+/** 上传一个 .md，返回文件名；内容嵌入文件名（V9-E2E-01）：服务端按 baseId+sha256 去重且不排除
+ * 软删行，固定内容会让本文件内后跑的用例命中前一个用例留下的记录（重复上传 → 新文件永不出现） */
 async function uploadMarkdown(page: import("@playwright/test").Page): Promise<string> {
   const name = `e2e-kbmanage-${Date.now()}.md`;
   await page.locator('input[type="file"]').setInputFiles({
     name,
     mimeType: "text/markdown",
-    buffer: Buffer.from("# e2e kb manage\n\nV8-T-03 补真实断言用。\n"),
+    buffer: Buffer.from(`# e2e kb manage\n\nV8-T-03 补真实断言用。（${name}）\n`),
   });
   await expect(page.getByText("上传完成")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("kb-files-table")).toContainText(name, { timeout: 30_000 });
@@ -44,7 +45,11 @@ test("删除 → 回收站 → 恢复闭环", async ({ page }) => {
   // 1) 文件行「删除」→ 确认 → 移入回收站
   const row = page.getByTestId("kb-files-table").locator("tbody tr").filter({ hasText: name });
   await row.getByRole("button", { name: "删除" }).click();
-  const dlg = page.getByRole("dialog");
+  // V9-E2E-01：ConfirmDialog 的 Content 是 role="alertdialog"（data-testid=confirm-dialog），
+  // 而上传成功的 base-ui toast（priority=low）本身带 role="dialog" 且存活 3.5s——
+  // getByRole("dialog") 会先匹配到该 toast（内部无目标按钮，toast 卸载后 outer 变 0 匹配），
+  // 表现为点击等待到测试超时。必须按 testid 定位确认框。
+  const dlg = page.getByTestId("confirm-dialog");
   await expect(dlg).toBeVisible();
   await dlg.getByRole("button", { name: /移入回收站/ }).click();
   await expect(page.getByText("已移入回收站")).toBeVisible({ timeout: 15_000 });
@@ -66,10 +71,10 @@ test("彻底删除有确认对话框", async ({ page }) => {
   await openFirstBaseDetail(page);
   const name = await uploadMarkdown(page);
 
-  // 先移入回收站
+  // 先移入回收站（同上：confirm-dialog 用 testid 定位，避开 role="dialog" 的 toast 抢占）
   const row = page.getByTestId("kb-files-table").locator("tbody tr").filter({ hasText: name });
   await row.getByRole("button", { name: "删除" }).click();
-  await page.getByRole("dialog").getByRole("button", { name: /移入回收站/ }).click();
+  await page.getByTestId("confirm-dialog").getByRole("button", { name: /移入回收站/ }).click();
   await expect(page.getByText("已移入回收站")).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole("tab", { name: /回收站/ }).click();
@@ -79,7 +84,7 @@ test("彻底删除有确认对话框", async ({ page }) => {
   // 彻底删除 → 必须弹确认框（不能直接删）
   const trashRow = trash.locator("tbody tr").filter({ hasText: name });
   await trashRow.getByRole("button", { name: /彻底删除/ }).click();
-  const confirm = page.getByRole("dialog");
+  const confirm = page.getByTestId("confirm-dialog");
   await expect(confirm).toBeVisible({ timeout: 10_000 });
   // 取消后文件仍在回收站（证明确认框真的拦住了操作）
   await confirm.getByRole("button", { name: /取消/ }).click();
