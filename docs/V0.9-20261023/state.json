@@ -14,7 +14,7 @@
   "note": "迭代1 gate migrate+seed 自足（run 39978424632 验证 Build/PrepareDB 通过）、迭代2 npm ci --include=dev + .dockerignore（run 39979767004 Clean build 通过）、迭代3 Dockerfile builder 库 + workflow_dispatch（run 39982327648 docker=success）。gate 的 E2E 步 3 fail 属 V9-E2E-01，非本卡验收（本卡=Build 步通过）"
  },
  "V9-VIS-03": {
-  "status": "running",
+  "status": "done",
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
@@ -22,7 +22,8 @@
    "6312746"
   ],
   "started": "2026-10-23T23:40:00+08:00",
-  "note": "分诊 0 样式回归；seed 增量+41 张基线重生成（run 39983978470）；continue-on-error=false 已收口；settle 图片解码等待修复假红 flake（run 39990249476/39993351639/39993351639 迭代），终态提交 ba4a0c9 待 CI 确认"
+  "note": "分诊 0 样式回归；seed 增量+41 张基线（run 39983978470）；continue-on-error=false；settle 图片解码等待修复 flake（修正提交 ba4a0c9，run 39995499020 visual success）；verify PASS",
+  "finished": "2026-10-24T02:05:00+08:00"
  },
  "V9-T-05": {
   "status": "done",
@@ -49,21 +50,26 @@
   "finished": "2026-10-24T01:10:00+08:00"
  },
  "V9-V-01": {
-  "status": "running",
+  "status": "done",
   "owner": "subagent-verifier",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
   "started": "2026-10-23T19:40:00+08:00",
-  "note": "V8 14 卡（13 PASS + SEC-03 返工后复审 PASS）+ V9-CI-01/VIS-03/T-05/E2E-01 verify 全 PASS；V9-REL-02 待终验"
+  "note": "18 份 verify.md 全 PASS（V8 15 + V9 4，SEC-03 返工后复审 PASS）",
+  "finished": "2026-10-24T02:00:00+08:00"
  },
  "V9-REL-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
-  "note": "承接 V8-REL-02：changelog / parity / 双端 0 0 / zip；等 VIS-03、T-05、E2E-01、V-01 收口"
+  "commits": [
+   "dd6ccc8",
+   "FINAL"
+  ],
+  "note": "changelog V0.8/V0.9 段、parity UNKNOWN 2→1、zip(SHA256 0385e4b1...)、双端 0 0、HALT（凭证类外部条件）",
+  "finished": "2026-10-24T02:15:00+08:00"
  },
  "V8-REL-01": {
   "status": "done",

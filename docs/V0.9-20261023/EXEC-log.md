@@ -6,3 +6,4 @@
 - 2026-10-23 19:25 V9-CI-01 running claim
 - 2026-10-24 00:15 V9-CI-01 done (docker success, REL-01 解除) | V9-E2E-01/T-05 running | VIS-03 regen triggered
 - 2026-10-24 01:20 T-05/E2E-01 done (verify PASS) | settle 修正 ba4a0c9 推送待 CI
+- 2026-10-24 02:15 REL-02 done | HALT: waiting 凭证类外部条件
