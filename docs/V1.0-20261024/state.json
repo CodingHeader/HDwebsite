@@ -24,14 +24,26 @@
   "finished": "2026-10-24T18:30:00+08:00"
  },
  "V10-Q1": {
-  "status": "running",
+  "status": "done",
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
   "commits": [
    "5c50fde"
   ],
-  "note": "用户授权（2026-10-24）；Navbar 容器 justify-start overflow-x-auto + 隐藏滚动条；本地 6 页 scrollWidth 595→375、e2e 73/73；375 基线重生成 run 已触发（dispatch），待落地提交",
-  "started": "2026-10-24T18:40:00+08:00"
+  "note": "用户授权后执行 5c50fde：Navbar 条内滚动；6 页 scrollWidth 595→375；15 张 375 基线重生成落地（run 40087305585 success）；REQ-F-014 唯一受控偏差",
+  "started": "2026-10-24T18:40:00+08:00",
+  "finished": "2026-10-24T20:20:00+08:00"
+ },
+ "V10-SEC-05": {
+  "status": "done",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [
+   "b452b43"
+  ],
+  "finished": "2026-10-24T20:10:00+08:00",
+  "note": "zod 4.6.7 + undici 7.30.1（Q1 只升不降，锁文件内）；audit 0 漏洞；audit-gate fixAvailable=true 标签修正"
  }
 }

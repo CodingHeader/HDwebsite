@@ -72,9 +72,10 @@ function parse(raw) {
   return { vulns, advisories: json.vulnerabilities ?? {} };
 }
 
-/** 从 fixAvailable 里取出建议版本号 */
+/** 从 fixAvailable 里取出建议版本号；布尔 true = `npm audit fix`（锁文件内升级）即可修复（V10-SEC-05 实证） */
 function fixVersion(fixAvailable) {
   if (!fixAvailable) return null;
+  if (fixAvailable === true) return "npm audit fix（锁文件内升级）";
   if (typeof fixAvailable === "string") return fixAvailable;
   return fixAvailable.version ?? null;
 }

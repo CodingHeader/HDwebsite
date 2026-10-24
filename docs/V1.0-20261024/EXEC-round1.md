@@ -31,6 +31,12 @@
 - lint（--max-warnings 0）exit 0；tsc exit 0；单测 1712/1712；build exit 0；e2e 73/73。
 - 双端 `rev-list --left-right --count` = 0 0（终稿推送后复核回填）。
 
-## 6. 收尾
+## 6. V10-SEC-05（计划外新增，CI 审计门禁触发）
 
-（基线落地后回填）
+npm 官方源新披露 zod/undici 各 high 公告（上游已有修复版）→ 按 Q1"只升不降"既定授权执行锁文件内升级（zod 4.6.7、undici 7.30.1，package.json 零改动）；全量门禁 + CI run 40087305585 三 job 全绿；audit-gate 的 fixAvailable=true 误标一并修正。详见 `evidence/V10/SEC-05/execution.md`。
+
+## 7. 收尾
+
+- 375 组 15 张基线重生成落地（宽度 667→375，1440/768 字节级未变）。
+- 双端 `rev-list --left-right --count` = 0 0（终稿推送后复核）。
+- 临时凭据用后即删。
