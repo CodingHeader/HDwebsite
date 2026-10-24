@@ -11,6 +11,17 @@ updated: 2026-10-23
 
 > 格式：日期 + 类型（docs/design/feat/fix/refactor）+ 摘要。产品级发布记录（REL-xxx）待首个功能里程碑交付时创建 `07_release/release-records/`。
 
+## 2026-10-25（V1.1 对等深化轮）
+
+- **fix（V1.1 / SEC-01~04）**：XSS 净化器不闭合标签借闭包放行（主扫描重构）；限流真实 IP（TRUST_PROXY）+ 登录 429；埋点频控 + 上传魔数正向校验（K2=20MB 不变）+ 全站安全响应头；chat 会话服务端签发（HMAC cookie）+ 采集 SSRF 黑名单（含 ApplyClient 会话回归修复）。
+- **feat（V1.1 / WX-01~04）**：公众号发布链闭环——封面/摘要入库派生、站内相对路径图转存、发布模式判定修正（草稿箱-only 可达 + accountId 生效）、freepublish 失败如实回写 + 官网重发幂等。
+- **feat（V1.1 / HUB-01/02）**：内容中枢编辑/新建/提交审核/审核 UI（/review 接通，e2e 闭环）；预览 Markdown 渲染；渠道状态 scheduled/publishing 派生。**CCR-1 撤销**：幂等去重由既有 ContentChannel.externalId 承载，冻结契约零改动。
+- **fix（V1.1 / KB-01~04）**：Coze 请求对齐官方 document_bases 形态；上传文件 fire-and-forget 推送 Coze；检索测试页修复；回收站/拒审切片退出检索 + 上传正向魔数。
+- **fix（V1.1 / COL/MAIL/LLM）**：调度锁心跳续期 + 手动执行互斥 + 失败告警；TZ=Asia/Shanghai；SMTP 异步化 + failed 重试 + HTML 模板按事件；LLM 空闲超时（长回复不截断）+ 流尾 usage 计量 + 公众号安全模式 AES 回调接线。
+- **feat（V1.1 / UI/ENR/COMPAT/SEO）**：文章表单补 slug/标签/三开关/SEO；关联字段远程搜索×6 资源；/manager/news 兼容；/api/ai-config 等旧入口映射；全站 OG + JSON-LD 绝对地址 + sitemap +11。
+- **feat（V1.1 / OPS/PERF）**：备份恢复真实演练（48 表矩阵）+ 手册；measure-baseline 生产模式修复 + 5 路由 LCP 基线。
+- **test（V1.1）**：单测 1712→1842（+130）；e2e 73→77（+4，含 375 视口）；verify.md 独立验收全集。
+
 ## 2026-10-24（V1.0 打磨轮）
 
 - **test（V1.0 / T-06）**：sqlite-busy-timeout 涉子进程用例超时 20s→40s（时序 flake 保险，断言零放松）。
