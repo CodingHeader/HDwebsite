@@ -9,6 +9,7 @@ import { sanitizeRichContent } from "@/lib/markdown";
 import { MarkdownRenderer } from "@/components/web/MarkdownRenderer";
 import type { Metadata } from "next";
 import { getWebSettings as getSettings } from "@/components/web/data/settings";
+import { appOrigin } from "@/lib/app-origin";
 import { buildArticleJsonLdScript } from "./json-ld";
 
 interface ArticlePageProps {
@@ -62,6 +63,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // 按日浏览统计（ADR-026，fire-and-forget）
   void recordView("article", articleId);
 
+  // V11-SEO-01：JSON-LD url/image 绝对地址口径（APP_ORIGIN > siteUrl > 品牌默认）
+  const origin = await appOrigin();
+
   // 获取相关文章
   const relatedArticles = await prisma.article.findMany({
     where: {
@@ -92,6 +96,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             updatedAt: article.updatedAt,
             authorName: article.author?.nickname || article.author?.username || null,
             categoryName: article.category?.name || null,
+            origin, // V11-SEO-01：mainEntityOfPage/image 绝对地址
           }),
         }}
       />
@@ -309,7 +314,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const [article, settings] = await Promise.all([
     prisma.article.findUnique({
       where: { id: articleId },
-      select: { title: true, excerpt: true, seoTitle: true, seoDescription: true, seoKeywords: true },
+      // V11-SEO-01：补 coverImage/publishedAt 供 openGraph 绝对地址与发布时间
+      select: { title: true, excerpt: true, seoTitle: true, seoDescription: true, seoKeywords: true, coverImage: true, publishedAt: true },
     }),
     getSettings(),
   ]);
@@ -325,9 +331,26 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     ? { absolute: resolvedTitle }
     : resolvedTitle;
 
+  // V11-SEO-01：og 标签（绝对地址；仅 <head>，视觉零变化）
+  const origin = await appOrigin();
+  const ogDescription = article.seoDescription || article.excerpt || undefined;
+  const ogImageUrl = article.coverImage
+    ? /^https?:\/\//i.test(article.coverImage)
+      ? article.coverImage
+      : `${origin}${article.coverImage.startsWith("/") ? "" : "/"}${article.coverImage}`
+    : undefined;
+
   return {
     title,
     description: article.seoDescription || article.excerpt,
     keywords: article.seoKeywords,
+    openGraph: {
+      type: "article",
+      title: resolvedTitle,
+      description: ogDescription,
+      url: `${origin}/articles/${articleId}`,
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl }] } : {}),
+      ...(article.publishedAt ? { publishedTime: new Date(article.publishedAt).toISOString() } : {}),
+    },
   };
 }

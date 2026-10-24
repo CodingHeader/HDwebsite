@@ -16,6 +16,8 @@ export type JsonLdArticleInput = {
   updatedAt?: Date | string | null;
   authorName?: string | null;
   categoryName?: string | null;
+  /** V11-SEO-01：站点根地址（appOrigin()）；传入时 url/image 输出绝对地址（审计 §运维.3） */
+  origin?: string | null;
 };
 
 /** 转义 `</`（以及 `<!--`），防止嵌入 JSON 时提前闭合 script 标签 */
@@ -30,11 +32,13 @@ function iso(v?: Date | string | null): string | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
-/** 生成 NewsArticle JSON-LD 对象（不含 script 包裹） */
+/** 生成 NewsArticle JSON-LD 对象（不含 script 包裹）。
+ * V11-SEO-01：origin 传入时 mainEntityOfPage/image 为绝对地址；未传保持旧相对口径（既有用例兼容） */
 export function buildArticleJsonLd(article: JsonLdArticleInput): Record<string, unknown> {
   const datePublished = iso(article.publishedAt) ?? iso(article.updatedAt);
   const dateModified = iso(article.updatedAt) ?? datePublished;
-  const canonicalUrl = `/articles/${article.id}`;
+  const origin = article.origin?.replace(/\/$/, "");
+  const canonicalUrl = origin ? `${origin}/articles/${article.id}` : `/articles/${article.id}`;
 
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -46,7 +50,7 @@ export function buildArticleJsonLd(article: JsonLdArticleInput): Record<string, 
     description: article.excerpt ?? undefined,
   };
 
-  if (article.coverImage) data.image = [article.coverImage];
+  if (article.coverImage) data.image = [absoluteUrl(article.coverImage, origin)];
   if (article.authorName) {
     data.author = [{ "@type": "Person", name: article.authorName }];
     data.creator = [{ "@type": "Person", name: article.authorName }];
@@ -59,6 +63,12 @@ export function buildArticleJsonLd(article: JsonLdArticleInput): Record<string, 
   }
 
   return data;
+}
+
+/** 站内相对路径 → 绝对地址（已是 http(s) 原样返回）；origin 缺省时原样返回（旧口径） */
+function absoluteUrl(path: string, origin: string | undefined): string {
+  if (!origin || /^https?:\/\//i.test(path)) return path;
+  return `${origin}${path.startsWith("/") ? "" : "/"}${path}`;
 }
 
 /** 返回可直接放入 JSX 的 script 内容（已 JSON.stringify + 转义） */

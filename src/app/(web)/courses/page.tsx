@@ -6,6 +6,20 @@ import { Breadcrumb } from "@/components/web/Breadcrumb";
 import { prisma } from "@/lib/prisma";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import type { Metadata } from "next";
+
+// V11-SEO-01（K4=加）：关键页面 og——相对 url 经 layout metadataBase 解析为绝对地址；仅 <head>，不改 JSX
+export const metadata: Metadata = {
+  title: "课程中心",
+  description: "弘道教育课程中心：专升本、成人学历提升课程一览",
+  openGraph: {
+    title: "课程中心",
+    description: "弘道教育课程中心：专升本、成人学历提升课程一览",
+    url: "/courses",
+    images: [{ url: "/images/logo.png" }],
+  },
+};
+
 interface PageProps {
   searchParams: Promise<{ category?: string; q?: string; page?: string }>;
 }

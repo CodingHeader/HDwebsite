@@ -12,6 +12,13 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "联系我们",
   description: "弘道教育联系方式、校区地址、咨询热线",
+  // V11-SEO-01（K4=加）：og 补齐——相对 url 经 layout metadataBase 解析为绝对地址；仅 <head>，视觉零变化
+  openGraph: {
+    title: "联系我们",
+    description: "弘道教育联系方式、校区地址、咨询热线",
+    url: "/contact",
+    images: [{ url: "/images/logo.png" }],
+  },
 };
 
 export default async function ContactPage() {

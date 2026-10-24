@@ -10,6 +10,13 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "关于我们",
   description: "弘道教育专注专升本教育，助力学历提升，成就美好未来",
+  // V11-SEO-01（K4=加）：og 补齐——相对 url 经 layout metadataBase 解析为绝对地址；仅 <head>，视觉零变化
+  openGraph: {
+    title: "关于我们",
+    description: "弘道教育专注专升本教育，助力学历提升，成就美好未来",
+    url: "/about",
+    images: [{ url: "/images/logo.png" }],
+  },
 };
 
 export default async function AboutPage() {

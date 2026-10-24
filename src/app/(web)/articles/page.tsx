@@ -5,6 +5,20 @@ import { Calendar, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 
+import type { Metadata } from "next";
+
+// V11-SEO-01（K4=加）：关键页面 og——相对 url 经 layout metadataBase 解析为绝对地址；仅 <head>，不改 JSX
+export const metadata: Metadata = {
+  title: "新闻资讯",
+  description: "弘道教育新闻资讯：招生动态、政策解读、校园新闻",
+  openGraph: {
+    title: "新闻资讯",
+    description: "弘道教育新闻资讯：招生动态、政策解读、校园新闻",
+    url: "/articles",
+    images: [{ url: "/images/logo.png" }],
+  },
+};
+
 interface ArticlesPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }

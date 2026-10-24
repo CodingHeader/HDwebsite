@@ -9,20 +9,33 @@ import { getNavItems } from "@/components/web/data/navigation";
 import { UserActionTracker } from "@/components/web/UserActionTracker";
 import { ChatWidget } from "@/components/web/ChatWidget";
 import type { Metadata } from "next";
+import { appOrigin } from "@/lib/app-origin";
+import { buildWebOpenGraph } from "./web-metadata";
 
 // D-06：站点框架（设置/导航）数据已按 WEB_TAGS.settings 缓存（data/settings.ts、data/navigation.ts），
 // 后台写设置/导航后经标签失效 → 前台 ≤5s 可见；layout 段不再强制动态，让子路由可命中缓存。
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
+  const [settings, origin] = await Promise.all([getSettings(), appOrigin()]);
   const siteName = settings.siteName || "弘道教育";
+  const description = settings.seoDescription || settings.siteDescription || "专注专升本教育，助力学历提升";
   return {
     title: {
       default: siteName,
       template: `%s - ${siteName}`,
     },
-    description: settings.seoDescription || settings.siteDescription || "专注专升本教育，助力学历提升",
+    description,
     keywords: settings.seoKeywords || undefined,
+    // V11-SEO-01（K4=加）：全站 OG meta——绝对地址口径（APP_ORIGIN > siteUrl > 品牌默认）。
+    // 仅 <head> 注入，不改可见 JSX（REQ-F-014 视觉冻结不受影响）；子页面未覆写时全站继承
+    metadataBase: new URL(origin),
+    openGraph: buildWebOpenGraph({
+      siteName,
+      title: siteName,
+      description,
+      logoPath: settings.siteLogo || "/images/logo.png",
+      origin,
+    }),
   };
 }
 

@@ -79,7 +79,23 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // V11-SEC-03：全站安全响应头（nosniff / 防点击劫持 / Referrer 收敛）。
+    // HSTS 仅在显式 ENABLE_HSTS=1（HTTPS 部署）时输出——本地/HTTP 反代下发送会被浏览器
+    // 拒绝后续 HTTP 访问，故默认关闭（卡内"可选 env"）。
+    const securityHeaders = [
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    ];
+    const hsts = ["1", "true", "yes", "on"].includes((process.env.ENABLE_HSTS ?? "").trim().toLowerCase())
+      ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }]
+      : [];
     return [
+      {
+        // 全局安全头（页面 + 静态资源 + API 全覆盖）
+        source: "/:path*",
+        headers: [...securityHeaders, ...hsts],
+      },
       {
         // SSE 与公开 GET 接口所需；管理接口鉴权在应用层 requireAuth 控制
         source: "/api/:path*",
