@@ -180,21 +180,23 @@
   "note": "兜底可达性与客服安全模式"
  },
  "V11-MAIL-01": {
-  "status": "running",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "SMTP 发送异步化",
-  "started": "2026-10-24T21:22:00+08:00"
+  "note": "notifyEvent 记录即队列 + scheduleDeliver 后台投递 + sendMail 10s 超时（4 例测试）",
+  "started": "2026-10-24T21:22:00+08:00",
+  "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-MAIL-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "失败重试、HTML 模板与分组一致性"
+  "note": "failed 重试扫描 + HTML 按事件选模板 + 分组提示与 seed 对齐（5 例）",
+  "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-UI-01": {
   "status": "pending",
@@ -237,12 +239,13 @@
   "note": "文章编辑/列表对旧 /manager/news 兼容"
  },
  "V11-ENR-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "招生同步与学费回写移植 + 唯一性防重"
+  "note": "enrollment-pricing/sync 移植（main 对齐）+ sync 路由 + 三层防重（13 例含并发）",
+  "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-ENR-02": {
   "status": "pending",
@@ -277,20 +280,22 @@
   "note": "375 宽度管理端 CRUD e2e"
  },
  "V11-OPS-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "备份恢复演练"
+  "note": "drill-backup-restore.mjs 演练（48 表行数矩阵 + integrity + sha256，exit 0 可复跑）+ 手册 §5.4",
+  "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-PERF-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "性能基线修复与测量"
+  "note": "measure-baseline 生产模式修复（startToReady 13.3s）+ 5 路由 LCP/CLS/TBT 基线；Lighthouse UNKNOWN（未装）",
+  "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-V-01": {
   "status": "pending",
