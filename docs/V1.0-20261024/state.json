@@ -1,28 +1,37 @@
 {
  "V10-T-06": {
-  "status": "running",
+  "status": "done",
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
+  "commits": [
+   "be4c25f"
+  ],
   "started": "2026-10-24T09:40:00+08:00",
-  "note": "sqlite-busy-timeout 时序保险：10 次单跑 + 4 轮 shuffle 未复现失败；3 个涉子进程用例超时 20s→40s（断言不变）"
+  "note": "sqlite-busy-timeout 时序保险：10 次单跑 + 4 轮 shuffle 未复现失败；3 个涉子进程用例超时 20s→40s（断言不变）",
+  "finished": "2026-10-24T18:30:00+08:00"
  },
  "V10-REL-03": {
+  "status": "done",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [
+   "755c51a"
+  ],
+  "started": "2026-10-24T09:45:00+08:00",
+  "note": "创建首个里程碑发布记录 docs/design/07_release/release-records/REL-001-重建里程碑.md",
+  "finished": "2026-10-24T18:30:00+08:00"
+ },
+ "V10-Q1": {
   "status": "running",
   "owner": "main-agent",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
-  "started": "2026-10-24T09:45:00+08:00",
-  "note": "创建首个里程碑发布记录 docs/design/07_release/release-records/REL-001-重建里程碑.md"
- },
- "V10-Q1": {
-  "status": "blocked",
-  "owner": "user",
-  "verify": null,
-  "blocked_reason": "375 溢出修复触 REQ-F-014 冻结面（Navbar.tsx 1 处 className，main 逐字复现物）——须用户授权；证据包与修复方案已备（00-事实基线 §1）",
-  "commits": [],
-  "note": "默认方案 A=维持冻结零改动；授权后方案 B=Navbar 容器 justify-start overflow-x-auto + 重生成 375 基线"
+  "commits": [
+   "5c50fde"
+  ],
+  "note": "用户授权（2026-10-24）；Navbar 容器 justify-start overflow-x-auto + 隐藏滚动条；本地 6 页 scrollWidth 595→375、e2e 73/73；375 基线重生成 run 已触发（dispatch），待落地提交",
+  "started": "2026-10-24T18:40:00+08:00"
  }
 }
