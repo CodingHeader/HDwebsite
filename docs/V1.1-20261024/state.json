@@ -1,35 +1,39 @@
 {
  "V11-G-01": {
-  "status": "ready",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "门禁基线与快照复测"
+  "note": "基线五连全绿；沙箱三项声明复核属实；claimed build 失败为沙箱环境问题",
+  "finished": "2026-10-24T21:20:00+08:00"
  },
  "V11-SEC-01": {
-  "status": "ready",
+  "status": "running",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "XSS 净化器不闭合标签放行修复"
+  "note": "XSS 净化器不闭合标签放行修复",
+  "started": "2026-10-24T21:22:00+08:00"
  },
  "V11-SEC-02": {
-  "status": "pending",
+  "status": "running",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "限流真实 IP 与登录限流 429"
+  "note": "限流真实 IP 与登录限流 429",
+  "started": "2026-10-24T21:22:00+08:00"
  },
  "V11-SEC-03": {
-  "status": "pending",
+  "status": "running",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "user-actions 频控、上传魔数校验与安全响应头"
+  "note": "user-actions 频控、上传魔数校验与安全响应头",
+  "started": "2026-10-24T21:22:00+08:00"
  },
  "V11-SEC-04": {
   "status": "pending",
@@ -160,12 +164,13 @@
   "note": "兜底可达性与客服安全模式"
  },
  "V11-MAIL-01": {
-  "status": "pending",
+  "status": "running",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "SMTP 发送异步化"
+  "note": "SMTP 发送异步化",
+  "started": "2026-10-24T21:22:00+08:00"
  },
  "V11-MAIL-02": {
   "status": "pending",
