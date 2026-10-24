@@ -10,7 +10,7 @@
 import { prisma } from "@/lib/prisma";
 import { error, serviceUnavailable, tooManyRequests } from "@/lib/api-response";
 import { gatewayChatStream, recordGatewayFailure } from "@/lib/llm-gateway";
-import { buildChatContext, findScene, recordMessage } from "@/lib/chat-service";
+import { buildChatContext, findScene, readChatSessionCookie, recordMessage, verifyChatSession } from "@/lib/chat-service";
 import { GUARD_FALLBACK_REPLY } from "@/lib/llm/guard";
 import { withApi } from "@/lib/api-handler";
 import { clientIp } from "@/lib/log";
@@ -61,7 +61,13 @@ export const POST = withApi(
     }
     const parsed = chatRequestSchema.safeParse(body);
     if (!parsed.success) return error(parsed.error.issues[0]?.message ?? "参数错误", 400);
-    const { sessionId, sceneCode, message } = parsed.data;
+    // V11-SEC-04：会话必须由服务端签发（GET /api/chat/session → 签名 cookie）；
+    // body.sessionId 须与 cookie 一致——裸信 body 会话的劫持面关闭。
+    const { sessionId: bodySessionId, sceneCode, message } = parsed.data;
+    const cookieSession = verifyChatSession(readChatSessionCookie(request));
+    if (!cookieSession) return error("会话无效或已过期，请刷新页面后重试", 400);
+    if (bodySessionId !== cookieSession) return error("会话不匹配", 400);
+    const sessionId = cookieSession;
     const ip = clientIp(request);
 
     // 限频（SOL-003：默认 10 次/分钟；C-07：HTTP 429 + code 429）

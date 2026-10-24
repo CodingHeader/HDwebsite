@@ -141,10 +141,57 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * V11-SEC-04：SSRF 防护——采集目标必须是公网 http(s) 地址。
+ * 采集源与 RSS 里的图片地址都是外部可影响的输入；解析主机后校验 IP 不属于
+ * 私网/环回/链路本地段（fail-closed：解析失败一律拒绝）。
+ * 已知边界（记录）：fetch 内部重新解析存在 DNS rebinding TOCTOU 窗口，
+ * 本层为前置校验（与代码库"无无头浏览器/无代理出网"的部署形态匹配）。
+ */
+const SSRF_BLOCKED_IPV4 = [/^127\./, /^10\./, /^192\.168\./, /^172\.(1[6-9]|2\d|3[01])\./, /^169\.254\./, /^0\./, /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./];
+const SSRF_BLOCKED_IPV6 = [/^::$/, /^::1$/, /^f[cd][0-9a-f]{2}:/i, /^fe80:/i];
+
+export async function assertPublicHttpUrl(rawUrl: string): Promise<void> {
+  let u: URL;
+  try {
+    u = new URL(rawUrl);
+  } catch {
+    throw new Error("SSRF: 非法 URL");
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error(`SSRF: 协议不允许 ${u.protocol}`);
+  const host = u.hostname.trim().replace(/^\[|\]$/g, "").toLowerCase();
+  if (!host) throw new Error("SSRF: 空主机名");
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) {
+    throw new Error(`SSRF: 内网主机名 ${host}`);
+  }
+  // 字面量 IP 直接判段
+  const literal = host.match(/^[0-9.]+$|^[0-9a-f:]+$/i) ? host : null;
+  let ips: { address: string; family: number }[];
+  if (literal) {
+    ips = [{ address: host, family: host.includes(":") ? 6 : 4 }];
+  } else {
+    const dns = await import("node:dns");
+    try {
+      ips = await dns.promises.lookup(host, { all: true });
+    } catch {
+      throw new Error(`SSRF: 主机解析失败 ${host}`);
+    }
+  }
+  if (!ips.length) throw new Error("SSRF: 无解析结果");
+  for (const { address } of ips) {
+    const a = address.toLowerCase();
+    if (SSRF_BLOCKED_IPV4.some((re) => re.test(a)) || SSRF_BLOCKED_IPV6.some((re) => re.test(a))) {
+      throw new Error(`SSRF: 目标解析到受禁地址 ${a}`);
+    }
+  }
+}
+
+/**
  * 带超时 + 可选外部 AbortSignal 的 fetch（D-12：批次超时可中断）——返回 Response。
  * 超时优先用内部 AbortController；外部 signal 仅注册一次，避免重复 listener 泄漏。
+ * V11-SEC-04：所有采集出网统一过 assertPublicHttpUrl 咽喉点。
  */
 async function fetchWithSignalResponse(url: string, timeoutMs: number, ua: string, outer?: AbortSignal): Promise<Response> {
+  await assertPublicHttpUrl(url);
   const inner = new AbortController();
   const timeoutId = setTimeout(() => inner.abort(new Error(`请求超时 ${timeoutMs}ms`)), timeoutMs);
   const onAbort = () => inner.abort();

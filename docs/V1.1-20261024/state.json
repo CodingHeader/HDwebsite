@@ -9,13 +9,16 @@
   "finished": "2026-10-24T21:20:00+08:00"
  },
  "V11-SEC-01": {
-  "status": "running",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
-  "commits": [],
-  "note": "XSS 净化器不闭合标签放行修复",
-  "started": "2026-10-24T21:22:00+08:00"
+  "commits": [
+   "fca3669"
+  ],
+  "note": "XSS 主扫描修复（TDD 4红→7绿）",
+  "started": "2026-10-24T21:22:00+08:00",
+  "finished": "2026-10-24T21:50:00+08:00"
  },
  "V11-SEC-02": {
   "status": "running",
@@ -36,12 +39,13 @@
   "started": "2026-10-24T21:22:00+08:00"
  },
  "V11-SEC-04": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "chat 会话归属与采集 SSRF 防护"
+  "note": "chat 会话签发 + SSRF 黑名单（7/7 断言；契约 SSE 4/4 适配）",
+  "finished": "2026-10-24T22:15:00+08:00"
  },
  "V11-WX-01": {
   "status": "pending",

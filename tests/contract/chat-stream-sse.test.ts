@@ -45,7 +45,8 @@ vi.mock("@/lib/llm-gateway", () => ({
   recordGatewayFailure: async () => undefined,
 }));
 
-vi.mock("@/lib/chat-service", () => ({
+vi.mock(import("@/lib/chat-service"), async (importOriginal) => ({
+  ...(await importOriginal()),
   findScene: async () => ({ code: "float", name: "智能客服", greeting: null }),
   buildChatContext: async () => ({
     messages: [{ role: "user", content: "hi" }],
@@ -73,11 +74,13 @@ vi.mock("@/lib/api-handler", async (orig) => {
 });
 
 const { POST } = await import("@/app/api/chat/stream/route");
+// V11-SEC-04：会话改服务端签发——测试用同源 helper 生成签名 cookie
+const { signChatSession } = await import("@/lib/chat-service");
 
 function req(body: unknown) {
   return new Request("http://localhost/api/chat/stream", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", Cookie: `chat_sid=${signChatSession(String((body as { sessionId: string }).sessionId))}` },
     body: JSON.stringify(body),
   });
 }

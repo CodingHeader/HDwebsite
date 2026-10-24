@@ -17,6 +17,7 @@
  * - `chatOnce` 命中敏感词直接返回 `GUARD_FALLBACK_REPLY`，**不调用 llm-gateway**
  * - `buildChatContext` 额外返回 `guard`，官网 SSE 在发起流式之前据此决定 429 或正常收尾
  */
+import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { gatewayChat, type AdapterOverrides, type ChatMessage } from "@/lib/llm-gateway";
 import { formatKbContext } from "@/lib/kb-adapter";
@@ -243,4 +244,59 @@ export async function chatOnce(input: {
     metadata: result.ok ? null : JSON.stringify({ error: result.errMsg }),
   });
   return result.ok ? { ok: true, reply: result.reply, providerName: result.providerName } : { ok: false, errMsg: result.errMsg ?? "AI 服务不可用" };
+}
+
+/* ── V11-SEC-04：官网会话服务端签发与校验 ─────────────────────────
+ * 缺陷：stream 路由裸信 body.sessionId（loadHistory 直接按其查询），任何人
+ * 提交他人 sessionId 即可读/写其会话历史。修复：会话由服务端签发
+ * （GET /api/chat/session → httpOnly 签名 cookie），stream 只认有效签名；
+ * body.sessionId 与 cookie 不一致即 400（防会话劫持）。公众号通道（openId）
+ * 不走 cookie，由调用方显式传 identifier，不受影响。 */
+
+const CHAT_SESSION_COOKIE = "chat_sid";
+
+function chatSecret(): string {
+  const s = process.env.JWT_SECRET ?? "";
+  if (!s) throw new Error("JWT_SECRET 未配置，无法签发会话");
+  return s;
+}
+
+/** 签发：`<id>.<hmac-sha256(id, secret)>` */
+export function signChatSession(id: string): string {
+  const sig = crypto.createHmac("sha256", chatSecret()).update(id).digest("base64url");
+  return `${id}.${sig}`;
+}
+
+/** 校验并取出会话 id；无效返回 null */
+export function verifyChatSession(cookieValue: string | undefined | null): string | null {
+  if (!cookieValue) return null;
+  const dot = cookieValue.lastIndexOf(".");
+  if (dot <= 0) return null;
+  const id = cookieValue.slice(0, dot);
+  const sig = cookieValue.slice(dot + 1);
+  const expect = crypto.createHmac("sha256", chatSecret()).update(id).digest("base64url");
+  if (sig.length !== expect.length) return null;
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expect))) return null;
+  } catch {
+    return null;
+  }
+  return id;
+}
+
+export function readChatSessionCookie(request: Request): string | undefined {
+  const raw = request.headers.get("cookie") ?? "";
+  for (const part of raw.split(";")) {
+    const [k, ...rest] = part.trim().split("=");
+    if (k === CHAT_SESSION_COOKIE) return rest.join("=");
+  }
+  return undefined;
+}
+
+export function chatSessionCookieHeader(id: string): string {
+  return `${CHAT_SESSION_COOKIE}=${signChatSession(id)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400`;
+}
+
+export function newChatSessionId(): string {
+  return crypto.randomUUID();
 }

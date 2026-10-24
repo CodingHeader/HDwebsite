@@ -18,9 +18,16 @@ const SESSION_KEY = "hd_chat_session_id";
 const LEGACY_SESSION_KEY = "hd_session_id";
 const HISTORY_KEY = "hd_chat_widget_messages";
 
-function ensureSessionId(): string {
-  let id = localStorage.getItem(SESSION_KEY) ?? localStorage.getItem(LEGACY_SESSION_KEY);
-  if (!id || id.length < 8) id = `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+// V11-SEC-04：会话改由服务端签发（GET /api/chat/session → httpOnly 签名 cookie）。
+// 本地仅缓存服务端返回的 id（与服务端写下的 cookie 成对）；失效/不一致时重新签发。
+async function ensureSessionId(): Promise<string> {
+  const cached = localStorage.getItem(SESSION_KEY) ?? localStorage.getItem(LEGACY_SESSION_KEY);
+  if (cached && cached.length >= 8) return cached;
+  const res = await fetch("/api/chat/session", { cache: "no-store" });
+  if (!res.ok) throw new Error("会话签发失败");
+  const data = await res.json();
+  const id: string = data?.data?.sessionId;
+  if (!id) throw new Error("会话签发失败");
   localStorage.setItem(SESSION_KEY, id);
   return id;
 }
@@ -83,7 +90,14 @@ export function ChatWidget() {
       return [...m, { role: "user", content: text }, { role: "assistant", content: "" }];
     });
     setStreaming(true);
-    const sessionId = ensureSessionId();
+    let sessionId: string;
+    try {
+      sessionId = await ensureSessionId();
+    } catch {
+      setStreaming(false);
+      setMessages((m) => [...m.slice(0, -1), { role: "assistant", content: "会话签发失败，请刷新重试" }]);
+      return;
+    }
     const controller = new AbortController();
     abortRef.current = controller;
     try {
