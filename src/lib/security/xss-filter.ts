@@ -129,6 +129,11 @@ function sanitizeAttrValue(tag: string, attr: string, value: string): string | n
 /**
  * 服务端安全过滤：基于正则
  * 适用于API层保存前的过滤
+ *
+ * V11-SEC-01 修复：改为主扫描——只有"完整成形且命中白名单"的标签会被重建输出，
+ * 两次匹配之间的残余文本里的一切 `<` 一律转义为 &lt;。旧实现用 replace 只处理
+ * 匹配项、不处理残余段，导致不闭合标签（如 `<img onerror=alert(1)`，无 `>`）
+ * 原样放行——浏览器会借用后续合法标签的 `>` 把它拼成真标签（借闭包 XSS）。
  */
 export function sanitizeHtmlServer(html: string): string {
   if (!html) return "";
@@ -140,56 +145,69 @@ export function sanitizeHtmlServer(html: string): string {
   // 2. 移除注释
   html = html.replace(/<!--[\s\S]*?-->/g, "");
 
-  // 3. 处理每个标签
-  html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, (match, tagName) => {
-    const tag = tagName.toLowerCase();
-
-    // 不在白名单的标签直接移除（保留内容）
-    if (!ALLOWED_TAGS.has(tag)) {
-      // 如果是自闭合或结束标签，直接移除
-      if (match.startsWith("</")) return "";
-      return " "; // 替换为空格，避免单词粘连
-    }
-
-    // 解析属性
-    const attrRegex = /\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)=(?:"([^"]*)"|'([^']*)'|([^\s>]*))/g;
-    let sanitizedAttrs = "";
-    let attrMatch;
-
-    while ((attrMatch = attrRegex.exec(match)) !== null) {
-      const attrName = attrMatch[1].toLowerCase();
-      const attrValue = attrMatch[2] ?? attrMatch[3] ?? attrMatch[4] ?? "";
-
-      // 检查全局允许的属性
-      const globalAllowed = ALLOWED_ATTRS["*"]?.has(attrName) ?? false;
-      const tagAllowed = ALLOWED_ATTRS[tag]?.has(attrName) ?? false;
-
-      if (!globalAllowed && !tagAllowed) continue;
-
-      // 清理属性值
-      const cleanValue = sanitizeAttrValue(tag, attrName, attrValue);
-      if (cleanValue !== null) {
-        sanitizedAttrs += ` ${attrName}="${cleanValue.replace(/"/g, "&quot;")}"`;
-      }
-    }
-
-    if (match.startsWith("</")) {
-      return `</${tag}>`;
-    }
-
-    // 自闭合标签处理
-    const selfClosing = ["img", "br", "hr"].includes(tag);
-    if (selfClosing) {
-      return `<${tag}${sanitizedAttrs} />`;
-    }
-
-    return `<${tag}${sanitizedAttrs}>`;
-  });
+  // 3. 主扫描：逐个成形标签 → 白名单重建；残余文本 → 转义 <（借闭包修复）
+  const tagRe = /<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g;
+  const escapeResidual = (t: string) => t.replace(/</g, "&lt;");
+  let out = "";
+  let last = 0;
+  for (let m = tagRe.exec(html); m !== null; m = tagRe.exec(html)) {
+    out += escapeResidual(html.slice(last, m.index));
+    out += sanitizeTag(m[0], m[1]);
+    last = m.index + m[0].length;
+  }
+  out += escapeResidual(html.slice(last));
+  html = out;
 
   // 4. 收敛标签间空白（保留文本节点内部空白，避免破坏 <pre>/<code> 排版）
   html = html.replace(/>\s+</g, "><").trim();
 
   return html;
+}
+
+/** 单个成形标签的白名单重建（V11-SEC-01：自 replace 回调抽出，逻辑不变） */
+function sanitizeTag(match: string, tagName: string): string {
+  const tag = tagName.toLowerCase();
+
+  // 不在白名单的标签直接移除（保留内容）
+  if (!ALLOWED_TAGS.has(tag)) {
+    // 如果是自闭合或结束标签，直接移除
+    if (match.startsWith("</")) return "";
+    return " "; // 替换为空格，避免单词粘连
+  }
+
+  // 解析属性
+  const attrRegex = /\s([a-zA-Z_:][-a-zA-Z0-9_:.]*)=(?:"([^"]*)"|'([^']*)'|([^\s>]*))/g;
+  let sanitizedAttrs = "";
+  let attrMatch;
+
+  while ((attrMatch = attrRegex.exec(match)) !== null) {
+    const attrName = attrMatch[1].toLowerCase();
+    const attrValue = attrMatch[2] ?? attrMatch[3] ?? attrMatch[4] ?? "";
+
+    // 检查全局允许的属性
+    const globalAllowed = ALLOWED_ATTRS["*"]?.has(attrName) ?? false;
+    const tagAllowed = ALLOWED_ATTRS[tag]?.has(attrName) ?? false;
+
+    if (!globalAllowed && !tagAllowed) continue;
+
+    // 清理属性值
+    const cleanValue = sanitizeAttrValue(tag, attrName, attrValue);
+    if (cleanValue !== null) {
+      sanitizedAttrs += ` ${attrName}="${cleanValue.replace(/"/g, "&quot;")}"`;
+    }
+  }
+
+  if (match.startsWith("</")) {
+    return `</${tag}>`;
+  }
+
+  // 自闭合标签处理
+  const selfClosing = ["img", "br", "hr"].includes(tag);
+  if (selfClosing) {
+    return `<${tag}${sanitizedAttrs} />`;
+  }
+
+  return `<${tag}${sanitizedAttrs}>`;
 }
 
 /**
