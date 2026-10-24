@@ -81,9 +81,13 @@ afterEach(async () => {
   await prisma.lLMUsage.deleteMany({});
 });
 
-/** 测试用合法 EncodingAESKey（32 字节 → base64 去掉尾 = → 43 位） */
+/** 测试用合法 EncodingAESKey（微信口径为 43 位 [A-Za-z0-9]——base64 含 +/ 会被校验拒绝，按字母表直接生成） */
 function makeAesKey(): string {
-  return crypto.randomBytes(32).toString("base64").slice(0, 43);
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = crypto.randomBytes(43);
+  let key = "";
+  for (let i = 0; i < 43; i++) key += alphabet[bytes[i] % alphabet.length];
+  return key;
 }
 
 describe("V11-LLM-03 · 限频/配额不短路兜底链（§LLM.3 回归）", () => {

@@ -1,7 +1,7 @@
 /**
  * V11-KB-01/03/04：上传推送 Coze、检索页结构、拒审失效、正向魔数。
  */
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { checkIngestFile } from "@/lib/kb/ingest";
 
 describe("V11-KB-04：上传正向魔数校验", () => {
