@@ -86,12 +86,13 @@
   "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-HUB-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "内容中枢编辑/新建/审核界面"
+  "note": "新建/编辑/提交审核/审核 UI + ContentMarkdown 预览；e2e 2/2",
+  "finished": "2026-10-25T00:30:00+08:00"
  },
  "V11-HUB-02": {
   "status": "done",

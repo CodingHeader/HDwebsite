@@ -9,7 +9,7 @@
  * - 权限：无 publish:create 权限（且非超管）时发布入口不可见；重试需 publish:edit（ADR-035）
  */
 import { useMemo, useState } from "react";
-import { Send, Trash2, Eye } from "lucide-react";
+import { Send, Trash2, Eye, FilePlus2, Pencil, ClipboardCheck } from "lucide-react";
 import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
 import { type ChannelState } from "@/contracts/content-hub";
@@ -20,14 +20,15 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { DetailDialog } from "@/components/manager/DetailDialog";
 import { Tabs } from "@/components/manager/ui/misc";
 import { FormField } from "@/components/manager/ui/form-field";
-import { Checkbox, DateTimeInput, Select, Switch } from "@/components/manager/ui";
+import { Checkbox, DateTimeInput, Select, Switch, Textarea } from "@/components/manager/ui";
+import { ContentMarkdown } from "@/components/manager/ContentMarkdown";
 import { SearchInput } from "@/components/manager/SearchInput";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery, ErrorState } from "@/components/manager/feedback";
 import { ChannelStates } from "@/components/manager/publish/ChannelStates";
 import { StatusBadge } from "@/components/manager/StatusBadge";
 
-type Row = { id: number; title: string; contentType: string; source: string; status: string; author?: string | null; createdAt: string; channels?: ChannelState[] };
+type Row = { id: number; title: string; contentType: string; source: string; status: string; author?: string | null; createdAt: string; channels?: ChannelState[]; excerpt?: string | null; coverImage?: string | null };
 type ListData = { list: Row[]; pagination: { page: number; totalPages: number; total?: number } };
 /** jobsQ 仅用于解析重试所需 PublishJob.id（契约 channelState 不含 jobId） */
 type Job = { id: number; itemId: number | null; channel: string; status: string; createdAt: string };
@@ -55,6 +56,9 @@ export default function ContentHubPage() {
   const user = useAuthStore((s) => s.user);
   const canPublish = user?.role?.isSuper || user?.role?.permissions?.includes("publish:create") || false;
   const canRetry = user?.role?.isSuper || user?.role?.permissions?.includes("publish:edit") || false;
+  // V11-HUB-01：编辑/提交审核（content:edit）与审核（review:edit，ADR-017 审核权独享）
+  const canEdit = user?.role?.isSuper || user?.role?.permissions?.includes("content:edit") || false;
+  const canReview = user?.role?.isSuper || user?.role?.permissions?.includes("review:edit") || false;
 
   const [publishing, setPublishing] = useState<Row | null>(null);
   const [viewing, setViewing] = useState<Row | null>(null);
@@ -62,6 +66,14 @@ export default function ContentHubPage() {
   const [serverError, setServerError] = useState("");
   const [detailTab, setDetailTab] = useState("website");
   const [detail, setDetail] = useState<{ content: string; title: string } | null>(null);
+
+  // V11-HUB-01：新建/编辑表单与审核对话框
+  type EditDraft = { title: string; contentType: string; content: string; excerpt: string; coverImage: string };
+  const [editing, setEditing] = useState<Row | "new" | null>(null);
+  const [editDraft, setEditDraft] = useState<EditDraft>({ title: "", contentType: "markdown", content: "", excerpt: "", coverImage: "" });
+  const [reviewing, setReviewing] = useState<Row | null>(null);
+  const [reviewDecision, setReviewDecision] = useState<"approved" | "rejected">("approved");
+  const [reviewRemark, setReviewRemark] = useState("");
 
   // 发布对话框草稿：渠道多选 + 动作 + 定时 + 发布前提醒
   const [draft, setDraft] = useState<{ website: boolean; wechat: boolean; action: string; scheduledAt: string; preNotify: boolean; contentType: string }>({
@@ -145,6 +157,101 @@ export default function ContentHubPage() {
     }
   }
 
+
+  function openEdit(row: Row | "new") {
+    setServerError("");
+    if (row === "new") {
+      setEditDraft({ title: "", contentType: "markdown", content: "", excerpt: "", coverImage: "" });
+    } else {
+      setEditDraft({ title: row.title, contentType: row.contentType, content: "", excerpt: row.excerpt ?? "", coverImage: row.coverImage ?? "" });
+      void managerFetch<Row & { content: string }>(`/api/content-items/${row.id}`)
+        .then((full) => setEditDraft((d) => ({ ...d, content: full.content ?? "" })))
+        .catch((e) => toast.error("内容加载失败", errorMessage(e)));
+    }
+    setEditing(row);
+  }
+
+  function closeEdit() {
+    setEditing(null);
+    setServerError("");
+  }
+
+  async function submitEdit() {
+    if (!editing || busy !== null) return;
+    if (!editDraft.title.trim() || !editDraft.content.trim()) {
+      setServerError("标题与正文必填");
+      return;
+    }
+    setBusy(editing === "new" ? -1 : editing.id);
+    setServerError("");
+    try {
+      const body = {
+        title: editDraft.title,
+        contentType: editDraft.contentType,
+        content: editDraft.content,
+        excerpt: editDraft.excerpt || null,
+        coverImage: editDraft.coverImage || null,
+      };
+      if (editing === "new") {
+        await managerFetch("/api/content-items", { method: "POST", body: JSON.stringify(body) });
+        toast.success("已创建", "草稿已入库，可提交审核。");
+      } else {
+        await managerFetch(`/api/content-items/${editing.id}`, { method: "PUT", body: JSON.stringify(body) });
+        toast.success("已保存");
+      }
+      closeEdit();
+      void itemsQ.reload();
+    } catch (e) {
+      const msg = errorMessage(e);
+      setServerError(msg);
+      toast.error("保存失败", msg);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function submitForReview(row: Row) {
+    if (busy !== null) return;
+    setBusy(row.id);
+    try {
+      await managerFetch(`/api/content-items/${row.id}`, { method: "PUT", body: JSON.stringify({ status: "pending_review" }) });
+      toast.success("已提交审核", "等待超级管理员审核。");
+      void itemsQ.reload();
+    } catch (e) {
+      toast.error("提交失败", errorMessage(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function openReview(row: Row) {
+    setReviewing(row);
+    setReviewDecision("approved");
+    setReviewRemark("");
+    setServerError("");
+  }
+
+  async function submitReview() {
+    if (!reviewing || busy !== null) return;
+    setBusy(reviewing.id);
+    setServerError("");
+    try {
+      await managerFetch(`/api/content-items/${reviewing.id}/review`, {
+        method: "POST",
+        body: JSON.stringify({ decision: reviewDecision, remark: reviewRemark || null }),
+      });
+      toast.success("审核完成", reviewDecision === "approved" ? "已通过（可建发布任务）" : "已拒绝");
+      setReviewing(null);
+      void itemsQ.reload();
+    } catch (e) {
+      const msg = errorMessage(e);
+      setServerError(msg);
+      toast.error("审核失败", msg);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function openPreview(row: Row) {
     setViewing(row);
     setDetailTab("website");
@@ -217,6 +324,11 @@ export default function ContentHubPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      {canEdit && (
+        <button type="button" className="self-start rounded-mgr-control border border-mgr-border px-3 py-1.5 text-sm hover:bg-mgr-subtle" data-testid="hub-new" onClick={() => openEdit("new")}>
+          新建内容
+        </button>
+      )}
       <PageHeader
         title="内容中枢"
         description="全站内容的统一管理入口：多渠道发布（官网/公众号）、定时与立即执行、渠道预览。"
@@ -245,6 +357,9 @@ export default function ContentHubPage() {
           emptyDescription={keyword ? "换个关键词试试。" : "新建文章或从「采集审核」通过后，内容会出现在这里。"}
           rowName={(r) => r.title}
           rowActions={(r) => [
+            ...(canEdit && (r.status === "draft" || r.status === "rejected") ? [{ key: "edit", label: "编辑", tone: "muted" as const, icon: <Pencil aria-hidden="true" />, onClick: () => openEdit(r) }] : []),
+            ...(canEdit && r.status === "draft" ? [{ key: "submit", label: "提交审核", tone: "muted" as const, icon: <FilePlus2 aria-hidden="true" />, onClick: () => void submitForReview(r), disabled: busy === r.id }] : []),
+            ...(canReview && r.status === "pending_review" ? [{ key: "review", label: "审核", tone: "primary" as const, icon: <ClipboardCheck aria-hidden="true" />, onClick: () => openReview(r) }] : []),
             ...(canPublish ? [{ key: "publish", label: "发布", tone: "primary" as const, icon: <Send aria-hidden="true" />, onClick: () => openPublish(r) }] : []),
             { key: "preview", label: "预览", tone: "muted" as const, icon: <Eye aria-hidden="true" />, onClick: () => void openPreview(r) },
             { key: "delete", label: "删除", tone: "danger" as const, icon: <Trash2 aria-hidden="true" />, onClick: () => void removeItem(r), disabled: busy === r.id },
@@ -253,6 +368,84 @@ export default function ContentHubPage() {
           data-testid="content-hub-table"
         />
       </div>
+
+
+      {editing && (
+        <FormDialog
+          open
+          title={editing === "new" ? "新建内容" : `编辑：${editing.title}`}
+          description="markdown/html 正文；封面与摘要留空时入库自动派生（V11-WX-01）。"
+          onClose={closeEdit}
+          onSubmit={() => void submitEdit()}
+          saving={busy === (editing === "new" ? -1 : editing.id)}
+          dirty
+          serverError={serverError}
+          submitText={editing === "new" ? "创建" : "保存"}
+        >
+          <div className="flex flex-col gap-4">
+            <FormField label="标题" required>
+              {(a11y) => (
+                <input {...a11y} className="w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2 text-sm" value={editDraft.title} onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))} data-testid="hub-edit-title" />
+              )}
+            </FormField>
+            <FormField label="内容类型">
+              {(a11y) => (
+                <Select {...a11y} value={editDraft.contentType} onChange={(e) => setEditDraft((d) => ({ ...d, contentType: e.target.value }))} options={[{ value: "markdown", label: "markdown" }, { value: "html", label: "html" }]} data-testid="hub-edit-type" />
+              )}
+            </FormField>
+            <FormField label="正文" required>
+              {(a11y) => (
+                <Textarea {...a11y} rows={14} className="w-full font-mono text-[13px]" value={editDraft.content} onChange={(e) => setEditDraft((d) => ({ ...d, content: e.target.value }))} data-testid="hub-edit-content" />
+              )}
+            </FormField>
+            <FormField label="摘要（留空自动生成）">
+              {(a11y) => (
+                <Textarea {...a11y} rows={2} className="w-full" value={editDraft.excerpt} onChange={(e) => setEditDraft((d) => ({ ...d, excerpt: e.target.value }))} />
+              )}
+            </FormField>
+            <FormField label="封面图路径（留空取正文首图）">
+              {(a11y) => (
+                <input {...a11y} className="w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2 text-sm" value={editDraft.coverImage} onChange={(e) => setEditDraft((d) => ({ ...d, coverImage: e.target.value }))} />
+              )}
+            </FormField>
+          </div>
+        </FormDialog>
+      )}
+
+      {reviewing && (
+        <FormDialog
+          open
+          title={`审核：${reviewing.title}`}
+          description="通过后可建发布任务；拒绝须给出理由（ADR-017：审核权独享）。"
+          onClose={() => setReviewing(null)}
+          onSubmit={() => void submitReview()}
+          saving={busy === reviewing.id}
+          dirty
+          serverError={serverError}
+          submitText="提交审核结论"
+        >
+          <div className="flex flex-col gap-4">
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-medium">审核结论</legend>
+              <span className="flex items-center gap-4">
+                <span className="flex items-center gap-1.5">
+                  <input type="radio" id="rev-ok" name="review-decision" checked={reviewDecision === "approved"} onChange={() => setReviewDecision("approved")} data-testid="hub-review-approved" />
+                  <label htmlFor="rev-ok" className="text-sm">通过</label>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <input type="radio" id="rev-no" name="review-decision" checked={reviewDecision === "rejected"} onChange={() => setReviewDecision("rejected")} data-testid="hub-review-rejected" />
+                  <label htmlFor="rev-no" className="text-sm">拒绝</label>
+                </span>
+              </span>
+            </fieldset>
+            <FormField label="备注（拒绝时建议填写理由）">
+              {(a11y) => (
+                <Textarea {...a11y} rows={3} className="w-full" value={reviewRemark} onChange={(e) => setReviewRemark(e.target.value)} data-testid="hub-review-remark" />
+              )}
+            </FormField>
+          </div>
+        </FormDialog>
+      )}
 
       {publishing && (
         <FormDialog
@@ -333,14 +526,16 @@ export default function ContentHubPage() {
               <div className="flex justify-center py-10 text-sm text-mgr-muted-fg">加载中…</div>
             ) : detailTab === "website" ? (
               <div className="max-h-[60vh] overflow-y-auto rounded-mgr-control border border-mgr-border bg-mgr-surface p-4" data-testid="hub-preview-website">
-                <article className="prose prose-sm max-w-none whitespace-pre-wrap break-words text-mgr-fg">{detail.content}</article>
+                <ContentMarkdown content={detail.content} contentType={viewing.contentType} />
               </div>
             ) : (
               <div className="max-h-[60vh] overflow-y-auto rounded-mgr-control border border-mgr-border bg-mgr-surface p-4" data-testid="hub-preview-wechat">
                 <div className="rounded-mgr-control bg-[#f7f7f7] p-4" style={{ fontFamily: "system-ui, sans-serif" }}>
                   <p className="mb-2 text-center text-[15px] font-bold text-black">{viewing.title}</p>
                   <p className="mb-3 text-center text-[11px] text-gray-400">点击上方蓝字关注我们</p>
-                  <div className="whitespace-pre-wrap break-words text-[13px] leading-6 text-gray-800">{detail.content}</div>
+                  <div className="text-[13px] leading-6 text-gray-800">
+                    <ContentMarkdown content={detail.content} contentType={viewing.contentType} />
+                  </div>
                   <p className="mt-4 border-t border-gray-200 pt-2 text-center text-[11px] text-gray-400">— 完 —</p>
                 </div>
               </div>
