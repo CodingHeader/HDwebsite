@@ -7,6 +7,13 @@
 import { prisma } from "@/lib/prisma";
 import { handleCallback, verifySignature } from "@/lib/wechat";
 import { withApi } from "@/lib/api-handler";
+// V11-LLM-03：安全模式（AES）解密/加密（helpers 由 V11-KB 轮次在 llm/wechat-crypto.ts 落位）
+import {
+  decryptWechatSafeMessage,
+  encryptWechatSafeReplyXml,
+  extractEncryptNode,
+  verifyWechatSafeSignature,
+} from "@/lib/llm/wechat-crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,9 +50,34 @@ export const POST = withApi(
       return new Response("签名校验失败", { status: 403 });
     }
     const body = await request.text();
+    // V11-LLM-03：安全模式（<Encrypt> 节点）→ 四元组验签 + AES 解密后走同一分发；
+    // 被动回复按原模式加密回包。兼容模式（携带 Encrypt 但可明文）同样适用。
+    let effectiveBody = body;
+    let safeMode = false;
+    const encryptNode = extractEncryptNode(body);
+    if (encryptNode) {
+      const aesKey = account?.encodingAESKey || process.env.WECHAT_MP_ENCODING_AES_KEY || "";
+      if (!account || !aesKey) {
+        return new Response("安全模式未配置 encodingAESKey", { status: 400 });
+      }
+      const msgSignature = url.searchParams.get("msg_signature") ?? "";
+      if (!verifyWechatSafeSignature(token, timestamp, nonce, encryptNode, msgSignature)) {
+        return new Response("安全模式签名校验失败", { status: 403 });
+      }
+      effectiveBody = decryptWechatSafeMessage(encryptNode, aesKey, account.appid);
+      safeMode = true;
+    }
     if (account) {
-      const reply = await handleCallback(account, body);
+      const reply = await handleCallback(account, effectiveBody);
       if (reply) {
+        if (safeMode) {
+          const ts = Number(url.searchParams.get("timestamp")) || Math.floor(Date.now() / 1000);
+          const aesKey = account.encodingAESKey || process.env.WECHAT_MP_ENCODING_AES_KEY || "";
+          return new Response(
+            encryptWechatSafeReplyXml(reply, { token, encodingAesKey: aesKey, appId: account.appid, nonce, timestamp: ts }),
+            { headers: { "Content-Type": "application/xml" } }
+          );
+        }
         return new Response(reply, { headers: { "Content-Type": "application/xml" } });
       }
     }

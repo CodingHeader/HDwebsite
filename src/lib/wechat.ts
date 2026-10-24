@@ -133,7 +133,11 @@ export async function handleCallback(account: WechatAccount, body: string): Prom
  */
 export async function answerWechatText(account: WechatAccount, openId: string, content: string): Promise<string> {
   const scene =
-    (await findScene({ id: account.sceneId })) ?? (await findScene({ code: "wechat" })) ?? (await findScene({ code: "float" }));
+    // V11-LLM-03：公众号默认场景链补 faq（需求口径：公众号客服默认 FAQ 场景；float 为最终兜底）
+    (await findScene({ id: account.sceneId })) ??
+      (await findScene({ code: "wechat" })) ??
+      (await findScene({ code: "faq" })) ??
+      (await findScene({ code: "float" }));
   const settings = await getAllSettings();
   const origin = await appOrigin();
   const result = await chatOnce({ scene, sessionId: `wx:${openId}`, channel: "wechat", message: content });

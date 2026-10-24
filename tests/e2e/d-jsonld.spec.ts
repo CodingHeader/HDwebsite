@@ -40,8 +40,14 @@ test("文章详情页输出 NewsArticle JSON-LD 且与可见内容一致", async
   const m = jsonLd.mainEntityOfPage as string | Record<string, unknown> | undefined;
   const mId = typeof m === "string" ? m : String((m as Record<string, unknown>)["@id"] ?? "");
   expect(mId).toContain("/articles/");
-  // 实现输出相对 URL，与页面 pathname 一致（绝对 URL 由浏览器补全，二者同源）
-  expect(new URL(page.url()).pathname).toBe(mId);
+  // V11-SEO-01：APP_ORIGIN 存在时输出绝对地址（SEO 正向变更）；相对/绝对均须与当前文章路径同源一致
+  const expectedPath = new URL(page.url()).pathname;
+  if (/^https?:\/\//.test(mId)) {
+    expect(new URL(mId).pathname).toBe(expectedPath);
+    expect(new URL(mId).origin).toBe(new URL(page.url()).origin);
+  } else {
+    expect(expectedPath).toBe(mId);
+  }
 
   // 5) NewsArticle 必需字段齐全（headline / datePublished / dateModified / author / image）
   expect(jsonLd.headline).toBeTruthy();

@@ -106,19 +106,33 @@ const SCENE_FALLBACK: Record<string, Partial<ChatScene>> = {
   },
 };
 
-/** 生成/读取持久化 sessionId（浏览器本地保留，便于后台将同一访客的对话聚合为一次会话） */
-function getOrCreateSessionId(): string {
-  if (typeof window === "undefined") return "";
+/**
+ * 获取持久化 sessionId（V11-SEC-04：会话由服务端签发，签名 cookie 与本地缓存成对）。
+ * 本地有缓存 → 直接用（cookie 未过期时与 cookie 一致）；无缓存/会话失效 → 调
+ * GET /api/chat/session 重签。返回 null 表示签发失败（网络等），由调用方提示。
+ */
+async function fetchOrReuseSessionId(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
   const KEY = "hd_chat_session_id";
-  let id = window.localStorage.getItem(KEY);
-  if (!id) {
-    id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  const cached = window.localStorage.getItem(KEY);
+  if (cached && cached.length >= 8) return cached;
+  try {
+    const res = await fetch("/api/chat/session", { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const id: string | undefined = data?.data?.sessionId;
+    if (!id) return null;
     window.localStorage.setItem(KEY, id);
+    return id;
+  } catch {
+    return null;
   }
-  return id;
+}
+
+/** 会话失效（400）时清缓存重签一次 */
+async function reissueSessionId(): Promise<string | null> {
+  if (typeof window !== "undefined") window.localStorage.removeItem("hd_chat_session_id");
+  return fetchOrReuseSessionId();
 }
 
 
@@ -143,7 +157,8 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
   useEffect(() => {
     // 挂载时从 localStorage（外部系统）同步 sessionId；SSR 阶段无 window，只能在 effect 内读取
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSessionId(getOrCreateSessionId());
+    // V11-SEC-04：改服务端签发（无缓存时拉取 /api/chat/session）
+    void fetchOrReuseSessionId().then((id) => id && setSessionId(id));
   }, []);
 
   /**
@@ -160,7 +175,8 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
 
   // 场景加载后，自动展示场景欢迎语（无需调用 AI，避免首屏使用 token）
   useEffect(() => {
-    if (!sessionId || !scene) return;
+    if (!scene) return;
+    if (!sessionId) void fetchOrReuseSessionId().then((id) => id && setSessionId(id));
     // 欢迎语依赖客户端 sessionId（见上），只能在其就绪后的 effect 内插入一次
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages((prev) => {
@@ -214,12 +230,27 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
     const timeoutId = setTimeout(() => controller.abort(), 95_000);
     try {
       // upgrade 契约：POST /api/chat/stream（SSE：meta / delta / done / error），服务端拼装会话历史
-      const res = await fetch("/api/chat/stream", {
+      // V11-SEC-04：会话必须与签名 cookie 成对；400（无效/不匹配）→ 重签一次再试
+      let effSid = sessionId || (await fetchOrReuseSessionId()) || "";
+      let res = await fetch("/api/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, sceneCode, message: content }),
+        body: JSON.stringify({ sessionId: effSid, sceneCode, message: content }),
         signal: controller.signal,
       });
+      if (res.status === 400) {
+        const reissued = await reissueSessionId();
+        if (reissued) {
+          setSessionId(reissued);
+          effSid = reissued;
+          res = await fetch("/api/chat/stream", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: effSid, sceneCode, message: content }),
+            signal: controller.signal,
+          });
+        }
+      }
       let reply = "";
       if (!res.ok || !res.body) {
         const json = await res.json().catch(() => null);

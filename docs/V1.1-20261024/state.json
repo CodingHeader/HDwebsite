@@ -104,20 +104,22 @@
   "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-COL-01": {
-  "status": "running",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "调度锁语义与手动执行并发保护"
+  "note": "锁心跳续期 + 同源互斥 409/告警（25min fake-timer 证明）",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-COL-02": {
-  "status": "running",
+  "status": "done",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "cron 语义、开关解绑与时区配置"
+  "note": "cron 门控文案（轻方案）+ collectTransferImages 解绑 + TZ=Asia/Shanghai",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-KB-02": {
   "status": "done",
@@ -156,28 +158,31 @@
   "finished": "2026-10-25T01:10:00+08:00"
  },
  "V11-LLM-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "流式超时语义修正"
+  "note": "空闲超时语义（withStreamTimeouts 包装，长回复不截断）",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-LLM-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "流式 tokens 计量修正"
+  "note": "流尾 usage 一次记录（去重）；ADR-034 D1 保持",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-LLM-03": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "兜底可达性与客服安全模式"
+  "note": "①兜底可达=既有正确行为（3 例固化）②AES 安全模式 helper+callback 接线（12+ 例）③默认场景 faq 补链；限频 10vs20 → V11-Q2 待用户",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-MAIL-01": {
   "status": "done",
@@ -261,20 +266,22 @@
   "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-COMPAT-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "旧 API 入口兼容"
+  "note": "/api/ai-config→307 llm/providers；/api/chat/completion→chatOnce 适配（映射表 6 条契约测试）",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-SEO-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "OG 标签、JSON-LD 绝对地址与 sitemap 扩展"
+  "note": "全站 OG + JSON-LD 绝对地址 + sitemap +11（构建产物断言）",
+  "finished": "2026-10-25T03:30:00+08:00"
  },
  "V11-E2E-375": {
   "status": "done",

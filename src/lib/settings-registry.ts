@@ -137,7 +137,12 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
     isPublic: false,
   }),
   def("collectTimeoutMs", "请求超时（毫秒）", "collect", "15000", { type: "number", isPublic: false }),
-  def("collectDefaultKnowledge", "默认入知识库", "collect", "true", { type: "boolean", isPublic: false }),
+  // V11-COL-02：图片转存独立开关（原误挂在 collectDefaultKnowledge 键下；该键唯一读取点即图片转存，已随解绑移除）
+  def("collectTransferImages", "图片转存本地", "collect", "true", {
+    type: "boolean",
+    isPublic: false,
+    description: "正文中的外链图片转存为本站 /uploads 资源（默认开启）；与源级「采集后自动入知识库」（autoToKb）互不影响",
+  }),
   // ── kb 知识库（ADR-025 / C-04：Coze 同步所用 Provider 与 space） ──
   def("kbCozeProviderId", "知识库同步 Provider", "kb", "", {
     type: "number",

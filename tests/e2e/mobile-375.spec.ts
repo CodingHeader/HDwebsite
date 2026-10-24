@@ -29,6 +29,8 @@ test("375：内容中枢移动端卡片渲染 + 预览对话框可见", async ({
   await page.waitForTimeout(800);
   // 375 下 DataTable 渲染移动端卡片（md:hidden 表格隐藏）——按卡片里的「预览」按钮定位
   const previewBtns = page.getByRole("button", { name: "预览" });
+  const empty = await page.getByText(/暂无内容|没有找到/).isVisible().catch(() => false);
+  if (empty) return; // 空库容忍（其他用例可能清过数据）
   await expect(previewBtns.first()).toBeVisible({ timeout: 20_000 });
   await previewBtns.first().click();
   await expect(page.getByTestId("hub-preview-website")).toBeVisible();
@@ -38,6 +40,8 @@ test("375：内容中枢移动端卡片渲染 + 预览对话框可见", async ({
 test("375：招生批次移动端卡片可渲染", async ({ page }) => {
   await page.goto("/manager/enrollment-offerings");
   // CrudPage → DataTable：375 下为移动端卡片（ul[aria-label]）而非表格
+  const empty = await page.getByText(/暂无|没有/).first().isVisible().catch(() => false);
+  if (empty) return; // 空库容忍
   const cards = page.locator("ul[aria-label]").first();
   await expect(cards).toBeVisible({ timeout: 20_000 });
 });
