@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * D-01 基线测量脚本（WPD.1 性能可测量）
+ * D-01 基线测量脚本（WPD.1 性能可测量；V11-PERF-01 修复生产模式启动 + 增加页面加载基线）
  *
- * 一条命令输出 8 个指标：
+ * 一条命令输出指标：
  *   homeJsGzip            首页 JS gzip 合计（页面全部 <script src> 逐个下载后 gzip -9 求和，09-基线指标.md 方法）
  *   managerJsGzip         /manager（跳转后登录页）JS gzip 合计
  *   managerArticlesJsGzip /manager/articles JS gzip 合计
@@ -11,8 +11,13 @@
  *   apiArticlesTtfbMs     /api/articles?page=1 TTFB（3 次中位数）
  *   startToReadyNpmStartMs    npm start（start-next）到 /api/health 200
  *   startToReadyStandaloneMs  直接启动 .next/standalone/server.js 到 Ready（win32 无 standalone → null）
+ *   vitals                5 个关键路由的页面加载基线（Playwright 实验室探针，桌面 1440×900）：
+ *                         lcpMs（最大内容绘制）/ cls（累计布局偏移）/ tbtMs（长任务阻塞近似）/ fcpMs
+ *                         —— 口径：PerformanceObserver（buffered）+ load 后 2.5s 观察窗；非 Lighthouse 分数
  *
- * - 自带临时库（DATABASE_URL 指向 os.tmpdir）与一次性 JWT_SECRET，均不写仓库
+ * - 自带临时库（DATABASE_URL 指向 .cache/ 临时目录）与一次性 JWT_SECRET/ENCRYPTION_KEY/APP_ORIGIN，
+ *   均不写仓库；V11-PERF-01：补齐 D-03 生产 env 强校验所需键（此前缺 ENCRYPTION_KEY/APP_ORIGIN
+ *   导致 instrumentation assertProductionEnv 启动即退）
  * - 用法：node scripts/measure-baseline.mjs --out <path.json>
  */
 import { spawn, spawnSync } from "node:child_process";
@@ -26,8 +31,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = Number(process.env.MEASURE_PORT ?? 6795);
 const BASE = `http://127.0.0.1:${PORT}`;
 const JWT_SECRET = `measure-baseline-${Date.now()}-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+const ENCRYPTION_KEY = `measure-enc-${Date.now()}-${Math.random().toString(36).slice(2)}-${Date.now()}`; // 一次性，≥32 字符
 const IS_WIN = process.platform === "win32";
 const SHELL = IS_WIN; // win32 上 npx 是 .cmd，spawnSync 必须 shell（Node ≥18.20.2）
+
+/** V11-PERF-01：页面加载基线的 5 个关键路由（前台 4 + 管理端登录 1） */
+const VITALS_ROUTES = ["/", "/news", "/articles", "/courses", "/manager"];
 
 function runNpx(args, env) {
   const r = spawnSync("npx", args, { cwd: ROOT, env, stdio: "pipe", encoding: "utf8", shell: SHELL });
@@ -92,6 +101,50 @@ async function ttfb(route, n = 3) {
   return times;
 }
 
+/** 页面加载基线（Playwright 实验室探针）：LCP/CLS/FCP/TBT近似，桌面 1440×900，load 后 2.5s 观察窗 */
+async function pageVitals(route) {
+  const { chromium } = await import("@playwright/test");
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await page.addInitScript(() => {
+      const w = /** @type {any} */ (window);
+      w.__vitals = { lcp: 0, cls: 0, tbt: 0, fcp: 0 };
+      const guard = (fn) => {
+        try { fn(); } catch { /* 观察器不可用则跳过该项 */ }
+      };
+      guard(() =>
+        new PerformanceObserver((l) => {
+          const e = l.getEntries().pop();
+          if (e) w.__vitals.lcp = e.startTime;
+        }).observe({ type: "largest-contentful-paint", buffered: true })
+      );
+      guard(() =>
+        new PerformanceObserver((l) => {
+          for (const e of l.getEntries()) if (!e.hadRecentInput) w.__vitals.cls += e.value;
+        }).observe({ type: "layout-shift", buffered: true })
+      );
+      guard(() =>
+        new PerformanceObserver((l) => {
+          const e = l.getEntries().pop();
+          if (e && e.name === "first-contentful-paint") w.__vitals.fcp = e.startTime;
+        }).observe({ type: "paint", buffered: true })
+      );
+      guard(() =>
+        new PerformanceObserver((l) => {
+          for (const e of l.getEntries()) if (e.duration > 50) w.__vitals.tbt += e.duration - 50;
+        }).observe({ type: "longtask", buffered: true })
+      );
+    });
+    await page.goto(`${BASE}${route}`, { waitUntil: "load", timeout: 60_000 });
+    await page.waitForTimeout(2500); // 观察窗：覆盖 hydrate 长任务（TBT 口径见脚本头注释）
+    const v = await page.evaluate(() => /** @type {any} */ (window).__vitals);
+    return { lcpMs: Math.round(v.lcp), cls: Number(v.cls.toFixed(3)), tbtMs: Math.round(v.tbt), fcpMs: Math.round(v.fcp) };
+  } finally {
+    await browser.close();
+  }
+}
+
 const median = (a) => {
   const s = [...a].sort((x, y) => x - y);
   return s[Math.floor(s.length / 2)];
@@ -112,7 +165,15 @@ async function main() {
   //    跨盘符的相对 file URL 非法（os error 123），os.tmpdir 可能在不同盘）
   const tmp = mkdtempSync(path.join(ROOT, ".cache", "baseline-"));
   const dbFile = path.join(tmp, "baseline.db");
-  const env = { ...process.env, DATABASE_URL: prismaUrl(dbFile), JWT_SECRET };
+  // V11-PERF-01：注入 D-03 生产 env 强校验所需的全部键——此前缺 ENCRYPTION_KEY/APP_ORIGIN，
+  // instrumentation assertProductionEnv 使生产启动即退（一次性值，不落盘不外发）
+  const env = {
+    ...process.env,
+    DATABASE_URL: prismaUrl(dbFile),
+    JWT_SECRET,
+    ENCRYPTION_KEY,
+    APP_ORIGIN: BASE,
+  };
   try {
     runNpx(["prisma", "migrate", "deploy"], env);
     runNpx(["ts-node", "prisma/seed.ts"], env);
@@ -165,6 +226,17 @@ async function main() {
       const mgrArticles = await jsGzipSum("/manager/articles");
       result.managerArticlesJsGzip = mgrArticles.total;
       result.notes.push(`script 数：home=${home.scripts} manager=${mgr.scripts} manager/articles=${mgrArticles.scripts}；/manager 按跳转后登录页计量`);
+
+      // 6) 页面加载基线（V11-PERF-01）：Playwright 实验室探针（非 Lighthouse 分数，口径见头注释）
+      try {
+        result.vitals = {};
+        for (const route of VITALS_ROUTES) {
+          result.vitals[route] = await pageVitals(route);
+        }
+      } catch (err) {
+        delete result.vitals;
+        result.notes.push(`页面加载基线不可用（Playwright/Chromium 缺失或页面异常）：${err instanceof Error ? err.message : String(err)}`);
+      }
     }
   } finally {
     if (typeof child2 !== "undefined" && child2.pid) killTree(child2.pid);

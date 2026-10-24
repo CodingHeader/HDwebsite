@@ -6,7 +6,7 @@ import { checkIngestFile } from "@/lib/kb/ingest";
 
 describe("V11-KB-04：上传正向魔数校验", () => {
   const mkFile = (name: string, bytes: Uint8Array, type = "application/octet-stream") =>
-    new File([bytes], name, { type });
+    new File([new Uint8Array(bytes).buffer as ArrayBuffer], name, { type });
 
   it("docx 伪造（非 ZIP 容器）被拒", async () => {
     const fake = mkFile("fake.docx", new TextEncoder().encode("这不是 zip，是文本伪装的 docx 文件内容，足够长以过最小体积检查一些实现，但魔数不对。"));
