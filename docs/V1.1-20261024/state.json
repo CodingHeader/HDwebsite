@@ -1,0 +1,290 @@
+{
+ "V11-G-01": {
+  "status": "ready",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "门禁基线与快照复测"
+ },
+ "V11-SEC-01": {
+  "status": "ready",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "XSS 净化器不闭合标签放行修复"
+ },
+ "V11-SEC-02": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "限流真实 IP 与登录限流 429"
+ },
+ "V11-SEC-03": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "user-actions 频控、上传魔数校验与安全响应头"
+ },
+ "V11-SEC-04": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "chat 会话归属与采集 SSRF 防护"
+ },
+ "V11-WX-01": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "发布前置：封面与摘要生成链"
+ },
+ "V11-WX-02": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "正文站内图转存 uploadimg"
+ },
+ "V11-WX-03": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "发布模式与请求参数修正"
+ },
+ "V11-WX-04": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "发布状态如实回写与重发幂等"
+ },
+ "V11-HUB-01": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "内容中枢编辑/新建/审核界面"
+ },
+ "V11-HUB-02": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "预览渲染、渠道状态机与 externalId 契约"
+ },
+ "V11-COL-01": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "调度锁语义与手动执行并发保护"
+ },
+ "V11-COL-02": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "cron 语义、开关解绑与时区配置"
+ },
+ "V11-KB-02": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "Coze 请求形态对齐官方文档"
+ },
+ "V11-KB-01": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "上传文件推送 Coze 接入"
+ },
+ "V11-KB-03": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "检索测试页返回结构修复"
+ },
+ "V11-KB-04": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "拒审失效与上传正向校验"
+ },
+ "V11-LLM-01": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "流式超时语义修正"
+ },
+ "V11-LLM-02": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "流式 tokens 计量修正"
+ },
+ "V11-LLM-03": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "兜底可达性与客服安全模式"
+ },
+ "V11-MAIL-01": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "SMTP 发送异步化"
+ },
+ "V11-MAIL-02": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "失败重试、HTML 模板与分组一致性"
+ },
+ "V11-UI-01": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "文章编辑字段补齐"
+ },
+ "V11-UI-02": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "媒体库能力补齐"
+ },
+ "V11-UI-03": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "关联字段选择器"
+ },
+ "V11-UI-04": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "排序全量生效"
+ },
+ "V11-UI-05": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "文章编辑/列表对旧 /manager/news 兼容"
+ },
+ "V11-ENR-01": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "招生同步与学费回写移植 + 唯一性防重"
+ },
+ "V11-ENR-02": {
+  "status": "pending",
+  "owner": "Hark",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "K1 决议执行：招生前台边界"
+ },
+ "V11-COMPAT-01": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "旧 API 入口兼容"
+ },
+ "V11-SEO-01": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "OG 标签、JSON-LD 绝对地址与 sitemap 扩展"
+ },
+ "V11-E2E-375": {
+  "status": "pending",
+  "owner": "P2",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "375 宽度管理端 CRUD e2e"
+ },
+ "V11-OPS-01": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "备份恢复演练"
+ },
+ "V11-PERF-01": {
+  "status": "pending",
+  "owner": "P1",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "性能基线修复与测量"
+ },
+ "V11-V-01": {
+  "status": "pending",
+  "owner": "subagent-verifier",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "V1.1 全卡独立验收"
+ },
+ "V11-REL-01": {
+  "status": "pending",
+  "owner": "main-agent",
+  "verify": null,
+  "blocked_reason": null,
+  "commits": [],
+  "note": "V1.1 终审交付"
+ }
+}
