@@ -20,6 +20,10 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { createPrismaClient, SQLITE_BUSY_TIMEOUT_MS } from "@/lib/prisma";
 
+// V10-T-06：三个涉子进程/真实锁竞争的用例超时 20s→40s——断言与被测 busy_timeout(5000ms) 无关，
+// 只是抗 CI/shuffle 负载下子进程 spawn+import 的抖动（V9-V-01 期间该文件出现过 1 次时序 flake，
+// 10 次单跑 + 4 轮 shuffle 未复现；加保险不放松任何断言）。
+
 const dir = mkdtempSync(join(tmpdir(), "p04-busy-"));
 const url = `file:${join(dir, "test.db")}`;
 let a: PrismaClient;
@@ -99,7 +103,7 @@ describe("SQLite busy_timeout（RISK-007）", () => {
     expect(await writeBurst(a, "p04-inproc")).toEqual([]);
     expect(await a.operationLog.count({ where: { module: "p04-inproc" } })).toBe(20);
     expect((await a.cronJob.findUnique({ where: { name: "p04.lock" } }))?.lockedAt).toBeNull();
-  }, 20_000);
+  }, 40_000);
 
   it("跨进程：子进程持写锁 400ms 期间，并发 20 写 + 调度锁 + 事务全部成功，无 SQLITE_BUSY", async () => {
     const { done } = await holdWriteLockInChild(400);
@@ -107,7 +111,7 @@ describe("SQLite busy_timeout（RISK-007）", () => {
     expect(await done).toBe(0);
     expect(failed).toEqual([]);
     expect(await a.operationLog.count({ where: { module: "p04-xproc" } })).toBe(20);
-  }, 20_000);
+  }, 40_000);
 
   it("对照组：timeout=0 时子进程持锁下写入立即 SQLITE_BUSY（证明测试有区分力）", async () => {
     const noWait = new PrismaClient({ adapter: new PrismaLibSql({ url, timeout: 0 }) });
@@ -122,5 +126,5 @@ describe("SQLite busy_timeout（RISK-007）", () => {
     } finally {
       await noWait.$disconnect();
     }
-  }, 20_000);
+  }, 40_000);
 });
