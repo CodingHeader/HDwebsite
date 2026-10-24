@@ -11,6 +11,12 @@ updated: 2026-10-23
 
 > 格式：日期 + 类型（docs/design/feat/fix/refactor）+ 摘要。产品级发布记录（REL-xxx）待首个功能里程碑交付时创建 `07_release/release-records/`。
 
+## 2026-10-24（V1.0 打磨轮）
+
+- **test（V1.0 / T-06）**：sqlite-busy-timeout 涉子进程用例超时 20s→40s（时序 flake 保险，断言零放松）。
+- **docs（V1.0 / REL-03）**：启用 changelog 头注预留的发布记录机制——`07_release/release-records/REL-001-重建里程碑.md`（功能对等 missing=0 + CI 三 job 全绿 = 首个功能里程碑）。
+- **fix（V1.0 / Q1）**：Navbar 移动端导航条内滚动——消除整页 375 横向溢出（scrollWidth 595→375）。经用户授权的最小冻结豁免（REQ-F-014 唯一受控偏差，1 处 className，配色/字体/间距零变化）；375 基线同步重生成。
+
 ## 2026-10-22 ~ 10-24（V0.8 重建收尾 + V0.9 CI 真相轮）
 
 - **feat（V0.8 全轮 18 卡）**：upgrade 分支重建收官——依赖安全（next 16.4.2 修 RCE、sharp/vitest 升级、审计门禁 `check:audit`）、测试补强（撤 3 条过期 skip、SSE 契约、lint 0 warning 锁死、全路由 withApi、e2e 撤 skip 修复知识库上传 404）、视觉基线（确定性 seed 数据集 + Linux visual CI job）、管理端五态补齐（7 页 ErrorState + 5 页骨架）、微信/SMTP/Coze 冒烟脚本（dry-run 默认）、Docker 部署件。证据 `evidence/V8/**`（15 卡 execution + 全部 verify.md）。
