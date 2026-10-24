@@ -57,7 +57,11 @@ export function Navbar({ items }: NavbarProps = {}) {
   return (
     <nav className="w-full bg-[#da251d] text-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="md:hidden flex items-center justify-between h-[45px]">
+        {/* V10-Q1（用户 2026-10-24 授权的最小冻结豁免）：9 个导航项在 ≤595px 横排溢出，
+            整页被撑出横向滚动（main 同病，基线 667px）。改为条内横向滚动 + 隐藏滚动条；
+            配色/字号/间距零变化。已知边缘：容器 overflow-y 计算为 auto，hover 子菜单下拉
+            在 <595px 带鼠标窗口会被裁剪——该下拉本为 hover 设计，触屏上原本即不可达。 */}
+        <div className="md:hidden flex items-center justify-start overflow-x-auto h-[45px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             const hasSubmenu = item.submenu && item.submenu.length > 0;
