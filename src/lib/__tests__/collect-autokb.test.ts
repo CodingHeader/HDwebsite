@@ -8,6 +8,8 @@
  * - 双向回链：入库同时镜像 KnowledgeFile，collectItemId 指回来源 CollectItem
  * - 推送形态：mock Coze 收到 file_type=txt 且 dataset_id 取目标库 cozeDatasetId（ADR-025 §6）
  */
+process.env.COLLECT_ALLOW_PRIVATE_TARGETS = "1"; // V11-SEC-04：本套件用本地 mock 服务器当采集源
+
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";

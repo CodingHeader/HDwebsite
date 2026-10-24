@@ -17,6 +17,25 @@ import { CONTENT_EDITABLE_STATUSES, canTransitionContentItem, contentItemStatusS
 import { badRequest } from "@/lib/api-handler";
 import { contentItemTags } from "./shared";
 
+/**
+ * V11-WX-01：封面/摘要派生——公众号草稿 thumb_media_id 为必填（官方文档口径），
+ * 内容中枢手工创建不强制填封面/摘要 → 发布链 addDraft 缺 thumb 必失败。
+ * 在入库源头补齐：封面取正文首个 <img src>（markdown 图片次之）；摘要取纯文本截断。
+ */
+export function deriveCoverImage(content: string): string | null {
+  const htmlImg = content.match(/<img\b[^>]*\bsrc="([^"]+)"/i);
+  if (htmlImg?.[1]) return htmlImg[1];
+  const mdImg = content.match(/!\[[^\]]*\]\(([^)\s]+)/);
+  return mdImg?.[1] ?? null;
+}
+
+export function deriveExcerpt(content: string, contentType: string, max = 120): string | null {
+  const text = contentType === "html"
+    ? content.replace(/<[^>]+>/g, " ")
+    : content.replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/[#*>`\[\]]/g, " ");
+  return text.replace(/\s+/g, " ").trim().slice(0, max) || null;
+}
+
 export const contentSpecs: Record<string, CrudSpec> = {
   categories: {
     model: "category",
@@ -93,9 +112,14 @@ export const contentSpecs: Record<string, CrudSpec> = {
     include: { course: true },
     createSchema: studentCreateSchema,
   },
-  'content-items': {
+  
+'content-items': {
     createSchema: contentItemCreateSchema,
-    beforeCreate: contentItemTags.beforeCreate,
+    beforeCreate: async (data) => contentItemTags.beforeCreate({
+      ...data,
+      coverImage: (data.coverImage as string | undefined) ?? deriveCoverImage(String(data.content ?? "")) ?? undefined,
+      excerpt: (data.excerpt as string | undefined) ?? deriveExcerpt(String(data.content ?? ""), String(data.contentType ?? "markdown")) ?? undefined,
+    }),
     // P06：状态迁移须合法（contracts/events contentItemStatusTransitions）；approved/published 已在契约层拒绝
     // 更新契约接受完整状态集（表单回传未改动的 approved/published 不报错），但"变更到"审核/发布态一律拒绝
     updateSchema: contentItemCreateSchema.extend({ status: contentItemStatusSchema }).partial(),

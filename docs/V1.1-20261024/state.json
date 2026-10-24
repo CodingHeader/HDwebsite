@@ -21,22 +21,24 @@
   "finished": "2026-10-24T21:50:00+08:00"
  },
  "V11-SEC-02": {
-  "status": "running",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "限流真实 IP 与登录限流 429",
-  "started": "2026-10-24T21:22:00+08:00"
+  "note": "P2-a：TRUST_PROXY 限流器 + 登录 429（22 新测试，curl 实证）",
+  "started": "2026-10-24T21:22:00+08:00",
+  "finished": "2026-10-24T23:00:00+08:00"
  },
  "V11-SEC-03": {
-  "status": "running",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "user-actions 频控、上传魔数校验与安全响应头",
-  "started": "2026-10-24T21:22:00+08:00"
+  "note": "P2-a：user-actions 频控 + 上传魔数（K2=20MB 不变）+ 安全响应头；上传端点实际为 /api/upload（路径偏差已记录）",
+  "started": "2026-10-24T21:22:00+08:00",
+  "finished": "2026-10-24T23:00:00+08:00"
  },
  "V11-SEC-04": {
   "status": "done",
@@ -48,36 +50,40 @@
   "finished": "2026-10-24T22:15:00+08:00"
  },
  "V11-WX-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "发布前置：封面与摘要生成链"
+  "note": "封面/摘要派生钩子（content.ts+collect-engine+发布兜底）",
+  "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-WX-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "正文站内图转存 uploadimg"
+  "note": "站内相对路径图转存（origin 补全）",
+  "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-WX-03": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "发布模式与请求参数修正"
+  "note": "账号选择去 freepublishEnabled 硬门槛 + accountId 生效",
+  "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-WX-04": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "发布状态如实回写与重发幂等"
+  "note": "freepublish 失败如实回写 + 官网重发幂等",
+  "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-HUB-01": {
   "status": "pending",
@@ -88,12 +94,13 @@
   "note": "内容中枢编辑/新建/审核界面"
  },
  "V11-HUB-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "预览渲染、渠道状态机与 externalId 契约"
+  "note": "渠道状态 scheduled/publishing 派生；CCR-1 撤销（ContentChannel.externalId 已覆盖）",
+  "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-COL-01": {
   "status": "pending",

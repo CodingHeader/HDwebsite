@@ -273,7 +273,13 @@ export const resourceMetas = {
     labels: {
       name: { label: "姓名" },
       email: { label: "邮箱" },
-      groups: { label: "通知组（逗号分隔：publish,ops）", type: "tags" },
+      // V11-MAIL-02：分组口径与 prisma/seed.ts 种子规则对齐——publish=发布前提醒（before_publish_*）；
+      // admin=失败/余额类告警（system_error/job_failed/collect_failed/llm_balance_low）
+      groups: {
+        label: "通知组（逗号分隔）",
+        type: "tags",
+        help: "分组口径与通知规则一致：publish=发布前提醒；admin=失败/余额类告警（系统错误、任务失败、采集失败、余额不足）",
+      },
       enabled: { label: "启用" },
     },
   },

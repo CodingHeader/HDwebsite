@@ -11,6 +11,7 @@
 import crypto from "node:crypto";
 import { XMLParser } from "fast-xml-parser";
 import { prisma } from "@/lib/prisma";
+import { deriveCoverImage } from "@/lib/crud-resources/content";
 import { getAllSettings } from "@/lib/settings";
 import { appOrigin } from "@/lib/app-origin";
 import { chatOnce, findScene } from "@/lib/chat-service";
@@ -225,14 +226,20 @@ export async function uploadContentImage(token: string, url: string): Promise<st
  * 正文外链图转存（B-07）：扫描 <img src>，非微信域名的外链图转存为微信 URL；
  * 同 URL 只转存一次复用；已合规或非外链的 <img> 保留原样；失败保持原外链（降级）。
  */
-export async function rewriteWechatImages(content: string, token: string): Promise<string> {
+export async function rewriteWechatImages(content: string, token: string, origin?: string): Promise<string> {
   const srcs = Array.from(content.matchAll(/<img\b[^>]*\bsrc="([^"]+)"[^>]*>/gi), (m) => m[1]);
   const pending = [...new Set(srcs)]
+    .map((u) => {
+      // V11-WX-02：站内相对路径（/uploads/...）按 APP_ORIGIN 补全后再判断——
+      // 旧实现 new URL(相对路径) 抛错被当作"已可访问"跳过，站内图到公众号全部裂图
+      if (u.startsWith("/")) return origin ? `${origin}${u}` : u;
+      return u;
+    })
     .filter((u) => {
       try {
         return !WECHAT_IMG_HOSTS.has(new URL(u).hostname);
       } catch {
-        return false; // 相对路径/非 URL 一律视为已可访问，不转存
+        return false;
       }
     })
     .slice(0, MAX_IMG_TRANSFER);
@@ -319,7 +326,9 @@ export async function publishDraftToWechat(account: WechatAccount, secret: strin
       return { ok: false, errMsg: `已达今日公众号发布上限（${dailyCount} 篇）` };
     }
     const token = await getAccessToken(account, secret);
-    const thumbMediaId = await uploadThumb(token, item.coverImage);
+    // V11-WX-01：历史数据可能无封面（派生钩子只覆盖新入库）——发布前从正文兜底提取
+    const coverImage = item.coverImage ?? deriveCoverImage(item.content);
+    const thumbMediaId = await uploadThumb(token, coverImage);
     const draftId = await addDraft(token, item, thumbMediaId);
     // 发布间隔 ≥60s 由 publishScan 串行 + sleep 保证；此处提交 freepublish
     if (account.freepublishEnabled) {
@@ -339,7 +348,10 @@ export async function publishDraftToWechat(account: WechatAccount, secret: strin
       if (publishRes.publish_id) {
         const poll = await getPublishResult(token, publishRes.publish_id);
         if (poll.status === "success" && poll.itemUrl) url = poll.itemUrl;
-        else if (poll.errMsg) console.warn(`[wechat] freepublish/get 结果获取失败：${poll.errMsg}`);
+        // V11-WX-04：freepublish 明确失败 → 如实回写失败（草稿仍在，mediaId 保留供排查）
+        else if (poll.status === "failed") {
+          return { ok: false, mediaId: draftId, publishId: publishRes.publish_id, errMsg: `freepublish 发布失败：${poll.errMsg ?? "平台返回失败态"}` };
+        } else if (poll.errMsg) console.warn(`[wechat] freepublish/get 结果获取失败：${poll.errMsg}`);
       }
       return { ok: true, mediaId: draftId, publishId: publishRes.publish_id, url };
     }
@@ -376,7 +388,8 @@ async function uploadThumb(token: string, coverImage: string | null): Promise<st
 async function addDraft(token: string, item: ContentItem, thumbMediaId: string | null): Promise<string> {
   const rawContent = item.contentType === "markdown" ? mdToWechatHtml(item.content) : item.content;
   // B-07：正文外链图转存微信（uploadimg）；失败保留原外链（降级，不阻塞发布）
-  const content = await rewriteWechatImages(rawContent, token);
+  // V11-WX-02：传 origin 使站内相对路径图也能转存
+  const content = await rewriteWechatImages(rawContent, token, await appOrigin());
   const draft = (await httpFetch(`${API}/cgi-bin/draft/add?access_token=${token}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

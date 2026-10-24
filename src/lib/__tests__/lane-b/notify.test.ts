@@ -26,7 +26,7 @@ vi.mock("nodemailer", () => {
 
 import { prisma } from "@/lib/prisma";
 import { cleanupTestDb, createActor, ctx, initTestDb, req } from "../api-contract/harness";
-import { notifyEvent, notifyRetryScan, __setNotifyClock } from "@/lib/notify-gateway";
+import { notifyEvent, notifyRetryScan, notifySettle, __setNotifyClock } from "@/lib/notify-gateway";
 import { PATCH as rulePATCH } from "@/app/api/notify-rules/[id]/route";
 import { GET as ruleGET } from "@/app/api/notify-rules/route";
 
@@ -110,6 +110,7 @@ describe("B-06 静默时段", () => {
     try {
       const before = sent.length;
       await notifyEvent("llm_balance_low", { title: "无效静默", detail: "d" });
+      await notifySettle(); // V11-MAIL-01：投递已移后台，断言前等待在途发送结束
       expect(sent.length).toBeGreaterThan(before);
     } finally {
       await prisma.notifyRule.update({ where: { event: "llm_balance_low" }, data: { quietHours: null } });
@@ -157,6 +158,7 @@ describe("B-06 邮件脱敏", () => {
     __setNotifyClock(null);
     const before = sent.length;
     await notifyEvent("llm_balance_low", { title: "脱敏", detail: "body" });
+    await notifySettle(); // V11-MAIL-01：投递已移后台，断言前等待在途发送结束
     const last = sent[sent.length - 1];
     expect(sent.length).toBeGreaterThan(before);
     expect(last?.text).not.toContain("hunter2");

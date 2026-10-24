@@ -76,7 +76,9 @@ export async function buildItemChannels(rows: RowLike[]): Promise<Map<number, Ch
         channelStateSchema.parse({
           channel: kind,
           accountId: ch?.accountId ?? null,
-          status: (ch?.status ?? "unsent") as ChannelState["status"],
+          // V11-HUB-02：无 ContentChannel 行时按 PublishJob.status 派生排队/执行中
+          //（原实现恒 "unsent"，scheduled/publishing 两个契约取值从不出现）
+          status: (ch?.status ?? (job ? ({ scheduled: "scheduled", publishing: "publishing", failed: "failed", published: "published" } as Record<string, ChannelState["status"]>)[job.status] : undefined) ?? "unsent") as ChannelState["status"],
           scheduledAt: job?.scheduledAt?.toISOString() ?? null,
           publishedAt: publishedAt?.toISOString() ?? null,
           externalUrl: ch?.externalUrl ?? null,

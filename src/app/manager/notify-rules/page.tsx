@@ -255,14 +255,14 @@ export default function NotifyRulesPage() {
 
             <FormField
               label="收件人分组"
-              help="逗号分隔；仅发送给所属分组命中的启用收件人（与「提醒接收人」的通知组一致）"
+              help="逗号分隔；仅发送给所属分组命中的启用收件人。分组口径与种子规则一致：publish=发布前提醒；admin=失败/余额类告警（系统错误、任务失败、采集失败、余额不足）"
             >
               {(a11y) => (
                 <Input
                   {...a11y}
                   value={draft.groupsText}
                   onChange={(e) => setDraft((d) => (d ? { ...d, groupsText: e.target.value } : d))}
-                  placeholder="publish,ops"
+                  placeholder="publish,admin"
                   data-testid="notify-rule-groups"
                 />
               )}

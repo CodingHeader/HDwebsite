@@ -9,7 +9,7 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { created, error } from "@/lib/api-response";
 import { withApi } from "@/lib/api-handler";
-import { uploadsDir, UPLOAD_MIME_EXT, UPLOAD_MAX_SIZE } from "@/lib/storage";
+import { uploadsDir, UPLOAD_MIME_EXT, UPLOAD_MAX_SIZE, validateUploadMagic } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,6 +46,12 @@ export const POST = withApi(
   if (file.size > MAX_SIZE) return error("文件超过 20MB 上限", 400);
   const ext = ALLOWED_TYPES[file.type];
   if (!ext) return error(`不支持的文件类型：${file.type || "未知"}`, 400);
+
+  // 声明类型在白名单 → 读头字节做正向魔数校验（V11-SEC-03）：伪装扩展名的文件在此拦下。
+  // 与 kb/filetype.ts 的头字节嗅探同口径；K2 决议：容量上限维持 20MB 不变。
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const magic = validateUploadMagic(file.type, head);
+  if (!magic.ok) return error(magic.message, 400);
 
   try {
     const now = new Date();

@@ -25,7 +25,7 @@ export const UPLOAD_MIME_EXT: Record<string, string> = {
   "application/pdf": ".pdf",
 };
 
-/** 上传单文件大小上限（字节） */
+/** 上传单文件大小上限（字节）—— K2 决议（V1.1 SEC-03）：维持 20MB 不变，安全目标由魔数校验达成 */
 export const UPLOAD_MAX_SIZE = 20 * 1024 * 1024;
 
 /** 采集图片下载大小上限（字节）—— 超过立即中止该图，留原链 */
@@ -38,6 +38,65 @@ export const COLLECT_IMAGE_TYPES: Record<string, string> = {
   "image/webp": ".webp",
   "image/gif": ".gif",
 };
+
+/** 上传白名单类型 → 文件头魔数（正向校验；V11-SEC-03）
+ *  口径与 src/lib/kb/filetype.ts 的头字节嗅探对齐（只看文件头，不做全文件扫描）：
+ *  - JPEG: FF D8 FF；PNG: 89 50 4E 47 0D 0A 1A 0A；GIF: "GIF8"（GIF87a/89a）；
+ *    WebP: "RIFF" + 偏移 8 处 "WEBP"；PDF: "%PDF"；MP4: 偏移 4 处 "ftyp"。
+ */
+const UPLOAD_MAGIC: { mime: string; offset?: number; bytes: number[]; extraAt?: { offset: number; bytes: number[] } }[] = [
+  { mime: "image/jpeg", bytes: [0xff, 0xd8, 0xff] },
+  { mime: "image/png", bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] },
+  { mime: "image/gif", bytes: [0x47, 0x49, 0x46, 0x38] },
+  { mime: "image/webp", bytes: [0x52, 0x49, 0x46, 0x46], extraAt: { offset: 8, bytes: [0x57, 0x45, 0x42, 0x50] } },
+  { mime: "application/pdf", bytes: [0x25, 0x50, 0x44, 0x46] },
+  { mime: "video/mp4", offset: 4, bytes: [0x66, 0x74, 0x79, 0x70] },
+];
+
+function magicMatches(head: Uint8Array, m: { offset?: number; bytes: number[]; extraAt?: { offset: number; bytes: number[] } }): boolean {
+  const at = m.offset ?? 0;
+  if (head.length < at + m.bytes.length) return false;
+  for (let i = 0; i < m.bytes.length; i++) {
+    if (head[at + i] !== m.bytes[i]) return false;
+  }
+  if (m.extraAt) {
+    if (head.length < m.extraAt.offset + m.extraAt.bytes.length) return false;
+    for (let i = 0; i < m.extraAt.bytes.length; i++) {
+      if (head[m.extraAt.offset + i] !== m.extraAt.bytes[i]) return false;
+    }
+  }
+  return true;
+}
+
+/** 按文件头识别白名单类型；命中返回 MIME，未命中（含白名单外的真实类型/纯文本等）返回 null */
+export function detectUploadMagic(head: Uint8Array): string | null {
+  for (const m of UPLOAD_MAGIC) {
+    if (magicMatches(head, m)) return m.mime;
+  }
+  return null;
+}
+
+/**
+ * 上传魔数正向校验（V11-SEC-03，双向）：
+ * ① 声明类型必须有期望文件头（防"扩展名/Content-Type 伪装成图片"）；
+ * ② 文件头识别出的真实类型与声明一致（真实类型不在白名单时同样拒绝）。
+ * 仅 image/jpeg、image/png、image/gif、image/webp 有强魔数约束；pdf/mp4 按标准文件头校验。
+ */
+export function validateUploadMagic(mimeType: string, head: Uint8Array): { ok: true } | { ok: false; message: string } {
+  if (!(mimeType in UPLOAD_MIME_EXT)) {
+    return { ok: false, message: `不支持的文件类型：${mimeType || "未知"}` };
+  }
+  if (!magicMatches(head, UPLOAD_MAGIC.find((m) => m.mime === mimeType)!)) {
+    const detected = detectUploadMagic(head);
+    return {
+      ok: false,
+      message: detected
+        ? `文件内容与声明的类型不符（实际为 ${detected}）`
+        : "文件内容与声明的类型不符",
+    };
+  }
+  return { ok: true };
+}
 
 /**
  * 数据根：环境变量 DATA_DIR 显式设置时以其为根（解析为绝对路径）；否则回退项目根。

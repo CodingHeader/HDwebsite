@@ -26,7 +26,7 @@ vi.mock("nodemailer", () => {
 import { prisma } from "@/lib/prisma";
 import { cleanupTestDb, initTestDb } from "./api-contract/harness";
 import { publishScan } from "@/lib/publish-executor";
-import { llmBalanceCheck } from "@/lib/notify-gateway";
+import { llmBalanceCheck, notifySettle } from "@/lib/notify-gateway";
 import { withApi } from "@/lib/api-handler";
 import { registerJob, scanOnce } from "@/lib/scheduler";
 
@@ -74,6 +74,7 @@ describe("发布前提醒（立即发布）", () => {
     const item = await prisma.contentItem.create({ data: { title: "立即发布稿", content: "正文", status: "approved" } });
     const job = await prisma.publishJob.create({ data: { itemId: item.id, channel: "website", contentType: "article", status: "pending" } });
     await publishScan();
+    await notifySettle(); // V11-MAIL-01：投递已移后台，断言前等待在途发送结束
     const recs = await prisma.notifyRecord.findMany({ where: { event: "before_publish_news" } });
     expect(recs).toHaveLength(1);
     expect(recs[0].status).toBe("sent");

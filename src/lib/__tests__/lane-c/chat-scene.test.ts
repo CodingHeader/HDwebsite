@@ -8,6 +8,7 @@
  * 6) 同一流内出现两条 error 事件只显示一条提示且不抛错（reduceSseError）
  * 7) DR-23：route.ts 不再用内联 chatRequestSchema（grep z.object 为空）
  */
+import { signChatSession } from "@/lib/chat-service";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 
@@ -179,7 +180,7 @@ describe("C-07 · 两渠道 messages 全等（官网 SSE / 公众号 chatOnce �
     await streamPOST(
       new Request("http://localhost/api/chat/stream", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { Cookie: `chat_sid=${signChatSession(String("s-c07-parity-web"))}`, "content-type": "application/json" },
         body: JSON.stringify({ sessionId: "s-c07-parity-web", sceneCode: scene.code, message: "全等问题" }),
       }),
       ctx()
@@ -211,7 +212,7 @@ describe("C-07 · 第 11 次请求限频返回 HTTP 429 / code 429", () => {
     const r = await streamPOST(
       new Request("http://localhost/api/chat/stream", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-forwarded-for": ip },
+        headers: { "content-type": "application/json", "x-forwarded-for": ip, Cookie: `chat_sid=${signChatSession(String(base.sessionId))}` },
         body: JSON.stringify(base),
       }),
       ctx()

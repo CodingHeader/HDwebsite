@@ -38,11 +38,14 @@ export type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 429 | 502 | 503;
 export class ApiHttpError extends Error {
   readonly status: ApiErrorStatus;
   readonly issues?: Issue[];
-  constructor(status: ApiErrorStatus, message: string, issues?: Issue[]) {
+  /** 附加响应头（如 429 的 Retry-After，V11-SEC-02）；映射响应时逐项 set */
+  readonly headers?: Record<string, string>;
+  constructor(status: ApiErrorStatus, message: string, issues?: Issue[], headers?: Record<string, string>) {
     super(message);
     this.name = "ApiHttpError";
     this.status = status;
     this.issues = issues;
+    this.headers = headers;
   }
 }
 
@@ -172,14 +175,20 @@ export function withApi<P>(
 
 function toErrorResponse(err: unknown, request: Request, session: SessionUser | null, options: Options): Response {
   if (err instanceof ApiHttpError) {
-    if (err.status === 400) return err.issues?.length ? validationError(err.issues) : error(err.message, 400);
-    if (err.status === 401) return unauthorized(err.message);
-    if (err.status === 403) return forbidden(err.message);
-    if (err.status === 404) return notFound(err.message);
-    if (err.status === 409) return conflict(err.message);
-    if (err.status === 429) return tooManyRequests(err.message);
-    if (err.status === 502) return badGateway(err.message);
-    return serviceUnavailable(err.message);
+    let res: Response;
+    if (err.status === 400) res = err.issues?.length ? validationError(err.issues) : error(err.message, 400);
+    else if (err.status === 401) res = unauthorized(err.message);
+    else if (err.status === 403) res = forbidden(err.message);
+    else if (err.status === 404) res = notFound(err.message);
+    else if (err.status === 409) res = conflict(err.message);
+    else if (err.status === 429) res = tooManyRequests(err.message);
+    else if (err.status === 502) res = badGateway(err.message);
+    else res = serviceUnavailable(err.message);
+    // 附加头（V11-SEC-02：限流 429 携带 Retry-After）；逐项 set 不覆盖信封语义
+    if (err.headers) {
+      for (const [key, value] of Object.entries(err.headers)) res.headers.set(key, value);
+    }
+    return res;
   }
   const code = typeof err === "object" && err !== null ? (err as { code?: unknown }).code : undefined;
   // ADR-028：P2002 唯一冲突 → 409（原 400）

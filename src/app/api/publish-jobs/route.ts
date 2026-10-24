@@ -44,9 +44,13 @@ export const POST = withApi(
       const impl = getChannel(kind);
       let accountId: number | null = null;
       if (impl.requiresAccount) {
-        const account = await prisma.wechatAccount.findFirst({ where: { status: "active", type: "service", freepublishEnabled: true } });
+        // V11-WX-03：freepublishEnabled 不再是建任务硬门槛（发布模式执行期按账号配置决定）；
+        // 请求显式 accountId 优先并校验
+        const account = v.accountId
+          ? await prisma.wechatAccount.findFirst({ where: { id: v.accountId, status: "active", type: "service" } })
+          : await prisma.wechatAccount.findFirst({ where: { status: "active", type: "service" } });
         if (!account) {
-          return error(`未配置可用的公众号账号，无法创建公众号发布任务（凭证后补，ADR-002）`, 400);
+          return error(v.accountId ? "指定的公众号账号不存在或未启用" : "未配置可用的公众号账号，无法创建公众号发布任务（凭证后补，ADR-002）", 400);
         }
         accountId = account.id;
       }

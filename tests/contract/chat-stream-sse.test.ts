@@ -45,7 +45,7 @@ vi.mock("@/lib/llm-gateway", () => ({
   recordGatewayFailure: async () => undefined,
 }));
 
-vi.mock(import("@/lib/chat-service"), async (importOriginal) => ({
+vi.mock("@/lib/chat-service", async (importOriginal) => ({
   ...(await importOriginal()),
   findScene: async () => ({ code: "float", name: "智能客服", greeting: null }),
   buildChatContext: async () => ({

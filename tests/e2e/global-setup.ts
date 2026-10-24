@@ -91,7 +91,8 @@ export default async function globalSetup() {
     ? pathToFileURL(E2E_DB_FILE).href
     : `file:${path.relative(ROOT, E2E_DB_FILE).replace(/\\/g, "/")}`;
   for (const suffix of ["", "-journal", "-wal", "-shm"]) rmSync(E2E_DB_FILE + suffix, { force: true });
-  const env = { ...process.env, DATABASE_URL: dbUrl, JWT_SECRET };
+  const env = { ...process.env, COLLECT_ALLOW_PRIVATE_TARGETS: "1", // V11-SEC-04：e2e 采集源用本地 mock 服务器
+      DATABASE_URL: dbUrl, JWT_SECRET };
   // E-12：npx 走 runNpx（win32 加 shell）；prisma migrate deploy + seed
   runNpx(["prisma", "migrate", "deploy"], env);
   runNpx(["ts-node", "prisma/seed.ts"], env);

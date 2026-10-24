@@ -4,6 +4,9 @@
  * - 同类错误 10 分钟聚合只发 1 封；发送间隔 ≥2s；失败重试 3 次指数退避（notify.retryCount）
  * - P06：事件全集移入契约（contracts/events）；立即发布任务执行前同步发 before_publish_*（notifyBeforePublish）；
  *   API 未捕获异常（api-handler onApiError 默认监听）与调度任务异常 → system_error / job_failed；链接走 appOrigin()
+ * - V11-MAIL-01：投递移出主请求路径——notifyEvent 只建记录即返回（记录即队列），实际 SMTP 发送
+ *   在后台执行（scheduleDeliver），主流程不再被 SMTP 挂起/慢速阻塞；发送超时上限 10s（超时按失败
+ *   标记走既有 failed/dead 路径）。notifySettle() 供测试/优雅停机等待在途后台投递。
  */
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
@@ -40,7 +43,48 @@ async function transport(): Promise<any> {
 // 聚合类事件进程内串行化：并发异常同时到达时，"查最近记录 → 建记录"不被交错，保证 10 分钟只建 1 条
 let aggregateChain: Promise<unknown> = Promise.resolve();
 
-/** 事件入口：查规则 → 组收件人 → 渲染模板 → 建 NotifyRecord（异步发送由 retry.failed 兜底重试）
+// ── V11-MAIL-01：发送超时上限 + 后台投递 ─────────────────────────
+/** SMTP 发送超时上限（ms）；超时按发送失败处理（failed/dead 标记 + 退避重试）。测试可注入覆盖。 */
+let sendTimeoutMs = 10_000;
+export function __setNotifySendTimeout(ms: number | null): void {
+  sendTimeoutMs = ms ?? 10_000;
+}
+
+async function withTimeout<T>(p: Promise<T>, ms: number, msg: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      p,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(msg)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+/** 在途后台投递集合：notifySettle() 等待其全部结束（测试/优雅停机用，主流程不依赖） */
+const inFlightDeliveries = new Set<Promise<unknown>>();
+
+/** 后台投递：不阻塞调用方；异常只记日志（deliver 内部已把失败落库为 failed/dead） */
+function scheduleDeliver(recordId: number, attempt: number): void {
+  const p = deliver(recordId, attempt).catch((err) =>
+    console.error(`[notify] 后台投递 #${recordId} 异常：`, err)
+  );
+  inFlightDeliveries.add(p);
+  void p.finally(() => inFlightDeliveries.delete(p));
+}
+
+/** 等待所有在途后台投递结束（测试/优雅停机用；while 循环兜住投递期间新排程的记录） */
+export async function notifySettle(): Promise<void> {
+  while (inFlightDeliveries.size > 0) {
+    await Promise.allSettled([...inFlightDeliveries]);
+  }
+}
+
+/** 事件入口：查规则 → 组收件人 → 渲染模板 → 建 NotifyRecord（记录即队列；实际 SMTP 发送由
+ * scheduleDeliver 移入后台，主请求路径不等待发送——V11-MAIL-01）
  * B-06：静默时段（规则级 quietHours 优先于全局 notifyQuietHours）内只建 deferred 记录不发信；
  *       聚合类事件去重改为单条 SQL 条件插入（跨进程原子），不再"查后建"竞态。
  */
@@ -133,6 +177,50 @@ export function sanitizeSensitive(text: string): string {
     .replace(/(password|passwd|secret|token|api[_-]?key|access[_-]?token)\s*[=:]\s*\S+/gi, "$1=***");
 }
 
+// ── V11-MAIL-02：按事件类型选择 HTML 模板 ───────────────────────
+type MailCategory = "publish" | "failed" | "balance" | "collect" | "generic";
+
+const CATEGORY_META: Record<MailCategory, { label: string; color: string; bg: string }> = {
+  publish: { label: "发布前提醒", color: "#1d4ed8", bg: "#eff6ff" },
+  failed: { label: "失败告警", color: "#b91c1c", bg: "#fef2f2" },
+  balance: { label: "余额提醒", color: "#b45309", bg: "#fffbeb" },
+  collect: { label: "采集告警", color: "#6d28d9", bg: "#f5f3ff" },
+  generic: { label: "系统通知", color: "#374151", bg: "#f9fafb" },
+};
+
+/** 事件 → 模板类别：before_publish_* → publish；job_failed/system_error → failed；
+ * llm_balance_low → balance；collect_failed → collect；未知事件 → generic */
+export function mailCategory(event: string): MailCategory {
+  if (event.startsWith("before_publish_")) return "publish";
+  if (event === "collect_failed") return "collect";
+  if (event === "llm_balance_low") return "balance";
+  if (event === "job_failed" || event === "system_error") return "failed";
+  return "generic";
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** 渲染 HTML 邮件正文（内容先转义再换行转 <br>，防止错误堆栈里的尖括号被当标签）；text 版本照旧作为纯文本回退 */
+export function renderNotifyHtml(event: string, subject: string, content: string): string {
+  const meta = CATEGORY_META[mailCategory(event)];
+  const body = escapeHtml(content).replace(/\n/g, "<br>");
+  return [
+    "<!DOCTYPE html>",
+    '<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>',
+    '<body style="margin:0;padding:24px;background:#f3f4f6;font-family:-apple-system,\'Segoe UI\',\'PingFang SC\',\'Microsoft YaHei\',sans-serif;">',
+    '<div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">',
+    `<div style="background:${meta.bg};padding:14px 20px;border-left:4px solid ${meta.color};">`,
+    `<span style="color:${meta.color};font-size:13px;font-weight:600;letter-spacing:1px;">${meta.label}</span>`,
+    `<div style="color:#111827;font-size:16px;font-weight:600;margin-top:4px;">${escapeHtml(subject)}</div>`,
+    "</div>",
+    `<div style="padding:20px;color:#374151;font-size:14px;line-height:1.7;word-break:break-word;">${body}</div>`,
+    '<div style="padding:12px 20px;background:#f9fafb;color:#9ca3af;font-size:12px;border-top:1px solid #e5e7eb;">弘道教育 · 管理后台通知（系统邮件，请勿直接回复）</div>',
+    "</div></body></html>",
+  ].join("");
+}
+
 async function notifyEventInner(event: NotifyEvent, vars: NotifyVars): Promise<void> {
   try {
     const rule = await prisma.notifyRule.findUnique({ where: { event } });
@@ -183,7 +271,7 @@ async function notifyEventInner(event: NotifyEvent, vars: NotifyVars): Promise<v
       recordId = rec.id;
     }
 
-    if (!deferred) await deliver(recordId, 0);
+    if (!deferred) scheduleDeliver(recordId, 0); // V11-MAIL-01：后台投递，不阻塞主请求路径
   } catch (err) {
     console.error(`[notify] 事件 ${event} 处理失败：`, err);
   }
@@ -209,7 +297,7 @@ export async function flushDeferred(): Promise<void> {
   }
 }
 
-/** 实际投递：未配置 SMTP → skipped；失败 → 重试队列（notify.scan 每 5 分钟扫 pending/failed） */
+/** 实际投递：未配置 SMTP → skipped；失败 → 重试队列（notify.scan 每 5 分钟扫 pending/failed，V11-MAIL-02） */
 async function deliver(recordId: number, attempt: number): Promise<void> {
   const record = await prisma.notifyRecord.findUnique({ where: { id: recordId } });
   if (!record || record.status === "sent" || record.status === "skipped") return;
@@ -223,12 +311,19 @@ async function deliver(recordId: number, attempt: number): Promise<void> {
   try {
     const transporter = await transport();
     const settings = await getAllSettings();
-    await transporter.sendMail({
-      from: settings.emailFrom || settings.emailUsername,
-      to: record.toEmails.split(","),
-      subject: record.subject,
-      text: record.content,
-    });
+    // V11-MAIL-01：发送超时上限（默认 10s）——SMTP 挂起不再无限占用，超时按失败标记走重试/终态
+    await withTimeout(
+      transporter.sendMail({
+        from: settings.emailFrom || settings.emailUsername,
+        to: record.toEmails.split(","),
+        subject: record.subject,
+        text: record.content,
+        // V11-MAIL-02：按事件类型渲染 HTML 模板（text 作纯文本回退）
+        html: renderNotifyHtml(record.event, record.subject, record.content),
+      }),
+      sendTimeoutMs,
+      `SMTP 发送超时（>${Math.round(sendTimeoutMs / 1000)}s，已按失败标记）`
+    );
     await prisma.notifyRecord.update({ where: { id: recordId }, data: { status: "sent", sentAt: new Date(), retries: attempt } });
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
@@ -241,7 +336,7 @@ async function deliver(recordId: number, attempt: number): Promise<void> {
       });
       const backoff = 2 ** attempt * 60_000;
       setTimeout(() => {
-        deliver(recordId, attempt + 1).catch(() => undefined);
+        scheduleDeliver(recordId, attempt + 1);
       }, backoff);
     } else {
       // 终态 dead：notifyRetryScan 只扫 pending，不再重投（防通知风暴）
@@ -262,17 +357,36 @@ async function deliver(recordId: number, attempt: number): Promise<void> {
 /**
  * notify.scan 任务：重试失败/未发送的通知记录；同时补发静默时段内 deferred 的记录（B-06）。
  * 先跑 flushDeferred 把已结束静默窗的 deferred 转 pending，再统一投递 pending。
+ * V11-MAIL-02：failed 记录重启后重试——内存退避定时器随进程消亡，这里兜底扫描 failed
+ * （次数上限 notifyRetryCount + 按 createdAt 起算的指数退避），不新增表字段。
  */
 export async function notifyRetryScan(): Promise<void> {
   await flushDeferred();
   const pending = await prisma.notifyRecord.findMany({
-    where: { status: "pending" }, // failed 由退避定时器接管；dead 为终态
+    where: { status: "pending" }, // failed 由下方重启兜底扫描接管；dead 为终态
     orderBy: { id: "asc" },
     take: 10,
   });
   for (const record of pending) {
     await deliver(record.id, record.retries);
     await new Promise((r) => setTimeout(r, 2000)); // 邮件服务商限频：间隔 ≥2s
+  }
+
+  // V11-MAIL-02：failed 记录兜底重试（进程重启后内存定时器丢失的场景）
+  const settings = await getAllSettings();
+  const maxRetry = Number(settings.notifyRetryCount || 3);
+  const failed = await prisma.notifyRecord.findMany({
+    where: { status: "failed", retries: { lt: maxRetry } },
+    orderBy: { id: "asc" },
+    take: 10,
+  });
+  const now = Date.now();
+  for (const record of failed) {
+    // 退避：距记录创建 ≥ 2^retries 分钟才再试（NotifyRecord 无 updatedAt，按 createdAt 近似；
+    // 定时扫描 5 分钟一轮，实际重试间隔不小于扫描周期）
+    if (now - record.createdAt.getTime() < 2 ** record.retries * 60_000) continue;
+    await deliver(record.id, record.retries + 1); // 从上次失败的下一跳继续（与内存定时器语义一致）
+    await new Promise((r) => setTimeout(r, 2000));
   }
 }
 

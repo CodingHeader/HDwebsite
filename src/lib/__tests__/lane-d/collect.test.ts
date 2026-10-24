@@ -10,6 +10,7 @@
  *
  * 测试环境：临时 DATA_DIR；prisma/settings/kb-sync/notify 等外部依赖全部 vi.mock。
  */
+process.env.COLLECT_ALLOW_PRIVATE_TARGETS = "1"; // V11-SEC-04：本套件用本地服务器当采集源
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";

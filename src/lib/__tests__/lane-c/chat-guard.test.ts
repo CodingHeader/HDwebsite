@@ -14,6 +14,7 @@
  * 设置键读取：loadChatGuardSettings → getAllSettings（registry 默认值合并，无缓存）；
  * 测试通过 prisma.setting 覆盖三键（chatGuardRateLimitPerMin / chatGuardSensitiveWords / chatGuardBlacklist）。
  */
+import { signChatSession } from "@/lib/chat-service";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
@@ -109,6 +110,16 @@ async function setGuardSetting(key: string, value: string) {
 }
 
 const sessionId = () => `c10-sess-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+// V11-SEC-04：stream 请求统一带服务端签发的会话 cookie（与 body.sessionId 成对）
+function streamReq(body: Record<string, unknown>): Request {
+  const sid = String(body.sessionId);
+  return new Request("http://localhost/api/chat/stream", {
+    method: "POST",
+    headers: { "content-type": "application/json", Cookie: `chat_sid=${signChatSession(sid)}` },
+    body: JSON.stringify(body),
+  });
+}
 
 describe("C-10 · 纯函数：设置解析与风控判定", () => {
   it("parseJsonArray：合法 JSON 数组串 → 数组；非法/空 → []", () => {
@@ -220,7 +231,7 @@ describe("C-10 · 官网 SSE /api/chat/stream：同一风控入口", () => {
     const r = await streamPOST(
       new Request("http://localhost/api/chat/stream", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", Cookie: `chat_sid=${signChatSession("sess-black-1")}` },
         body: JSON.stringify({ sessionId: "sess-black-1", sceneCode: "float", message: "你好" }),
       }),
       ctx()
@@ -236,7 +247,7 @@ describe("C-10 · 官网 SSE /api/chat/stream：同一风控入口", () => {
     const r = await streamPOST(
       new Request("http://localhost/api/chat/stream", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", Cookie: `chat_sid=${signChatSession("sess-sensitive-1")}` },
         body: JSON.stringify({ sessionId: "sess-sensitive-1", sceneCode: "float", message: "有代考吗" }),
       }),
       ctx()
@@ -255,11 +266,7 @@ describe("C-10 · 官网 SSE /api/chat/stream：同一风控入口", () => {
     const sid = "sess-rate-web-1";
     const send = () =>
       streamPOST(
-        new Request("http://localhost/api/chat/stream", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ sessionId: sid, sceneCode: "float", message: "你好" }),
-        }),
+      streamReq({ sessionId: sid, sceneCode: "float", message: "你好" }),
         ctx()
       );
     const r1 = await send();
@@ -276,11 +283,7 @@ describe("C-10 · 官网 SSE /api/chat/stream：同一风控入口", () => {
     await setGuardSetting("chatGuardSensitiveWords", "[]");
     await setGuardSetting("chatGuardRateLimitPerMin", "20");
     const r = await streamPOST(
-      new Request("http://localhost/api/chat/stream", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionId: "sess-normal-1", sceneCode: "float", message: "专升本报名" }),
-      }),
+      streamReq({ sessionId: "sess-normal-1", sceneCode: "float", message: "专升本报名" }),
       ctx()
     );
     expect(r.status).toBe(200);
@@ -293,11 +296,7 @@ describe("C-10 · 官网 SSE /api/chat/stream：同一风控入口", () => {
   it("敏感词 SSE 流可被 chatSseEventSchema 解析（meta/delta/done）", async () => {
     await setGuardSetting("chatGuardSensitiveWords", JSON.stringify(["代考"]));
     const r = await streamPOST(
-      new Request("http://localhost/api/chat/stream", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionId: "sess-sensitive-schema", sceneCode: "float", message: "代考怎么搞" }),
-      }),
+      streamReq({ sessionId: "sess-sensitive-schema", sceneCode: "float", message: "代考怎么搞" }),
       ctx()
     );
     const text = await r.text();

@@ -14,6 +14,7 @@
  *     断言只看「信封 + 状态码」，不依赖外部站点或凭证
  *   - DATA_DIR 指向临时目录，上传/知识库落盘不污染工作区
  */
+import { signChatSession } from "@/lib/chat-service";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
@@ -246,6 +247,20 @@ async function callHandler(
     return (await handler(r as never, ctx(opts.params))) as Response;
   }
   if (opts.body !== undefined) init.body = opts.body;
+  // V11-SEC-04：chat/stream 需服务端签发的会话 cookie——按 body.sessionId 生成同源签名
+  if (route === "/chat/stream" && opts.body && typeof opts.body === "object" && "sessionId" in opts.body) {
+    const sid = String((opts.body as { sessionId: string }).sessionId);
+    const r = new Request(`http://localhost${url}`, {
+      method,
+      headers: {
+        "content-type": "application/json",
+        ...(opts.token ? { authorization: `Bearer ${opts.token}` } : {}),
+        Cookie: `chat_sid=${signChatSession(sid)}`,
+      },
+      body: JSON.stringify(opts.body),
+    });
+    return (await handler(r as never, ctx(opts.params))) as Response;
+  }
   return (await handler(req(url, init), ctx(opts.params))) as Response;
 }
 

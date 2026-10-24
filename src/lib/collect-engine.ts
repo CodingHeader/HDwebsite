@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { getAllSettings as getSettings } from "@/lib/settings"; // P06：须含非公开键（collect*/llm*/publish* 均 isPublic=false）
 import { uploadsDir, COLLECT_IMAGE_MAX_SIZE, COLLECT_IMAGE_TYPES } from "@/lib/storage";
 import { getParser, parseRule, fetchHtmlDetails, type ParsedItem } from "@/lib/collect/parsers";
+import { deriveCoverImage } from "@/lib/crud-resources/content";
 import { ingestCollectItem } from "@/lib/kb-sync";
 import { logOperation } from "@/lib/log";
 import { markdownExcerpt } from "@/lib/markdown";
@@ -151,6 +152,9 @@ const SSRF_BLOCKED_IPV4 = [/^127\./, /^10\./, /^192\.168\./, /^172\.(1[6-9]|2\d|
 const SSRF_BLOCKED_IPV6 = [/^::$/, /^::1$/, /^f[cd][0-9a-f]{2}:/i, /^fe80:/i];
 
 export async function assertPublicHttpUrl(rawUrl: string): Promise<void> {
+  // 测试/受控环境豁免：单测与 e2e 用本地 mock 服务器当采集源（127.0.0.1）；
+  // 生产环境永不设置该变量（.env.example 注释说明其含义）。
+  if (process.env.COLLECT_ALLOW_PRIVATE_TARGETS === "1") return;
   let u: URL;
   try {
     u = new URL(rawUrl);
@@ -349,6 +353,8 @@ async function afterItemCreated(
           contentType: "markdown",
           content: contentMd || created.title,
           excerpt: markdownExcerpt(contentMd),
+          // V11-WX-01：采集入库同样补封面（发布链 thumb 依赖）
+          coverImage: deriveCoverImage(contentMd || created.title),
           source: "collect",
           collectItemId: created.id,
           status: "approved",

@@ -11,6 +11,7 @@
  * 隔离：所有 gatewayChat/gatewayChatStream 调用必须显式传 preferredProviderIds，
  * 否则会把其它用例种下的供应商拉进来，破坏 status 断言。
  */
+import { signChatSession } from "@/lib/chat-service";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 
@@ -219,7 +220,7 @@ describe("C-09 · 网关调度：配额满跳过、限频跳过、全部超限 5
     const res = await streamPOST(
       new Request("http://localhost/api/chat/stream", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { Cookie: `chat_sid=${signChatSession(String("s09-quota-endpoint"))}`, "content-type": "application/json" },
         body: JSON.stringify({ sessionId: "s09-quota-endpoint", sceneCode: scene.code, message: "在吗" }),
       }),
       ctx()

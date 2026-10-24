@@ -18,20 +18,31 @@ export async function publishToWebsite(job: PublishJob): Promise<"published" | "
   if (!item) throw new Error("ContentItem 不存在");
   if (item.contentType !== "markdown" && item.contentType !== "html") throw new Error(`未知内容类型 ${item.contentType}`);
 
-  const article = await prisma.article.create({
-    data: {
-      title: item.title,
-      slug: await uniqueSlug(item.title, (s) => prisma.article.findUnique({ where: { slug: s } }).then((r) => !!r)),
-      content: item.content,
-      contentType: item.contentType,
-      channel: job.contentType === "info" ? "info" : "news",
-      excerpt: item.excerpt,
-      coverImage: item.coverImage,
-      authorId: item.authorId ?? 1,
-      status: "published",
-      publishedAt: new Date(),
-    },
+  // V11-WX-04：重发幂等——该条目已发布到官网渠道时更新既有文章（ContentChannel.externalId=article.id），
+  // 不再重复建稿；首次发布保持 create
+  const existingCh = await prisma.contentChannel.findFirst({
+    where: { itemId: item.id, channel: "website", externalId: { not: null } },
+    orderBy: { id: "desc" },
   });
+  const articleData = {
+    title: item.title,
+    content: item.content,
+    contentType: item.contentType,
+    channel: job.contentType === "info" ? "info" : "news",
+    excerpt: item.excerpt,
+    coverImage: item.coverImage,
+    authorId: item.authorId ?? 1,
+    status: "published",
+    publishedAt: new Date(),
+  } as const;
+  const article = existingCh?.externalId
+    ? await prisma.article.update({ where: { id: Number(existingCh.externalId) }, data: articleData })
+    : await prisma.article.create({
+        data: {
+          ...articleData,
+          slug: await uniqueSlug(item.title, (s) => prisma.article.findUnique({ where: { slug: s } }).then((r) => !!r)),
+        },
+      });
   await prisma.contentChannel.create({
     data: {
       itemId: item.id, channel: "website", externalId: String(article.id),
