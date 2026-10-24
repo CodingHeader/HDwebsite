@@ -63,6 +63,8 @@ npx vitest run lane-b/notify + notify-before-publish + notify-scan-flush
       Tests  115 passed (115)
 ```
 
+全量口径：本卡 notify 相关 6 文件 115 例全绿；执行期间其余域（chat/collect/kb）的在途改动属其他 lane，与本卡零交集（主代理 42d104b 提交记录全量 1766 绿）。
+
 ## UNKNOWN 及原因
 
 - 真实 SMTP 客户端对 HTML 的渲染效果（Outlook/企业邮箱等）：凭证缺失，无法联调，`UNKNOWN`（沿用全项目 mock 口径）；HTML 使用内联样式与表格化外层，兼容性风险已尽量收敛。

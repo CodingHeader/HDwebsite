@@ -51,7 +51,7 @@ npx vitest run lane-b/notify + notify-before-publish + notify-scan-flush
 npx vitest run src/lib/__tests__   （全量，见下方"全量单测"）
 ```
 
-全量单测结果：`src/lib/__tests__` 全绿（含新增 4 例），详见本次执行末尾汇总。
+全量单测说明：执行期间工作区同时存在其他 lane 的在途改动（SEC api-handler 限流、collect-engine 域），当时全量 `src/lib/__tests__` 有 18 个失败全部位于 chat/collect 域文件（与本卡改动零交集；本卡涉及的全部 notify/publish 测试 21 例全绿）。主代理后续提交 42d104b 记录"全量 1766 绿"，含本卡改动。
 
 ## UNKNOWN 及原因
 

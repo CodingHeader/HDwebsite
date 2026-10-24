@@ -120,36 +120,40 @@
   "note": "cron 语义、开关解绑与时区配置"
  },
  "V11-KB-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "Coze 请求形态对齐官方文档"
+  "note": "pushBatch 对齐官方 document_bases 形态（mock 反向验证缺陷修正）",
+  "finished": "2026-10-25T01:10:00+08:00"
  },
  "V11-KB-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "上传文件推送 Coze 接入"
+  "note": "上传 fire-and-forget 推送 Coze（OperationLog 记录）",
+  "finished": "2026-10-25T01:10:00+08:00"
  },
  "V11-KB-03": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "检索测试页返回结构修复"
+  "note": "检索测试页按 {local, coze} 真实返回渲染",
+  "finished": "2026-10-25T01:10:00+08:00"
  },
  "V11-KB-04": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "拒审失效与上传正向校验"
+  "note": "检索排除回收站切片 + 采集拒绝停用切片 + 上传正向魔数",
+  "finished": "2026-10-25T01:10:00+08:00"
  },
  "V11-LLM-01": {
   "status": "pending",

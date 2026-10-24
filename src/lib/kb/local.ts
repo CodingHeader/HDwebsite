@@ -101,6 +101,15 @@ export async function searchLocalWeighted(
   const where: Record<string, unknown> = { status: "active" };
   if (opts.tags?.length) where.OR = opts.tags.map((t) => ({ tags: { contains: t } }));
   if (opts.baseIds?.length) where.baseId = { in: opts.baseIds };
+  // V11-KB-04：回收站（软删）文件的切片不得被检索——排除 fileId 指向已删文件的切片
+  //（无外键列，须先查已删文件 id 集；条目级停用由 status 过滤天然覆盖）
+  const deletedFiles = await prisma.knowledgeFile.findMany({
+    where: { deletedAt: { not: null } },
+    select: { id: true },
+  });
+  if (deletedFiles.length > 0) {
+    where.fileId = { notIn: deletedFiles.map((f) => f.id) };
+  }
   const rows = (await prisma.knowledge.findMany({
     where,
     orderBy: [{ priority: "desc" }, { id: "desc" }],

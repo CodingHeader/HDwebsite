@@ -287,12 +287,22 @@ export default function KnowledgeBasesPage() {
     setTestHits(null);
     try {
       const input: KbSearchRequest = { query: testQuery.trim(), baseIds: selected ? [selected.id] : undefined, topK: 5 };
-      const res = await managerFetch<{ hits: { title: string; snippet?: string }[]; source: string }>("/api/kb/test", {
+      // V11-KB-03：接口真实返回 { local: {hits,error}, coze: {ok,answer,error} }
+      //（旧实现读 res.hits/res.source——字段不存在，页面恒报「检索失败」）
+      const res = await managerFetch<{
+        local: { hits: { title: string; snippet?: string }[]; error: string | null };
+        coze: { ok: boolean; answer: string | null; error: string | null };
+      }>("/api/kb/test", {
         method: "POST",
         body: JSON.stringify(input),
       });
-      setTestHits(res.hits);
-      toast.success("检索完成", `命中 ${res.hits.length} 条（${res.source}）`);
+      setTestHits(res.local?.hits ?? []);
+      if (res.local?.error) {
+        toast.error("本地检索出错", res.local.error);
+      } else {
+        const cozeNote = res.coze?.ok ? "；Coze 已应答" : res.coze?.error ? `；Coze：${res.coze.error}` : "";
+        toast.success("检索完成", `本地命中 ${res.local?.hits.length ?? 0} 条${cozeNote}`);
+      }
     } catch (e) {
       toast.error("检索失败", errorMessage(e));
     } finally {

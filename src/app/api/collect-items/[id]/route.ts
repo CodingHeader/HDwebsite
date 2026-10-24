@@ -27,6 +27,15 @@ export const PATCH = withApi<{ id: string }>(
 
     if (input.status === "rejected") {
       await prisma.collectItem.update({ where: { id: item.id }, data: { status: "rejected" } });
+      // V11-KB-04：拒绝后停用该条目已入库的知识切片（旧口径"保留作参考"与
+      // "拒绝内容不得进入客服检索"冲突——按后者；可在知识库页手动重新启用）
+      const srcFiles = await prisma.knowledgeFile.findMany({ where: { collectItemId: item.id }, select: { id: true } });
+      if (srcFiles.length > 0) {
+        await prisma.knowledge.updateMany({
+          where: { fileId: { in: srcFiles.map((f) => f.id) }, status: "active" },
+          data: { status: "disabled" },
+        });
+      }
       await logOperation({
         userId: session.id, username: session.username, module: "collect",
         action: "reject", title: item.title, ip: clientIp(request), userAgent: request.headers.get("user-agent"),

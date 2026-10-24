@@ -38,7 +38,7 @@ export const openaiAdapter: LLMProviderAdapter = {
     };
   },
 
-  async stream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides: AdapterOverrides = {}): Promise<ReadableStream<Uint8Array>> {
+  async stream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides: AdapterOverrides = {}, onUsage?: (usage: { tokensIn: number; tokensOut: number }) => void): Promise<ReadableStream<Uint8Array>> {
     const endpoint = provider.endpoint.replace(/\/+$/, "");
     const res = await httpFetch(`${endpoint}/chat/completions`, {
       method: "POST",
@@ -51,6 +51,8 @@ export const openaiAdapter: LLMProviderAdapter = {
         ...(overrides.topP != null ? { top_p: overrides.topP } : {}),
         stream: true,
       }),
+      // V11-LLM-01：流式路径 timeoutMs = 总时长上限（防挂死硬截止）；相邻 chunk 间的
+      // 空闲超时由 llm-gateway 包装层（withStreamTimeouts）判定，本适配器只透传
       timeoutMs,
       logTag: "llm-openai",
     });
@@ -70,9 +72,18 @@ export const openaiAdapter: LLMProviderAdapter = {
             const payload = line.slice(5).trim();
             if (payload === "[DONE]") continue;
             try {
-              const evt = JSON.parse(payload) as { choices?: { delta?: { content?: string } }[] };
+              // V11-LLM-02：usage 尾帧——OpenAI 兼容端在最后一个 data 帧携带 usage
+              //（choices 为空数组）；不主动加 stream_options.include_usage（部分第三方
+              // 兼容端拒绝未知字段），有则取之、无则不回调（网关记 0，口径见证据）
+              const evt = JSON.parse(payload) as {
+                choices?: { delta?: { content?: string } }[];
+                usage?: { prompt_tokens?: number; completion_tokens?: number };
+              };
               const delta = evt.choices?.[0]?.delta?.content;
               if (delta) controller.enqueue(encoder.encode(delta));
+              if (evt.usage && (evt.usage.prompt_tokens != null || evt.usage.completion_tokens != null)) {
+                onUsage?.({ tokensIn: evt.usage.prompt_tokens ?? 0, tokensOut: evt.usage.completion_tokens ?? 0 });
+              }
             } catch {
               /* 非法行忽略 */
             }

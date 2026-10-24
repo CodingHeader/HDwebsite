@@ -40,6 +40,18 @@ export async function checkIngestFile(file: File): Promise<IngestCheck> {
   const head = buf.slice(0, 32);
   const c = checkUploadFile(file.name, file.type, head);
   if (!c.ok) return { ok: false, message: c.message };
+  // V11-KB-04：黑名单之外补正向校验——
+  //   docx 必须是 ZIP 容器（PK\x03\x04）；md/txt 必须可按 UTF-8 解码且不含 NUL（防伪装二进制）
+  if (c.ext === "docx" || c.ext === "doc") {
+    if (!(head[0] === 0x50 && head[1] === 0x4b)) {
+      return { ok: false, message: "文档内容与扩展名不符（docx 须为 ZIP 容器）" };
+    }
+  } else if (c.ext === "txt" || c.ext === "md" || c.ext === "markdown") {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(buf.subarray(0, Math.min(buf.length, 64 * 1024)));
+    if (text.includes("\u0000")) {
+      return { ok: false, message: "文本文件包含二进制内容（非 UTF-8 文本）" };
+    }
+  }
   return { ok: true, filename: file.name, ext: c.ext, mimeType: c.mimeType, size: file.size, head };
 }
 
@@ -59,6 +71,32 @@ function sha256Hex(buf: Uint8Array): string {
  * - 读全文 → 校验 → 落盘 → 解析 → 切片 → 事务写库
  * - 同 `baseId+sha256` 已存在：返回 existing（不改动任何数据）
  */
+
+/**
+ * V11-KB-01：本地上传的文件推送 Coze（fire-and-forget，不阻塞上传主流程）。
+ * - 目标库绑定 cozeDatasetId 且 Coze 后端可用才推；否则静默跳过（不报错不落日志噪音）
+ * - 内容形态：解析成功的全文（md/txt/docx 抽取文本）作为 document 推送（文件名即文档名）
+ * - 结果记 OperationLog（schema 冻结，KnowledgeFile 无 coze 状态列）
+ * - 失败不影响上传结果（文件与切片已落库；可重传同名文件走 existing 分支后重推）
+ */
+async function pushFileToCoze(baseId: number, filename: string, text: string): Promise<void> {
+  try {
+    const { getKnowledgeBackend } = await import("@/lib/kb/registry");
+    const { configureCozeBackendFromSettings } = await import("@/lib/kb-sync");
+    const cfgOk = await configureCozeBackendFromSettings();
+    const b = getKnowledgeBackend("coze");
+    if (!cfgOk.ok || !b?.pushDocument) return; // 未配置 Coze：静默跳过（本地上传不依赖远端）
+    const base = await prisma.knowledgeBase.findUnique({ where: { id: baseId }, select: { cozeDatasetId: true } });
+    if (!base?.cozeDatasetId) return;
+    const { documentId } = await b.pushDocument({ id: 0, baseId, title: filename, content: text, datasetId: base.cozeDatasetId });
+    const { logOperation } = await import("@/lib/log");
+    await logOperation({ username: "system", module: "kb", action: "coze_push", title: filename, after: { documentId } });
+  } catch (err) {
+    const { logOperation } = await import("@/lib/log");
+    await logOperation({ username: "system", module: "kb", action: "coze_push_failed", title: filename, after: { error: err instanceof Error ? err.message : String(err) } }).catch(() => {});
+  }
+}
+
 export async function ingestFile(baseId: number, file: File): Promise<IngestOutcome> {
   const check = await checkIngestFile(file);
   if (!check.ok) return { status: "rejected", message: check.message };
@@ -115,6 +153,10 @@ export async function ingestFile(baseId: number, file: File): Promise<IngestOutc
       }
       return f;
     });
+    // V11-KB-01：解析成功即推送 Coze（异步，不阻塞上传响应）
+    if (parsed.state === "ok" && parsed.text.trim()) {
+      void pushFileToCoze(baseId, check.filename, parsed.text);
+    }
     return { status: "created", file: fileRec, chunks: chunks.length };
   } catch (err) {
     // 事务失败：清理刚写的磁盘文件

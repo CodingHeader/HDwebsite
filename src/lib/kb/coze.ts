@@ -12,7 +12,7 @@
  */
 import { cozeHeaders } from "@/lib/coze";
 import { httpFetch } from "@/lib/http-client";
-import { cozeFileTypeOf, KB_MAX_FILES_PER_UPLOAD } from "@/contracts/kb";
+import { KB_MAX_FILES_PER_UPLOAD } from "@/contracts/kb";
 import { registerKnowledgeBackend } from "@/lib/kb/registry";
 import type { KnowledgeBackend, KbDocument, KbDocStatus } from "@/lib/kb/types";
 
@@ -98,16 +98,18 @@ export async function createDataset(cfg: CozeKbConfig, name: string, description
 async function pushBatch(cfg: CozeKbConfig, datasetId: string, docs: CozeDocInput[]): Promise<string[]> {
   const data = await callCoze<{ document_infos?: { document_id?: string; id?: string }[] }>(cfg, "document/create", {
     dataset_id: datasetId,
-    space_id: cfg.spaceId,
-    // ADR-025 §3：chunk_strategy 必传、format_type 0；md/markdown 已由 cozeFileTypeOf 映射为 txt
+    // V11-KB-02：对齐官方文档（create_knowledge_files）——文本内容走
+    // document_bases[].source_info { file_type: "document", content }；
+    // 旧 documents[]/file_type:"txt" 形态与官方文档不符（mock 反向验证缺陷，已修正）
+    document_bases: docs.map((d) => ({
+      name: d.name,
+      source_info: { file_type: "document", content: d.content },
+      file_type: "document",
+      update_type: 0,
+    })),
+    // ADR-025 §3：chunk_strategy 必传、format_type 0（文本）
     chunk_strategy: { separator: "\n\n", max_tokens: 800, remove_extra_spaces: false, remove_urls_emails: false },
     format_type: 0,
-    documents: docs.map((d) => ({
-      name: d.name,
-      // Coze 文本知识库无 md 类型：由契约映射（md/markdown → txt；其余同名）
-      file_type: cozeFileTypeOf(d.name) ?? "txt",
-      content: d.content,
-    })),
   });
   return (data.document_infos ?? []).map((x, i) => x.document_id ?? x.id ?? `${datasetId}-${i}`);
 }

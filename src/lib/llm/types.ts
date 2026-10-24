@@ -10,6 +10,9 @@ export type ChatMessage = { role: "system" | "user" | "assistant"; content: stri
 /** 非流式对话结果：reply 与用量（tokensIn/tokensOut 用于 LLMUsage 统计） */
 export type AdapterChatResult = { reply: string; tokensIn: number; tokensOut: number };
 
+/** V11-LLM-02：流式 usage 尾帧（OpenAI 兼容端在最后一个 data 帧携带 usage 时回传） */
+export type StreamUsage = { tokensIn: number; tokensOut: number };
+
 /** C-07：场景级参数覆盖（ChatScene.temperature/maxTokens/topP；空字段回落供应商默认值） */
 export type AdapterOverrides = { temperature?: number | null; maxTokens?: number | null; topP?: number | null };
 
@@ -18,6 +21,8 @@ export interface LLMProviderAdapter {
   readonly kind: string;
   /** 非流式对话（测试端点/内部调用）；overrides 为场景级参数覆盖（可选） */
   chat(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides?: AdapterOverrides): Promise<AdapterChatResult>;
-  /** 流式对话（SSE 网关）；返回文本增量流（上层把 Uint8Array 增量转为事件帧）；overrides 同上 */
-  stream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides?: AdapterOverrides): Promise<ReadableStream<Uint8Array>>;
+  /** 流式对话（SSE 网关）；返回文本增量流（上层把 Uint8Array 增量转为事件帧）；overrides 同上。
+   * V11-LLM-02：适配器解析到 usage 尾帧时回调 onUsage（无 usage 帧不回调，网关记 0 不虚构估算）。
+   * 注意：timeoutMs 在流式路径是「总时长上限」语义（V11-LLM-01，空闲超时由网关包装层判定）。 */
+  stream(provider: LLMProvider, apiKey: string, messages: ChatMessage[], timeoutMs: number, overrides?: AdapterOverrides, onUsage?: (usage: StreamUsage) => void): Promise<ReadableStream<Uint8Array>>;
 }

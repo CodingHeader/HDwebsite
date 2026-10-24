@@ -51,7 +51,8 @@ describe("C-04 Coze 知识库客户端", () => {
     expect(init.headers["Agw-Js-Conv"]).toBe("str");
     const body = JSON.parse(init.body) as Record<string, unknown>;
     expect(body.dataset_id).toBe("dataset-9");
-    expect(body.space_id).toBe("space-1");
+    // V11-KB-02：官方 create-document 请求体无 space_id（建库才有）
+    expect(body.space_id).toBeUndefined();
     expect(body.format_type).toBe(0);
     expect(body.chunk_strategy).toBeTruthy();
     expect(JSON.stringify(body.chunk_strategy)).toContain("separator");
@@ -61,7 +62,7 @@ describe("C-04 Coze 知识库客户端", () => {
     let batch = 0;
     mockFetch((body) => {
       batch++;
-      const docs = body.documents as { name: string }[];
+      const docs = body.document_bases as { name: string }[];
       return { code: 0, data: { document_infos: docs.map((d, i) => ({ document_id: `b${batch}-${i}-${d.name}` })) } };
     });
     const docs = Array.from({ length: 11 }, (_, i) => ({ name: `f${i}.txt`, content: `c${i}` }));
@@ -69,26 +70,33 @@ describe("C-04 Coze 知识库客户端", () => {
 
     expect(COZE_BATCH_SIZE).toBe(10);
     expect(calls).toHaveLength(2);
-    expect((JSON.parse(calls[0].init.body) as { documents: unknown[] }).documents).toHaveLength(10);
-    expect((JSON.parse(calls[1].init.body) as { documents: unknown[] }).documents).toHaveLength(1);
+    expect((JSON.parse(calls[0].init.body) as { document_bases: unknown[] }).document_bases).toHaveLength(10);
+    expect((JSON.parse(calls[1].init.body) as { document_bases: unknown[] }).document_bases).toHaveLength(1);
     expect(ids).toHaveLength(11);
     expect(ids[0]).toContain("f0.txt");
     expect(ids[10]).toContain("f10.txt");
   });
 
-  it("md / markdown → txt（契约 COZE_FILE_TYPE_MAP）；其他保持自身", async () => {
+  it("V11-KB-02：文本推送走官方 document_bases 形态（source_info.file_type=document + content）", async () => {
     mockFetch((body) => {
-      const docs = body.documents as { name: string; file_type: string }[];
-      return { code: 0, data: { document_infos: docs.map((_, i) => ({ document_id: `d${i}` })) } };
+      const bases = body.document_bases as { name: string }[];
+      return { code: 0, data: { document_infos: bases.map((_, i) => ({ document_id: `d${i}` })) } };
     });
     await pushDocuments(CFG, "ds", [
       { name: "a.md", content: "1" },
-      { name: "b.markdown", content: "2" },
-      { name: "c.docx", content: "3" },
       { name: "d.txt", content: "4" },
     ]);
-    const docs = (JSON.parse(calls[0].init.body) as { documents: { name: string; file_type: string }[] }).documents;
-    expect(docs.map((d) => d.file_type)).toEqual(["txt", "txt", "docx", "txt"]);
+    const parsed = JSON.parse(calls[0].init.body) as {
+      document_bases: { name: string; file_type: string; source_info: { file_type: string; content: string } }[];
+    };
+    // 旧形态 documents[]/file_type:"txt" 与官方文档不符——现在必须没有 documents 字段
+    expect((parsed as { documents?: unknown }).documents).toBeUndefined();
+    expect(parsed.document_bases.map((d) => d.name)).toEqual(["a.md", "d.txt"]);
+    for (const d of parsed.document_bases) {
+      expect(d.file_type).toBe("document");
+      expect(d.source_info.file_type).toBe("document");
+      expect(typeof d.source_info.content).toBe("string");
+    }
   });
 
   it("建库：带 space_id + chunk_strategy + format_type 0，返回 datasetId", async () => {

@@ -6,7 +6,7 @@
  * C-08（V0.6，G10）扩展断言：
  * - 目标库落位：CollectSource.knowledgeBaseId 优先，否则 seed 的 `collect` 采集资讯库
  * - 双向回链：入库同时镜像 KnowledgeFile，collectItemId 指回来源 CollectItem
- * - 推送形态：mock Coze 收到 file_type=txt 且 dataset_id 取目标库 cozeDatasetId（ADR-025 §6）
+ * - 推送形态：mock Coze 收到 document_bases（V11-KB-02 官方形态）且 dataset_id 取目标库 cozeDatasetId（ADR-025 §6）
  */
 process.env.COLLECT_ALLOW_PRIVATE_TARGETS = "1"; // V11-SEC-04：本套件用本地 mock 服务器当采集源
 
@@ -123,7 +123,7 @@ describe("采集默认入知识库", () => {
     }
   });
 
-  it("C-08：mock Coze 收到 file_type=txt，且 dataset_id 取目标库 cozeDatasetId", async () => {
+  it("C-08：mock Coze 收到 document_bases（官方形态），且 dataset_id 取目标库 cozeDatasetId", async () => {
     // 自包含 arrange：清空遗留队列状态（pending/failed → synced），再造 collect 库源A + 未绑定 dataset 的 custom 库源B
     await prisma.knowledge.updateMany({ where: { syncStatus: { in: ["pending", "failed"] } }, data: { syncStatus: "synced" } });
     // "远端适配器"用例的清理（registerKbRemoteAdapter(null)）会注销 coze 后端，这里确保已注册
@@ -142,8 +142,8 @@ describe("采集默认入知识库", () => {
     const seen: { dataset_id?: string; file_type?: string; name?: string }[] = [];
     setCozeFetch(async (url, init) => {
       void url;
-      const body = JSON.parse(init.body) as { dataset_id?: string; documents?: { file_type?: string; name?: string }[] };
-      seen.push({ dataset_id: body.dataset_id, file_type: body.documents?.[0]?.file_type, name: body.documents?.[0]?.name });
+      const body = JSON.parse(init.body) as { dataset_id?: string; document_bases?: { file_type?: string; name?: string }[] };
+      seen.push({ dataset_id: body.dataset_id, file_type: body.document_bases?.[0]?.file_type, name: body.document_bases?.[0]?.name });
       return new Response(JSON.stringify({ code: 0, data: { document_infos: [{ document_id: "doc-1" }] } }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -159,7 +159,7 @@ describe("采集默认入知识库", () => {
       expect(r.failed).toBe(2);
       expect(seen.length).toBe(2);
       expect(seen.every((s) => s.dataset_id === ds)).toBe(true); // ADR-025 §6：推送到对应 dataset
-      expect(seen.every((s) => s.file_type === "txt")).toBe(true); // md/markdown → txt（契约 COZE_FILE_TYPE_MAP）
+      expect(seen.every((s) => s.file_type === "document")).toBe(true); // V11-KB-02：官方 document_bases 形态
       const failedCustom = await prisma.knowledge.findMany({ where: { syncStatus: "failed" } });
       expect(failedCustom).toHaveLength(2);
       expect(failedCustom.every((k) => k.syncErr?.includes("未绑定 Coze dataset"))).toBe(true);
