@@ -104,7 +104,7 @@
   "finished": "2026-10-24T23:30:00+08:00"
  },
  "V11-COL-01": {
-  "status": "pending",
+  "status": "running",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
@@ -112,7 +112,7 @@
   "note": "调度锁语义与手动执行并发保护"
  },
  "V11-COL-02": {
-  "status": "pending",
+  "status": "running",
   "owner": "P1",
   "verify": null,
   "blocked_reason": null,
@@ -277,12 +277,13 @@
   "note": "OG 标签、JSON-LD 绝对地址与 sitemap 扩展"
  },
  "V11-E2E-375": {
-  "status": "pending",
+  "status": "done",
   "owner": "P2",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "375 宽度管理端 CRUD e2e"
+  "note": "4 用例（移动卡片语义修正后全绿）；无横向溢出",
+  "finished": "2026-10-25T02:50:00+08:00"
  },
  "V11-OPS-01": {
   "status": "done",
