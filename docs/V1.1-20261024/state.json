@@ -199,12 +199,13 @@
   "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-UI-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "文章编辑字段补齐"
+  "note": "文章表单补 slug/标签/三开关/SEO（契约已支持，纯接线）",
+  "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-UI-02": {
   "status": "pending",
@@ -215,28 +216,31 @@
   "note": "媒体库能力补齐"
  },
  "V11-UI-03": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "关联字段选择器"
+  "note": "CrudPage relations 远程搜索配置（courses/enrollment/students/gallery/campus/hot-majors）",
+  "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-UI-04": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "排序全量生效"
+  "note": "如实报告：排序写入路径全局有效，无可复现缺陷（列排序为文档化显示行为）",
+  "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-UI-05": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "文章编辑/列表对旧 /manager/news 兼容"
+  "note": "/manager/news 重定向 /manager/articles",
+  "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-ENR-01": {
   "status": "done",
@@ -248,12 +252,13 @@
   "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-ENR-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "K1 决议执行：招生前台边界"
+  "note": "K1 默认方案执行（前台不加表）+ 管理端走查",
+  "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-COMPAT-01": {
   "status": "pending",

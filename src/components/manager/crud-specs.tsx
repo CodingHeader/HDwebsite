@@ -54,9 +54,22 @@ async function testSource(row: Record<string, unknown>, _reload: () => void, fai
 
 /** 特殊行为（行操作/关联下拉/默认值/搜索占位），按资源名合并 */
 const EXTRA: Record<string, Partial<CrudPageSpec>> = {
-  courses: { searchPlaceholder: "搜索课程…" },
-  "enrollment-offerings": { searchPlaceholder: "搜索批次/类型…" },
-  students: { searchPlaceholder: "搜索姓名/电话…" },
+  // V11-UI-03：外键关联字段改远程搜索选择（RelationField），不再手填数字 ID
+  courses: {
+    searchPlaceholder: "搜索课程…",
+    relations: { categoryId: { endpoint: "categories", labelKey: "name" }, majorId: { endpoint: "majors", labelKey: "name" } },
+  },
+  "enrollment-offerings": {
+    searchPlaceholder: "搜索批次/类型…",
+    relations: { majorId: { endpoint: "majors", labelKey: "name" }, partnerId: { endpoint: "partners", labelKey: "name" }, courseId: { endpoint: "courses", labelKey: "title" } },
+  },
+  gallery: { relations: { categoryId: { endpoint: "categories", labelKey: "name" } } },
+  campus: { relations: { categoryId: { endpoint: "categories", labelKey: "name" } } },
+  "hot-majors": { relations: { majorId: { endpoint: "majors", labelKey: "name" } } },
+  students: {
+    searchPlaceholder: "搜索姓名/电话…",
+    relations: { courseId: { endpoint: "courses", labelKey: "title" } },
+  },
   knowledge: { searchPlaceholder: "搜索标题/内容/标签…" },
   "content-items": { searchPlaceholder: "搜索标题/内容…" },
   users: { relations: { roleId: { endpoint: "roles", labelKey: "name" } } },

@@ -44,7 +44,7 @@ const CHANNELS = [
   { key: "info", label: "资讯" },
 ];
 
-const EMPTY_FORM: FormValues = { title: "", content: "", contentType: "markdown", channel: "info", status: "draft", excerpt: "", coverImage: "", categoryId: null };
+const EMPTY_FORM: FormValues = { title: "", content: "", contentType: "markdown", channel: "info", status: "draft", excerpt: "", coverImage: "", categoryId: null, slug: "", tagIds: [], isTop: false, isRecommend: false, isHot: false, seoTitle: "", seoKeywords: "", seoDescription: "" }; // V11-UI-01
 
 export default function ManagerArticlesPage() {
   const [page, setPage] = useState(1);
@@ -61,6 +61,8 @@ export default function ManagerArticlesPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState("");
   const [categories, setCategories] = useState<{ label: string; value: number }[]>([]);
+  // V11-UI-01：标签选项（多选）
+  const [tagOptions, setTagOptions] = useState<{ label: string; value: number }[]>([]);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [toggling, setToggling] = useState<number | null>(null);
 
@@ -82,6 +84,8 @@ export default function ManagerArticlesPage() {
   async function loadCategories() {
     try {
       const res = await managerFetch<{ list: { id: number; name: string }[] }>("/api/categories?limit=100");
+      const tagsRes = await managerFetch<{ list: { id: number; name: string }[] }>("/api/tags?limit=100").catch(() => ({ list: [] }));
+      setTagOptions(tagsRes.list.map((t) => ({ label: t.name, value: t.id })));
       setCategories(res.list.map((c) => ({ label: c.name, value: c.id })));
     } catch {
       setCategories([]);
@@ -101,7 +105,7 @@ export default function ManagerArticlesPage() {
     begin(a.id, { ...EMPTY_FORM, title: a.title, channel: a.channel, contentType: a.contentType, status: a.status });
     setDetailLoading(true);
     try {
-      const full = await managerFetch<Row & { content: string; categoryId: number | null }>(`/api/articles/${a.id}`);
+      const full = await managerFetch<Row & { content: string; categoryId: number | null; slug?: string | null; tags?: { id: number }[]; isTop?: boolean; isRecommend?: boolean; isHot?: boolean; seoTitle?: string | null; seoKeywords?: string | null; seoDescription?: string | null }>(`/api/articles/${a.id}`);
       const values: FormValues = {
         title: full.title,
         content: full.content ?? "",
@@ -111,6 +115,15 @@ export default function ManagerArticlesPage() {
         excerpt: full.excerpt ?? "",
         coverImage: full.coverImage ?? "",
         categoryId: full.categoryId ?? null,
+        // V11-UI-01：补齐字段回读
+        slug: full.slug ?? "",
+        tagIds: Array.isArray(full.tags) ? full.tags.map((t: { id: number }) => t.id) : [],
+        isTop: full.isTop ?? false,
+        isRecommend: full.isRecommend ?? false,
+        isHot: full.isHot ?? false,
+        seoTitle: full.seoTitle ?? "",
+        seoKeywords: full.seoKeywords ?? "",
+        seoDescription: full.seoDescription ?? "",
       };
       setEditing(values);
       setInitial(JSON.stringify(values));
@@ -130,6 +143,15 @@ export default function ManagerArticlesPage() {
     { key: "excerpt", label: "摘要（留空自动生成）", colSpan: 2 },
     { key: "coverImage", label: "封面（留空取正文首图）", type: "image", colSpan: 2 },
     { key: "content", label: `正文（${editing?.contentType === "html" ? "HTML" : "Markdown"}）`, type: editing?.contentType === "html" ? "richtext" : "markdown", required: true, rows: 14 },
+    // V11-UI-01：slug / 标签 / 三开关 / SEO
+    { key: "slug", label: "Slug（留空自动生成）", colSpan: 2, placeholder: "小写字母、数字、中文与连字符" },
+    { key: "tagIds", label: "标签", type: "multiselect", options: tagOptions, colSpan: 2 },
+    { key: "isTop", label: "置顶", type: "switch" },
+    { key: "isRecommend", label: "推荐", type: "switch" },
+    { key: "isHot", label: "热门", type: "switch" },
+    { key: "seoTitle", label: "SEO 标题", advanced: true, colSpan: 2 },
+    { key: "seoKeywords", label: "SEO 关键词（逗号分隔）", advanced: true, colSpan: 2 },
+    { key: "seoDescription", label: "SEO 描述", type: "textarea", rows: 2, advanced: true, colSpan: 2 },
   ];
 
   async function save() {
@@ -152,6 +174,15 @@ export default function ManagerArticlesPage() {
         coverImage: editing.coverImage ? String(editing.coverImage) : undefined,
         categoryId: editing.categoryId ? Number(editing.categoryId) : null,
         status: editing.status,
+        // V11-UI-01：slug / 标签 / 三开关 / SEO
+        slug: editing.slug ? String(editing.slug).trim() : undefined,
+        tagIds: Array.isArray(editing.tagIds) ? editing.tagIds.map(Number).filter(Number.isInteger) : [],
+        isTop: Boolean(editing.isTop),
+        isRecommend: Boolean(editing.isRecommend),
+        isHot: Boolean(editing.isHot),
+        seoTitle: editing.seoTitle ? String(editing.seoTitle) : undefined,
+        seoKeywords: editing.seoKeywords ? String(editing.seoKeywords) : undefined,
+        seoDescription: editing.seoDescription ? String(editing.seoDescription) : undefined,
       };
       if (editingId) {
         await managerFetch(`/api/articles/${editingId}`, { method: "PUT", body: JSON.stringify(body) });
