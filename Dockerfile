@@ -68,6 +68,9 @@ ENV NODE_ENV=production
 ENV PORT=6789
 ENV HOSTNAME="0.0.0.0"
 ENV NEXT_TELEMETRY_DISABLED=1
+# V11-COL-02：容器时区 Asia/Shanghai（调度 cron 判定、日志与业务时间口径一致；
+# node:slim 自带 tzdata，TZ 生效无需额外安装）
+ENV TZ=Asia/Shanghai
 
 # 静态资源：Next standalone 不打包 public/.next/static，需单独复制
 COPY --from=builder --chown=node:node /app/public ./public

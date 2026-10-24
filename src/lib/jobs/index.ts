@@ -12,7 +12,7 @@ registerJob("backup", backupJob);
 // ── 采集（S4）──
 registerJob("collect.run", async () => {
   const { prisma } = await import("@/lib/prisma");
-  const { runSource } = await import("@/lib/collect-engine");
+  const { runSource, SourceBusyError } = await import("@/lib/collect-engine");
   const { notifyCollectFailed } = await import("@/lib/notify-gateway");
   const { isDue } = await import("@/lib/scheduler");
   const { processKbSyncQueue } = await import("@/lib/kb-sync");
@@ -25,6 +25,8 @@ registerJob("collect.run", async () => {
     try {
       await runSource(source);
     } catch (err) {
+      // V11-COL-01：同源互斥命中（该源正被手动执行）→ 跳过本源，不计采集失败、不告警
+      if (err instanceof SourceBusyError) continue;
       await notifyCollectFailed(source.name, err instanceof Error ? err.message : String(err));
     }
   }

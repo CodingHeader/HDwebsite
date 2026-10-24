@@ -2,7 +2,9 @@
  * 进程内调度基座（SOL-001 §3.1）
  * - 每分钟扫描 CronJob 表（name/cron/enabled/lastRunAt/lockedAt）
  * - 任务注册表（registry SSOT，TN-007）：任务在 src/lib/jobs/index.ts 注册
- * - 锁：单飞锁 + lockedAt 抢锁（运行中无心跳；超 LOCK_STALE_MINUTES 视为进程崩溃遗留自动释放）
+ * - 锁：单飞锁 + lockedAt 抢锁；持锁期间按 LOCK_HEARTBEAT_MS 心跳续写 lockedAt
+ *   （V11-COL-01：超过 LOCK_STALE_MINUTES 无心跳才视为进程崩溃遗留自动释放，
+ *   消除「锁过期 < 单批最长执行」的重复启动窗口——如 collect.run 单批可达 30 分钟）
  * - 幂等：任务自行保证重跑无重复副作用；失败也推进 lastRunAt（等下一 cron 窗口，不热重试）
  * - SQLite 写并发：短事务 + 失败即放锁；如出现 SQLITE_BUSY 需在适配器层评估 busy_timeout（RISK-007）
  * - 启动：src/instrumentation.ts 钩子（dev 热重载经 globalThis 防重入）
@@ -11,6 +13,8 @@ import { CronExpressionParser } from "cron-parser";
 import { prisma } from "@/lib/prisma";
 
 export const LOCK_STALE_MINUTES = 10;
+/** 心跳续期间隔（V11-COL-01）：持锁期间每分钟续写 lockedAt，LOCK_STALE_MINUTES 由「硬 TTL」变为「心跳超时」 */
+export const LOCK_HEARTBEAT_MS = 60_000;
 const SCAN_INTERVAL_MS = 60_000;
 
 export type JobContext = {
@@ -39,6 +43,25 @@ export function getRegisteredJobNames(): string[] {
   return [...jobRegistry.keys()];
 }
 
+/**
+ * 持锁心跳（V11-COL-01）：执行期间每 LOCK_HEARTBEAT_MS 续写 lockedAt，
+ * 使 LOCK_STALE_MINUTES 的僵死判定不会误伤长任务（如 collect.run 单批 30 分钟）。
+ * 仅当锁仍非空时续期（updateMany 守卫），放锁后的迟到心跳不会重新上锁。
+ */
+async function withHeartbeat<T>(jobId: number, jobName: string, fn: () => Promise<T>): Promise<T> {
+  const heartbeat = setInterval(() => {
+    prisma.cronJob
+      .updateMany({ where: { id: jobId, lockedAt: { not: null } }, data: { lockedAt: new Date() } })
+      .catch((err) => console.error(`[scheduler] 任务 ${jobName} 心跳续期失败：`, err));
+  }, LOCK_HEARTBEAT_MS);
+  heartbeat.unref?.();
+  try {
+    return await fn();
+  } finally {
+    clearInterval(heartbeat);
+  }
+}
+
 /** 手动执行指定任务（管理端“立即执行”入口）：与扫描走同一 claim 路径防并发双跑 */
 export async function execute(jobName: string): Promise<void> {
   const handler = jobRegistry.get(jobName);
@@ -53,7 +76,7 @@ export async function execute(jobName: string): Promise<void> {
   });
   if (claimed.count === 0) throw new Error(`任务 ${jobName} 抢锁失败（并发执行中）`);
   try {
-    await handler({ jobName, lastRunAt: row.lastRunAt });
+    await withHeartbeat(row.id, jobName, () => handler({ jobName, lastRunAt: row.lastRunAt }));
   } finally {
     await prisma.cronJob.update({
       where: { id: row.id },
@@ -81,6 +104,7 @@ export function isDue(cron: string, lastRunAt: Date | null, now: Date): boolean 
   }
 }
 
+/** 释放僵死锁：LOCK_STALE_MINUTES 内无心跳续期（进程崩溃遗留）才回收；持锁任务心跳正常则不受影响 */
 async function releaseStaleLocks(now: Date): Promise<void> {
   const staleBefore = new Date(now.getTime() - LOCK_STALE_MINUTES * 60_000);
   await prisma.cronJob.updateMany({
@@ -104,7 +128,7 @@ export async function scanOnce(now = new Date()): Promise<void> {
     if (claimed.count === 0) continue; // 抢锁失败
     try {
       const handler = jobRegistry.get(job.name)!;
-      await handler({ jobName: job.name, lastRunAt: job.lastRunAt });
+      await withHeartbeat(job.id, job.name, () => handler({ jobName: job.name, lastRunAt: job.lastRunAt }));
       await prisma.cronJob.update({
         where: { id: job.id },
         data: { lastRunAt: new Date(), lockedAt: null },

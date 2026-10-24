@@ -25,6 +25,8 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
+      # V11-COL-02：容器时区 Asia/Shanghai（调度 cron 判定、日志时间口径一致）
+      - TZ=Asia/Shanghai
       - PORT=${APP_PORT:-6789}
       - HOSTNAME=0.0.0.0
       # 数据库文件落 DATA_DIR 卷，不遮蔽镜像内 prisma/schema 与 migrations
@@ -65,6 +67,7 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
+      - TZ=Asia/Shanghai
       - DATABASE_URL=${DATABASE_URL:-file:/app/data/db/dev.db}
       - DATA_DIR=${DATA_DIR:-/app/data}
     env_file:

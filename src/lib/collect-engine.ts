@@ -28,6 +28,17 @@ import type { CollectSource } from ".prisma/client";
 /** 单个源批次最大运行时长（30 分钟）；超时中止并标记失败（D-12） */
 export const COLLECT_BATCH_TIMEOUT_MS = 30 * 60 * 1000;
 
+/** 同源互斥宽限：running 任务超过「批次上限 + 宽限」仍未收尾视为进程崩溃遗留，不再阻塞（V11-COL-01） */
+export const COLLECT_RUN_MUTEX_GRACE_MS = 5 * 60 * 1000;
+
+/** V11-COL-01：同源已有批次在执行（手动连点 / 手动与调度并发）时抛出；调用方据此跳过或返回 409，不计为采集失败 */
+export class SourceBusyError extends Error {
+  constructor(sourceName: string) {
+    super(`采集源「${sourceName}」正在执行中，请勿重复触发`);
+    this.name = "SourceBusyError";
+  }
+}
+
 
 /** 标题相似度（字符 bigram Jaccard） */
 export function titleSimilarity(a: string, b: string): number {
@@ -220,8 +231,16 @@ async function fetchWithSignal(url: string, timeoutMs: number, ua: string, outer
 
 /** 单源执行：抓列表 → 逐条抓正文 → 去重入库（status=new）
  * D-12：批次超时 COLLECT_BATCH_TIMEOUT_MS（30 分钟）→ 中止并标记 collect_failed + 触发通知
+ * V11-COL-01：入口同源互斥——存在未过宽限期的 running 采集任务即抛 SourceBusyError
+ * （手动连点 / 手动与调度并发不再双跑；DB 判定跨请求生效，崩溃遗留任务由宽限期兜底自动放行）
  */
 export async function runSource(source: CollectSource): Promise<{ newCount: number; skipCount: number; fetched: number; failed: number }> {
+  const staleBefore = new Date(Date.now() - (COLLECT_BATCH_TIMEOUT_MS + COLLECT_RUN_MUTEX_GRACE_MS));
+  const running = await prisma.collectTask.findFirst({
+    where: { sourceId: source.id, status: "running", startedAt: { gte: staleBefore } },
+    select: { id: true },
+  });
+  if (running) throw new SourceBusyError(source.name);
   const settings = await getSettings();
   const origin = await appOrigin();
   const ua = settings.collectUserAgent || `Mozilla/5.0 (compatible; HDBot/1.0; +${origin})`;
@@ -282,7 +301,9 @@ export async function runSource(source: CollectSource): Promise<{ newCount: numb
         continue;
       }
       let contentMd = item.contentMd ?? null;
-      if (contentMd && settings.collectDefaultKnowledge !== "false") {
+      // V11-COL-02：图片转存由独立开关 collectTransferImages 控制（默认开），
+      // 不再挂靠「默认入知识库」——两开关互不影响
+      if (contentMd && settings.collectTransferImages !== "false") {
         contentMd = await transferImagesInMarkdown(contentMd, timeoutMs, ua, appDomain, timer.signal);
       }
       try {

@@ -302,7 +302,12 @@ export const resourceMetas = {
       type: { label: "类型", options: [{ label: "HTML 页面", value: "html" }, { label: "RSS", value: "rss" }] },
       url: { label: "列表页 URL", colSpan: 2 },
       // E-01：cron 留空 = 仅手动执行（契约口径的提示文案）
-      cron: { label: "Cron 表达式", placeholder: "0 4 * * *", help: "留空表示仅手动执行（不在列表页展示计划）" },
+      // V11-COL-02：明示源级 cron 与系统任务 collect.run 的门控关系（审计 §采集.3，轻方案）
+      cron: {
+        label: "Cron 表达式",
+        placeholder: "0 4 * * *",
+        help: "留空表示仅手动执行（不在列表页展示计划）。源级计划由系统任务 collect.run 的检查频率门控：该任务为每分钟（* * * * *）时源计划才逐源独立生效；默认 0 4 * * * 即每天 04:00 检查并执行到期的源",
+      },
       autoTags: { label: "自动标签", type: "tags" },
       parser: { label: "解析规则 JSON（listSelector/titleSelector/linkSelector/timeSelector/contentSelector）", type: "textarea", colSpan: 2, rows: 5 },
       enabled: { label: "启用" },

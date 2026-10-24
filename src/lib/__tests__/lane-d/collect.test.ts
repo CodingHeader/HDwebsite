@@ -19,6 +19,7 @@ import os from "node:os";
 import path from "node:path";
 
 const mocks = vi.hoisted(() => ({
+  collectTaskFindFirst: vi.fn(),
   collectTaskCreate: vi.fn(),
   collectTaskUpdate: vi.fn(),
   collectSourceUpdate: vi.fn(),
@@ -30,7 +31,12 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    collectTask: { create: mocks.collectTaskCreate, update: mocks.collectTaskUpdate },
+    collectTask: {
+      // V11-COL-01：runSource 入口同源互斥检查——默认无 running 任务放行
+      findFirst: mocks.collectTaskFindFirst,
+      create: mocks.collectTaskCreate,
+      update: mocks.collectTaskUpdate,
+    },
     collectSource: { update: mocks.collectSourceUpdate },
     collectItem: {
       findUnique: mocks.collectItemFindUnique,
@@ -119,6 +125,7 @@ afterAll(async () => {
 beforeEach(() => {
   tmpRoot = path.join(os.tmpdir(), `hd-d12-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   process.env.DATA_DIR = tmpRoot;
+  mocks.collectTaskFindFirst.mockReset().mockResolvedValue(null);
   mocks.collectTaskCreate.mockReset().mockResolvedValue({ id: 1 });
   mocks.collectTaskUpdate.mockReset().mockResolvedValue({ id: 1 });
   mocks.collectSourceUpdate.mockReset().mockResolvedValue({ id: 1 });
