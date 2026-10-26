@@ -314,19 +314,22 @@
   "finished": "2026-10-25T02:00:00+08:00"
  },
  "V11-V-01": {
-  "status": "pending",
+  "status": "done",
   "owner": "subagent-verifier",
-  "verify": null,
+  "verify": "34 verify.md generated; 0 FAIL, UNKNOWN retained for external credentials/network/environment only",
   "blocked_reason": null,
-  "commits": [],
-  "note": "V1.1 全卡独立验收"
+  "commits": [
+   "f44328d"
+  ],
+  "note": "V1.1 full-card independent verification reports generated for 34 executed cards",
+  "finished": "2026-10-26T15:05:00+08:00"
  },
  "V11-REL-01": {
-  "status": "pending",
+  "status": "blocked",
   "owner": "main-agent",
   "verify": null,
-  "blocked_reason": null,
+  "blocked_reason": "HDU_PUSH_PAT not available in current shell; local release evidence/zip/sha completed but git push origin upgrade is blocked",
   "commits": [],
-  "note": "V1.1 终审交付"
+  "note": "V1.1 local release closure completed; remote sync and final verify await credentials/push"
  }
 }
