@@ -14,7 +14,7 @@
 | 卡 | 状态 | 提交 | 备注 |
 |---|---|---|---|
 | V12-G-01 | **done** | 83048fa | 五连全绿；e2e 77/2；visual 46 例；双端 0 0 @6af5fff |
-| V12-E2E-01 | ready | | 根因已取证，直接修 |
+| V12-E2E-01 | **done** | 8b6dbaf | 服务端幂等签发+客户端单例helper+400重试收紧+嵌套bug修复；apply-chat单跑PASS；SEC-04回归36/36 |
 | V12-E2E-02 | ready | | |
 | V12-E2E-03 | ready | | 全量复跑门 |
 | V12-VIS-01 | ready | | 分诊先行 |
