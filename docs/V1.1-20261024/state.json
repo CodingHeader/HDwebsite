@@ -213,12 +213,13 @@
   "finished": "2026-10-25T02:20:00+08:00"
  },
  "V11-UI-02": {
-  "status": "pending",
+  "status": "done",
   "owner": "Hark",
   "verify": null,
   "blocked_reason": null,
   "commits": [],
-  "note": "媒体库能力补齐"
+  "note": "Media library built-ins/search/category filters/missing markers complete; lint/typecheck/targeted tests/build PASS; full tests have unrelated environment flakes",
+  "finished": "2026-10-26T14:30:00+08:00"
  },
  "V11-UI-03": {
   "status": "done",

@@ -5,15 +5,24 @@
  * P05：五态接入（骨架/空/错误+重试/无权限）；批量删除走 ConfirmDialog；上传/删除结果 Toast（部分失败逐条说明）。
  */
 import { createElement, useRef, useState } from "react";
-import { Copy, FileText, PenLine, Trash2, Upload, ImageOff } from "lucide-react";
+import { Copy, FileText, PenLine, RefreshCw, Trash2, Upload, ImageOff } from "lucide-react";
 import { managerFetch, isForbidden } from "@/lib/manager-fetch";
 import { useAuthStore } from "@/store/authStore";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { Pagination } from "@/components/manager/Pagination";
-import { Button, Checkbox, IconButton } from "@/components/manager/ui";
+import { Badge, Button, Checkbox, IconButton, Select, SearchField } from "@/components/manager/ui";
 import { Bone, EmptyState, ErrorState, Forbidden, cardCls, confirmDialog, promptDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
-type MediaRow = { id: number; url: string; filename: string; mimeType: string; size: number; createdAt: string };
+type MediaRow = {
+  id: number;
+  url: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  createdAt: string;
+  category?: string | null;
+  missing?: boolean;
+};
 type ListData = { list: MediaRow[]; pagination: { page: number; totalPages: number; total?: number } };
 
 function formatSize(n: number) {
@@ -24,7 +33,18 @@ function formatSize(n: number) {
 
 export default function ManagerMediaPage() {
   const [page, setPage] = useState(1);
-  const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(`/api/media?page=${page}&limit=24`);
+  const [keyword, setKeyword] = useState("");
+  const [type, setType] = useState("");
+  const [category, setCategory] = useState("");
+  const [importingBuiltin, setImportingBuiltin] = useState(false);
+  const mediaPath = (() => {
+    const query = new URLSearchParams({ page: String(page), limit: "24" });
+    if (keyword.trim()) query.set("keyword", keyword.trim());
+    if (type) query.set("type", type);
+    if (category) query.set("category", category);
+    return `/api/media?${query.toString()}`;
+  })();
+  const { data, error, loading, refreshing, reload } = useManagerQuery<ListData>(mediaPath);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -116,6 +136,23 @@ export default function ManagerMediaPage() {
     }
   }
 
+  async function importBuiltins() {
+    setImportingBuiltin(true);
+    try {
+      const result = await managerFetch<{ total: number; created: unknown[]; skipped: unknown[]; failed: string[] }>("/api/media/import-builtins", {
+        method: "POST",
+      });
+      toast.success(`已并入 ${result.created.length} 个内置资源`, `扫描 ${result.total} 个，跳过 ${result.skipped.length} 个`);
+      if (result.failed.length) toast.error(`${result.failed.length} 个内置资源导入失败`, result.failed.slice(0, 3).join("；"));
+      if (page !== 1) setPage(1);
+      else void reload();
+    } catch (e) {
+      toast.error("内置资源导入失败", e instanceof Error ? e.message : "导入失败");
+    } finally {
+      setImportingBuiltin(false);
+    }
+  }
+
   if (isForbidden(error)) return <Forbidden message={error.message} />;
   const list = data?.list ?? [];
 
@@ -155,6 +192,10 @@ export default function ManagerMediaPage() {
               <Upload aria-hidden="true" />
               {uploading ? "上传中…" : "上传文件"}
             </Button>
+            <Button type="button" onClick={() => void importBuiltins()} disabled={importingBuiltin}>
+              <RefreshCw className={importingBuiltin ? "animate-spin" : undefined} aria-hidden="true" />
+              {importingBuiltin ? "并入中…" : "并入内置图"}
+            </Button>
             {/* E-06：隐藏 file input 用 createElement 写法（严格正则禁 `<input` 字面量；行为不变） */}
             {createElement("input", {
               ref: fileRef,
@@ -168,6 +209,44 @@ export default function ManagerMediaPage() {
           </>
         }
       />
+
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <SearchField
+          value={keyword}
+          onChange={(value) => {
+            setKeyword(value);
+            setPage(1);
+          }}
+          placeholder="??????"
+          label="???????"
+        />
+        <Select
+          aria-label="?????"
+          className="w-40"
+          value={type}
+          onChange={(e) => {
+            setType(e.target.value);
+            setPage(1);
+          }}
+          options={[
+            { label: "??", value: "image" },
+            { label: "??", value: "video" },
+            { label: "??", value: "document" },
+          ]}
+          placeholder="????"
+        />
+        <Select
+          aria-label="?????"
+          className="w-44"
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPage(1);
+          }}
+          options={Array.from(new Set(list.map((row) => row.category ?? "???"))).filter(Boolean).map((value) => ({ label: value, value }))}
+          placeholder="????"
+        />
+      </div>
 
       {dragOver && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-mgr-card border-2 border-dashed border-mgr-primary bg-mgr-primary-soft/80 text-[14px] font-medium text-mgr-primary">
@@ -233,6 +312,11 @@ export default function ManagerMediaPage() {
                   <p className="mt-1.5 truncate text-[12px] font-medium" title={m.filename}>{m.filename}</p>
                   <p className="text-[11px] text-mgr-muted-fg">{formatSize(m.size)}</p>
                 </label>
+                {m.missing && (
+                  <span className="absolute left-3 bottom-10 z-[1]">
+                    <Badge tone="danger" title="???????????">????</Badge>
+                  </span>
+                )}
                 <span className="absolute right-3 top-3 flex gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
                   <IconButton label={`重命名 ${m.filename}`} size="sm" onClick={() => void rename(m)} className="bg-mgr-surface/90 shadow-mgr-sm">
                     <PenLine aria-hidden="true" />
