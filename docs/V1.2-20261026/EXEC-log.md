@@ -24,3 +24,9 @@
 ## 2. 门禁终态进度
 
 （终稿回填）
+## 3. 断点记录（2026-10-26 15:19）
+
+- 规划包已提交本地：`7550328 docs(V12)`（26 文件，1120+ 行）。
+- **推送受阻**：CodingHeader 账号 HTTPS 凭据不可用（credential manager 无条目、无 PAT 环境变量）；SSH 键 `id_ed25519_aideanew` 属 aideanew 账号（仅用于其公开仓库），不含 HDwebsite 推送权限。
+- 预案执行：zip 规划包 `backups/release/HDwebsite-V1.2-20261026-docs.zip`（sha `badfc1f...94ffe`）。
+- 恢复点：获取 CodingHeader 推送凭据（HTTPS PAT 或 credential manager 登录）后 `git push origin upgrade`，再按本包协议从 V12-G-01 开始取卡。
