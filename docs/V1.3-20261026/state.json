@@ -22,8 +22,8 @@
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "限流单源化完成：删除 stream 硬编码 RATE_LIMIT_PER_MINUTE，IP 兜底改为读同一设置键且仅在 ip 非空时启用（修复全站共享配额缺陷）；默认 10（用户裁决）；单测 91/1859、lint/tsc/build 绿、e2e 79/79",
+    "commits": ["7d05654"],
+    "note": "限流单源化完成：删除 stream 硬编码 RATE_LIMIT_PER_MINUTE，IP 兜底改为读同一设置键且仅在 ip 非空时启用（修复全站共享配额缺陷）；默认 10（用户裁决）；单测 91/1859、lint/tsc/build 绿、e2e 79/79；CI gate(Linux) success @7d05654",
     "depends_on": ["V13-BASE-01"]
   },
   "V13-SEEDVIS-01": {
@@ -103,7 +103,7 @@
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
+    "commits": ["7d05654"],
     "note": "用户 2026-10-26 裁决：每分钟 10 次。已改 guard 常量 + settings-registry 默认值 + settings-registry.test 断言三处为 10；REQ-F-009:38 口径无需修订（原本就是 10），冲突消除",
     "depends_on": ["V13-RL-01"]
   }
