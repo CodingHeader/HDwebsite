@@ -63,15 +63,31 @@ function latestMtime(p: string): number {
 }
 
 /** 校验构建新鲜度；standalone 环境下把 static/public 同步进 standalone（与 start-next 相同的产物布局）。
- * E-12：win32 无 standalone（next.config.ts 有意关闭），返回 null 并回退 `next start`；新鲜度仍以 BUILD_ID 校验。 */
+ * E-12：win32 无 standalone（next.config.ts 有意关闭），返回 null 并回退 `next start`；新鲜度仍以 BUILD_ID 校验。
+ *
+ * V13-E2E-FRESH-01（2026-10-26 实测缺陷修复）：新鲜度校验**必须在平台分支之前**执行。
+ * 原实现把 `if (!useStandalone) return null` 放在校验之前，而 win32 恒满足该条件
+ * （[`next.config.ts`](../../next.config.ts) 有意关闭 standalone），于是 Windows 上
+ * **从不校验构建新鲜度** → 可以静默测到旧构建。现场证据：BUILD_ID 17:54、src/lib/chat-session.ts 18:13，
+ * e2e 跑出 apply-chat 失败；`npm run build` 后同一份源码 79/79 全绿。
+ * 该缺陷使"本地 e2e 全绿"这一结论在 Windows 上无法作为验收证据，故提到所有平台共用的最前面。
+ */
 function prepareStandalone(): string | null {
   const buildId = path.join(ROOT, ".next", "BUILD_ID");
   if (!existsSync(buildId)) throw new Error("缺少生产构建：请先运行 npm run build");
-  if (!useStandalone) return null; // E-12：win32 回退 next start
+  // 平台无关的新鲜度校验（win32 也执行）
+  const builtAt = statSync(buildId).mtimeMs;
+  const srcLatest = latestMtime(path.join(ROOT, "src"));
+  if (srcLatest > builtAt) {
+    throw new Error(
+      `构建已过期（src 比 .next/BUILD_ID 新）：请先运行 npm run build\n` +
+        `  src 最新修改：${new Date(srcLatest).toISOString()}\n` +
+        `  BUILD_ID    ：${new Date(builtAt).toISOString()}`
+    );
+  }
+  if (!useStandalone) return null; // E-12：win32 回退 next start（新鲜度已校验）
   const server = path.join(ROOT, ".next", "standalone", "server.js");
   if (!existsSync(server)) throw new Error("缺少生产构建：请先运行 npm run build");
-  const builtAt = statSync(buildId).mtimeMs;
-  if (latestMtime(path.join(ROOT, "src")) > builtAt) throw new Error("构建已过期（src 比 .next/BUILD_ID 新）：请先运行 npm run build");
   const staticDst = path.join(ROOT, ".next", "standalone", ".next", "static");
   if (!existsSync(staticDst) || statSync(staticDst).mtimeMs < builtAt) {
     rmSync(staticDst, { recursive: true, force: true });
