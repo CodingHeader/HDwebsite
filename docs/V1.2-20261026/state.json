@@ -4,7 +4,9 @@
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
+    "commits": [
+      "83048fa"
+    ],
     "note": "基线五连全绿（lint/tsc/1846单测/build/check-root）；e2e 77/2；visual 46例(45图+1区块)；双端0 0 @6af5fff"
   },
   "V12-E2E-01": {
