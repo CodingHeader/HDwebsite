@@ -32,12 +32,12 @@
     ]
   },
   "V12-E2E-03": {
-    "status": "ready",
+    "status": "done",
     "owner": "P1",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "全量 e2e 复跑 79/79 + 推送；CI Linux E2E 绿",
+    "note": "全量e2e 79/79 PASS（3.8m）；apply-chat+mobile-375双修复清零；推送663d8d4",
     "depends_on": [
       "V12-E2E-01",
       "V12-E2E-02"

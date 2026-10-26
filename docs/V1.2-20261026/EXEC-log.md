@@ -16,7 +16,7 @@
 | V12-G-01 | **done** | 83048fa | 五连全绿；e2e 77/2；visual 46 例；双端 0 0 @6af5fff |
 | V12-E2E-01 | **done** | 8b6dbaf | 服务端幂等签发+客户端单例helper+400重试收紧+嵌套bug修复；apply-chat单跑PASS；SEC-04回归36/36 |
 | V12-E2E-02 | **done** | 2ab79a6(待推) | race 语义修正（toBeAttached+toBeVisible）；mobile-375单跑4/4 PASS |
-| V12-E2E-03 | ready | | 全量复跑门 |
+| V12-E2E-03 | **done** | 663d8d4 | 全量e2e 79/79 PASS；apply-chat+mobile-375双修复清零 |
 | V12-VIS-01 | ready | | 分诊先行 |
 | V12-REL-01 | ready | | |
 | V12-Q2-01 | **blocked** | | 待用户裁决限频 10 vs 20 |
