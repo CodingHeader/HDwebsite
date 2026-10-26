@@ -13,8 +13,8 @@
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "新鲜度校验前移到 useStandalone 分支之前（win32 也校验）；tsc/lint PASS；e2e 修复前 1 failed → 修复后 79/79 PASS",
+    "commits": ["748aed1"],
+    "note": "新鲜度校验前移到 useStandalone 分支之前（win32 也校验）；tsc/lint PASS；e2e 修复前 1 failed → 修复后 79/79 PASS；CI gate(Linux) success @a95860a（含 e2e），证明 Linux standalone 路径未受影响",
     "depends_on": ["V13-BASE-01"]
   },
   "V13-RL-01": {

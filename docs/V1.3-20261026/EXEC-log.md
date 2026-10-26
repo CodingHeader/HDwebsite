@@ -48,6 +48,8 @@
 - 2026-10-26 ~19:10 | 修复 global-setup 新鲜度守卫 | tsc/lint PASS | G2 闭环
 - 2026-10-26 ~19:20 | 复跑 e2e（守卫生效） | 79/79 PASS | 无回归
 - 2026-10-26 ~（本包） | 规划包落盘 + 证据 | 待推送 | 12 卡 0 环
+- 2026-10-26 推送完成 | `748aed1` + `a95860a` | 双端 0 0 | CI: gate success / docker success / visual failure
+- 2026-10-26 CI 复核 | @a95860a | gate(Linux, 含 e2e) **success** | 证明新鲜度守卫修复在 Linux standalone 路径同样正确
 
 ## 4. 断点记录
 
