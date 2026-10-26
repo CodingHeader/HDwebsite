@@ -1,0 +1,64 @@
+{
+  "V12-G-01": {
+    "status": "ready",
+    "owner": "P2",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "基线五连 + 双端固化 + e2e 79 例/visual 46 例现状盘点"
+  },
+  "V12-E2E-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "apply-chat 会话签发竞态修复（根因已取证：4 次并发 GET /api/chat/session 同键覆盖 + POST 400）",
+    "depends_on": ["V12-G-01"]
+  },
+  "V12-E2E-02": {
+    "status": "ready",
+    "owner": "P2",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "mobile-375 空态容忍断言修正（isVisible 即时快照 → race 语义）",
+    "depends_on": ["V12-G-01"]
+  },
+  "V12-E2E-03": {
+    "status": "ready",
+    "owner": "P1",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "全量 e2e 复跑 79/79 + 推送；CI Linux E2E 绿",
+    "depends_on": ["V12-E2E-01", "V12-E2E-02"]
+  },
+  "V12-VIS-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "Visual 36/46 分诊：真回归 vs 基线过期；CI visual_update_ref 或修复",
+    "depends_on": ["V12-G-01"]
+  },
+  "V12-REL-01": {
+    "status": "ready",
+    "owner": "P1",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "state 台账收口（含 V1.1 REL-01）+ EXEC 终稿 + changelog/parity 核对 + 双端 0 0",
+    "depends_on": ["V12-E2E-03", "V12-VIS-01"]
+  },
+  "V12-Q2-01": {
+    "status": "blocked",
+    "owner": "P2",
+    "verify": null,
+    "blocked_reason": "待用户裁决 LLM 限频 10 vs 20（V11-Q2）",
+    "commits": [],
+    "note": "裁决后执行：改 RATE_LIMIT_PER_MINUTE + 单测断言；保持 10 则关闭",
+    "depends_on": []
+  }
+}
