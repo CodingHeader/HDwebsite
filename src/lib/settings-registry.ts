@@ -159,7 +159,9 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("llmBalanceThreshold", "余额提醒阈值", "llm", "100", { type: "number", isPublic: false }),
   // CCR-1（W0-10）：客服风控三键（REQ-F-009；消费卡 C-10 生效逻辑、D-04 设置页、E-02/E-10 展示）。
   // 扁平 key（ADR-009 规则）；JSON 数组串存储（jsonifyFields 接线，C-07 同款）。
-  def("chatGuardRateLimitPerMin", "客服限流（次/分钟）", "llm", "20", { type: "number", isPublic: false }),
+  // V13-RL-01 / V13-Q2-01（2026-10-26 用户裁决：10 次/分钟）：原 "20" 与 REQ-F-009:38「默认 10」冲突，
+  // 裁决取 10。本值、llm/guard.ts 的 GUARD_DEFAULT_RATE_LIMIT、settings-registry.test 断言三处必须一致。
+  def("chatGuardRateLimitPerMin", "客服限流（次/分钟）", "llm", "10", { type: "number", isPublic: false }),
   def("chatGuardSensitiveWords", "敏感词列表（JSON 数组）", "llm", "[]", { type: "string", isPublic: false }),
   def("chatGuardBlacklist", "会话黑名单（JSON 数组）", "llm", "[]", { type: "string", isPublic: false }),
   // ── notify 通知（SOL-005） ──

@@ -18,12 +18,12 @@
     "depends_on": ["V13-BASE-01"]
   },
   "V13-RL-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "限流单源化：移除 stream 硬编码 10 按 IP 通道，统一走 guard 设置驱动；默认取更严值 10，Q2 裁决后微调",
+    "note": "限流单源化完成：删除 stream 硬编码 RATE_LIMIT_PER_MINUTE，IP 兜底改为读同一设置键且仅在 ip 非空时启用（修复全站共享配额缺陷）；默认 10（用户裁决）；单测 91/1859、lint/tsc/build 绿、e2e 79/79",
     "depends_on": ["V13-BASE-01"]
   },
   "V13-SEEDVIS-01": {
@@ -99,12 +99,12 @@
     "depends_on": ["V13-REQ-01"]
   },
   "V13-Q2-01": {
-    "status": "blocked",
-    "owner": "P2",
+    "status": "done",
+    "owner": "main-agent",
     "verify": null,
-    "blocked_reason": "待用户裁决 LLM 客服限频默认值 10（REQ-F-009:38） vs 20（ADR-034 §2.3，被 settings-registry.test.ts 钉住）",
+    "blocked_reason": null,
     "commits": [],
-    "note": "不阻塞 V13-RL-01（RL 先取更严值 10 去双源）；裁决后改 1 常量 + 1 断言（选 20 时另修订 REQ-F-009 措辞）",
-    "depends_on": []
+    "note": "用户 2026-10-26 裁决：每分钟 10 次。已改 guard 常量 + settings-registry 默认值 + settings-registry.test 断言三处为 10；REQ-F-009:38 口径无需修订（原本就是 10），冲突消除",
+    "depends_on": ["V13-RL-01"]
   }
 }

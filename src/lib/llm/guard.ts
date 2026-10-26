@@ -24,8 +24,31 @@ import { getAllSettings } from "@/lib/settings";
 export const GUARD_FALLBACK_REPLY = "抱歉，我暂时无法回答这个问题。请换个说法，或直接联系招生老师咨询。";
 
 /** 设置键缺失/非法时的代码内默认值（卡 Execution Step 2 要求：键缺失时用代码内默认值） */
-export const GUARD_DEFAULT_RATE_LIMIT = 20;
+// V13-RL-01 / V13-Q2-01（2026-10-26 用户裁决：每分钟 10 次）：
+// 原为 20（ADR-034 §2.3 冻结值），与 REQ-F-009:38「默认 10 次/分钟」构成 MUST 冲突。
+// 用户裁决取 10，本常量与 settings-registry 默认值、settings-registry.test 断言三处必须保持一致。
+export const GUARD_DEFAULT_RATE_LIMIT = 10;
 export const GUARD_RATE_WINDOW_MS = 60_000;
+
+/**
+ * IP 级兜底（V13-RL-01）。
+ *
+ * 为什么需要它：按会话限频（scene:identifier）可被"换会话"绕过——清空 localStorage
+ * 重新签发 chat_sid 即可重置窗口。原实现用一条独立的「按 IP 10 次/分」硬编码通道堵这个口子，
+ * 但它带来双重缺陷：①阈值与设置键无关，后台改限流对它无效 ②阈值写死，无法随业务调整。
+ *
+ * 现在的做法：**不再保留独立阈值**，IP 兜底直接使用同一个设置值（chatGuardRateLimitPerMin），
+ * 因此只有一个真实数值来源，后台改它两侧同步生效；严格程度与旧实现完全一致（不会再放宽）。
+ */
+export function ipCapFor(rateLimitPerMin: number): number {
+  return rateLimitPerMin > 0 ? rateLimitPerMin : 0;
+}
+
+/** IP 兜底是否命中（count 为窗口内该 IP 的请求数） */
+export function isIpCapped(count: number, rateLimitPerMin: number): boolean {
+  const cap = ipCapFor(rateLimitPerMin);
+  return cap > 0 && count >= cap;
+}
 
 export type ChatGuardSettings = {
   /** 每分钟阈值（≤0 视为不限制） */
@@ -151,4 +174,18 @@ export async function checkChatGuard(input: {
   if (isChatRateLimited(key, settings.rateLimitPerMin)) return { type: "rate" };
   recordChatCall(key);
   return { type: "ok", identifier: input.identifier };
+}
+
+/**
+ * V13-RL-01：IP 级兜底判定（与会话级限频共用同一个设置值）。
+ *
+ * 调用方（官网 SSE）在进入会话级检查之前调用；命中则返回 rate 语义（429）。
+ * 之所以不做成独立阈值：独立阈值会让后台设置对一侧失效（V13-RL-01 的原始缺陷）。
+ */
+export async function checkIpCap(input: {
+  countInWindow: number;
+  settings?: ChatGuardSettings;
+}): Promise<{ type: "ok" } | { type: "rate" }> {
+  const settings = input.settings ?? (await loadChatGuardSettings());
+  return isIpCapped(input.countInWindow, settings.rateLimitPerMin) ? { type: "rate" } : { type: "ok" };
 }

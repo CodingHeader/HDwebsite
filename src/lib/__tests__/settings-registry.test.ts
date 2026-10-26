@@ -46,7 +46,7 @@ describe("设置注册表（ADR-009）", () => {
     expect(rateLimit).toBeDefined();
     expect(rateLimit?.group).toBe("llm");
     expect(rateLimit?.type).toBe("number");
-    expect(rateLimit?.defaultValue).toBe("20");
+    expect(rateLimit?.defaultValue).toBe("10"); // V13-Q2-01：用户裁决 10 次/分钟（原 20）
     expect(rateLimit?.isPublic).toBe(false);
 
     for (const key of ["chatGuardSensitiveWords", "chatGuardBlacklist"]) {
