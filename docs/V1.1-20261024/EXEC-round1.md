@@ -23,3 +23,5 @@
 
 ## 3. 门禁终态
 （终稿回填）
+
+- 2026-10-26 13:41 断点恢复：推送 77ee1be（ApplyClient lint 修复）；lint/typecheck PASS；visual 46 例中 36 例失败，归因为系统性视觉基线漂移，优先 articles/courses/service-detail 高度差；证据见 evidence/V11/REL-01/2026-10-26-breakpoint-resume.md。
