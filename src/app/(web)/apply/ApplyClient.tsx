@@ -155,9 +155,7 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
 
   // 仅客户端：初始化 sessionId
   useEffect(() => {
-    // 挂载时从 localStorage（外部系统）同步 sessionId；SSR 阶段无 window，只能在 effect 内读取
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    // V11-SEC-04：改服务端签发（无缓存时拉取 /api/chat/session）
+    // V11-SEC-04：挂载时改服务端签发（无缓存时拉取 /api/chat/session）
     void fetchOrReuseSessionId().then((id) => id && setSessionId(id));
   }, []);
 
