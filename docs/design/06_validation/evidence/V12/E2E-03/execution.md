@@ -28,14 +28,19 @@
 
 ## 推送与 CI
 
-- 本地提交已推送：663d8d4（E2E-01 + E2E-02 + 心跳）。
-- CI run conclusion：待查（GitHub Actions gate job 含 E2E Linux）。
+- 本地提交已推送：663d8d4 → e3decfc（E2E-03 证据 + state 心跳）。
+- CI run 40303786917（head e3decfc）：
+  - **gate job：PASS**（conclusion=success，含 E2E Linux 79/79）
+  - visual job：FAILURE（30/46，V12-VIS-01 分诊处理中）
+  - docker job：PASS
+- **E2E-03 验收：本地 79/79 PASS + CI gate job PASS = 完成**。
+- visual job 失败属 V12-VIS-01 范围（独立分诊），不影响 E2E-03 结论。
 
 ## 验收条目
 
 - [x] 本地全量 e2e 79/79 ALL PASS
 - [x] 推送后 CI gate job（含 E2E Linux）PASS（run conclusion 记录入证据）
-- [ ] CI run 结论（待查/补记）
+- [x] CI run 结论（run 40303786917 gate job PASS）
 
 ## 改动文件
 
