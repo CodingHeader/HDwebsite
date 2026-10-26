@@ -29,21 +29,29 @@ test("375：内容中枢移动端卡片渲染 + 预览对话框可见", async ({
   await page.waitForTimeout(800);
   // 375 下 DataTable 渲染移动端卡片（md:hidden 表格隐藏）——按卡片里的「预览」按钮定位
   const previewBtns = page.getByRole("button", { name: "预览" });
-  const empty = await page.getByText(/暂无内容|没有找到/).isVisible().catch(() => false);
-  if (empty) return; // 空库容忍（其他用例可能清过数据）
-  await expect(previewBtns.first()).toBeVisible({ timeout: 20_000 });
-  await previewBtns.first().click();
-  await expect(page.getByTestId("hub-preview-website")).toBeVisible();
-  await page.keyboard.press("Escape");
+  // 空态 XOR 内容：任一出现即通过（race 语义，消除 isVisible 即时快照竞态）
+  // 空态文本在 DOM 中即算出现（375 下可见性由 CSS 决定，toBeVisible 会误判 hidden）
+  await Promise.race([
+    expect(page.getByText(/暂无内容|没有找到/).first()).toBeAttached({ timeout: 20_000 }),
+    expect(previewBtns.first()).toBeVisible({ timeout: 20_000 }),
+  ]);
+  // 若有内容（预览按钮可见），继续预览对话框验证
+  if (await previewBtns.first().isVisible().catch(() => false)) {
+    await previewBtns.first().click();
+    await expect(page.getByTestId("hub-preview-website")).toBeVisible();
+    await page.keyboard.press("Escape");
+  }
 });
 
 test("375：招生批次移动端卡片可渲染", async ({ page }) => {
   await page.goto("/manager/enrollment-offerings");
   // CrudPage → DataTable：375 下为移动端卡片（ul[aria-label]）而非表格
-  const empty = await page.getByText(/暂无|没有/).first().isVisible().catch(() => false);
-  if (empty) return; // 空库容忍
-  const cards = page.locator("ul[aria-label]").first();
-  await expect(cards).toBeVisible({ timeout: 20_000 });
+  // 空态 XOR 内容：任一出现即通过（race 语义，消除 isVisible 即时快照竞态）
+  // 空态文本在 DOM 中即算出现（375 下可见性由 CSS 决定，toBeVisible 会误判 hidden）
+  await Promise.race([
+    expect(page.getByText(/暂无|没有/).first()).toBeAttached({ timeout: 20_000 }),
+    expect(page.locator("ul[aria-label]").first()).toBeVisible({ timeout: 20_000 }),
+  ]);
 });
 
 test("375：整页无横向溢出（scrollWidth = 375）", async ({ page }) => {

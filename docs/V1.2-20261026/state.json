@@ -21,12 +21,12 @@
     ]
   },
   "V12-E2E-02": {
-    "status": "ready",
+    "status": "done",
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "mobile-375 空态容忍断言修正（isVisible 即时快照 → race 语义）",
+    "note": "mobile-375 空态容忍断言修正（race 语义 toBeAttached+toBeVisible）；单跑4/4 PASS；content-hub同家族一并处理",
     "depends_on": [
       "V12-G-01"
     ]
