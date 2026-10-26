@@ -107,33 +107,11 @@ const SCENE_FALLBACK: Record<string, Partial<ChatScene>> = {
 };
 
 /**
- * 获取持久化 sessionId（V11-SEC-04：会话由服务端签发，签名 cookie 与本地缓存成对）。
- * 本地有缓存 → 直接用（cookie 未过期时与 cookie 一致）；无缓存/会话失效 → 调
- * GET /api/chat/session 重签。返回 null 表示签发失败（网络等），由调用方提示。
+ * 获取持久化 sessionId（V11-SEC-04 + V12-E2E-01 收敛到共享单例 helper）。
+ * 本地有缓存 → 直接用；无缓存 → 发起 GET /api/chat/session（模块级单例 promise，
+ * 同页并发只触发一次签发，配合服务端幂等签发消除同键覆盖竞态）。
  */
-async function fetchOrReuseSessionId(): Promise<string | null> {
-  if (typeof window === "undefined") return null;
-  const KEY = "hd_chat_session_id";
-  const cached = window.localStorage.getItem(KEY);
-  if (cached && cached.length >= 8) return cached;
-  try {
-    const res = await fetch("/api/chat/session", { cache: "no-store" });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const id: string | undefined = data?.data?.sessionId;
-    if (!id) return null;
-    window.localStorage.setItem(KEY, id);
-    return id;
-  } catch {
-    return null;
-  }
-}
-
-/** 会话失效（400）时清缓存重签一次 */
-async function reissueSessionId(): Promise<string | null> {
-  if (typeof window !== "undefined") window.localStorage.removeItem("hd_chat_session_id");
-  return fetchOrReuseSessionId();
-}
+import { fetchOrReuseSessionId, reissueSessionId } from "@/lib/chat-session";
 
 
 interface ApplyClientProps {

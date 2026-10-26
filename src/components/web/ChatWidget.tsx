@@ -14,21 +14,15 @@ import { parseSseFrame, reduceSseError } from "@/lib/llm/sse";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const SESSION_KEY = "hd_chat_session_id";
-const LEGACY_SESSION_KEY = "hd_session_id";
 const HISTORY_KEY = "hd_chat_widget_messages";
 
-// V11-SEC-04：会话改由服务端签发（GET /api/chat/session → httpOnly 签名 cookie）。
-// 本地仅缓存服务端返回的 id（与服务端写下的 cookie 成对）；失效/不一致时重新签发。
+// V11-SEC-04 + V12-E2E-01：会话改由服务端签发（GET /api/chat/session → httpOnly 签名 cookie）。
+// 收敛到共享 helper（src/lib/chat-session）：模块级单例 promise，同页并发只触发一次签发。
+import { fetchOrReuseSessionId, reissueSessionId } from "@/lib/chat-session";
+
 async function ensureSessionId(): Promise<string> {
-  const cached = localStorage.getItem(SESSION_KEY) ?? localStorage.getItem(LEGACY_SESSION_KEY);
-  if (cached && cached.length >= 8) return cached;
-  const res = await fetch("/api/chat/session", { cache: "no-store" });
-  if (!res.ok) throw new Error("会话签发失败");
-  const data = await res.json();
-  const id: string = data?.data?.sessionId;
+  const id = await fetchOrReuseSessionId();
   if (!id) throw new Error("会话签发失败");
-  localStorage.setItem(SESSION_KEY, id);
   return id;
 }
 
@@ -101,12 +95,25 @@ export function ChatWidget() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch("/api/chat/stream", {
+      let res = await fetch("/api/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, sceneCode: "faq", message: text }),
         signal: controller.signal,
       });
+      // V12-E2E-01：400 重试语义收紧——仅当服务端证明 cookie 失效时重签（串行化）
+      if (res.status === 400) {
+        const reissued = await reissueSessionId();
+        if (reissued) {
+          sessionId = reissued;
+          res = await fetch("/api/chat/stream", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId, sceneCode: "faq", message: text }),
+            signal: controller.signal,
+          });
+        }
+      }
       if (!res.ok || !res.body) {
         const errBody = (await res.json().catch(() => null)) as { message?: string } | null;
         throw new Error(errBody?.message ?? `服务不可用（${res.status}）`);

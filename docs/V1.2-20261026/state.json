@@ -10,12 +10,12 @@
     "note": "基线五连全绿（lint/tsc/1846单测/build/check-root）；e2e 77/2；visual 46例(45图+1区块)；双端0 0 @6af5fff"
   },
   "V12-E2E-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "apply-chat 会话签发竞态修复（根因已取证：4 次并发 GET /api/chat/session 同键覆盖 + POST 400）",
+    "note": "apply-chat 竞态修复完成（服务端幂等签发+客户端单例helper+400重试收紧+嵌套bug修复）；单测7/7；apply-chat单跑PASS；SEC-04回归36/36",
     "depends_on": [
       "V12-G-01"
     ]
