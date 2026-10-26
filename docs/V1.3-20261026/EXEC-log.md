@@ -1,0 +1,55 @@
+# V1.3 执行记录
+
+> 起点 `upgrade@cbaaf55`（= origin/upgrade，0 0）。
+> 规划包由 main-agent 本机生成（2026-10-26），全部数值为本轮亲自运行。
+
+## 0. 规划落盘
+
+- 2026-10-26 规划包落盘：README + 00~10（12 个根 md）+ state.json + tasks × 12 + steps × 8。
+- 起点快照：`cbaaf55`；双端 0 0。
+- 审计结论：12 条缺口（G1~G12）——3 实现缺陷 / 3 守卫缺位 / 4 未证明 / 1 文档欠账 / 1 待裁决。
+
+## 1. 执行进度（12 卡）
+
+| 卡 | 状态 | 提交 | 备注 |
+|---|---|---|---|
+| V13-BASE-01 | ready | | 基线复核 |
+| V13-E2E-FRESH-01 | **done** | 本包 | 新鲜度守卫平台无关化；e2e 79/79 |
+| V13-RL-01 | ready | | 限频单源化（P0，main-agent） |
+| V13-SEEDVIS-01 | ready | | --check 口径 |
+| V13-VIS-01 | ready | | visual 归因（承接 V12-VIS-01） |
+| V13-GATE-A11Y-01 | ready | | a11y 接入 CI |
+| V13-UI-HUB-01 | ready | | content-hub 控件（main-agent） |
+| V13-UI-CONSIST-01 | ready | | 一致性抽检 |
+| V13-PERF-01 | ready | | 性能四条 |
+| V13-REQ-01 | ready | | 102 条反勾 |
+| V13-REL-01 | ready | | 收口（承接 V12-REL-01） |
+| V13-Q2-01 | **blocked** | | 待用户裁决 10 vs 20（承接 V12-Q2-01） |
+
+## 2. 门禁终态（本轮实测）
+
+| 门禁 | 结果 |
+|---|---|
+| lint | PASS |
+| typecheck | PASS |
+| 单测 | PASS 90 / 1853 |
+| build | PASS |
+| check:assets / root / audit | PASS / PASS（48 条）/ PASS（0 漏洞） |
+| e2e | PASS 79/79（重建后） |
+| a11y | PASS 12/12（未接入 CI） |
+| visual（CI） | FAIL（run 40303786917） |
+
+## 3. 心跳
+
+- 2026-10-26 ~18:00 | 审计启动 | HEAD=cbaaf55 | 同步 origin
+- 2026-10-26 ~18:20 | 发现 e2e 假失败 | trace 4×GET+400 | 疑似修复失效
+- 2026-10-26 ~19:00 | 定位 stale 构建 | BUILD_ID 17:54 < src 18:13 | 反证成立
+- 2026-10-26 ~19:05 | rebuild 后 e2e | 79/79 PASS | 排除代码缺陷
+- 2026-10-26 ~19:10 | 修复 global-setup 新鲜度守卫 | tsc/lint PASS | G2 闭环
+- 2026-10-26 ~19:20 | 复跑 e2e（守卫生效） | 79/79 PASS | 无回归
+- 2026-10-26 ~（本包） | 规划包落盘 + 证据 | 待推送 | 12 卡 0 环
+
+## 4. 断点记录
+
+- 本轮曾因会话异常中断一次，恢复后按文件清单核对：`README/00~10/tasks×12/steps×8` 齐全，`state.json` 12 卡 0 环，无重复或缺失。
+- 恢复点：规划包已落盘，`V13-E2E-FRESH-01` 已完成并验证，下一次取卡从 `V13-BASE-01` 或 `V13-RL-01` 开始。
