@@ -197,8 +197,9 @@ grep -cE "EmptyState|ErrorState|TableSkeleton|PageSkeleton|Forbidden" src/app/ma
 | `07-风险与待裁决.md` | 待裁决 + 未决 + 风险 + 历史坑 |
 | `08-自检与局限.md` | 自检 12 项 + 局限声明 |
 | `09-落盘清单与执行协议.md` | 文件清单 + 取卡循环 + 铁律 |
+| `10-助手交付核实与规划差异.md` | 助手五卡交付逐条核实（10/12 成立，2 处偏差）|
 | `tasks/` | 7 张卡（16 项字段齐全） |
-| `steps/` | STEP-S0 ~ S4，每步一个 md |
+| `steps/` | STEP-S0 ~ S3，每步一个 md |
 | `state.json` | 状态机（7 卡，0 环） |
 
 ---
