@@ -58,14 +58,14 @@ SMTP 配置走 Setting email 分组（host/port/secure/username/password 加密/
 ## 7. 验收条件
 
 - [ ] SMTP 配置 + 连接测试通过（凭证就绪后）
-- [ ] 多收件人（≥2）分组生效：发布组收发布提醒、运维组收报错/余额提醒
-- [ ] 定时发布前按提前量发出通知（默认 30 分钟，可配）
-- [ ] 立即发布场景发出"即将发布"即时通知
-- [ ] 余额低于阈值触发 llm_balance_low 邮件
-- [ ] 报错聚合限频生效（同类 10 分钟 1 封）
-- [ ] 邮件模板可配置：新建/编辑模板并可绑定规则，未绑规则走默认模板（Q10 轮定）
-- [ ] 发送失败自动重试 ≤3 次且 NotifyRecord 全留痕
-- [ ] 邮件发送不阻塞发布/请求主流程（异步）
+- [x] 多收件人（≥2）分组生效：发布组收发布提醒、运维组收报错/余额提醒（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 定时发布前按提前量发出通知（默认 30 分钟，可配）（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 立即发布场景发出"即将发布"即时通知（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 余额低于阈值触发 llm_balance_low 邮件（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 报错聚合限频生效（同类 10 分钟 1 封）（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 邮件模板可配置：新建/编辑模板并可绑定规则，未绑规则走默认模板（Q10 轮定）（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 发送失败自动重试 ≤3 次且 NotifyRecord 全留痕（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 邮件发送不阻塞发布/请求主流程（异步）（证据：src/lib/__tests__/notify-before-publish.test.ts）
 
 ## 8. 影响分析
 

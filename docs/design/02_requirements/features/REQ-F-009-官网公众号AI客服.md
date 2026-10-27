@@ -57,12 +57,12 @@ updated: 2026-10-10
 
 ## 7. 验收条件
 
-- [ ] 官网端聊天组件可全局悬浮挂载，SSE 流式逐字输出
-- [ ] 刷新后会话可续传（localStorage sessionId）
-- [ ] 公众号文本消息收到 5s 内有被动回复
+- [x] 官网端聊天组件可全局悬浮挂载，SSE 流式逐字输出（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 刷新后会话可续传（localStorage sessionId）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 公众号文本消息收到 5s 内有被动回复（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 - [ ] 长答案经客服消息接口补发成功（48h 窗口内实测）
-- [ ] 限频与黑名单生效；敏感词被过滤
-- [ ] aiEnabled 关闭后公众号不自动应答
+- [x] 限频与黑名单生效；敏感词被过滤（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] aiEnabled 关闭后公众号不自动应答（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 
 ## 8. 影响分析
 

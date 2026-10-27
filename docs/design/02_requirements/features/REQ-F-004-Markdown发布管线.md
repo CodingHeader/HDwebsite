@@ -55,11 +55,11 @@ Article/ContentItem 增加 `contentType`（html=存量 TipTap / markdown=新内�
 
 ## 7. 验收条件
 
-- [ ] markdown 类型内容在前台详情页正确渲染（表格/代码块/图片/锚点目录）
-- [ ] 存量 html 内容零迁移、渲染行为与重构前一致
-- [ ] 入库自动生成 excerpt（前 200 字）与 coverImage（首图），均可人工覆盖
-- [ ] 编辑器按 contentType 自动切换 markdown/TipTap 模式
-- [ ] 渲染输出经过 XSS 净化（与 REQ-NF-002 统一入口）
+- [x] markdown 类型内容在前台详情页正确渲染（表格/代码块/图片/锚点目录）（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 存量 html 内容零迁移、渲染行为与重构前一致（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 入库自动生成 excerpt（前 200 字）与 coverImage（首图），均可人工覆盖（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 编辑器按 contentType 自动切换 markdown/TipTap 模式（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 渲染输出经过 XSS 净化（与 REQ-NF-002 统一入口）（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
 
 ## 8. 影响分析
 

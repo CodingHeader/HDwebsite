@@ -48,10 +48,10 @@ upgrade 前台曾被重写为蓝色简化版（`--primary:#1d4ed8`，首页蓝�
 
 ## 5. 验收标准
 
-- [ ] （自动，由 P02 建立，此后每个方向结束时必须重跑）`npm run test:visual` 通过：同一 seed 数据下，15 个前台路由在 1440/768/375 三个宽度的 Playwright 截图与 main 参照截图像素差 ≤1%（`maxDiffPixelRatio: 0.01`，动画禁用、字体本地化）。
-- [ ] （自动）`grep -n -- '--primary' src/app/globals.css` 的 web 作用域值与 `git show origin/main:src/app/globals.css` 一致（`#da251d`）。
-- [ ] （自动）首页存在 Banner 轮播（`data-testid="home-banner"` 或等价锚点）且区块顺序与 main 一致（visual 套件内断言）。
-- [ ] （自动）`grep -rn 'data-theme="manager"' src/app/(web) src/components/web` 为空。
+- [x] （自动，由 P02 建立，此后每个方向结束时必须重跑）`npm run test:visual` 通过：同一 seed 数据下，15 个前台路由在 1440/768/375 三个宽度的 Playwright 截图与 main 参照截图像素差 ≤1%（`maxDiffPixelRatio: 0.01`，动画禁用、字体本地化）。（证据：docs/design/06_validation/evidence/V14/VIS-STAB-01/execution.md）
+- [x] （自动）`grep -n -- '--primary' src/app/globals.css` 的 web 作用域值与 `git show origin/main:src/app/globals.css` 一致（`#da251d`）。（证据：docs/design/06_validation/evidence/V14/VIS-STAB-01/execution.md）
+- [x] （自动）首页存在 Banner 轮播（`data-testid="home-banner"` 或等价锚点）且区块顺序与 main 一致（visual 套件内断言）。（证据：docs/design/06_validation/evidence/V14/VIS-STAB-01/execution.md）
+- [x] （自动）`grep -rn 'data-theme="manager"' src/app/(web) src/components/web` 为空。（证据：docs/design/06_validation/evidence/V14/VIS-STAB-01/execution.md）
 
 ## 6. 关联
 

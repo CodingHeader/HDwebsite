@@ -52,7 +52,7 @@ upgrade 为平行新仓重写（ADR-011）。P0 对等矩阵显示 upgrade 仍�
 
 ## 5. 验收标准
 
-- [ ] （自动，最终于 P15 收口）parity-matrix 中 `missing`=0、`partial`=0、`dropped-by-ADR`=0：
+- [x] （自动，最终于 P15 收口）parity-matrix 中 `missing`=0、`partial`=0、`dropped-by-ADR`=0：（证据：docs/design/02_requirements/parity-matrix.md）
   ```bash
   python3 - <<'PY'
   import re
@@ -62,8 +62,8 @@ upgrade 为平行新仓重写（ADR-011）。P0 对等矩阵显示 upgrade 仍�
   print("open rows:",bad); assert not bad
   PY
   ```
-- [ ] （自动，P01 起每方向）每个 missing/partial 行带方向编号（P01 验证命令中的 python 片段）。
-- [ ] （自动）各方向在其验收中更新所负责行的状态，并附证据路径。
+- [x] （自动，P01 起每方向）每个 missing/partial 行带方向编号（P01 验证命令中的 python 片段）。（证据：docs/design/02_requirements/parity-matrix.md）
+- [x] （自动）各方向在其验收中更新所负责行的状态，并附证据路径。（证据：docs/design/02_requirements/parity-matrix.md）
 - [ ] （人工）独立验证者抽查 ≥10 行，main 证据与 upgrade 证据均可复现。
 
 ## 6. 方向归属（摘要，明细见 parity-matrix 与 backlog）

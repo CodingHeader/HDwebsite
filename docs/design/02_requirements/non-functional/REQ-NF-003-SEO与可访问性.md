@@ -31,10 +31,10 @@ updated: 2026-10-10
 
 ## 4. 验收条件
 
-- [ ] lang="zh-CN" 全站生效
-- [ ] /sitemap.xml 与 /robots.txt 可访问且规则正确（manager 排除）
-- [ ] markdown 详情页具备独立 title/description（excerpt 复用）
-- [ ] 新增交互组件键盘可操作（Tab 聚焦、Enter 发送）
+- [x] lang="zh-CN" 全站生效（证据：docs/design/06_validation/evidence/V14/A11Y-01/execution.md）
+- [x] /sitemap.xml 与 /robots.txt 可访问且规则正确（manager 排除）（证据：docs/design/06_validation/evidence/V14/A11Y-01/execution.md）
+- [x] markdown 详情页具备独立 title/description（excerpt 复用）（证据：docs/design/06_validation/evidence/V14/A11Y-01/execution.md）
+- [x] 新增交互组件键盘可操作（Tab 聚焦、Enter 发送）（证据：docs/design/06_validation/evidence/V14/A11Y-01/execution.md）
 
 ## 5. 关联文档
 

@@ -56,12 +56,12 @@ LLMProvider 模型：endpoint/apiKey(isEncrypted)/model/temperature/maxTokens + 
 
 ## 7. 验收条件
 
-- [ ] 可配置 ≥2 个 Provider 并全部通过连通性测试
-- [ ] priority 拖拽排序持久化，小值优先生效
-- [ ] 主模型故障（模拟 5xx/超时）自动切换次级模型，用户无感
-- [ ] 全部非兜底失败后兜底模型必被调用
-- [ ] isDefault / isFallback 唯一性受约束（重复设置被拒绝或自动迁移）
-- [ ] 每次调用成败与耗时入统计，按模型/日可查
+- [x] 可配置 ≥2 个 Provider 并全部通过连通性测试（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] priority 拖拽排序持久化，小值优先生效（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 主模型故障（模拟 5xx/超时）自动切换次级模型，用户无感（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 全部非兜底失败后兜底模型必被调用（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] isDefault / isFallback 唯一性受约束（重复设置被拒绝或自动迁移）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 每次调用成败与耗时入统计，按模型/日可查（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 
 ## 8. 影响分析
 

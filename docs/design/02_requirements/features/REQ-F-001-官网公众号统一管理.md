@@ -55,11 +55,11 @@ updated: 2026-10-10
 
 ## 7. 验收条件
 
-- [ ] 内容中枢列表页展示每篇内容在官网/公众号两渠道的发布状态列
-- [ ] 编辑器右侧提供"渠道预览"Tab（官网样式 / 公众号样式）
-- [ ] 支持发布到官网 / 发布到公众号 / 同时发布 / 定时发布四类操作入口
-- [ ] WechatAccount 支持 appid/secret 加密录入与 token 状态测试
-- [ ] ContentChannel 记录 externalId / externalUrl / status / errMsg 全链路可查
+- [x] 内容中枢列表页展示每篇内容在官网/公众号两渠道的发布状态列（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 编辑器右侧提供"渠道预览"Tab（官网样式 / 公众号样式）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 支持发布到官网 / 发布到公众号 / 同时发布 / 定时发布四类操作入口（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] WechatAccount 支持 appid/secret 加密录入与 token 状态测试（证据：src/lib/__tests__/v11-wx-hub.test.ts）
+- [x] ContentChannel 记录 externalId / externalUrl / status / errMsg 全链路可查（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 
 ## 8. 影响分析
 

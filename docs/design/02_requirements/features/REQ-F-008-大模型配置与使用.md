@@ -57,11 +57,11 @@ updated: 2026-10-10
 
 ## 7. 验收条件
 
-- [ ] ChatScene 可配置绑定多个知识库并生效于检索
-- [ ] 提示词/温度/上限等参数按场景独立配置生效
-- [ ] llm-gateway 成为唯一模型调用入口（chat/completion 等 0 处直连供应商）
-- [ ] 连通性测试按钮可用（返回延迟与回复内容）
-- [ ] 用量统计按模型/日可见（tokens/调用数/成败）
+- [x] ChatScene 可配置绑定多个知识库并生效于检索（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 提示词/温度/上限等参数按场景独立配置生效（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] llm-gateway 成为唯一模型调用入口（chat/completion 等 0 处直连供应商）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 连通性测试按钮可用（返回延迟与回复内容）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 用量统计按模型/日可见（tokens/调用数/成败）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 
 ## 8. 影响分析
 

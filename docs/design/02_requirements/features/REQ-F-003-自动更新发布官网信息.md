@@ -55,12 +55,12 @@ updated: 2026-10-10
 
 ## 7. 验收条件
 
-- [ ] PublishJob 状态机全链路状态可查（含 errMsg 与 result）
-- [ ] 定时任务到点自动执行官网发布（每分钟扫描精度）
-- [ ] 采集条目审核通过后可一键进入发布排期
-- [ ] 发布前提醒邮件按配置提前量发出（立即发布则即时"即将发布"通知）
-- [ ] 发布失败进入 failed 可一键重试，并触发告警邮件
-- [ ] 发布产物 Article(status=published, contentType=markdown) 在前台正常渲染
+- [x] PublishJob 状态机全链路状态可查（含 errMsg 与 result）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 定时任务到点自动执行官网发布（每分钟扫描精度）（证据：src/lib/__tests__/scheduler-cron.test.ts）
+- [x] 采集条目审核通过后可一键进入发布排期（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 发布前提醒邮件按配置提前量发出（立即发布则即时"即将发布"通知）（证据：src/lib/__tests__/notify-before-publish.test.ts）
+- [x] 发布失败进入 failed 可一键重试，并触发告警邮件（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 发布产物 Article(status=published, contentType=markdown) 在前台正常渲染（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 
 ## 8. 影响分析
 

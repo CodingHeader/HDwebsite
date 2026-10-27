@@ -37,9 +37,9 @@ updated: 2026-10-10
 ## 4. 验收条件
 
 - [ ] Lighthouse 移动端 Performance ≥ 现状基线（对照 10-性能 §2 记录）
-- [ ] 网关超时 30s 生效（可配），不再出现 88s 空等
-- [ ] 采集限速与批次超时生效
-- [ ] 发布/入库高峰（每分钟 ≤5 写任务）无 SQLite BUSY 报错
+- [x] 网关超时 30s 生效（可配），不再出现 88s 空等（证据：docs/design/06_validation/evidence/V14/PERF-01/perf-baseline.md）
+- [x] 采集限速与批次超时生效（证据：docs/design/06_validation/evidence/V14/PERF-01/perf-baseline.md）
+- [x] 发布/入库高峰（每分钟 ≤5 写任务）无 SQLite BUSY 报错（证据：docs/design/06_validation/evidence/V14/PERF-01/perf-baseline.md）
 
 ## 5. 关联文档
 

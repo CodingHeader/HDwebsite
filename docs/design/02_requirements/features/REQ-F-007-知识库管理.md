@@ -59,12 +59,12 @@ updated: 2026-10-12
 
 ## 7. 验收条件
 
-- [ ] 三级模型落地，现有 Knowledge 数据无损迁入默认库（计数核对）
-- [ ] 库/文件/其他三类管理页全部可用
-- [ ] 导入 md/txt/docx 成功率 ≥95%（常规文档），导入后可编辑
-- [ ] 切片重建任务可对单库/单文件重跑
-- [ ] 检索测试工具返回命中 chunk 及归属（库名/文件/标签）
-- [ ] AI 场景检索改走 Chunk 级（ChatScene 绑定 baseId 列表，tags 库内过滤）
+- [x] 三级模型落地，现有 Knowledge 数据无损迁入默认库（计数核对）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 库/文件/其他三类管理页全部可用（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 导入 md/txt/docx 成功率 ≥95%（常规文档），导入后可编辑（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 切片重建任务可对单库/单文件重跑（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] 检索测试工具返回命中 chunk 及归属（库名/文件/标签）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
+- [x] AI 场景检索改走 Chunk 级（ChatScene 绑定 baseId 列表，tags 库内过滤）（证据：docs/design/06_validation/evidence/V14/UI-HUB-01/execution.md）
 
 ## 8. 影响分析
 

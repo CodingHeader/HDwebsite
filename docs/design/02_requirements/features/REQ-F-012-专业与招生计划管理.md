@@ -31,10 +31,10 @@ source: hdwebsite_0429 分支既有功能（ADR-022）
 
 ## 4. 验收条件
 
-- [ ] 后台可对专业与招生计划完成增删改查（含唯一约束冲突提示）。
-- [ ] /api/majors、/api/enrollment-offerings 契约入 src/contracts，校验与错误码符合契约②。
-- [ ] B 仓 schema 差异字段（Course.priceText 等）在新仓 schema 中存在且迁移通过。
-- [ ] 招生计划重复导入（同唯一键）被拒绝且不影响既有数据。
+- [x] 后台可对专业与招生计划完成增删改查（含唯一约束冲突提示）。（证据：src/lib/__tests__/w0-contracts.test.ts）
+- [x] /api/majors、/api/enrollment-offerings 契约入 src/contracts，校验与错误码符合契约②。（证据：src/lib/__tests__/w0-contracts.test.ts）
+- [x] B 仓 schema 差异字段（Course.priceText 等）在新仓 schema 中存在且迁移通过。（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 招生计划重复导入（同唯一键）被拒绝且不影响既有数据。（证据：src/lib/__tests__/w0-contracts.test.ts）
 
 ## 5. 关联
 

@@ -55,11 +55,11 @@ CollectItem（去重通过，status=new）自动创建 KnowledgeFile（status=pe
 
 ## 7. 验收条件
 
-- [ ] 采集条目去重通过后自动生成 KnowledgeFile(status=pending, source=collect)
-- [ ] 归属知识库与自动标签按采集源配置正确应用
-- [ ] collectItemId 回链可从知识库文件跳回采集条目
-- [ ] 审核 active 后可被场景检索命中；rejected 文件不被检索
-- [ ] 发布渠道与知识库互不阻塞（同一采集内容可既发布又入库）
+- [x] 采集条目去重通过后自动生成 KnowledgeFile(status=pending, source=collect)（证据：src/lib/__tests__/v11-col-01.test.ts）
+- [x] 归属知识库与自动标签按采集源配置正确应用（证据：src/lib/__tests__/v11-col-01.test.ts）
+- [x] collectItemId 回链可从知识库文件跳回采集条目（证据：src/lib/__tests__/v11-col-01.test.ts）
+- [x] 审核 active 后可被场景检索命中；rejected 文件不被检索（证据：src/lib/__tests__/v11-col-01.test.ts）
+- [x] 发布渠道与知识库互不阻塞（同一采集内容可既发布又入库）（证据：src/lib/__tests__/v11-col-01.test.ts）
 
 ## 8. 影响分析
 

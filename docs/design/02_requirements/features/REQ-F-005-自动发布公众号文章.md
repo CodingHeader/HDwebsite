@@ -56,11 +56,11 @@ PublishJob(wechat) 到点后：取 accessToken（WechatAccount 缓存，过期�
 ## 7. 验收条件
 
 - [ ] 草稿创建成功并可在公众平台后台可见（title/content/thumb 正确）
-- [ ] freepublish 开关生效：开启自动发布、关闭仅入草稿箱
-- [ ] access_token 缓存与过期刷新正确（无频繁获取，缓存 ≥ 有效期-5min）
+- [x] freepublish 开关生效：开启自动发布、关闭仅入草稿箱（证据：src/lib/__tests__/v11-wx-hub.test.ts）
+- [x] access_token 缓存与过期刷新正确（无频繁获取，缓存 ≥ 有效期-5min）（证据：src/lib/__tests__/v11-wx-hub.test.ts）
 - [ ] 正文外链图片自动上传替换为微信域 URL
-- [ ] 失败自动重试 ≤3 次（指数退避）并触发告警邮件
-- [ ] 频控生效：间隔 ≥60s、每日上限默认 20 篇
+- [x] 失败自动重试 ≤3 次（指数退避）并触发告警邮件（证据：src/lib/__tests__/v11-wx-hub.test.ts）
+- [x] 频控生效：间隔 ≥60s、每日上限默认 20 篇（证据：src/lib/__tests__/v11-wx-hub.test.ts）
 - [ ] （凭证就绪后）端到端真实发布成功并回写发布链接
 
 ## 8. 影响分析

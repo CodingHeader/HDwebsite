@@ -49,11 +49,11 @@ upgrade 管理端为手写侧栏（`manager/layout.tsx` 121 行，`import * as L
 
 ## 5. 验收标准
 
-- [ ] （自动）`grep -rn "window.confirm\|alert(" src/app/manager src/components/manager` 为 0（P05 起）。
-- [ ] （自动）`grep -rnE "<table|<input |<select|<button " src/app/manager` 为空（P07 起：页面层不直接写原生控件）。
-- [ ] （自动）axe 扫描 /manager 代表页 serious/critical = 0（`tests/a11y/manager.spec.ts`，P07）。
-- [ ] （自动）375px 视口下 E2E 主路径（登录→列表→新建→编辑→删除）通过（`tests/e2e/responsive.spec.ts`，P13）。
-- [ ] （自动）每个可写资源的 CRUD 契约测试含未登录 401、无权限 403（P03/P13）。
+- [x] （自动）`grep -rn "window.confirm\|alert(" src/app/manager src/components/manager` 为 0（P05 起）。（证据：docs/design/06_validation/evidence/V14/UI-CONSIST-01/audit-matrix.md）
+- [x] （自动）`grep -rnE "<table|<input |<select|<button " src/app/manager` 为空（P07 起：页面层不直接写原生控件）。（证据：docs/design/06_validation/evidence/V14/UI-CONSIST-01/audit-matrix.md）
+- [x] （自动）axe 扫描 /manager 代表页 serious/critical = 0（`tests/a11y/manager.spec.ts`，P07）。（证据：docs/design/06_validation/evidence/V14/A11Y-01/execution.md）
+- [x] （自动）375px 视口下 E2E 主路径（登录→列表→新建→编辑→删除）通过（`tests/e2e/responsive.spec.ts`，P13）。（证据：docs/design/06_validation/evidence/V14/A11Y-01/execution.md）
+- [x] （自动）每个可写资源的 CRUD 契约测试含未登录 401、无权限 403（P03/P13）。（证据：src/lib/__tests__/w0-contracts.test.ts）
 - [ ] （人工）独立验证者按 P02 设计系统节逐页核对统一性（抽查 ≥10 页）。
 
 ## 6. 方向归属

@@ -35,11 +35,11 @@ updated: 2026-10-10
 
 ## 4. 验收条件
 
-- [ ] services/[slug] 注入向量闭合（`<script>` 注入被净化）
-- [ ] markdown 渲染输出经同一净化入口（单测覆盖 2 类输入）
-- [ ] 新增凭据字段全部加密落库，API 回显脱敏
-- [ ] AI 限频生效（超限 429）
-- [ ] 微信回调验签失败返回 403
+- [x] services/[slug] 注入向量闭合（`<script>` 注入被净化）（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] markdown 渲染输出经同一净化入口（单测覆盖 2 类输入）（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 新增凭据字段全部加密落库，API 回显脱敏（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] AI 限频生效（超限 429）（证据：docs/design/06_validation/evidence/V14/BASE-01/execution.md）
+- [x] 微信回调验签失败返回 403（证据：src/lib/__tests__/v11-wx-hub.test.ts）
 
 ## 5. 关联文档
 
