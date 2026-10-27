@@ -1,35 +1,41 @@
 {
   "V15-LEDGER-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "external-assistant",
     "tier": "haiku",
     "size": "小",
-    "verify": null,
+    "verify": "自证：V1.4 台账回填——9 卡全 done，14 个 hash 均 git cat-file -e 存在，diff 仅 status/commits/verify/note 四类",
     "blocked_reason": null,
-    "commits": [],
-    "note": "V1.4 五卡台账回填（FROZEN-GUARD/UI-CONSIST/PERF/REQ-LEDGER/REL）。实测提交：7d29740+ee57569 / 026c398 / 0ed1264 / afc2089 / d25e0eb。纯 JSON，跑 JSON.parse + hash 存在性校验。",
+    "commits": [
+      "4fb1507"
+    ],
+    "note": "V1.4 五卡回填 done（FROZEN-GUARD/UI-CONSIST/PERF/REQ-LEDGER/REL），提交 4fb1507；UNKNOWN 无。",
     "depends_on": []
   },
   "V15-AUDIT-FIX-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "external-assistant",
     "tier": "sonnect",
     "size": "小～中",
-    "verify": null,
+    "verify": "自证：node scripts/audit-manager-ui.mjs 汇总 PageHeader 缺失 0；负向 __tmp_nohdr 报 FAIL 后已删；git status --short src 为空",
     "blocked_reason": null,
-    "commits": [],
-    "note": "修正 scripts/audit-manager-ui.mjs 的 PageHeader 判定（29 误报→0 真值）。必须保留负向能力：造真缺头页面仍报 FAIL。不改 src/**。",
+    "commits": [
+      "d25453d"
+    ],
+    "note": "PageHeader 判定修正 29→0（27 页 CrudPage 间接 + news redirect + login h1 例外）；负向检出能力保留；令牌 FAIL 仍 2；提交 d25453d；UNKNOWN 无。",
     "depends_on": []
   },
   "V15-TOKEN-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "external-assistant",
     "tier": "sonnect",
     "size": "小",
-    "verify": null,
+    "verify": "自证：whitelist.md 含 2 条例外×5 字段，10 个色值 grep -n 实跑确认；git status --short src 为空",
     "blocked_reason": null,
-    "commits": [],
-    "note": "2 处令牌例外登记白名单（content-hub 公众号预览 / login 品牌反白），每条五字段含技术理由。禁止改任何 className。",
+    "commits": [
+      "d25453d"
+    ],
+    "note": "2 处令牌例外白名单（content-hub 531-534 公众号预览 / login 63,68,73,77 品牌反白）；audit-matrix 42 行判定未变，仅追加已知例外小节；提交 d25453d；UNKNOWN 无。",
     "depends_on": []
   },
   "V15-UX-STATES-01": {
