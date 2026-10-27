@@ -20,7 +20,7 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { DetailDialog } from "@/components/manager/DetailDialog";
 import { Tabs } from "@/components/manager/ui/misc";
 import { FormField } from "@/components/manager/ui/form-field";
-import { Checkbox, DateTimeInput, Select, Switch, Textarea } from "@/components/manager/ui";
+import { Checkbox, DateTimeInput, Input, RadioGroup, Select, Switch, Textarea, Button } from "@/components/manager/ui";
 import { ContentMarkdown } from "@/components/manager/ContentMarkdown";
 import { SearchInput } from "@/components/manager/SearchInput";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
@@ -325,9 +325,9 @@ export default function ContentHubPage() {
   return (
     <div className="flex flex-col gap-4">
       {canEdit && (
-        <button type="button" className="self-start rounded-mgr-control border border-mgr-border px-3 py-1.5 text-sm hover:bg-mgr-subtle" data-testid="hub-new" onClick={() => openEdit("new")}>
+        <Button variant="primary" size="sm" className="self-start" data-testid="hub-new" onClick={() => openEdit("new")}>
           新建内容
-        </button>
+        </Button>
       )}
       <PageHeader
         title="内容中枢"
@@ -385,7 +385,7 @@ export default function ContentHubPage() {
           <div className="flex flex-col gap-4">
             <FormField label="标题" required>
               {(a11y) => (
-                <input {...a11y} className="w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2 text-sm" value={editDraft.title} onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))} data-testid="hub-edit-title" />
+                <Input {...a11y} value={editDraft.title} onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))} data-testid="hub-edit-title" />
               )}
             </FormField>
             <FormField label="内容类型">
@@ -405,7 +405,7 @@ export default function ContentHubPage() {
             </FormField>
             <FormField label="封面图路径（留空取正文首图）">
               {(a11y) => (
-                <input {...a11y} className="w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2 text-sm" value={editDraft.coverImage} onChange={(e) => setEditDraft((d) => ({ ...d, coverImage: e.target.value }))} />
+                <Input {...a11y} value={editDraft.coverImage} onChange={(e) => setEditDraft((d) => ({ ...d, coverImage: e.target.value }))} />
               )}
             </FormField>
           </div>
@@ -425,19 +425,17 @@ export default function ContentHubPage() {
           submitText="提交审核结论"
         >
           <div className="flex flex-col gap-4">
-            <fieldset className="flex flex-col gap-2">
-              <legend className="mb-1 text-sm font-medium">审核结论</legend>
-              <span className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5">
-                  <input type="radio" id="rev-ok" name="review-decision" checked={reviewDecision === "approved"} onChange={() => setReviewDecision("approved")} data-testid="hub-review-approved" />
-                  <label htmlFor="rev-ok" className="text-sm">通过</label>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <input type="radio" id="rev-no" name="review-decision" checked={reviewDecision === "rejected"} onChange={() => setReviewDecision("rejected")} data-testid="hub-review-rejected" />
-                  <label htmlFor="rev-no" className="text-sm">拒绝</label>
-                </span>
-              </span>
-            </fieldset>
+            <RadioGroup
+              label="审核结论"
+              name="review-decision"
+              variant="card"
+              value={reviewDecision}
+              onValueChange={(v) => setReviewDecision(v === "rejected" ? "rejected" : "approved")}
+              options={[
+                { value: "approved", label: "通过", testId: "hub-review-approved" },
+                { value: "rejected", label: "拒绝", testId: "hub-review-rejected" },
+              ]}
+            />
             <FormField label="备注（拒绝时建议填写理由）">
               {(a11y) => (
                 <Textarea {...a11y} rows={3} className="w-full" value={reviewRemark} onChange={(e) => setReviewRemark(e.target.value)} data-testid="hub-review-remark" />

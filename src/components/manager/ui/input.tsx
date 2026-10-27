@@ -177,6 +177,8 @@ export interface RadioOption {
   label: string;
   value: string | number;
   disabled?: boolean;
+  /** V14-UI-HUB-01：单个选项的 data-testid（e2e 依赖；不传则不渲染该属性） */
+  testId?: string;
 }
 
 export interface RadioGroupProps {
@@ -188,19 +190,31 @@ export interface RadioGroupProps {
   options: RadioOption[];
   className?: string;
   disabled?: boolean;
+  /** V14-UI-HUB-01：plain=紧凑行内（默认）；card=大命中区卡片（375px 可点，命中区 ≥44px） */
+  variant?: "plain" | "card";
 }
 
-/** 单选组：原生 radio（方向键原生切换、label 关联、Playwright check() 可用） */
-export function RadioGroup({ label, name, value, onValueChange, options, className, disabled }: RadioGroupProps) {
+/** 单选组：原生 radio（方向键原生切换、label 关联、Playwright check() 可用）
+ *  V14-UI-HUB-01：选项支持 card 形态（大命中区，375px 可点）与单项 testId。 */
+export function RadioGroup({ label, name, value, onValueChange, options, className, disabled, variant = "plain" }: RadioGroupProps) {
+  const isCard = variant === "card";
   return (
     <fieldset
       className={cn("flex flex-col gap-2", className)}
       {...(label ? {} : { "aria-label": undefined })}
     >
       {label && <legend className="mb-1 text-[13px] font-medium text-mgr-fg">{label}</legend>}
-      <div className="flex flex-col gap-2">
+      <div className={isCard ? "flex flex-col gap-2 sm:flex-row" : "flex flex-col gap-2"}>
         {options.map((o) => (
-          <label key={String(o.value)} className="inline-flex cursor-pointer items-center gap-2 text-[13px] text-mgr-fg disabled:cursor-not-allowed">
+          <label
+            key={String(o.value)}
+            className={cn(
+              "inline-flex cursor-pointer items-center gap-2 text-[13px] text-mgr-fg",
+              isCard &&
+                "min-h-11 w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2.5 transition-colors hover:bg-mgr-subtle has-[:checked]:border-mgr-primary has-[:checked]:bg-mgr-primary/5 sm:w-auto sm:min-w-[8rem]",
+              (disabled || o.disabled) && "cursor-not-allowed opacity-60"
+            )}
+          >
             <input
               type="radio"
               name={name}
@@ -208,7 +222,11 @@ export function RadioGroup({ label, name, value, onValueChange, options, classNa
               checked={String(o.value) === String(value)}
               onChange={() => onValueChange(String(o.value))}
               disabled={disabled || o.disabled}
-              className="h-4 w-4 shrink-0 cursor-pointer border-mgr-border accent-[var(--mgr-primary)] disabled:cursor-not-allowed"
+              data-testid={o.testId}
+              className={cn(
+                "shrink-0 cursor-pointer border-mgr-border accent-[var(--mgr-primary)] disabled:cursor-not-allowed",
+                isCard ? "h-4 w-4" : "h-4 w-4"
+              )}
             />
             <span className={o.disabled ? "text-mgr-muted-fg" : undefined}>{o.label}</span>
           </label>
