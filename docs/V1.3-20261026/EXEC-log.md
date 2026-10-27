@@ -17,7 +17,7 @@
 | V13-E2E-FRESH-01 | **done** | 本包 | 新鲜度守卫平台无关化；e2e 79/79 |
 | V13-RL-01 | ready | | 限频单源化（P0，main-agent） |
 | V13-SEEDVIS-01 | ready | | --check 口径 |
-| V13-VIS-01 | **done** | ad4cf70 | visual 归因：home@1440 判 C 基线漂移；CI 重生成 reference 后 visual PASS |
+| V13-VIS-01 | **in_progress** | ad4cf70 / 0b50ccf | visual 归因：home@1440 判 C 图片解码时序 flake；已修 decode 等待，待最终 CI visual PASS |
 | V13-GATE-A11Y-01 | ready | | a11y 接入 CI |
 | V13-UI-HUB-01 | ready | | content-hub 控件（main-agent） |
 | V13-UI-CONSIST-01 | ready | | 一致性抽检 |
@@ -37,7 +37,7 @@
 | check:assets / root / audit | PASS / PASS（48 条）/ PASS（0 漏洞） |
 | e2e | PASS 79/79（重建后） |
 | a11y | PASS 12/12（未接入 CI） |
-| visual（CI） | PASS（run 40431748131，更新后基线；45/45） |
+| visual（CI） | 待最终复跑（40433104468 普通 CI 仍仅 home@1440 FAIL；已补 decode 等待修复） |
 
 ## 3. 心跳
 
@@ -60,3 +60,4 @@
 - 2026-10-27 08:07 | V13-SEEDVIS-01 | in_progress | HEAD=5cff82e | seed-visual check scoped to exact seed ids; non-seed rows warn only
 - 2026-10-27 08:13 | V13-SEEDVIS-01 | done | commit=1786724 | exact seed id check; non-seed warns only; CI gate/docker success, e2e 79/79
 - 2026-10-27 12:28 | V13-VIS-01 | done | commit=ad4cf70 | visual home@1440 归因为 C 基线漂移；CI 重生成 reference 后 run 40431748131 gate/docker/visual 全 success，45/45 visual PASS
+- 2026-10-27 12:46 | V13-VIS-01 | in_progress | final_push=40433104468 | 普通 CI 仍仅 home@1440 FAIL；update CI 40434018876 证明 reference 稳定；已修 tests/visual/web.spec.ts 图片 decode 等待，待普通 CI 全绿后标 done

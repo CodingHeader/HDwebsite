@@ -9,6 +9,26 @@ import { MAIN_HOME_BLOCK_ORDER, ROUTES, VIEWPORTS, resolvePath } from "./routes"
 const IS_REF = process.env.VISUAL_REF === "1";
 const FIXED_TIME = new Date("2026-05-01T10:00:00+08:00");
 
+async function waitForLoadedImages(page: Page) {
+  const deadline = Date.now() + 15_000;
+  for (;;) {
+    const pending = await page.evaluate(() => {
+      return Array.from(document.images)
+        .filter((img) => !img.closest("[data-visual-ignore]"))
+        .map((img) => ({
+          complete: img.complete,
+          naturalWidth: img.naturalWidth,
+          decode: () => img.decode().catch(() => undefined),
+        }));
+    });
+
+    if (pending.every((img) => img.complete && img.naturalWidth > 0)) break;
+    await Promise.all(pending.map((img) => img.decode()));
+    if (Date.now() >= deadline) break;
+    await page.waitForTimeout(200);
+  }
+}
+
 async function settle(page: Page) {
   await page.addStyleTag({
     content: `[data-visual-ignore]{visibility:hidden !important}
@@ -33,16 +53,7 @@ async function settle(page: Page) {
   // 偶发超过下方逐图 3s 兜底 → 截图里图片区空白、像素门禁假红（home@1440 的 gallery/
   // campus 图块 10% 像素差）。这里在 Node 侧确定性等待所有非忽略图片**解码完成**
   // （naturalWidth>0），15s 上限；真加载失败时走超时→截图空白→diff 失败，仍是响亮的失败信号。
-  await page
-    .waitForFunction(
-      () =>
-        Array.from(document.images)
-          .filter((img) => !img.closest("[data-visual-ignore]"))
-          .every((img) => img.complete && img.naturalWidth > 0),
-      undefined,
-      { timeout: 15_000 }
-    )
-    .catch(() => undefined);
+  await waitForLoadedImages(page);
   await page.evaluate(async () => {
     await Promise.all(
       Array.from(document.images)
