@@ -56,14 +56,19 @@
     ]
   },
   "V14-VIS-STAB-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "小～中",
-    "verify": null,
+    "verify": "自证：run 40471824511(2348f3a) + 40472734510(8c71228) 连续2次普通 CI run，gate/visual/docker 三 job 全 success",
     "blocked_reason": null,
-    "commits": [],
-    "note": "证明 visual 不是靠 flake 过的：连续≥2 次普通 CI run 全绿；不得放宽阈值、不得手工改基线图",
+    "commits": [
+      "48eb0b2",
+      "675c6a3",
+      "2348f3a",
+      "8c71228"
+    ],
+    "note": "flake 已确诊：48eb0b2 与 9efa2f5 树哈希同为991586f4，run 40454848846 success / 40455661938 failure，同树异果即 flake 非回归。收敛额度仅剩1次故 a/b/c 一次全上（100ms+连续2次 / currentSrc非空 / 双rAF）。artifact 401+日志403+gh未装三条取数路全断，改失败自解释：settle 输出 [visual] route@vp images=N/N，判据改为「失败路由DOM是否有未就绪图片」。未动阈值/基线图/路由，前台className值零变更（原卡公式有假阳性，已给修正版）。本地win32 36例像素失败属Linux基线字体差异，不采信。",
     "depends_on": [
       "V14-BASE-01"
     ]
