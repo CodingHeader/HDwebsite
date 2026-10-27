@@ -12,19 +12,24 @@ const FIXED_TIME = new Date("2026-05-01T10:00:00+08:00");
 async function waitForLoadedImages(page: Page) {
   const deadline = Date.now() + 15_000;
   for (;;) {
-    const pending = await page.evaluate(() => {
-      return Array.from(document.images)
-        .filter((img) => !img.closest("[data-visual-ignore]"))
-        .map((img) => ({
-          complete: img.complete,
-          naturalWidth: img.naturalWidth,
-          decode: () => img.decode().catch(() => undefined),
-        }));
+    // ⚠️ V14-VIS-STAB-01：decode 必须**在页面上下文内**调用。
+    // 上一版把 `decode: () => img.decode()` 作为对象字段返回，而 page.evaluate 的返回值要跨进程
+    // 序列化，函数会被丢弃 → 一旦首轮有图片未加载完，`pending.map(i => i.decode())` 抛
+    // `TypeError: img.decode is not a function`（CI run 40453526485 的 home@1440 即此错误）。
+    // 现改为在 evaluate 内部 await decode 并只返回计数（纯数据，可序列化）。
+    const state = await page.evaluate(async () => {
+      const imgs = Array.from(document.images).filter((img) => !img.closest("[data-visual-ignore]"));
+      await Promise.all(
+        imgs.map((img) =>
+          img.complete && img.naturalWidth > 0 ? Promise.resolve() : img.decode().catch(() => undefined)
+        )
+      );
+      const loaded = imgs.filter((i) => i.complete && i.naturalWidth > 0).length;
+      return { total: imgs.length, loaded };
     });
 
-    if (pending.every((img) => img.complete && img.naturalWidth > 0)) break;
-    await Promise.all(pending.map((img) => img.decode()));
-    if (Date.now() >= deadline) break;
+    if (state.loaded === state.total) break;
+    if (Date.now() >= deadline) break; // 真加载失败时走超时 → 截图空白 → diff 响亮失败（保持原语义）
     await page.waitForTimeout(200);
   }
 }
