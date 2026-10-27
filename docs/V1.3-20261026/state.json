@@ -36,12 +36,12 @@
     "depends_on": ["V13-BASE-01"]
   },
   "V13-VIS-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "visual 归因：45 图三分法（真回归/数据漂移/噪声）；artifact 403 时走 CI visual_update_ref 重生成；承接 V12-VIS-01",
+    "commits": ["PENDING_VIS"],
+    "note": "VIS triage completed: push run 40425202421 had 44/45 PASS with only home@1440 fail; classified C baseline drift (image content area placeholder drift, no className/style diff); CI workflow_dispatch run 40431748131 visual_update_ref=true regenerated home-1440.png; final CI run 40431748131 gate/docker/visual success, Playwright visual matrix 45/45 PASS",
     "depends_on": ["V13-BASE-01", "V13-SEEDVIS-01"]
   },
   "V13-GATE-A11Y-01": {
