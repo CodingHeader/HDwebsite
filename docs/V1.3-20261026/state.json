@@ -40,7 +40,7 @@
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["PENDING_VIS"],
+    "commits": ["ad4cf70"],
     "note": "VIS triage completed: push run 40425202421 had 44/45 PASS with only home@1440 fail; classified C baseline drift (image content area placeholder drift, no className/style diff); CI workflow_dispatch run 40431748131 visual_update_ref=true regenerated home-1440.png; final CI run 40431748131 gate/docker/visual success, Playwright visual matrix 45/45 PASS",
     "depends_on": ["V13-BASE-01", "V13-SEEDVIS-01"]
   },
