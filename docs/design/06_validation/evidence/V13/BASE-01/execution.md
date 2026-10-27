@@ -64,3 +64,10 @@ BUILD_ID is newer than latest src: True
 ## UNKNOWN / ??
 - ?? `prisma migrate deploy` ??? Windows/Prisma/libsql ?????????????????? `Schema engine error:`??? a11y 12/12 ???????? PASS ???? CI ??????????
 - V1.3 ????????? 0 ??????????????
+
+## CI closeout update (f5f6d79)
+- CI run: `https://github.com/CodingHeader/HDwebsite/actions/runs/40422867140`
+- Jobs: `docker` success, `gate` success, `visual` failure.
+- E2E artifact: `e2e-results-40422867140` results.json = `{'passed': 79}`.
+- Visual artifact: `visual-results-40422867140` results.json = `{'passed': 45, 'failed': 1}`; the only failed case remains `home @1440`.
+- Conclusion: BASE local gates and CI gate are fixed; the visual failure remains an independent visual-baseline issue for `V13-VIS-01`.

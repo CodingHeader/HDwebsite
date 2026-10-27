@@ -1,11 +1,11 @@
 {
   "V13-BASE-01": {
-    "status": "in_progress",
+    "status": "done",
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "基线固化：七道门禁 + BUILD_ID 时间戳 + e2e 79/a11y 12 计数 + 双端 0 0",
+    "commits": ["f5f6d79"],
+    "note": "BASE baseline completed: local lint/typecheck/test/build/checks PASS; CI f5f6d79 gate/docker success; e2e artifact 79/79; visual home-1440 remains for V13-VIS-01",
     "depends_on": []
   },
   "V13-E2E-FRESH-01": {
