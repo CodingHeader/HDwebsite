@@ -37,7 +37,7 @@
 | check:assets / root / audit | PASS / PASS（48 条）/ PASS（0 漏洞） |
 | e2e | PASS 79/79（重建后） |
 | a11y | PASS 12/12（未接入 CI） |
-| visual（CI） | 待最终复跑（40433104468 普通 CI 仍仅 home@1440 FAIL；已补 decode 等待修复） |
+| visual（CI） | PASS（run 40436075724；decode 等待修复后普通 CI 45/45） |
 
 ## 3. 心跳
 
@@ -61,3 +61,4 @@
 - 2026-10-27 08:13 | V13-SEEDVIS-01 | done | commit=1786724 | exact seed id check; non-seed warns only; CI gate/docker success, e2e 79/79
 - 2026-10-27 12:28 | V13-VIS-01 | done | commit=ad4cf70 | visual home@1440 归因为 C 基线漂移；CI 重生成 reference 后 run 40431748131 gate/docker/visual 全 success，45/45 visual PASS
 - 2026-10-27 12:46 | V13-VIS-01 | in_progress | final_push=40433104468 | 普通 CI 仍仅 home@1440 FAIL；update CI 40434018876 证明 reference 稳定；已修 tests/visual/web.spec.ts 图片 decode 等待，待普通 CI 全绿后标 done
+- 2026-10-27 13:10 | V13-VIS-01 | done | commit=8dc778b | CI run 40436075724 gate/docker/visual 全 success；普通 visual 门禁确认 45/45 PASS

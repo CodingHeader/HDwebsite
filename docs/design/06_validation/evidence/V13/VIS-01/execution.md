@@ -14,6 +14,7 @@
 | 40431748131 | workflow_dispatch `visual_update_ref=true` | a129bce | visual PASS | 重生成 `home-1440.png`，提交为 `ad4cf70` |
 | 40433104468 | push | cb7b34d | gate PASS / docker PASS / visual FAIL | 普通 CI 仍仅 `home @1440` 失败；diff 仍为 881946 pixels / ratio 0.10 |
 | 40434018876 | workflow_dispatch `visual_update_ref=true` | cb7b34d | visual PASS | 再次重生成 `home-1440.png`，与仓库 reference 哈希一致 |
+| 40436075724 | push | 8dc778b | gate PASS / docker PASS / visual PASS | decode 等待修复后普通 CI visual 全绿 |
 
 ## 哈希证据
 
@@ -29,7 +30,9 @@
 - `npx tsc --noEmit`：PASS
 - `npm run lint`：PASS
 - `npx playwright test tests/visual --list`：PASS（46 tests）
+- CI run `40436075724`：PASS（gate / docker / visual）
 
-## 待确认
+## 收口确认
 
-- 修复提交推送到 `upgrade` 后，普通 CI 的 `visual` job 必须再次证明 45 张视觉矩阵 PASS，才能把 `V13-VIS-01` 标为 done。
+- 修复提交已推送到 `upgrade`。
+- 普通 CI run `40436075724` 已证明 gate / docker / visual 三 job PASS，`V13-VIS-01` 可标为 done。

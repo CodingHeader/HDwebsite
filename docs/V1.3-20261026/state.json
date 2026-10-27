@@ -36,12 +36,12 @@
     "depends_on": ["V13-BASE-01"]
   },
   "V13-VIS-01": {
-    "status": "in_progress",
+    "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["ad4cf70", "0b50ccf"],
-    "note": "VIS triage completed: initial push run 40425202421 had 44/45 PASS with only home@1440 fail; CI update runs 40431748131 and 40434018876 both regenerated the same home-1440.png reference BF6DC54...; post-push CI 40433104468 still failed only home@1440 because actual fell back to old blank image area 04A0E33..., classified as next/image decode timing flake; tests/visual/web.spec.ts now explicitly decodes non-ignored images and awaits naturalWidth, pending final normal CI visual rerun.",
+    "commits": ["ad4cf70", "8dc778b"],
+    "note": "VIS triage completed: initial push run 40425202421 had 44/45 PASS with only home@1440 fail; CI update runs 40431748131 and 40434018876 both regenerated the same home-1440.png reference BF6DC54...; post-push CI 40433104468 still failed only home@1440 because actual fell back to old blank image area 04A0E33..., classified as next/image decode timing flake; tests/visual/web.spec.ts now explicitly decodes non-ignored images and awaits naturalWidth; final ordinary push CI run 40436075724 @ 8dc778b gate/docker/visual all PASS.",
     "depends_on": ["V13-BASE-01", "V13-SEEDVIS-01"]
   },
   "V13-GATE-A11Y-01": {

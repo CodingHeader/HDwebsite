@@ -13,6 +13,7 @@
 - 失败 artifact 证据：`expected=tests/visual/reference/home-1440.png` 哈希为 `BF6DC5439BAE9B6A30C84AD8C362D4AB65C42849E2D2C9EC2D02A2F27208B8A4`；`actual` 哈希为 `04A0E3314750E049784B6CF33C809F04E2A5A63BCD4E61366355C25384468038`。
 - 重新触发 workflow_dispatch run `40434018876` @ `cb7b34d`，`visual_update_ref=true`：`visual=PASS`，生成 `visual-reference-40434018876`；其 `home-1440.png` 哈希与仓库 reference 同为 `BF6DC54...`。
 - 因此 `cb7b34d` 的 CI 普通 run 失败归因为 next/image 冷启动/图片解码时序 flake：CI 更新模式能稳定产出当前 reference，普通模式的 actual 偶发退回旧空白图区。
+- 最终确认：修复后普通 push run `40436075724` @ `8dc778b` 三 job 全绿：`gate=PASS`、`docker=PASS`、`visual=PASS`，普通 visual 门禁确认 45/45。
 - 修复：`tests/visual/web.spec.ts` 在 `settle()` 中显式调用非忽略 `<img>` 的 `decode()` 并轮询 `complete && naturalWidth > 0`，不修改 CSS、组件、阈值或 workflow 阈值。修复提交后需普通 CI visual job 重新证明 45/45。
 
 ## 总判定
@@ -55,7 +56,7 @@
 | 27 | gallery | 1440 | PASSED | 0 | 0 | PASS | PASS 无需处理 | artifact results.json expected, no visual error |
 | 28 | home | 375 | PASSED | 0 | 0 | PASS | PASS 无需处理 | artifact results.json expected, no visual error |
 | 29 | home | 768 | PASSED | 0 | 0 | PASS | PASS 无需处理 | artifact results.json expected, no visual error |
-| 30 | home | 1440 | FAILED | 0.1 | 881946 | FAIL | C 图片解码时序/基线漂移 | 普通 CI actual 退回旧空白图区；两次 CI update 模式稳定生成当前 reference |
+| 30 | home | 1440 | FAILED | 0.1 | 881946 | PASS | C 图片解码时序/基线漂移已修复 | 修复前普通 CI actual 退回旧空白图区；修复后普通 push run 40436075724 visual PASS |
 | 31 | learning | 375 | PASSED | 0 | 0 | PASS | PASS 无需处理 | artifact results.json expected, no visual error |
 | 32 | learning | 768 | PASSED | 0 | 0 | PASS | PASS 无需处理 | artifact results.json expected, no visual error |
 | 33 | learning | 1440 | PASSED | 0 | 0 | PASS | PASS 无需处理 | artifact results.json expected, no visual error |
