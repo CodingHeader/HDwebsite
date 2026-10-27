@@ -27,12 +27,12 @@
     "depends_on": ["V13-BASE-01"]
   },
   "V13-SEEDVIS-01": {
-    "status": "in_progress",
+    "status": "done",
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "--check 改为按种子 id 区间统计；非种子行仅提示不判失败（本地 9226 测试文章残留）",
+    "commits": ["1786724"],
+    "note": "SEEDVIS completed: --check scoped to exact seed-owned ids; non-seed Article 9226 warns only; missing seed Article 9225 exits 1; lint/typecheck/test PASS; CI 1786724 gate/docker success and e2e 79/79; visual still fails only as BASE triaged home-1440",
     "depends_on": ["V13-BASE-01"]
   },
   "V13-VIS-01": {

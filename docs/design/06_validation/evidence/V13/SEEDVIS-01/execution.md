@@ -56,3 +56,11 @@ EXIT:0
 - [x] `counts.json` values unchanged.
 - [x] Seed content unchanged.
 - [x] Does not alter visual CI `--check || seed` behavior: CI self-check now validates seed ownership only, then writes seed data if drift exists.
+
+
+## CI closeout update
+- CI run: `https://github.com/CodingHeader/HDwebsite/actions/runs/40424372749`
+- Jobs: `docker` success, `gate` success, `visual` failure.
+- E2E artifact: `e2e-results-40424372749` results.json = `{'passed': 79}`.
+- Visual artifact: `visual-results-40424372749` results.json = `{'passed': 45, 'failed': 1}`; remaining visual failure stays owned by `V13-VIS-01`.
+- Conclusion: SEEDVIS scope is closed after local positive/negative checks and CI gate/e2e evidence.
