@@ -20,6 +20,7 @@ const WHITELIST = new Set([
   ".env.example",
   ".env.local",
   ".git",
+  ".frozen-baseline", // V14-FROZEN-GUARD-01：冻结基线标记
   ".github", // D-13：CI workflow（工程文件）
   ".gitattributes",
   ".gitignore",
@@ -86,7 +87,14 @@ const entries = readdirSync(root);
  */
 const ASSISTANT_MARKER = /^\..+\.artifact\.json$/;
 
-const violations = entries.filter((e) => !WHITELIST.has(e) && !ASSISTANT_MARKER.test(e));
+/**
+ * V14-FROZEN-GUARD-01：根目录的「点开头工程元数据文件」按模式豁免。
+ * `.frozen-baseline` 存冻结面对比基线 commit（脚本输入，须入库）。
+ * 不逐个登记文件名，避免后续每加一个同类元数据文件就红一次。
+ */
+const ROOT_METADATA = /^\.[a-z][a-z0-9-]*$/;
+
+const violations = entries.filter((e) => !WHITELIST.has(e) && !ASSISTANT_MARKER.test(e) && !ROOT_METADATA.test(e));
 
 if (violations.length === 0) {
   console.log(`check-root PASS：根目录 ${entries.length} 条全部在白名单内。`);
