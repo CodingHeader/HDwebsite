@@ -43,14 +43,17 @@
     ]
   },
   "V14-FROZEN-GUARD-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "P1",
     "tier": "sonnect",
     "size": "小～中",
-    "verify": null,
+    "verify": "???node scripts/check-frozen.mjs ?? exit 0??? 2 ??src/contracts?prisma/schema?exit 1???? SKIP exit 0?CI 40471824511 gate/visual/docker ? success",
     "blocked_reason": null,
-    "commits": [],
-    "note": "新增 scripts/check-frozen.mjs + CI 步骤；负向用例须 exit 1；CCR commit 前缀豁免；浅克隆 SKIP 兜底",
+    "commits": [
+      "7d29740",
+      "ee57569"
+    ],
+    "note": "CI ????40471824511???? 7 ?? + CCR ????commit ? CCR-<n> ? docs/**/CCR-<n>.md ?????????+ ??? baseline ?? SKIP ???UNKNOWN ??",
     "depends_on": [
       "V14-A11Y-01"
     ]
@@ -74,40 +77,46 @@
     ]
   },
   "V14-UI-CONSIST-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "P1",
     "tier": "sonnect",
     "size": "中",
-    "verify": null,
+    "verify": "???node scripts/audit-manager-ui.mjs ?? 42 ?????? 0 / ???? 0 / ????? FAIL 2?PageHeader ???? 0??? 29 ?????????",
     "blocked_reason": null,
-    "commits": [],
-    "note": "12 页 × 8 项一致性矩阵（96 格无空格）；页面层就地修，组件层 >3 页影响则开卡",
+    "commits": [
+      "026c398"
+    ],
+    "note": "42 ???????? 0 / ???? 0??? FAIL 2?content-hub ???? + login ??????????? V15-TOKEN-01 ?????PageHeader ?? 29 ?????27 ?? CrudPage ?????news ? redirect ?????login ? h1????? 0?UNKNOWN ??",
     "depends_on": [
       "V14-UI-HUB-01"
     ]
   },
   "V14-PERF-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "P1",
     "tier": "sonnect",
     "size": "中",
-    "verify": null,
+    "verify": "???perf-baseline.md ?? REQ-NF-001 ???PASS 3??? 30s ?? / ???? 2000ms / SQLite BUSY=0?+ UNKNOWN 1?Lighthouse ? Linux CI + CCR?",
     "blocked_reason": null,
-    "commits": [],
-    "note": "REQ-NF-001 四条逐条判定并给具体数值；Lighthouse 无环境则该条 UNKNOWN（不整卡阻塞）",
+    "commits": [
+      "0ed1264"
+    ],
+    "note": "REQ-NF-001 ????? 30s ??????? 2000ms?SQLite BUSY=0 ? PASS?Lighthouse ??? UNKNOWN?? Linux CI ?? + CCR????????",
     "depends_on": [
       "V14-BASE-01"
     ]
   },
   "V14-REQ-LEDGER-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "P2",
     "tier": "sonnect",
     "size": "大",
-    "verify": null,
+    "verify": "???requirements-ledger.md ?? 102 ? = PASS 90 + UNKNOWN 12 + N-A 0????? 102",
     "blocked_reason": null,
-    "commits": [],
-    "note": "102 条验收逐条 PASS/UNKNOWN/N-A + 证据路径；计数必须对齐 102；未实现项开卡或入 backlog",
+    "commits": [
+      "afc2089"
+    ],
+    "note": "102 ????????PASS 90 / UNKNOWN 12 / N-A 0?UNKNOWN 12 ?????????????Linux CI ???S2 ???????????????? backlog?",
     "depends_on": [
       "V14-UI-HUB-01",
       "V14-UI-CONSIST-01",
@@ -118,14 +127,16 @@
     ]
   },
   "V14-REL-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "P1",
     "tier": "haiku",
     "size": "小",
-    "verify": null,
+    "verify": "?????????V1.3 ???? superseded + changelog ? V1.2/V1.3/V1.4 ???updated 2026-10-27?+ parity ??? + ?? 0 0",
     "blocked_reason": null,
-    "commits": [],
-    "note": "台账收口 + V1.3 遗留 6 卡标 superseded + changelog V1.4 段 + parity 复核 + 双端 0 0",
+    "commits": [
+      "d25e0eb"
+    ],
+    "note": "V1.3 ????? superseded?changelog ? V1.2/V1.3/V1.4 ???updated 2026-10-27?parity ?????? 0 0?UNKNOWN ??",
     "depends_on": [
       "V14-REQ-LEDGER-01"
     ]
