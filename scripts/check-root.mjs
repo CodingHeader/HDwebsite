@@ -88,13 +88,15 @@ const entries = readdirSync(root);
 const ASSISTANT_MARKER = /^\..+\.artifact\.json$/;
 
 /**
- * V14-FROZEN-GUARD-01：根目录的「点开头工程元数据文件」按模式豁免。
- * `.frozen-baseline` 存冻结面对比基线 commit（脚本输入，须入库）。
- * 不逐个登记文件名，避免后续每加一个同类元数据文件就红一次。
+ * V14-FROZEN-GUARD-01：允许的根目录「点开头工程元数据文件」清单。
+ * 只登记确有用途的文件，不做通配 —— 收紧而非放宽，避免掩盖"意外新增"。
+ * `.frozen-baseline`：冻结面对比基线 commit（scripts/check-frozen.mjs 的输入，须入库）。
  */
-const ROOT_METADATA = /^\.[a-z][a-z0-9-]*$/;
+const ROOT_METADATA = new Set([".frozen-baseline"]);
 
-const violations = entries.filter((e) => !WHITELIST.has(e) && !ASSISTANT_MARKER.test(e) && !ROOT_METADATA.test(e));
+const violations = entries.filter(
+  (e) => !WHITELIST.has(e) && !ASSISTANT_MARKER.test(e) && !ROOT_METADATA.has(e)
+);
 
 if (violations.length === 0) {
   console.log(`check-root PASS：根目录 ${entries.length} 条全部在白名单内。`);
