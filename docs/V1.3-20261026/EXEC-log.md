@@ -57,3 +57,4 @@
 - 恢复点：规划包已落盘，`V13-E2E-FRESH-01` 已完成并验证，下一次取卡从 `V13-BASE-01` 或 `V13-RL-01` 开始。
 - 2026-10-27 07:48 | V13-BASE-01 | in_progress | HEAD=a18f331 | resume: verify=0, ApplyClient no uncommitted diff, BASE gates run, visual home-1440 CI fail triaged
 - 2026-10-27 07:57 | V13-BASE-01 | done | commit=f5f6d79 | CI gate/docker success; e2e 79/79; visual home-1440 remains for V13-VIS-01
+- 2026-10-27 08:07 | V13-SEEDVIS-01 | in_progress | HEAD=5cff82e | seed-visual check scoped to exact seed ids; non-seed rows warn only
