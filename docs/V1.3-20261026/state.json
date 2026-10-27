@@ -4,7 +4,9 @@
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["f5f6d79"],
+    "commits": [
+      "f5f6d79"
+    ],
     "note": "BASE baseline completed: local lint/typecheck/test/build/checks PASS; CI f5f6d79 gate/docker success; e2e artifact 79/79; visual home-1440 remains for V13-VIS-01",
     "depends_on": []
   },
@@ -13,98 +15,146 @@
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["748aed1"],
+    "commits": [
+      "748aed1"
+    ],
     "note": "新鲜度校验前移到 useStandalone 分支之前（win32 也校验）；tsc/lint PASS；e2e 修复前 1 failed → 修复后 79/79 PASS；CI gate(Linux) success @a95860a（含 e2e），证明 Linux standalone 路径未受影响",
-    "depends_on": ["V13-BASE-01"]
+    "depends_on": [
+      "V13-BASE-01"
+    ]
   },
   "V13-RL-01": {
     "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["7d05654"],
+    "commits": [
+      "7d05654"
+    ],
     "note": "限流单源化完成：删除 stream 硬编码 RATE_LIMIT_PER_MINUTE，IP 兜底改为读同一设置键且仅在 ip 非空时启用（修复全站共享配额缺陷）；默认 10（用户裁决）；单测 91/1859、lint/tsc/build 绿、e2e 79/79；CI gate(Linux) success @7d05654",
-    "depends_on": ["V13-BASE-01"]
+    "depends_on": [
+      "V13-BASE-01"
+    ]
   },
   "V13-SEEDVIS-01": {
     "status": "done",
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["1786724"],
+    "commits": [
+      "1786724"
+    ],
     "note": "SEEDVIS completed: --check scoped to exact seed-owned ids; non-seed Article 9226 warns only; missing seed Article 9225 exits 1; lint/typecheck/test PASS; CI 1786724 gate/docker success and e2e 79/79; visual still fails only as BASE triaged home-1440",
-    "depends_on": ["V13-BASE-01"]
+    "depends_on": [
+      "V13-BASE-01"
+    ]
   },
   "V13-VIS-01": {
     "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["ad4cf70", "8dc778b"],
+    "commits": [
+      "ad4cf70",
+      "8dc778b"
+    ],
     "note": "VIS triage completed: initial push run 40425202421 had 44/45 PASS with only home@1440 fail; CI update runs 40431748131 and 40434018876 both regenerated the same home-1440.png reference BF6DC54...; post-push CI 40433104468 still failed only home@1440 because actual fell back to old blank image area 04A0E33..., classified as next/image decode timing flake; tests/visual/web.spec.ts now explicitly decodes non-ignored images and awaits naturalWidth; final ordinary push CI run 40436075724 @ 8dc778b gate/docker/visual all PASS.",
-    "depends_on": ["V13-BASE-01", "V13-SEEDVIS-01"]
+    "depends_on": [
+      "V13-BASE-01",
+      "V13-SEEDVIS-01"
+    ]
   },
   "V13-GATE-A11Y-01": {
-    "status": "ready",
+    "status": "superseded",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "a11y 接入 CI（不改 package.json）+ 前台 5 页最小 axe；前台只允许改 aria/语义",
-    "depends_on": ["V13-BASE-01"]
+    "note": "a11y 接入 CI（不改 package.json）+ 前台 5 页最小 axe；前台只允许改 aria/语义；V1.4 起由 V14-A11Y-01 承接",
+    "depends_on": [
+      "V13-BASE-01"
+    ],
+    "superseded_by": "V14-A11Y-01"
   },
   "V13-UI-HUB-01": {
-    "status": "ready",
+    "status": "superseded",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "content-hub 5 处原生控件替换为设计系统件；保留 hub-new/hub-edit-title/hub-review-* testid",
-    "depends_on": ["V13-BASE-01"]
+    "note": "content-hub 5 处原生控件替换为设计系统件；保留 hub-new/hub-edit-title/hub-review-* testid；V1.4 起由 V14-UI-HUB-01 承接",
+    "depends_on": [
+      "V13-BASE-01"
+    ],
+    "superseded_by": "V14-UI-HUB-01"
   },
   "V13-UI-CONSIST-01": {
-    "status": "ready",
+    "status": "superseded",
     "owner": "P1",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "≥10 页 × 8 项一致性抽检矩阵；页面层就地修，组件层 >3 页影响则开卡",
-    "depends_on": ["V13-UI-HUB-01"]
+    "note": "≥10 页 × 8 项一致性抽检矩阵；页面层就地修，组件层 >3 页影响则开卡；V1.4 起由 V14-UI-CONSIST-01 承接",
+    "depends_on": [
+      "V13-UI-HUB-01"
+    ],
+    "superseded_by": "V14-UI-CONSIST-01"
   },
   "V13-PERF-01": {
-    "status": "ready",
+    "status": "superseded",
     "owner": "P1",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "REQ-NF-001 四条逐条判定；Lighthouse 无环境则 UNKNOWN，其余三条给具体数值",
-    "depends_on": ["V13-BASE-01"]
+    "note": "REQ-NF-001 四条逐条判定；Lighthouse 无环境则 UNKNOWN，其余三条给具体数值；V1.4 起由 V14-PERF-01 承接",
+    "depends_on": [
+      "V13-BASE-01"
+    ],
+    "superseded_by": "V14-PERF-01"
   },
   "V13-REQ-01": {
-    "status": "ready",
+    "status": "superseded",
     "owner": "P2",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "102 条验收逐条判定 PASS/UNKNOWN/N-A + 证据路径；计数必须对齐 102",
-    "depends_on": ["V13-BASE-01", "V13-E2E-FRESH-01", "V13-RL-01", "V13-VIS-01", "V13-GATE-A11Y-01", "V13-UI-HUB-01", "V13-UI-CONSIST-01", "V13-PERF-01", "V13-SEEDVIS-01"]
+    "note": "102 条验收逐条判定 PASS/UNKNOWN/N-A + 证据路径；计数必须对齐 102；V1.4 起由 V14-REQ-LEDGER-01 承接",
+    "depends_on": [
+      "V13-BASE-01",
+      "V13-E2E-FRESH-01",
+      "V13-RL-01",
+      "V13-VIS-01",
+      "V13-GATE-A11Y-01",
+      "V13-UI-HUB-01",
+      "V13-UI-CONSIST-01",
+      "V13-PERF-01",
+      "V13-SEEDVIS-01"
+    ],
+    "superseded_by": "V14-REQ-LEDGER-01"
   },
   "V13-REL-01": {
-    "status": "ready",
+    "status": "superseded",
     "owner": "P1",
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "全卡台账收口 + V1.2 三卡标 superseded + changelog V1.3 段 + 双端 0 0",
-    "depends_on": ["V13-REQ-01"]
+    "note": "全卡台账收口 + V1.2 三卡标 superseded + changelog V1.3 段 + 双端 0 0；V1.4 起由 V14-REL-01 承接",
+    "depends_on": [
+      "V13-REQ-01"
+    ],
+    "superseded_by": "V14-REL-01"
   },
   "V13-Q2-01": {
     "status": "done",
     "owner": "main-agent",
     "verify": null,
     "blocked_reason": null,
-    "commits": ["7d05654"],
+    "commits": [
+      "7d05654"
+    ],
     "note": "用户 2026-10-26 裁决：每分钟 10 次。已改 guard 常量 + settings-registry 默认值 + settings-registry.test 断言三处为 10；REQ-F-009:38 口径无需修订（原本就是 10），冲突消除",
-    "depends_on": ["V13-RL-01"]
+    "depends_on": [
+      "V13-RL-01"
+    ]
   }
 }

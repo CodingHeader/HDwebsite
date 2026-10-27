@@ -4,12 +4,36 @@ type: changelog
 title: 变更日志
 status: active
 created: 2026-10-10
-updated: 2026-10-23
+updated: 2026-10-27
 ---
 
 # 变更日志
 
 > 格式：日期 + 类型（docs/design/feat/fix/refactor）+ 摘要。产品级发布记录（REL-xxx）待首个功能里程碑交付时创建 `07_release/release-records/`。
+
+## 2026-10-27（V1.4 质量守卫闭环轮）
+
+- **门禁变化**：a11y 接入 CI（`tests/a11y`，非 continue-on-error）；`Frozen surface guard`（`scripts/check-frozen.mjs`，冻结面硬门禁，CCR 双条件豁免 + 浅克隆 SKIP）；`check-root` 白名单纳入 `.frozen-baseline`。
+- **feat**：无新增业务功能（本轮为质量守卫闭环，0 契约 / 0 迁移 / 0 新依赖）。
+- **fix**：visual 稳定性（`img.decode` 三源收敛 + 失败自解释，连续 2 次普通 run 全绿）；content-hub 5 处原生控件清零（`Button`/`Input`/`RadioGroup`，`manager` 原生控件 grep=0）；冻结面守卫修复根目录白名单。
+- **test**：单测 91 文件 / 1859 用例；e2e 79/79；a11y 17/17；管理端 42 页一致性矩阵（原生控件 0 / 原生反馈 0 / 令牌作用域 2 页 FAIL / PageHeader 缺失 29 页）；性能四条（PASS 3 / UNKNOWN 1）；冻结面守卫正/负向 + 浅克隆 SKIP。
+- **UNKNOWN**：Lighthouse 移动端（需 Linux CI + `npm i -D lighthouse`，依赖变更需 CCR）；真实微信 / SMTP / Coze 联调（凭证缺失，长期项）。
+
+## 2026-10-26（V1.3 需求闭环轮）
+
+- **门禁变化**：构建新鲜度守卫平台无关化（`V13-E2E-FRESH-01`，win32 也校验 `BUILD_ID`）；`seed-visual --check` 口径（exact seed-owned ids）；限流单源化（删除流式硬编码 `RATE_LIMIT_PER_MINUTE`，读同一设置键）。
+- **feat**：无新增业务功能（需求闭环轮）。
+- **fix**：限频双源合一（阈值/粒度/可配置性三重不一致修复）；用户 2026-10-26 裁决每分钟 10 次落地（guard 常量 + settings-registry 默认 + 断言三处一致）。
+- **test**：lint / typecheck / 单测 90 文件 1853 / build / check 全绿；e2e 79/79；a11y 12/12（未接入 CI，转 V1.4）；seed-visual 自检。
+- **UNKNOWN**：visual 红灯归因（CI artifact 401/403 无法下载，保持 UNKNOWN，转 V1.4 V14-VIS-STAB-01）；真实凭证。
+
+## 2026-10-26（V1.2 门禁归零轮）
+
+- **门禁变化**：CI 双门禁归零（E2E Linux + Visual）。
+- **feat**：无新增业务功能（门禁归零轮）。
+- **fix**：apply-chat 会话竞态（4 次并发 GET `/api/chat/session` 各自 Set-Cookie 覆盖 → 400）；mobile-375 招生批次断言竞态（e2e.db seed 空库 + `isVisible` 即时快照）。
+- **test**：e2e 77→79 全绿；visual 基线重生成（36/46 系统性漂移分诊后全绿）。
+- **UNKNOWN**：LLM 限频 10 vs 20 待用户裁决（转 V1.3 V13-Q2-01）；真实凭证。
 
 ## 2026-10-25（V1.1 对等深化轮）
 
