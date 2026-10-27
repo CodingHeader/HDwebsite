@@ -1,0 +1,92 @@
+{
+  "V15-LEDGER-01": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "haiku",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "V1.4 五卡台账回填（FROZEN-GUARD/UI-CONSIST/PERF/REQ-LEDGER/REL）。实测提交：7d29740+ee57569 / 026c398 / 0ed1264 / afc2089 / d25e0eb。纯 JSON，跑 JSON.parse + hash 存在性校验。",
+    "depends_on": []
+  },
+  "V15-AUDIT-FIX-01": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小～中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "修正 scripts/audit-manager-ui.mjs 的 PageHeader 判定（29 误报→0 真值）。必须保留负向能力：造真缺头页面仍报 FAIL。不改 src/**。",
+    "depends_on": []
+  },
+  "V15-TOKEN-01": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "2 处令牌例外登记白名单（content-hub 公众号预览 / login 品牌反白），每条五字段含技术理由。禁止改任何 className。",
+    "depends_on": []
+  },
+  "V15-UX-STATES-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "42 页 × 五态运行时触达判定，每格须写判据（做了什么/看到什么）。禁止 grep 到组件即判 PASS（历史坑 H4）。不修 src/**。",
+    "depends_on": [
+      "V15-AUDIT-FIX-01"
+    ]
+  },
+  "V15-KEYBOARD-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "42 页 × K1~K4（最小集，见 07 §B1）。K3 Esc 须运行时验证，不得只凭 grep 下结论（08 §L4）。焦点陷阱/⌘S 全局不在范围。",
+    "depends_on": [
+      "V15-AUDIT-FIX-01"
+    ]
+  },
+  "V15-MOBILE-375-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "42 页 × M1~M4。M1 须给 scrollWidth 具体数值。前置必须 seed（空库致高度漂移，V1.4 实测 3389 vs 6204）。不改 layout/断点。",
+    "depends_on": [
+      "V15-AUDIT-FIX-01"
+    ]
+  },
+  "V15-CLOSE-01": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "haiku",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "收口：7 卡终态 + changelog V1.5 段（五类）+ parity 复核 + 本轮唯一一次全量门禁（串行 8 项）+ 双端 0 0。顺带关闭 V1.4 两条流程类 UNKNOWN（引用 V15 证据）。",
+    "depends_on": [
+      "V15-LEDGER-01",
+      "V15-AUDIT-FIX-01",
+      "V15-TOKEN-01",
+      "V15-UX-STATES-01",
+      "V15-KEYBOARD-01",
+      "V15-MOBILE-375-01"
+    ]
+  }
+}
