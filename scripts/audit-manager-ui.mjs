@@ -26,6 +26,14 @@ const NATIVE = /<button\b|<input\b|<select\b|<table\b|<textarea\b/;
 const NATIVE_FEEDBACK = /\bwindow\.confirm\s*\(|\balert\s*\(/;
 const HARDCOLOR = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsl\(|\b(?:black|white|red|blue|green|gray|grey|orange|purple|teal|pink|brown)\b/;
 const PAGEHEADER = /<PageHeader\b/;
+const CRUDPAGE = /\bCrudPage\b/;
+// V15-AUDIT-FIX-01: known exceptions without PageHeader but legitimate
+// news = pure redirect entry (redirect to /manager/articles, never renders content)
+// login = login page pattern using <h1> (REQ-F-015)
+const PAGEHEADER_EXCEPTIONS = new Set([
+  "src/app/manager/news/page.tsx",
+  "src/app/manager/login/page.tsx",
+]);
 
 function stripComments(s) {
   return s
@@ -49,18 +57,21 @@ for (const p of pages) {
   const native = NATIVE.test(stripped);
   const feedback = NATIVE_FEEDBACK.test(stripped);
   const token = HARDCOLOR.test(stripped);
-  const pageheader = PAGEHEADER.test(src);
+  const hasDirectHeader = PAGEHEADER.test(src);
+  const hasCrudPage = CRUDPAGE.test(src);
+  const isHeaderException = PAGEHEADER_EXCEPTIONS.has(relPath);
+  const headerOk = hasDirectHeader || hasCrudPage || isHeaderException;
   const cell = (v) => (v ? "FAIL" : "PASS");
   const nativeV = isUi(p) ? false : native;
   rows.push({
     page: relPath, native: cell(nativeV), feedback: cell(feedback), token: cell(token),
-    pageheader: cell(!pageheader), frontend: "N-A(本卡仅 manager)",
+    pageheader: hasDirectHeader ? "PASS(direct)" : (hasCrudPage ? "PASS(CrudPage 间接)" : (isHeaderException ? "PASS(例外)" : "FAIL")), frontend: "N-A(本卡仅 manager)",
     manual: "待主控复核（五态/键盘/375px）", conclusion: "",
   });
   if (nativeV) summary.native++;
   if (feedback) summary.feedback++;
   if (token) summary.token++;
-  if (!pageheader) summary.pageheader++;
+  if (!headerOk) summary.pageheader++;
 }
 summary.frontend = frontendChanged.length;
 
