@@ -1,36 +1,46 @@
 {
   "V14-BASE-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "P2",
     "tier": "haiku",
     "size": "小",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "基线固化：七道门禁串行 + BUILD_ID 时间戳 + e2e/a11y/visual-CI 计数 + 双端 0 0 + 与 V1.3 台账不一致项核对",
+    "commits": [
+      "9cab673"
+    ],
+    "note": "七道门禁串行全绿（lint/tsc/1859单测/build/3守卫/e2e 79）；BUILD_ID 12:24:27→12:59:31 FRESH；双端0 0；发现V1.3台账迁移数有误(8→实测7)。构建首跑失败根因=本地dev.db被截断为0字节(0表)，migrate+seed后通过，非代码缺陷",
     "depends_on": []
   },
   "V14-UI-HUB-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "中～大",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "content-hub 5 处原生控件（:328 button / :388 :408 input / :432 :436 radio）替换为设计系统件；保留 5 个 data-testid；375px 命中区≥44px",
-    "depends_on": ["V14-BASE-01"]
+    "commits": [
+      "f9854f7"
+    ],
+    "note": "5处原生控件清零（button/2 input/2 radio）：Button+Input+RadioGroup(variant=card)；未新建组件（增强既有RadioGroup，全仓无其他使用方）；manager原生控件grep=0；5个testid保留；e2e 6/6 + 全量79/79",
+    "depends_on": [
+      "V14-BASE-01"
+    ]
   },
   "V14-A11Y-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "中",
     "verify": null,
     "blocked_reason": null,
-    "commits": [],
-    "note": "a11y 接入 CI（不改 package.json，写全命令）+ 前台 5 页最小 axe；前台只允许改 aria/role/label",
-    "depends_on": ["V14-BASE-01"]
+    "commits": [
+      "49aaf04"
+    ],
+    "note": "CI 增 a11y 步骤（非continue-on-error，不改package.json）；新增前台5页axe；17/17全绿。前台唯一代码改动=aria-label+aria-hidden（未改className）。发现色对冲突：color-contrast 9组色对均来自origin/main原生样式，改它须动className违反REQ-F-014，按B2登记上报待裁决；门禁按色对白名单放行并声明局限",
+    "depends_on": [
+      "V14-BASE-01"
+    ]
   },
   "V14-FROZEN-GUARD-01": {
     "status": "ready",
@@ -41,7 +51,9 @@
     "blocked_reason": null,
     "commits": [],
     "note": "新增 scripts/check-frozen.mjs + CI 步骤；负向用例须 exit 1；CCR commit 前缀豁免；浅克隆 SKIP 兜底",
-    "depends_on": ["V14-A11Y-01"]
+    "depends_on": [
+      "V14-A11Y-01"
+    ]
   },
   "V14-VIS-STAB-01": {
     "status": "ready",
@@ -52,7 +64,9 @@
     "blocked_reason": null,
     "commits": [],
     "note": "证明 visual 不是靠 flake 过的：连续≥2 次普通 CI run 全绿；不得放宽阈值、不得手工改基线图",
-    "depends_on": ["V14-BASE-01"]
+    "depends_on": [
+      "V14-BASE-01"
+    ]
   },
   "V14-UI-CONSIST-01": {
     "status": "ready",
@@ -63,7 +77,9 @@
     "blocked_reason": null,
     "commits": [],
     "note": "12 页 × 8 项一致性矩阵（96 格无空格）；页面层就地修，组件层 >3 页影响则开卡",
-    "depends_on": ["V14-UI-HUB-01"]
+    "depends_on": [
+      "V14-UI-HUB-01"
+    ]
   },
   "V14-PERF-01": {
     "status": "ready",
@@ -74,7 +90,9 @@
     "blocked_reason": null,
     "commits": [],
     "note": "REQ-NF-001 四条逐条判定并给具体数值；Lighthouse 无环境则该条 UNKNOWN（不整卡阻塞）",
-    "depends_on": ["V14-BASE-01"]
+    "depends_on": [
+      "V14-BASE-01"
+    ]
   },
   "V14-REQ-LEDGER-01": {
     "status": "ready",
@@ -103,6 +121,8 @@
     "blocked_reason": null,
     "commits": [],
     "note": "台账收口 + V1.3 遗留 6 卡标 superseded + changelog V1.4 段 + parity 复核 + 双端 0 0",
-    "depends_on": ["V14-REQ-LEDGER-01"]
+    "depends_on": [
+      "V14-REQ-LEDGER-01"
+    ]
   }
 }
