@@ -1,0 +1,108 @@
+{
+  "V14-BASE-01": {
+    "status": "ready",
+    "owner": "P2",
+    "tier": "haiku",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "基线固化：七道门禁串行 + BUILD_ID 时间戳 + e2e/a11y/visual-CI 计数 + 双端 0 0 + 与 V1.3 台账不一致项核对",
+    "depends_on": []
+  },
+  "V14-UI-HUB-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "中～大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "content-hub 5 处原生控件（:328 button / :388 :408 input / :432 :436 radio）替换为设计系统件；保留 5 个 data-testid；375px 命中区≥44px",
+    "depends_on": ["V14-BASE-01"]
+  },
+  "V14-A11Y-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "a11y 接入 CI（不改 package.json，写全命令）+ 前台 5 页最小 axe；前台只允许改 aria/role/label",
+    "depends_on": ["V14-BASE-01"]
+  },
+  "V14-FROZEN-GUARD-01": {
+    "status": "ready",
+    "owner": "P1",
+    "tier": "sonnect",
+    "size": "小～中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "新增 scripts/check-frozen.mjs + CI 步骤；负向用例须 exit 1；CCR commit 前缀豁免；浅克隆 SKIP 兜底",
+    "depends_on": ["V14-A11Y-01"]
+  },
+  "V14-VIS-STAB-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "小～中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "证明 visual 不是靠 flake 过的：连续≥2 次普通 CI run 全绿；不得放宽阈值、不得手工改基线图",
+    "depends_on": ["V14-BASE-01"]
+  },
+  "V14-UI-CONSIST-01": {
+    "status": "ready",
+    "owner": "P1",
+    "tier": "sonnect",
+    "size": "中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "12 页 × 8 项一致性矩阵（96 格无空格）；页面层就地修，组件层 >3 页影响则开卡",
+    "depends_on": ["V14-UI-HUB-01"]
+  },
+  "V14-PERF-01": {
+    "status": "ready",
+    "owner": "P1",
+    "tier": "sonnect",
+    "size": "中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "REQ-NF-001 四条逐条判定并给具体数值；Lighthouse 无环境则该条 UNKNOWN（不整卡阻塞）",
+    "depends_on": ["V14-BASE-01"]
+  },
+  "V14-REQ-LEDGER-01": {
+    "status": "ready",
+    "owner": "P2",
+    "tier": "sonnect",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "102 条验收逐条 PASS/UNKNOWN/N-A + 证据路径；计数必须对齐 102；未实现项开卡或入 backlog",
+    "depends_on": [
+      "V14-UI-HUB-01",
+      "V14-UI-CONSIST-01",
+      "V14-A11Y-01",
+      "V14-VIS-STAB-01",
+      "V14-PERF-01",
+      "V14-FROZEN-GUARD-01"
+    ]
+  },
+  "V14-REL-01": {
+    "status": "ready",
+    "owner": "P1",
+    "tier": "haiku",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "台账收口 + V1.3 遗留 6 卡标 superseded + changelog V1.4 段 + parity 复核 + 双端 0 0",
+    "depends_on": ["V14-REQ-LEDGER-01"]
+  }
+}
