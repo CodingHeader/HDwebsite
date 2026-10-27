@@ -75,6 +75,12 @@ jobs:
 
       - name: Asset / root guards
         run: npm run check:assets && npm run check:root
+      # V14-FROZEN-GUARD-01：冻结面自动守卫（AGENTS.md §4）。
+      # 使用裸 node 而非 npm script：package.json 本身在冻结清单内，
+      # 为加 script 反而需要 CCR 流程，属于自我指涉。
+      - name: Frozen surface guard
+        run: node scripts/check-frozen.mjs
+
 
       # V8-SEC-04：安全审计门禁。
       # 关键点（都是踩过坑才写下的）：
