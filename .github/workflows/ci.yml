@@ -101,6 +101,23 @@ jobs:
       - name: E2E (Linux)
         run: npm run test:e2e
 
+      # V14-A11Y-01：a11y 门禁（REQ-F-015 §5 / REQ-NF-003）。
+      # 此前 tests/a11y/** 只在本机跑，CI 无该步骤 → 属"孤儿测试"，回归无人拦。
+      # 复用上面已安装的 chromium，不额外 install；不改 package.json（冻结面），此处写全命令。
+      # 阻断式（非 continue-on-error）：管理端 11 页 + 前台 5 页 serious/critical 必须为 0。
+      - name: A11y (axe, manager + web)
+        run: npx playwright test -c tests/a11y/playwright.config.ts
+
+      - name: Upload A11y artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-results-${{ github.run_id }}
+          path: .cache/a11y/
+          if-no-files-found: ignore
+          retention-days: 7
+
+
       - name: Upload E2E artifacts
         if: always()
         uses: actions/upload-artifact@v4

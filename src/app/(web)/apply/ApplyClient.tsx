@@ -437,8 +437,9 @@ export default function ApplyClient({ sceneCode, initialScene }: ApplyClientProp
                     onClick={handleSendMessage}
                     className="bg-[#da251d] hover:bg-[#b91d1d]"
                     disabled={!inputMessage.trim() || isTyping}
+                    aria-label="发送消息"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </div>
                 <p className="text-xs text-gray-400 mt-2 text-center">
