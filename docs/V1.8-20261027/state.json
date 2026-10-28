@@ -27,40 +27,50 @@
     ]
   },
   "A3": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "大",
     "dir": "A3-组件props恢复",
-    "commits": [],
+    "commits": [
+      "6851b01"
+    ],
     "note": "10 个组件恢复 props：6 个补 showOverlay、TopBanner 3 项、StatsBanner 2 项、FourCards 4+7 项、Banner 3 项。铁律：只抄 props 与条件包裹，不抄 className（前台冻结）。；V1.8 未开工",
     "depends_on": [
       "A2"
-    ]
+    ],
+    "verify": "tsc 0；10 组件 props 到位；className 值集合差仅 2 处模板字面量，默认输出逐字一致"
   },
   "A4": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "中",
     "dir": "A4-首页接线",
-    "commits": [],
+    "commits": [
+      "296f7a8",
+      "646b513"
+    ],
     "note": "data/home.ts 补 11 字段 → page.tsx 9 处传参 → layout 通二维码 → campus 通遮罩。布尔转换方向必须与原版一致（!== \"false\" vs === \"true\"）。；V1.8 未开工",
     "depends_on": [
       "A3"
-    ]
+    ],
+    "verify": "tsc 0；page.tsx 9 处传参；layout+campus 接线；className 值集合差为空"
   },
   "A5": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "sonnect",
     "size": "中",
     "dir": "A5-默认态回归",
-    "commits": [],
+    "commits": [
+      "69acba5"
+    ],
     "note": "四道验证：className 值零变更、基线图/阈值/用例数未动、视觉回归、管理端 11 键可见+2 项闭环。win32 跑不了 visual 须记 UNKNOWN，严禁重建基线。；V1.8 未开工",
     "depends_on": [
       "A4"
-    ]
+    ],
+    "verify": "四连+四守卫全 exit 0（test 1859 串行全通过）；闭环 2 项通过；发现并修复 bannerSettings 接线缺陷"
   },
   "A6": {
     "status": "done",
@@ -87,16 +97,20 @@
     "depends_on": []
   },
   "A8": {
-    "status": "ready",
+    "status": "done",
     "owner": "external-assistant",
     "tier": "sonnect",
     "size": "小",
     "dir": "A8-判据口径修正",
-    "commits": [],
+    "commits": [
+      "84216e8",
+      "0014221"
+    ],
     "note": "修 parity-matrix A1 判据（组件存在→能力等价）+ 文件头判据说明 + 写 ADR-034 + 登记 AIConfig 拆分。不修则下次重构同样漏判。；V1.8 未开工",
     "depends_on": [
       "A5"
-    ]
+    ],
+    "verify": "parity A1 判据改能力等价；ADR-038（原 034 撞号已改）；台账回填"
   },
   "B1": {
     "status": "ready",
