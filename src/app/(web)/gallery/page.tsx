@@ -4,8 +4,7 @@ import { ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/web/Breadcrumb";
 import type { Metadata } from "next";
-import path from "node:path";
-import { stat } from "node:fs/promises";
+import { localImageExists } from "@/lib/image-exists";
 
 export const metadata: Metadata = {
   title: "证书风采",
@@ -14,21 +13,6 @@ export const metadata: Metadata = {
 
 interface GalleryPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-async function localImageExists(url: string) {
-  if (!url.startsWith("/")) {
-    return true;
-  }
-
-  const fullPath = path.join(process.cwd(), "public", url.replace(/^\//, ""));
-
-  try {
-    const fileStat = await stat(fullPath);
-    return fileStat.isFile();
-  } catch {
-    return false;
-  }
 }
 
 export default async function GalleryPage({ searchParams }: GalleryPageProps) {

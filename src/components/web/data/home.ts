@@ -7,27 +7,12 @@ import { WEB_SETTING_DEFAULTS } from "./setting-defaults";
  * D-06：getHomeData 以 WEB_TAGS.home 缓存（unstable_cache），后台写操作经 crud 工厂按标签失效，
  * 前台 ≤5s 可见最新数据；TTFB 不劣化（首页数据复用）。
  */
-import path from "node:path";
-import { stat } from "node:fs/promises";
+import { localImageExists } from "@/lib/image-exists";
+import { isBlockedShowcaseImage, hasBrokenShowcaseText } from "@/lib/showcase-guard";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { WEB_TAGS, withWebCacheFallback } from "@/lib/cache-tags";
 import { getWebSettings } from "./settings";
-
-async function localImageExists(url: string) {
-  if (!url.startsWith("/")) {
-    return true;
-  }
-
-  const fullPath = path.join(process.cwd(), "public", url.replace(/^\//, ""));
-
-  try {
-    const fileStat = await stat(fullPath);
-    return fileStat.isFile();
-  } catch {
-    return false;
-  }
-}
 
 export interface HomeBannerItem {
   id: number;
@@ -139,12 +124,14 @@ async function getHomeDataUncached(): Promise<HomeData> {
 我校采用现场助学与在线学习相结合的自学考试助学方式，在各主考、主办院校的支持下，已经培养的成千上万的各类自学考试本专科毕业生。`;
 
   const gallery = await Promise.all(
-    galleryRaw.map(async (g) => ({
-      id: g.id,
-      title: g.title,
-      image: g.image,
-      imageMissing: !(await localImageExists(g.image)),
-    }))
+    galleryRaw
+      .filter((g) => !isBlockedShowcaseImage(g.image) && !hasBrokenShowcaseText(g.title))
+      .map(async (g) => ({
+        id: g.id,
+        title: g.title,
+        image: g.image,
+        imageMissing: !(await localImageExists(g.image)),
+      }))
   );
 
   return {
