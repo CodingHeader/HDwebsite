@@ -31,8 +31,13 @@ backups/
 tmp/
 .cache/
 # 运行时写入根（D-09 DATA_DIR 化；D-10 迁移出 git）
-uploads/
-data/
+# 只匹配仓库根的同名目录：`data/` 不带前导斜杠会误伤 src/components/web/data/（源码目录），
+# 导致该目录新增文件被静默忽略。
+/uploads/
+/data/
+# 视觉回归占位图：由 prisma/seed-visual.ts 运行时生成（CI 亦重新生成），不进仓库。
+# 显式声明，替代原先 `uploads/` 无前导斜杠时的顺带覆盖。
+/public/uploads/visual-fixtures/
 
 # IDE 与系统
 .vscode/
@@ -48,3 +53,4 @@ next-env.d.ts
 # 内容形如 {"retain_for_chat":true}；属运行时产物，绝不入库）
 **/.*.artifact.json
 
+/.box-agent/
