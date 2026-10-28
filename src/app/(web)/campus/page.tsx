@@ -27,6 +27,8 @@ export default async function CampusPage() {
 
   const address = settings.address || "成都市青羊区大石西路12号";
   const contactPhone = settings.contactPhone || WEB_SETTING_DEFAULTS.contactPhone;
+  // V1.8/A4：图片与文案遮罩开关（原版 :38 同款判定；默认 true 保持现渲染）
+  const showImageOverlays = settings.showImageOverlays !== "false";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -77,7 +79,7 @@ export default async function CampusPage() {
                           </div>
                         )}
                       </div>
-                      {img.caption && (
+                      {showImageOverlays && img.caption && (
                         <div className="p-4">
                           <p className="text-gray-600 text-sm">{img.caption}</p>
                         </div>

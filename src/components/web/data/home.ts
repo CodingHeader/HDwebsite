@@ -81,6 +81,18 @@ export interface HomeData {
   campuses: { id: number; name: string; images: { id: number; image: string; caption: string | null }[] }[];
   placeholderImage: string;
   ctaPhone: string;
+  // ── V1.8/A4：A2 注册的 11 键透传（供 page.tsx / layout.tsx 消费）──
+  fourCardsShowSection: boolean;
+  fourCardsBgColor: string;
+  fourCardsBgImage: string;
+  fourCardsContainerAlign: "left" | "center" | "right";
+  topbarBgImage: string;
+  statsBgImage: string;
+  wechatQrCode: string;
+  showImageOverlays: boolean;
+  bannerShowExtraBtn: boolean;
+  bannerExtraBtnText: string;
+  bannerExtraBtnLink: string;
 }
 
 async function getHomeDataUncached(): Promise<HomeData> {
@@ -219,6 +231,22 @@ async function getHomeDataUncached(): Promise<HomeData> {
     })),
     placeholderImage: settingsMap.defaultPlaceholderImage || "/images/logo_card.png",
     ctaPhone: settingsMap.contactPhone || WEB_SETTING_DEFAULTS.contactPhone,
+    // ── V1.8/A4：11 键透传。布尔转换方向照原版：`!== "false"` 视为开，`=== "true"` 视为开 ──
+    fourCardsShowSection: settingsMap.fourCardsShowSection !== "false",
+    // 默认空：新版 section 用 bg-gray-50（= #f9fafb），与原版 inline style 视觉等价（V1.7 裁决 2）
+    fourCardsBgColor: settingsMap.fourCardsBgColor || "",
+    fourCardsBgImage: settingsMap.fourCardsBgImage || "",
+    fourCardsContainerAlign:
+      (settingsMap.fourCardsContainerAlign as "left" | "center" | "right") || "center",
+    // 默认空：原版该键值指向 /uploads/202605/...ne0f5b.png，但该文件已不存在（V1.7 裁决 2）
+    topbarBgImage: settingsMap.topbarBgImage || "",
+    statsBgImage: settingsMap.statsBgImage || "",
+    wechatQrCode: settingsMap.wechatQrCode || "",
+    showImageOverlays: settingsMap.showImageOverlays !== "false",
+    // 严格等于 true：原版 page.tsx:161 即 `=== "true"`，默认 false = 第二按钮不显示
+    bannerShowExtraBtn: settingsMap.bannerShowExtraBtn === "true",
+    bannerExtraBtnText: settingsMap.bannerExtraBtnText || "了解更多",
+    bannerExtraBtnLink: settingsMap.bannerExtraBtnLink || "/courses",
   };
 }
 

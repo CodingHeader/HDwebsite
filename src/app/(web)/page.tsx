@@ -63,7 +63,14 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-cards",
     render: (d) => (
       <div data-block="home-cards">
-        <FourCards cards={d.homeCards} showOverlay={d.cardShowOverlay} />
+        <FourCards
+          cards={d.homeCards}
+          showOverlay={d.cardShowOverlay}
+          showSection={d.fourCardsShowSection}
+          bgColor={d.fourCardsBgColor}
+          bgImage={d.fourCardsBgImage}
+          containerAlign={d.fourCardsContainerAlign}
+        />
       </div>
     ),
   },
@@ -72,7 +79,13 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-topbar",
     render: (d) => (
       <div data-block="home-topbar">
-        <TopBanner noticeText={d.topNoticeText} noticePhone={d.topNoticePhone} />
+        <TopBanner
+          noticeText={d.topNoticeText}
+          noticePhone={d.topNoticePhone}
+          showContent={d.showImageOverlays}
+          bgImage={d.topbarBgImage}
+          showOverlay={d.showImageOverlays}
+        />
       </div>
     ),
   },
@@ -90,7 +103,14 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-stats",
     render: (d) => (
       <div data-block="home-stats">
-        <StatsBanner years={d.years} graduates={d.graduates} advantages={d.advantages} />
+        <StatsBanner
+          years={d.years}
+          graduates={d.graduates}
+          advantages={d.advantages}
+          showContent={d.showImageOverlays}
+          bgImage={d.statsBgImage}
+          showOverlay={d.showImageOverlays}
+        />
       </div>
     ),
   },
@@ -99,7 +119,7 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-partners",
     render: (d) => (
       <div data-block="home-partners">
-        <PartnerUniversities partners={d.partners} />
+        <PartnerUniversities partners={d.partners} showOverlay={d.showImageOverlays} />
       </div>
     ),
   },
@@ -108,7 +128,7 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-courses",
     render: (d) => (
       <div data-block="home-courses">
-        <CourseSectionNew hotMajors={d.hotMajors} />
+        <CourseSectionNew hotMajors={d.hotMajors} showOverlay={d.showImageOverlays} />
       </div>
     ),
   },
@@ -117,7 +137,12 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-intro",
     render: (d) => (
       <div data-block="home-intro">
-        <CompanyIntro videoUrl={d.intro.videoUrl} introText={d.intro.introText} slogan={d.intro.slogan} />
+        <CompanyIntro
+          videoUrl={d.intro.videoUrl}
+          introText={d.intro.introText}
+          slogan={d.intro.slogan}
+          showOverlay={d.showImageOverlays}
+        />
       </div>
     ),
   },
@@ -126,7 +151,7 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-news",
     render: (d) => (
       <div data-block="home-news">
-        <NewsCenter news={d.centerNews} />
+        <NewsCenter news={d.centerNews} showOverlay={d.showImageOverlays} />
       </div>
     ),
   },
@@ -135,7 +160,11 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-certificates",
     render: (d) => (
       <div data-block="home-certificates">
-        <CertificateGallery items={d.gallery} placeholderImage={d.placeholderImage} />
+        <CertificateGallery
+          items={d.gallery}
+          placeholderImage={d.placeholderImage}
+          showOverlay={d.showImageOverlays}
+        />
       </div>
     ),
   },
@@ -144,7 +173,11 @@ const HOME_BLOCKS: HomeBlock[] = [
     code: "home-campus",
     render: (d) => (
       <div data-block="home-campus">
-        <CampusSection campuses={d.campuses} placeholderImage={d.placeholderImage} />
+        <CampusSection
+          campuses={d.campuses}
+          placeholderImage={d.placeholderImage}
+          showOverlay={d.showImageOverlays}
+        />
       </div>
     ),
   },

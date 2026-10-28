@@ -61,6 +61,8 @@ export default async function WebLayout({
   const contactEmail = settings.contactEmail || "contact@hdaomanager.com";
   const icp = settings.icp || "蜀ICP备XXXXXXXX号";
   const workHours = settings.workHours || "周一至周日 9:00-18:00";
+  // V1.8/A4：微信二维码（A2 注册的 wechatQrCode；空 = 浮层内显示占位，不破版）
+  const wechatQrCode = settings.wechatQrCode || "";
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -90,7 +92,7 @@ export default async function WebLayout({
         workHours={workHours}
       />
       {/* 右侧悬浮组件 [FLOAT-001~020] 20交互点 */}
-      <FloatingContact phone={contactPhone1} />
+      <FloatingContact phone={contactPhone1} wechatQrCode={wechatQrCode} />
       {/* upgrade：AI 客服悬浮窗（SOL-003；视觉对比时遮罩） */}
       <ChatWidget />
     </div>

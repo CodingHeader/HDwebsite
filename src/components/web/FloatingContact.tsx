@@ -6,6 +6,8 @@ import { MessageCircle, Phone, ArrowUp } from "lucide-react";
 
 interface FloatingContactProps {
   phone?: string;
+  /** V1.8/A4：微信二维码地址；空则浮层内显示占位文案（原版 layout.tsx:36→71 同款） */
+  wechatQrCode?: string;
 }
 
 /**
@@ -19,7 +21,10 @@ interface FloatingContactProps {
  * FLOAT-016~020: Hover效果 (cursor: pointer, scale, 背景加深)
  */
 
-export function FloatingContact({ phone = WEB_SETTING_DEFAULTS.contactPhone1 }: FloatingContactProps) {
+export function FloatingContact({
+  phone = WEB_SETTING_DEFAULTS.contactPhone1,
+  wechatQrCode = "",
+}: FloatingContactProps) {
   const [showWechat, setShowWechat] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -79,8 +84,13 @@ export function FloatingContact({ phone = WEB_SETTING_DEFAULTS.contactPhone1 }: 
             data-interaction-id="FLOAT-007"
           >
             <p className="text-sm text-gray-600 mb-2 text-center">扫码添加微信</p>
-            <div className="w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
-              <span className="text-xs text-gray-400">微信二维码</span>
+            <div className="w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              {wechatQrCode ? (
+                // eslint-disable-next-line @next/next/no-img-element -- 用户上传的任意地址，与 ArticleContent 同理
+                <img src={wechatQrCode} alt="微信二维码" className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-xs text-gray-400">微信二维码</span>
+              )}
             </div>
           </div>
         )}
