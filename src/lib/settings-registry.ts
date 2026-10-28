@@ -50,6 +50,7 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   // ── topbar 顶栏 ──
   def("topNoticeText", "顶栏公告", "topbar", "2026成人高考火热报名中"),
   def("topNoticePhone", "顶栏电话", "topbar", "132-1945-5550"),
+  def("topbarBgImage", "顶栏背景图", "topbar", "", { type: "image" }),
   // ── banner 首页横幅 ──
   // D-04：banner-bg.jpg 在仓库与 main 均不存在，默认空（前台无背景图时走红色渐变）；main 口径
   def("bannerBgImage", "横幅背景图", "banner", ""),
@@ -65,6 +66,9 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("bannerShowTitle", "显示主标题", "banner", "true", { type: "boolean" }),
   def("bannerShowSubtitle", "显示副标题", "banner", "true", { type: "boolean" }),
   def("bannerShowBtn", "显示按钮", "banner", "true", { type: "boolean" }),
+  def("bannerShowExtraBtn", "显示附加按钮", "banner", "false", { type: "boolean" }),
+  def("bannerExtraBtnText", "附加按钮文字", "banner", "了解更多"),
+  def("bannerExtraBtnLink", "附加按钮链接", "banner", "/courses"),
   // ── stats 统计 ──
   def("yearsOfEstablishment", "办学年限", "stats", "26", { type: "number" }),
   def("totalGraduates", "累计毕业学员", "stats", "11万"),
@@ -72,6 +76,7 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("statsText", "统计文案", "stats", "11年办学经验|10000+服务学员|98%通过率", {
     description: "竖线分隔的统计项（B 分支合并口径，main 无此键）",
   }),
+  def("statsBgImage", "统计背景图", "stats", "", { type: "image" }),
   // ── advantage 旧优势项（main 已废弃，保留兼容 DB 数据） ──
   def("advantage1", "优势1（旧）", "stats", "正规可靠"),
   def("advantage2", "优势2（旧）", "stats", "国家承认"),
@@ -88,6 +93,10 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("cardKaifangTitle", "开大卡片标题", "cards", "开放大学"),
   def("cardKaifangSubtitle", "开大卡片副标题", "cards", "终身学习伙伴"),
   def("cardKaifangLink", "开大卡片链接", "cards", "/courses?cat=kaifang"),
+  def("fourCardsShowSection", "显示四卡片区块", "cards", "true", { type: "boolean" }),
+  def("fourCardsBgColor", "四卡背景色", "cards", ""),
+  def("fourCardsBgImage", "四卡背景图", "cards", "", { type: "image" }),
+  def("fourCardsContainerAlign", "四卡内容对齐", "cards", "center"),
   // ── footer 页脚 ──
   def("footerLogo", "页脚 Logo（空回退主 Logo）", "footer", ""),
   def("footerSlogan", "页脚口号", "footer", "专注学历提升教育"),
@@ -107,6 +116,7 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
   def("contactPhone2", "座机", "contact", "028-6167-5329"),
   def("contactEmail", "联系邮箱", "contact", ""),
   def("address", "地址", "contact", "成都市青羊区大石西路12号"),
+  def("wechatQrCode", "微信公众号二维码", "contact", "", { type: "image" }),
   // ── seo ──
   def("seoTitle", "SEO 标题", "seo", "弘道教育 - 专注专升本学历提升"),
   def("seoKeywords", "SEO 关键词", "seo", "专升本,学历提升,成人教育,自考,成考"),
@@ -185,6 +195,8 @@ export const SETTINGS_REGISTRY: RegistryItem[] = [
     isPublic: false,
     description: "审核通过后延迟多久自动发布；延迟 ≥ 发布前提醒提前量时可先收到提醒邮件再发布",
   }),
+  // ── display 展示 ──
+  def("showImageOverlays", "显示图片遮罩", "display", "true", { type: "boolean" }),
 ];
 
 /**
