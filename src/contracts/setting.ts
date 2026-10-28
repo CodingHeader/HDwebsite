@@ -26,6 +26,7 @@ export const settingGroups = [
   "contact",
   "seo",
   "other",
+  "display",
   "email",
   "wechat-mp",
   "collect",
@@ -40,7 +41,7 @@ export type SettingGroup = (typeof settingGroups)[number];
 export const settingDefinitionSchema = z.object({
   key: z.string(),
   label: z.string(),
-  type: z.enum(["string", "number", "boolean", "json", "text"]),
+  type: z.enum(["string", "number", "boolean", "json", "text", "image"]),
   group: z.string(),
   defaultValue: z.string(),
   isPublic: z.boolean().default(true),
