@@ -1,0 +1,162 @@
+{
+  "A1": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "sonnect",
+    "size": "小",
+    "dir": "A1-契约补齐",
+    "commits": [],
+    "note": "settingGroups 加 display（原版该键 group=display 实测）；type 枚举加 image（SchemaForm.tsx:243 已实现 case image，契约挡在实现前面）。2 行改动，blocks A2~A5/A8。",
+    "depends_on": []
+  },
+  "A2": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "中",
+    "dir": "A2-配置键注册",
+    "commits": [],
+    "note": "注册 11 键，默认值取自原版 dev.db 实测。两处特例：fourCardsBgColor 默认空（新版 bg-gray-50 已等价 #f9fafb）、topbarBgImage 置空（原值指向的文件已不存在）。",
+    "depends_on": ["A1"]
+  },
+  "A3": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "dir": "A3-组件props恢复",
+    "commits": [],
+    "note": "10 个组件恢复 props：6 个补 showOverlay、TopBanner 3 项、StatsBanner 2 项、FourCards 4+7 项、Banner 3 项。铁律：只抄 props 与条件包裹，不抄 className（前台冻结）。",
+    "depends_on": ["A2"]
+  },
+  "A4": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "中",
+    "dir": "A4-首页接线",
+    "commits": [],
+    "note": "data/home.ts 补 11 字段 → page.tsx 9 处传参 → layout 通二维码 → campus 通遮罩。布尔转换方向必须与原版一致（!== \"false\" vs === \"true\"）。",
+    "depends_on": ["A3"]
+  },
+  "A5": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "sonnect",
+    "size": "中",
+    "dir": "A5-默认态回归",
+    "commits": [],
+    "note": "四道验证：className 值零变更、基线图/阈值/用例数未动、视觉回归、管理端 11 键可见+2 项闭环。win32 跑不了 visual 须记 UNKNOWN，严禁重建基线。",
+    "depends_on": ["A4"]
+  },
+  "A6": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "haiku",
+    "size": "小",
+    "dir": "A6-管理端断链",
+    "commits": [],
+    "note": "新建 manager/ai-config/page.tsx 做 307 重定向到 llm-providers。API 层已有 307，页面层 404 属不对称。用 redirect 非 permanentRedirect（可回退）。",
+    "depends_on": []
+  },
+  "A7": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "dir": "A7-复用去重",
+    "commits": [],
+    "note": "localImageExists 两处重复（gallery/page.tsx:19、data/home.ts:17）提取到 lib/image-exists.ts。先 diff 确认等价；外链 URL 须返回 true。",
+    "depends_on": []
+  },
+  "A8": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "dir": "A8-判据口径修正",
+    "commits": [],
+    "note": "修 parity-matrix A1 判据（组件存在→能力等价）+ 文件头判据说明 + 写 ADR-034 + 登记 AIConfig 拆分。不修则下次重构同样漏判。",
+    "depends_on": ["A5"]
+  },
+  "B1": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "dir": "B1-五态验收",
+    "commits": [],
+    "note": "42 页 × 5 态 = 210 格。27 页走 CrudPage 可共用判据，15 页逐页。news 全 N-A、login 空/加载 N-A、只读页成功态 N-A。每格须写做了什么+看到什么，禁 grep 判 PASS。",
+    "depends_on": ["A2"]
+  },
+  "B2": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "dir": "B2-键盘验收",
+    "commits": [],
+    "note": "42 页 × K1~K4 = 168 格，按 V1.7 §B1 最小集。先做共性 K3/K4 再逐页 K1/K2。K3 Esc 必须运行时验证（dialog.tsx 98 行无 grep 命中，但可能有父级兜底）。",
+    "depends_on": ["A2"]
+  },
+  "B3": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "dir": "B3-375px验收",
+    "commits": [],
+    "note": "42 页 × M1~M4 = 168 格。M1 扩展既有 mobile-375.spec.ts（现仅覆盖 3/42 路由，:57-63 有现成 scrollWidth 断言）。禁改 ≤375 阈值。M1 须给具体数值。",
+    "depends_on": ["A2"]
+  },
+  "C1": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "dir": "C1-showcase过滤",
+    "commits": [],
+    "note": "只做 3 个纯函数（毒文本/破图/乱码）约 60 行，不完整复原原版 329 行。必须先核实关键词是否误伤业务文案（xgnedu 在新版是正常话术）。",
+    "depends_on": []
+  },
+  "C2": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "opus",
+    "size": "中",
+    "dir": "C2-API缓存策略",
+    "commits": [],
+    "note": "给白名单只读接口加 HTTP 缓存头，不改全局 withApi（52 路由受影响风险太大）。优先级最低：原版也无 API 缓存，属优化非对等。可能 N-A。",
+    "depends_on": []
+  },
+  "D1": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "dir": "D1-Lighthouse",
+    "commits": [],
+    "note": "优先用 npx 临时跑不装依赖（避免 CCR）。测 mobile+desktop 首页分数，建首次基线（无历史值可比）。无 Chrome 则记 UNKNOWN。",
+    "depends_on": []
+  },
+  "D2": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "opus",
+    "size": "中",
+    "dir": "D2-部署演练",
+    "commits": [],
+    "note": "备份恢复演练（本机可做，须用 /tmp 独立 db，不动 e2e.db）+ 全新服务器 30 分钟（需 Docker，无则记 UNKNOWN 不冒充）。",
+    "depends_on": []
+  },
+  "E1": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "haiku",
+    "size": "小",
+    "dir": "E1-V18收口",
+    "commits": [],
+    "note": "16 阶段终态 + 唯一一次全量门禁（串行 8 项）+ changelog V1.8 段 + parity 复核 + 双端 0 0。跑 ≠ 门禁：记录结果但不阻断。",
+    "depends_on": ["A1","A2","A3","A4","A5","A6","A7","A8","B1","B2","B3","C1","C2","D1","D2"]
+  }
+}
