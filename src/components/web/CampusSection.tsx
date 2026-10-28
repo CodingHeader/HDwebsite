@@ -17,9 +17,15 @@ interface Campus {
 interface CampusSectionProps {
   campuses: Campus[];
   placeholderImage?: string;
+  /** V1.8/A3：控制区块标题与图片角标显隐（原版 :22/:51/:74 同款，默认 true 保持现渲染） */
+  showOverlay?: boolean;
 }
 
-export function CampusSection({ campuses, placeholderImage = "/images/logo_card.png" }: CampusSectionProps) {
+export function CampusSection({
+  campuses,
+  placeholderImage = "/images/logo_card.png",
+  showOverlay = true,
+}: CampusSectionProps) {
   // 无校区数据时不显示整个 section，等待后台配置
   if (!campuses || campuses.length === 0) {
     return null;
@@ -38,9 +44,11 @@ export function CampusSection({ campuses, placeholderImage = "/images/logo_card.
     <section className="bg-white py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3 mb-6">
-          学院风采
-        </h2>
+        {showOverlay && (
+          <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3 mb-6">
+            学院风采
+          </h2>
+        )}
 
         {/* 图片网格 - 2行4列，与证书风采一致 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

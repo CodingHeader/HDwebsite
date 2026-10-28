@@ -4,21 +4,25 @@ interface CompanyIntroProps {
   videoUrl?: string;
   introText: string;
   slogan?: string;
+  /** V1.8/A3：控制标题栏显隐（原版 :7/:14/:19 同款，默认 true 保持现渲染） */
+  showOverlay?: boolean;
 }
 
-export function CompanyIntro({ videoUrl, introText, slogan }: CompanyIntroProps) {
+export function CompanyIntro({ videoUrl, introText, slogan, showOverlay = true }: CompanyIntroProps) {
   return (
     <section className="bg-white py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
-            公司简介
-          </h2>
-          {slogan && (
-            <p className="text-gray-500">{slogan}</p>
-          )}
-        </div>
+        {showOverlay && (
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
+              公司简介
+            </h2>
+            {slogan && (
+              <p className="text-gray-500">{slogan}</p>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

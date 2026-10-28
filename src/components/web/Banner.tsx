@@ -40,6 +40,12 @@ export interface BannerSettings {
   showSubtitle?: boolean;
   /** 是否显示按钮 */
   showBtn?: boolean;
+  /** V1.8/A3：是否显示第二按钮（原版 :40/:81/:128 同款，默认 false 精简模式不显示） */
+  showExtraBtn?: boolean;
+  /** V1.8/A3：第二按钮文字（原版 :42/:82，默认「了解更多」） */
+  extraBtnText?: string;
+  /** V1.8/A3：第二按钮链接（原版 :44/:83，默认「/courses」） */
+  extraBtnLink?: string;
 }
 
 interface BannerProps {
@@ -87,6 +93,9 @@ export function Banner({ banners, settings }: BannerProps) {
     showTitle: settings?.showTitle !== false,
     showSubtitle: settings?.showSubtitle !== false,
     showBtn: settings?.showBtn !== false,
+    showExtraBtn: settings?.showExtraBtn === true,
+    extraBtnText: settings?.extraBtnText || "了解更多",
+    extraBtnLink: settings?.extraBtnLink || "/courses",
   };
 
   // 配置了统一的 Banner 背景图 + 文案，而且管理后台 banner 列表为空 → 使用配置渲染单张
@@ -132,6 +141,14 @@ export function Banner({ banners, settings }: BannerProps) {
                   {cfg.btnText}
                 </Link>
               )}
+              {cfg.showBtn && cfg.showExtraBtn && cfg.extraBtnText && (
+                <Link
+                  href={cfg.extraBtnLink}
+                  className="inline-block mt-3 sm:ml-4 px-6 py-3 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 backdrop-blur-sm transition-colors"
+                >
+                  {cfg.extraBtnText}
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -171,6 +188,15 @@ export function Banner({ banners, settings }: BannerProps) {
                         className="relative z-20 inline-block mt-6 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 shadow-lg transition-colors"
                       >
                         {cfg.btnText}
+                      </Link>
+                    )}
+                    {cfg.showBtn && cfg.showExtraBtn && cfg.extraBtnText && (
+                      <Link
+                        href={cfg.extraBtnLink}
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative z-20 inline-block mt-3 sm:ml-4 px-6 py-3 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 backdrop-blur-sm transition-colors"
+                      >
+                        {cfg.extraBtnText}
                       </Link>
                     )}
                   </div>

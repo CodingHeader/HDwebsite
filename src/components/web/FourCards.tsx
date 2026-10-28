@@ -12,11 +12,29 @@ interface CardData {
   gradient: string;
   hoverGradient: string;
   shadow: string;
+  /** V1.8/A3：卡片背景图（原版 :15/:97 同款，null/空 = 不渲染背景层） */
+  backgroundImage?: string | null;
+  /** V1.8/A3：以下 6 个开关默认 true（`!== false` 判定），与原版 :214/:222 一致 */
+  showIcon?: boolean;
+  showTitle?: boolean;
+  showSubtitle?: boolean;
+  showArrow?: boolean;
+  showDecoration?: boolean;
+  /** V1.8/A3：卡片内文字对齐（原版 :21/:164 同款，默认左对齐=不设类） */
+  textAlign?: "left" | "center" | "right";
 }
 
 interface FourCardsProps {
   cards?: CardData[];
   showOverlay?: boolean;
+  /** V1.8/A3：整块显隐（原版 :11/:130/:133 同款，默认 true 保持现渲染） */
+  showSection?: boolean;
+  /** V1.8/A3：section 背景色；为空则沿用 bg-gray-50 类，避免 inline 与 class 双控（V1.7 裁决 2） */
+  bgColor?: string;
+  /** V1.8/A3：section 背景图（原版 :12/:148） */
+  bgImage?: string;
+  /** V1.8/A3：卡片容器对齐（原版 :13/:140-145，默认 center 与新版 mx-auto 等价） */
+  containerAlign?: "left" | "center" | "right";
 }
 
 // 图标映射表 — 覆盖所有数据库中可能用到的Lucide图标名
@@ -106,21 +124,57 @@ const defaultCards: CardData[] = [
   },
 ];
 
-export function FourCards({ cards: propCards, showOverlay = true }: FourCardsProps) {
+export function FourCards({
+  cards: propCards,
+  showOverlay = true,
+  showSection = true,
+  bgColor = "",
+  bgImage = "",
+  containerAlign = "center",
+}: FourCardsProps) {
+  if (!showSection) {
+    return null;
+  }
+
   // 3 卡居中布局：若数据库无数据，回退到默认 3 张
   const cardsData: CardData[] =
     propCards && propCards.length > 0 ? propCards.slice(0, 3) : defaultCards;
 
+  // bgColor/bgImage 均为空时不生成 inline style，沿用 bg-gray-50 类（避免 inline 与 class 双控同一属性）
+  const sectionStyle =
+    bgColor || bgImage
+      ? {
+          backgroundColor: bgColor || undefined,
+          backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+          backgroundSize: bgImage ? "cover" : undefined,
+          backgroundPosition: bgImage ? "center" : undefined,
+        }
+      : undefined;
+
+  // center 走原有的 mx-auto；left/right 才替换为单侧 auto，中心态类名与原先完全一致
+  const gridAlignClass =
+    containerAlign === "left" ? "mr-auto" : containerAlign === "right" ? "ml-auto" : "mx-auto";
+
   return (
-    <section className="bg-gray-50 py-6">
+    <section className="bg-gray-50 py-6" style={sectionStyle}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl ${gridAlignClass}`}>
           {cardsData.map((card) => {
             const Icon = getIcon(card.icon);
             // 使用内联样式替代动态Tailwind类名，解决v4 JIT编译问题
             const bgStyle = gradientStyleMap[card.gradient] || gradientStyleMap["from-blue-500 to-blue-600"];
             const hoverBgStyle = gradientStyleMap[card.hoverGradient] || gradientStyleMap["from-blue-400 to-blue-500"];
             const shadowVal = shadowStyleMap[card.shadow] || shadowStyleMap["shadow-blue-200"];
+            // V1.8/A3：文字对齐（未设 = 不追加任何类，className 与改动前逐字一致）
+            const textAlignClass =
+              card.textAlign === "center"
+                ? "text-center"
+                : card.textAlign === "right"
+                  ? "text-right"
+                  : "";
+
+            // V1.8/A3：有背景图时不铺渐变，避免盖住图片（原版 :172 同款）
+            const hasBgImage = !!card.backgroundImage;
 
             return (
               <Link
@@ -128,46 +182,70 @@ export function FourCards({ cards: propCards, showOverlay = true }: FourCardsPro
                 href={card.href || "/courses"}
                 className="group relative overflow-hidden rounded-xl p-5 h-[130px] flex items-center gap-4 transition-all duration-300 hover:-translate-y-1"
                 style={{
-                  background: bgStyle,
+                  background: hasBgImage ? undefined : bgStyle,
                   boxShadow: shadowVal,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = hoverBgStyle;
+                  if (!hasBgImage) {
+                    e.currentTarget.style.background = hoverBgStyle;
+                  }
                   e.currentTarget.style.boxShadow = shadowVal.replace("0.5", "0.7");
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = bgStyle;
+                  if (!hasBgImage) {
+                    e.currentTarget.style.background = bgStyle;
+                  }
                   e.currentTarget.style.boxShadow = shadowVal;
                 }}
               >
-                {/* 背景装饰 */}
-                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+                {/* V1.8/A3：卡片背景图（原版 :198-205 同款） */}
+                {hasBgImage && (
+                  <>
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                      style={{ backgroundImage: `url(${card.backgroundImage})` }}
+                    />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
+                  </>
+                )}
+                {/* 背景装饰（仅无背景图时显示，原版 :207 同款） */}
+                {!hasBgImage && card.showDecoration !== false && (
+                  <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+                )}
                 
                 {showOverlay && (
                   <>
-                    {/* 图标区域 */}
-                    <div className="relative flex-shrink-0 w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-7 h-7 text-white" />
-                    </div>
-
-                    {/* 文字区域 */}
-                    <div className="relative flex-1">
-                      <h3 className="text-lg font-bold text-white mb-1">
-                        {card.title}
-                      </h3>
-                      <p className="text-sm text-white/80">
-                        {card.subtitle}
-                      </p>
-                    </div>
-
-                    {/* Hover箭头 */}
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                    {/* 图标区域（V1.8/A3：showIcon 默认显示，原版 :214 同款） */}
+                    {card.showIcon !== false && (
+                      <div className="relative flex-shrink-0 w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
+                    )}
+
+                    {/* 文字区域（V1.8/A3：textAlign 已生效） */}
+                    <div className={`relative flex-1${textAlignClass ? ` ${textAlignClass}` : ""}`}>
+                      {card.showTitle !== false && (
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          {card.title}
+                        </h3>
+                      )}
+                      {card.showSubtitle !== false && (
+                        <p className="text-sm text-white/80">
+                          {card.subtitle}
+                        </p>
+                      )}
                     </div>
+
+                    {/* Hover箭头（V1.8/A3：showArrow 默认显示，原版 :241 同款） */}
+                    {card.showArrow !== false && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </Link>

@@ -13,17 +13,21 @@ interface Partner {
 
 interface PartnerUniversitiesProps {
   partners: Partner[];
+  /** V1.8/A3：控制标题栏显隐（原版 :16/:21/:27 同款，默认 true 保持现渲染） */
+  showOverlay?: boolean;
 }
 
-export function PartnerUniversities({ partners }: PartnerUniversitiesProps) {
+export function PartnerUniversities({ partners, showOverlay = true }: PartnerUniversitiesProps) {
   return (
     <section className="bg-white py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">招生院校</h2>
-          <p className="text-gray-500">985/211热门名校供您选择</p>
-        </div>
+        {showOverlay && (
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">招生院校</h2>
+            <p className="text-gray-500">985/211热门名校供您选择</p>
+          </div>
+        )}
 
         {/* Partners Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">

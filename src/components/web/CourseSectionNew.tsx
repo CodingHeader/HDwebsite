@@ -20,9 +20,11 @@ interface HotMajor {
 
 interface CourseSectionNewProps {
   hotMajors: HotMajor[];
+  /** V1.8/A3：控制标题栏与分类 Tab 显隐（原版 :23/:53/:59 同款，默认 true 保持现渲染） */
+  showOverlay?: boolean;
 }
 
-export function CourseSectionNew({ hotMajors }: CourseSectionNewProps) {
+export function CourseSectionNew({ hotMajors, showOverlay = true }: CourseSectionNewProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // 从 hotMajors 的 subtitle 字段提取分类标签
@@ -49,22 +51,25 @@ export function CourseSectionNew({ hotMajors }: CourseSectionNewProps) {
     <section className="bg-gray-50 py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">热门专业</h2>
-        </div>
+        {showOverlay && (
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">热门专业</h2>
+          </div>
+        )}
 
         {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b">
-          <button
-            onClick={() => setActiveCategory(null)}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeCategory === null
-                ? "text-red-600 border-b-2 border-red-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            全部
-          </button>
+        {showOverlay && (
+          <div className="flex flex-wrap gap-2 mb-8 border-b">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeCategory === null
+                  ? "text-red-600 border-b-2 border-red-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              全部
+            </button>
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -78,7 +83,8 @@ export function CourseSectionNew({ hotMajors }: CourseSectionNewProps) {
               {cat.name}
             </button>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Course Grid - 目标网站样式 */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
