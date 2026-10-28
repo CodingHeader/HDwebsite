@@ -84,7 +84,7 @@ export function FloatingContact({
             data-interaction-id="FLOAT-007"
           >
             <p className="text-sm text-gray-600 mb-2 text-center">扫码添加微信</p>
-            <div className="w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
               {wechatQrCode ? (
                 // eslint-disable-next-line @next/next/no-img-element -- 用户上传的任意地址，与 ArticleContent 同理
                 <img src={wechatQrCode} alt="微信二维码" className="w-full h-full object-contain" />
