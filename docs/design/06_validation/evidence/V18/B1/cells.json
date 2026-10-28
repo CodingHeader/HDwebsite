@@ -1,21 +1,22 @@
 [
   {
-    "page": "/manager/tags",
-    "kind": "A",
-    "state": "loading",
-    "action": "route('**/api/tags**') 延时 1500ms 后 goto",
-    "asserts": {
-      "skeletonVisible": true
+    "page": "/manager",
+    "kind": "B",
+    "state": "empty",
+    "action": "空态不适用",
+    "asserts": {},
+    "observed": {
+      "reason": "该页无列表/空态不可用户触达（无 POST + 无搜索/筛选），空态 N-A"
     },
-    "observed": {},
-    "status": "PASS",
-    "shot": ".cache/v18-b1/shots/tags-loading.png"
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/manager-empty.png",
+    "branch": "NA"
   },
   {
-    "page": "/manager/tags",
-    "kind": "A",
+    "page": "/manager",
+    "kind": "B",
     "state": "error",
-    "action": "route('**/api/tags**') 500 后 goto",
+    "action": "route('/\\/api\\/manager\\/dashboard/') 500",
     "asserts": {
       "errorStateVisible": true,
       "retryVisible": true,
@@ -23,9 +24,3751 @@
     },
     "observed": {
       "errorText": "加载失败\n\nB1 probe 500\n\n重试",
-      "retryBtnText": "重试",
-      "requestsBefore": 1,
-      "requestsAfter": 2
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/manager/dashboard",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/manager/dashboard"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/manager-error.png"
+  },
+  {
+    "page": "/manager",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/manager\\/dashboard/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/manager-forbidden.png"
+  },
+  {
+    "page": "/manager",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/manager-loading.png"
+  },
+  {
+    "page": "/manager",
+    "kind": "B",
+    "state": "success",
+    "action": "只读统计页无写操作",
+    "asserts": {},
+    "observed": {
+      "reason": "只读统计页无写操作"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/manager-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/ai-config",
+    "kind": "B",
+    "state": "empty",
+    "action": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/ai-config-empty.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/ai-config",
+    "kind": "B",
+    "state": "error",
+    "action": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/ai-config-error.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/ai-config",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/ai-config-forbidden.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/ai-config",
+    "kind": "B",
+    "state": "loading",
+    "action": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/ai-config-loading.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/ai-config",
+    "kind": "B",
+    "state": "success",
+    "action": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/llm-providers（落地 http://127.0.0.1:6791/manager/llm-providers）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/ai-config-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/articles",
+    "kind": "B",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "没有找到与「zzz-no-match-zzz」相关的文章\n\n换个关键词试试。",
+      "hasActionInContainer": false,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/articles-empty.png",
+    "criterion": "v2",
+    "branch": "NONE"
+  },
+  {
+    "page": "/manager/articles",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/articles/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/articles?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/articles?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/articles-error.png"
+  },
+  {
+    "page": "/manager/articles",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/articles/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/articles-forbidden.png"
+  },
+  {
+    "page": "/manager/articles",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/articles-loading.png"
+  },
+  {
+    "page": "/manager/articles",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（create）",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793208721996-0",
+        "B1验收-1793208721996-5",
+        "B1验收-1793208721996-6",
+        "B1验收文本内容-1793208721996",
+        "b1-1793208721996-8"
+      ],
+      "skipped": [
+        "select:1:频道:3opts",
+        "select:2:内容类型:3opts",
+        "select:3:分类:6opts",
+        "select:4:状态:4opts"
+      ],
+      "nameVal": "B1验收-1793208721996-0",
+      "toastText": "已创建\n\nB1验收-1793208721996-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/articles-success.png"
+  },
+  {
+    "page": "/manager/banners",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的轮播图\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/banners-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/banners",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/banners**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/banners?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/banners?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/banners-error.png"
+  },
+  {
+    "page": "/manager/banners",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/banners**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/banners-forbidden.png"
+  },
+  {
+    "page": "/manager/banners",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/banners**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/banners-loading.png"
+  },
+  {
+    "page": "/manager/banners",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": false,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793203486548-0",
+        "https://b1.example.com/1793203486548",
+        "1"
+      ],
+      "nameVal": "B1验收-1793203486548-0",
+      "skipped": [
+        "select:3:状态:4opts"
+      ],
+      "toastText": "已创建"
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/banners-success.png"
+  },
+  {
+    "page": "/manager/campus",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的校区\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/campus-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/campus",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/campus**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/campus?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/campus?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/campus-error.png"
+  },
+  {
+    "page": "/manager/campus",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/campus**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/campus-forbidden.png"
+  },
+  {
+    "page": "/manager/campus",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/campus**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/campus-loading.png"
+  },
+  {
+    "page": "/manager/campus",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202025471-0",
+        "B1验收-1793202025471-1",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202025471-0",
+      "skipped": [
+        "select:3:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202025471-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/campus-success.png"
+  },
+  {
+    "page": "/manager/categories",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的分类\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/categories-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/categories",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/categories**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/categories?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/categories?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/categories-error.png"
+  },
+  {
+    "page": "/manager/categories",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/categories**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/categories-forbidden.png"
+  },
+  {
+    "page": "/manager/categories",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/categories**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/categories-loading.png"
+  },
+  {
+    "page": "/manager/categories",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202031635-0",
+        "b1-1793202031635-1",
+        "B1验收文本内容-1793202031635",
+        "B1验收-1793202031635-3",
+        "1",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202031635-0",
+      "skipped": [
+        "select:5:类型:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202031635-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/categories-success.png"
+  },
+  {
+    "page": "/manager/chat-history",
+    "kind": "B",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "没有符合条件的会话\n\n调整筛选条件试试。",
+      "hasActionInContainer": false,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/chat-history-empty.png",
+    "criterion": "v2",
+    "branch": "NONE"
+  },
+  {
+    "page": "/manager/chat-history",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/chat-history/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/chat-history?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/chat-history?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-history-error.png"
+  },
+  {
+    "page": "/manager/chat-history",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/chat-history/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-history-forbidden.png"
+  },
+  {
+    "page": "/manager/chat-history",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-history-loading.png"
+  },
+  {
+    "page": "/manager/chat-history",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（delete）",
+    "asserts": {
+      "toastVisible": true,
+      "specific": true
+    },
+    "observed": {
+      "rowCount": 1,
+      "delBtnCount": 1,
+      "confirmCount": 1,
+      "toastText": "已删除\n\n3 条消息已删除"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-history-success.png"
+  },
+  {
+    "page": "/manager/chat-scenes",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的AI 场景\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-scenes-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/chat-scenes",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/chat-scenes**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/chat-scenes?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/chat-scenes?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-scenes-error.png"
+  },
+  {
+    "page": "/manager/chat-scenes",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/chat-scenes**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-scenes-forbidden.png"
+  },
+  {
+    "page": "/manager/chat-scenes",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/chat-scenes**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-scenes-loading.png"
+  },
+  {
+    "page": "/manager/chat-scenes",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "b1-1793203492823-0",
+        "B1验收-1793203492823-1",
+        "B1验收内容-1793203492823",
+        "B1验收-1793203492823-3",
+        "B1验收文本内容-1793203492823",
+        "B1验收-1793203492823-5",
+        "{\"a\":\"b\"}",
+        "1",
+        "1",
+        "B1验收-1793203492823-11",
+        "{\"a\":\"b\"}",
+        "1",
+        "1",
+        "1"
+      ],
+      "nameVal": "B1验收-1793203492823-1",
+      "skipped": [
+        "select:10:状态:3opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793203492823-1"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/chat-scenes-success.png"
+  },
+  {
+    "page": "/manager/collect-items",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 collect-items 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "暂无采集内容\n\n在「采集源」中试抓或立即执行后，新条目会出现在这里。",
+      "hasActionInContainer": false,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/collect-items-empty.png",
+    "criterion": "v2",
+    "branch": "NONE"
+  },
+  {
+    "page": "/manager/collect-items",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/collect-items/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/collect-items?page=1&limit=15",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/collect-items?page=1&limit=15"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-items-error.png"
+  },
+  {
+    "page": "/manager/collect-items",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/collect-items/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-items-forbidden.png"
+  },
+  {
+    "page": "/manager/collect-items",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-items-loading.png"
+  },
+  {
+    "page": "/manager/collect-items",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（approve）",
+    "asserts": {
+      "toastVisible": true,
+      "specific": true
+    },
+    "observed": {
+      "toastText": "审核通过\n\n已进入内容中枢（条目 #1）与知识库，可在「内容中枢」发起发布。"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-items-success.png"
+  },
+  {
+    "page": "/manager/collect-sources",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的采集源\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-sources-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/collect-sources",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/collect-sources**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/collect-sources?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/collect-sources?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-sources-error.png"
+  },
+  {
+    "page": "/manager/collect-sources",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/collect-sources**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-sources-forbidden.png"
+  },
+  {
+    "page": "/manager/collect-sources",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/collect-sources**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-sources-loading.png"
+  },
+  {
+    "page": "/manager/collect-sources",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793203499827-0",
+        "https://b1.example.com/1793203499827",
+        "{\"a\":\"b\"}",
+        "0 4 * * *",
+        "B1验收-1793203499827-5",
+        "1"
+      ],
+      "nameVal": "B1验收-1793203499827-0",
+      "skipped": [
+        "select:1:类型:3opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793203499827-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-sources-success.png"
+  },
+  {
+    "page": "/manager/collect-tasks",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": false
+    },
+    "observed": {
+      "reason": "搜索后 8000ms 未出现 empty-state",
+      "tableRowCountAfterSearch": 1,
+      "bodySample": "清除筛选\n采集任务列表\n采集源\n\t状态\t新增\n\t跳过\n\t开始\n\t结束\n\n四川省教育考试院 · 招考动态\t\n运行中\t0\t0\t2026/10/29 01:36\t—\n每页\n10\n20\n50\n100\n条\n共 1 条"
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/collect-tasks-empty.png"
+  },
+  {
+    "page": "/manager/collect-tasks",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/collect-tasks**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/collect-tasks?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/collect-tasks?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-tasks-error.png"
+  },
+  {
+    "page": "/manager/collect-tasks",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/collect-tasks**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-tasks-forbidden.png"
+  },
+  {
+    "page": "/manager/collect-tasks",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/collect-tasks**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/collect-tasks-loading.png"
+  },
+  {
+    "page": "/manager/collect-tasks",
+    "kind": "A",
+    "state": "success",
+    "action": "readOnly 无写操作",
+    "asserts": {},
+    "observed": {
+      "reason": "readOnly: true，无 POST/PUT/PATCH 写入口"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/collect-tasks-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/content-hub",
+    "kind": "B",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "没有找到与「zzz-no-match-zzz」相关的内容\n\n换个关键词试试。",
+      "hasActionInContainer": false,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/content-hub-empty.png",
+    "criterion": "v2",
+    "branch": "NONE"
+  },
+  {
+    "page": "/manager/content-hub",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/content-items/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 3,
+      "requestsAfter": 5,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/content-items?page=1&limit=10",
+        "http://127.0.0.1:6791/api/publish-jobs?limit=100",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/content-items?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/content-hub-error.png"
+  },
+  {
+    "page": "/manager/content-hub",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/content-items/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/content-hub-forbidden.png"
+  },
+  {
+    "page": "/manager/content-hub",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/content-hub-loading.png"
+  },
+  {
+    "page": "/manager/content-hub",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（create）",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": false,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793208738047-0",
+        "B1验收文本内容-1793208738047",
+        "B1验收文本内容-1793208738047",
+        "B1验收-1793208738047-4"
+      ],
+      "skipped": [
+        "select:1:内容类型:2opts"
+      ],
+      "nameVal": "B1验收-1793208738047-0",
+      "toastText": "已创建\n\n草稿已入库，可提交审核。"
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/content-hub-success.png"
+  },
+  {
+    "page": "/manager/courses",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的课程\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/courses-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/courses",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/courses**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/courses?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/courses?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/courses-error.png"
+  },
+  {
+    "page": "/manager/courses",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/courses**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/courses-forbidden.png"
+  },
+  {
+    "page": "/manager/courses",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/courses**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/courses-loading.png"
+  },
+  {
+    "page": "/manager/courses",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202088791-0",
+        "B1验收文本内容-1793202088791",
+        "1",
+        "B1验收-1793202088791-3",
+        "B1验收-1793202088791-4",
+        "B1验收文本内容-1793202088791",
+        "B1验收-1793202088791-6",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202088791-0",
+      "skipped": [
+        "select:7:分类 ID:7opts",
+        "select:10:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202088791-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/courses-success.png"
+  },
+  {
+    "page": "/manager/element-configs",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的元素配置\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/element-configs-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/element-configs",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/element-configs**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/element-configs?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/element-configs?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/element-configs-error.png"
+  },
+  {
+    "page": "/manager/element-configs",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/element-configs**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/element-configs-forbidden.png"
+  },
+  {
+    "page": "/manager/element-configs",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/element-configs**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/element-configs-loading.png"
+  },
+  {
+    "page": "/manager/element-configs",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793203518311-0",
+        "B1验收-1793203518311-1",
+        "1",
+        "B1验收-1793203518311-3",
+        "1",
+        "B1验收-1793203518311-5",
+        "B1验收-1793203518311-6",
+        "{\"a\":\"b\"}",
+        "B1验收内容-1793203518311",
+        "B1验收-1793203518311-9",
+        "1"
+      ],
+      "nameVal": "B1验收-1793203518311-0",
+      "skipped": [
+        "select:10:状态:3opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793203518311-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/element-configs-success.png"
+  },
+  {
+    "page": "/manager/enrollment-offerings",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的招生计划\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/enrollment-offerings-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/enrollment-offerings",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/enrollment-offerings**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/enrollment-offerings?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/enrollment-offerings?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/enrollment-offerings-error.png"
+  },
+  {
+    "page": "/manager/enrollment-offerings",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/enrollment-offerings**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/enrollment-offerings-forbidden.png"
+  },
+  {
+    "page": "/manager/enrollment-offerings",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/enrollment-offerings**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/enrollment-offerings-loading.png"
+  },
+  {
+    "page": "/manager/enrollment-offerings",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": false,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793204204792-2",
+        "B1验收-1793204204792-3",
+        "B1验收-1793204204792-4",
+        "b1-1793204204792-5",
+        "B1验收-1793204204792-6",
+        "1",
+        "1",
+        "B1验收文本内容-1793204204792",
+        "B1验收文本内容-1793204204792",
+        "1"
+      ],
+      "nameVal": "B1验收-1793204204792-2",
+      "skipped": [
+        "select:0:专业 ID*:2opts",
+        "select:1:院校 ID*:2opts",
+        "select:13:状态:4opts"
+      ],
+      "toastText": "已创建"
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/enrollment-offerings-success.png"
+  },
+  {
+    "page": "/manager/gallery",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的证书风采\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/gallery-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/gallery",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/gallery**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/gallery?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/gallery?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/gallery-error.png"
+  },
+  {
+    "page": "/manager/gallery",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/gallery**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/gallery-forbidden.png"
+  },
+  {
+    "page": "/manager/gallery",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/gallery**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/gallery-loading.png"
+  },
+  {
+    "page": "/manager/gallery",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202139709-0",
+        "B1验收-1793202139709-1",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202139709-0",
+      "skipped": [
+        "select:2:分类:4opts",
+        "select:4:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202139709-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/gallery-success.png"
+  },
+  {
+    "page": "/manager/home-blocks",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 template-blocks 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "首页暂无区块\n\n点击「恢复默认」按 main 原样重建，或从注册表新增区块。",
+      "hasActionInContainer": false,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/home-blocks-empty.png",
+    "criterion": "v2",
+    "branch": "NONE"
+  },
+  {
+    "page": "/manager/home-blocks",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/home-blocks\\/registry/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 5,
+      "requestsAfter": 6,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/home-blocks/registry",
+        "http://127.0.0.1:6791/api/page-templates",
+        "http://127.0.0.1:6791/api/content-blocks?limit=50",
+        "http://127.0.0.1:6791/api/manager-menus"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-blocks-error.png"
+  },
+  {
+    "page": "/manager/home-blocks",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/home-blocks\\/registry/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-blocks-forbidden.png"
+  },
+  {
+    "page": "/manager/home-blocks",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-blocks-loading.png"
+  },
+  {
+    "page": "/manager/home-blocks",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（sortblock）",
+    "asserts": {
+      "toastVisible": true,
+      "specific": true
+    },
+    "observed": {
+      "downBtnCount": 1,
+      "toastText": "排序已更新\n\n「home-banner」下移成功"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-blocks-success.png"
+  },
+  {
+    "page": "/manager/home-cards",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的首页卡片\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-cards-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/home-cards",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/home-cards**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/home-cards?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/home-cards?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-cards-error.png"
+  },
+  {
+    "page": "/manager/home-cards",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/home-cards**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-cards-forbidden.png"
+  },
+  {
+    "page": "/manager/home-cards",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/home-cards**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-cards-loading.png"
+  },
+  {
+    "page": "/manager/home-cards",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202145799-0",
+        "B1验收-1793202145799-1",
+        "B1验收-1793202145799-2",
+        "B1验收-1793202145799-3",
+        "B1验收-1793202145799-4",
+        "B1验收-1793202145799-5",
+        "B1验收-1793202145799-6",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202145799-0",
+      "skipped": [
+        "select:8:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202145799-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/home-cards-success.png"
+  },
+  {
+    "page": "/manager/hot-majors",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的热门专业位\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/hot-majors-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/hot-majors",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/hot-majors**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/hot-majors?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/hot-majors?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/hot-majors-error.png"
+  },
+  {
+    "page": "/manager/hot-majors",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/hot-majors**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/hot-majors-forbidden.png"
+  },
+  {
+    "page": "/manager/hot-majors",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/hot-majors**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/hot-majors-loading.png"
+  },
+  {
+    "page": "/manager/hot-majors",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202151986-0",
+        "B1验收-1793202151986-1",
+        "B1验收文本内容-1793202151986",
+        "B1验收-1793202151986-3",
+        "B1验收-1793202151986-5",
+        "B1验收-1793202151986-6",
+        "B1验收-1793202151986-7",
+        "B1验收-1793202151986-8",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202151986-0",
+      "skipped": [
+        "select:4:图标类型:3opts",
+        "select:11:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202151986-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/hot-majors-success.png"
+  },
+  {
+    "page": "/manager/knowledge",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的知识条目（本地兜底库）\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/knowledge",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/knowledge**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/knowledge?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/knowledge?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-error.png"
+  },
+  {
+    "page": "/manager/knowledge",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/knowledge**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-forbidden.png"
+  },
+  {
+    "page": "/manager/knowledge",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/knowledge**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-loading.png"
+  },
+  {
+    "page": "/manager/knowledge",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202158304-0",
+        "B1验收文本内容-1793202158304",
+        "B1验收-1793202158304-2",
+        "B1验收-1793202158304-4",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202158304-0",
+      "skipped": [
+        "select:3:来源:6opts",
+        "select:6:状态:3opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202158304-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-success.png"
+  },
+  {
+    "page": "/manager/knowledge-bases",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 knowledge-bases 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "暂无知识库\n\n点击「新建知识库」创建（可绑定已有 Coze dataset 或新建并同步）。",
+      "hasActionInContainer": false,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/knowledge-bases-empty.png",
+    "criterion": "v2",
+    "branch": "NONE"
+  },
+  {
+    "page": "/manager/knowledge-bases",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/knowledge-bases/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/knowledge-bases?limit=50",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/knowledge-bases?limit=50"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-bases-error.png"
+  },
+  {
+    "page": "/manager/knowledge-bases",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/knowledge-bases/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-bases-forbidden.png"
+  },
+  {
+    "page": "/manager/knowledge-bases",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-bases-loading.png"
+  },
+  {
+    "page": "/manager/knowledge-bases",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（create）",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793208746957-0",
+        "b1-1793208746957-1",
+        "B1验收文本内容-1793208746957",
+        "B1验收-1793208746957-3"
+      ],
+      "skipped": [
+        "select:5:状态:2opts"
+      ],
+      "nameVal": "B1验收-1793208746957-0",
+      "toastText": "已保存\n\n知识库「B1验收-1793208746957-0」已创建"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/knowledge-bases-success.png"
+  },
+  {
+    "page": "/manager/llm-providers",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 llm/providers 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": true,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "尚未配置模型供应商\n\nAI 客服需要至少一个启用的供应商才能回复访客。\n\n新建供应商",
+      "hasActionInContainer": true,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/llm-providers-empty.png",
+    "criterion": "v2",
+    "branch": "A"
+  },
+  {
+    "page": "/manager/llm-providers",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/llm\\/providers/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/llm/providers?page=1&limit=50",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/llm/providers?page=1&limit=50"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/llm-providers-error.png"
+  },
+  {
+    "page": "/manager/llm-providers",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/llm\\/providers/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/llm-providers-forbidden.png"
+  },
+  {
+    "page": "/manager/llm-providers",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/llm-providers-loading.png"
+  },
+  {
+    "page": "/manager/llm-providers",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（create）",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793208751794-0",
+        "https://b1.example.com/1793208751794",
+        "B1Key1793208751794!",
+        "B1验收-1793208751794-4",
+        "B1验收-1793208751794-5",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "skipped": [
+        "select:1:类型*:3opts",
+        "select:12:状态:3opts"
+      ],
+      "nameVal": "B1验收-1793208751794-0",
+      "toastText": "已创建\n\nB1验收-1793208751794-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/llm-providers-success.png"
+  },
+  {
+    "page": "/manager/login",
+    "kind": "B",
+    "state": "empty",
+    "action": "登录页无列表",
+    "asserts": {},
+    "observed": {
+      "reason": "登录页非列表范式，空态不适用"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/login-empty.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/login",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/api/auth/login') 500 后提交",
+    "asserts": {
+      "errorShown": true
+    },
+    "observed": {
+      "errorText": "B1 probe 500"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/login-error.png"
+  },
+  {
+    "page": "/manager/login",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/api/auth/login') 403 后提交",
+    "asserts": {
+      "errorShown": true
+    },
+    "observed": {
+      "errorText": "B1 probe 403"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/login-forbidden.png"
+  },
+  {
+    "page": "/manager/login",
+    "kind": "B",
+    "state": "loading",
+    "action": "无骨架（表单页）",
+    "asserts": {},
+    "observed": {
+      "reason": "登录页非列表范式，无加载骨架"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/login-loading.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/login",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 登录跳转",
+    "asserts": {},
+    "observed": {
+      "landedUrl": "http://127.0.0.1:6791/manager"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/login-success.png"
+  },
+  {
+    "page": "/manager/logs",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的操作日志\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/logs-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/logs",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/logs**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/logs?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/logs?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/logs-error.png"
+  },
+  {
+    "page": "/manager/logs",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/logs**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/logs-forbidden.png"
+  },
+  {
+    "page": "/manager/logs",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/logs**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/logs-loading.png"
+  },
+  {
+    "page": "/manager/logs",
+    "kind": "A",
+    "state": "success",
+    "action": "readOnly 无写操作",
+    "asserts": {},
+    "observed": {
+      "reason": "readOnly: true，无 POST/PUT/PATCH 写入口"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/logs-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/majors",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的专业\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/majors-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/majors",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/majors**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/majors?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/majors?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/majors-error.png"
+  },
+  {
+    "page": "/manager/majors",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/majors**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/majors-forbidden.png"
+  },
+  {
+    "page": "/manager/majors",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/majors**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/majors-loading.png"
+  },
+  {
+    "page": "/manager/majors",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202168750-0",
+        "b1-1793202168750-1",
+        "B1验收文本内容-1793202168750",
+        "B1验收-1793202168750-3",
+        "B1验收-1793202168750-4",
+        "1",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202168750-0",
+      "skipped": [
+        "select:7:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202168750-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/majors-success.png"
+  },
+  {
+    "page": "/manager/media",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 media 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": true,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "媒体库还是空的\n\n上传图片或文档后，可在文章、轮播图等处引用。\n\n上传文件",
+      "hasActionInContainer": true,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/media-empty.png",
+    "criterion": "v2",
+    "branch": "A"
+  },
+  {
+    "page": "/manager/media",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/media/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/media?page=1&limit=24",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/media?page=1&limit=24"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/media-error.png"
+  },
+  {
+    "page": "/manager/media",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/media/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/media-forbidden.png"
+  },
+  {
+    "page": "/manager/media",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/media-loading.png"
+  },
+  {
+    "page": "/manager/media",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（upload）",
+    "asserts": {
+      "toastVisible": true,
+      "specific": true
+    },
+    "observed": {
+      "toastText": "已上传 1 个文件"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/media-success.png"
+  },
+  {
+    "page": "/manager/navigations",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的导航\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/navigations-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/navigations",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/navigations**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/navigations?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/navigations?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/navigations-error.png"
+  },
+  {
+    "page": "/manager/navigations",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/navigations**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/navigations-forbidden.png"
+  },
+  {
+    "page": "/manager/navigations",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/navigations**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/navigations-loading.png"
+  },
+  {
+    "page": "/manager/navigations",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202174874-0",
+        "b1-1793202174874-1",
+        "1",
+        "1",
+        "B1验收-1793202174874-4",
+        "B1验收-1793202174874-5",
+        "B1验收-1793202174874-7",
+        "1",
+        "B1验收内容-1793202174874",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202174874-0",
+      "skipped": [
+        "select:6:链接类型:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202174874-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/navigations-success.png"
+  },
+  {
+    "page": "/manager/news",
+    "kind": "B",
+    "state": "empty",
+    "action": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/news-empty.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/news",
+    "kind": "B",
+    "state": "error",
+    "action": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/news-error.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/news",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/news-forbidden.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/news",
+    "kind": "B",
+    "state": "loading",
+    "action": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/news-loading.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/news",
+    "kind": "B",
+    "state": "success",
+    "action": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）",
+    "asserts": {},
+    "observed": {
+      "reason": "redirect 兼容入口 → /manager/articles（落地 http://127.0.0.1:6791/manager/articles）"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/news-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/notify-recipients",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的提醒接收人\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-recipients-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/notify-recipients",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/notify-recipients**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/notify-recipients?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/notify-recipients?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-recipients-error.png"
+  },
+  {
+    "page": "/manager/notify-recipients",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/notify-recipients**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-recipients-forbidden.png"
+  },
+  {
+    "page": "/manager/notify-recipients",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/notify-recipients**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-recipients-loading.png"
+  },
+  {
+    "page": "/manager/notify-recipients",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202181257-0",
+        "b11793202181257@test.com",
+        "B1验收-1793202181257-2"
+      ],
+      "nameVal": "B1验收-1793202181257-0",
+      "skipped": [],
+      "toastText": "已创建\n\nB1验收-1793202181257-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-recipients-success.png"
+  },
+  {
+    "page": "/manager/notify-records",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的通知记录\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-records-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/notify-records",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/notify-records**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/notify-records?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/notify-records?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-records-error.png"
+  },
+  {
+    "page": "/manager/notify-records",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/notify-records**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-records-forbidden.png"
+  },
+  {
+    "page": "/manager/notify-records",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/notify-records**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-records-loading.png"
+  },
+  {
+    "page": "/manager/notify-records",
+    "kind": "A",
+    "state": "success",
+    "action": "readOnly 无写操作",
+    "asserts": {},
+    "observed": {
+      "reason": "readOnly: true，无 POST/PUT/PATCH 写入口"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/notify-records-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "empty",
+    "action": "空态不适用",
+    "asserts": {},
+    "observed": {
+      "reason": "该页无列表/空态不可用户触达（无 POST + 无搜索/筛选），空态 N-A"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/notify-rules-empty.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/notify-rules/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 3,
+      "requestsAfter": 5,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/notify-rules",
+        "http://127.0.0.1:6791/api/notify-templates",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/notify-rules"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-error.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/notify-rules/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-forbidden.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-loading.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（edit）",
+    "asserts": {
+      "toastVisible": true,
+      "specific": true
+    },
+    "observed": {
+      "toastText": "已保存\n\n「新闻发布前提醒」规则已更新"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-success.png"
+  },
+  {
+    "page": "/manager/notify-templates",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的邮件模板\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-templates-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/notify-templates",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/notify-templates**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/notify-templates?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/notify-templates?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-templates-error.png"
+  },
+  {
+    "page": "/manager/notify-templates",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/notify-templates**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-templates-forbidden.png"
+  },
+  {
+    "page": "/manager/notify-templates",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/notify-templates**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-templates-loading.png"
+  },
+  {
+    "page": "/manager/notify-templates",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202191271-0",
+        "B1验收-1793202191271-1",
+        "B1验收-1793202191271-2",
+        "B1验收文本内容-1793202191271"
+      ],
+      "nameVal": "B1验收-1793202191271-0",
+      "skipped": [],
+      "toastText": "已创建\n\nB1验收-1793202191271-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-templates-success.png"
+  },
+  {
+    "page": "/manager/page-templates",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的页面模板\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/page-templates-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/page-templates",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/page-templates**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/page-templates?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/page-templates?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/page-templates-error.png"
+  },
+  {
+    "page": "/manager/page-templates",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/page-templates**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/page-templates-forbidden.png"
+  },
+  {
+    "page": "/manager/page-templates",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/page-templates**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/page-templates-loading.png"
+  },
+  {
+    "page": "/manager/page-templates",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "b1-1793203550461-0",
+        "B1验收-1793203550461-1",
+        "B1验收文本内容-1793203550461",
+        "B1验收内容-1793203550461",
+        "B1验收-1793203550461-5",
+        "https://b1.example.com/1793203550461"
+      ],
+      "nameVal": "B1验收-1793203550461-1",
+      "skipped": [
+        "select:3:布局:4opts",
+        "select:8:状态:3opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793203550461-1"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/page-templates-success.png"
+  },
+  {
+    "page": "/manager/partners",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的合作院校\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/partners-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/partners",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/partners**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/partners?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/partners?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/partners-error.png"
+  },
+  {
+    "page": "/manager/partners",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/partners**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/partners-forbidden.png"
+  },
+  {
+    "page": "/manager/partners",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/partners**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/partners-loading.png"
+  },
+  {
+    "page": "/manager/partners",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202216327-0",
+        "B1验收-1793202216327-1",
+        "B1验收-1793202216327-2",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202216327-0",
+      "skipped": [
+        "select:4:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202216327-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/partners-success.png"
+  },
+  {
+    "page": "/manager/publish-jobs",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 publish-jobs 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": true,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "暂无发布任务\n\n在「内容中枢」点「发官网 / 发公众号」，或在此新建任务。\n\n新建任务",
+      "hasActionInContainer": true,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/publish-jobs-empty.png",
+    "criterion": "v2",
+    "branch": "A"
+  },
+  {
+    "page": "/manager/publish-jobs",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/publish-jobs/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 3,
+      "requestsAfter": 4,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/publish-jobs?page=1&limit=15",
+        "http://127.0.0.1:6791/api/content-items?limit=100",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/publish-jobs?page=1&limit=15"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/publish-jobs-error.png"
+  },
+  {
+    "page": "/manager/publish-jobs",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/publish-jobs/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/publish-jobs-forbidden.png"
+  },
+  {
+    "page": "/manager/publish-jobs",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/publish-jobs-loading.png"
+  },
+  {
+    "page": "/manager/publish-jobs",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（create）",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": false,
+      "nameNotGeneric": false
+    },
+    "observed": {
+      "filled": [],
+      "skipped": [
+        "select:0:内容条目（来自内容中枢）*:2opts",
+        "select:1:发布渠道:3opts",
+        "select:2:内容类型:5opts",
+        "select:3:动作:4opts"
+      ],
+      "nameVal": "",
+      "toastText": "已创建\n\n系统每分钟扫描执行"
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/publish-jobs-success.png"
+  },
+  {
+    "page": "/manager/roles",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的角色\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/roles-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/roles",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/roles**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/roles?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/roles?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/roles-error.png"
+  },
+  {
+    "page": "/manager/roles",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/roles**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/roles-forbidden.png"
+  },
+  {
+    "page": "/manager/roles",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/roles**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/roles-loading.png"
+  },
+  {
+    "page": "/manager/roles",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793208996853-0",
+        "b1-1793208996853-1",
+        "B1验收文本内容-1793208996853",
+        "B1验收-1793208996853-3"
+      ],
+      "nameVal": "B1验收-1793208996853-0",
+      "skipped": [
+        "select:5:状态:3opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793208996853-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/roles-success.png"
+  },
+  {
+    "page": "/manager/service-guides",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的服务指南\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/service-guides-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/service-guides",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/service-guides**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/service-guides?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/service-guides?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/service-guides-error.png"
+  },
+  {
+    "page": "/manager/service-guides",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/service-guides**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/service-guides-forbidden.png"
+  },
+  {
+    "page": "/manager/service-guides",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/service-guides**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/service-guides-loading.png"
+  },
+  {
+    "page": "/manager/service-guides",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202241147-0",
+        "b1-1793202241147-1",
+        "B1验收-1793202241147-2",
+        "B1验收文本内容-1793202241147",
+        "B1验收-1793202241147-5",
+        "B1验收-1793202241147-6",
+        "1"
+      ],
+      "nameVal": "B1验收-1793202241147-0",
+      "skipped": [
+        "select:4:内容类型:3opts",
+        "select:8:状态:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202241147-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/service-guides-success.png"
+  },
+  {
+    "page": "/manager/settings",
+    "kind": "B",
+    "state": "empty",
+    "action": "空态不适用",
+    "asserts": {},
+    "observed": {
+      "reason": "该页无列表/空态不可用户触达（无 POST + 无搜索/筛选），空态 N-A"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/settings-empty.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/settings",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/settings\\/definitions/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 3,
+      "requestsAfter": 5,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/settings/definitions",
+        "http://127.0.0.1:6791/api/settings",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/settings/definitions"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/settings-error.png"
+  },
+  {
+    "page": "/manager/settings",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('/\\/api\\/settings\\/definitions/') 403",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/settings-forbidden.png"
+  },
+  {
+    "page": "/manager/settings",
+    "kind": "B",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/settings-loading.png"
+  },
+  {
+    "page": "/manager/settings",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 执行一次写操作（save）",
+    "asserts": {
+      "toastVisible": true,
+      "specific": true
+    },
+    "observed": {
+      "toastText": "已保存\n\n「站点」分组已更新"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/settings-success.png"
+  },
+  {
+    "page": "/manager/students",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的报名\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/students-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/students",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/students**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/students?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/students?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/students-error.png"
+  },
+  {
+    "page": "/manager/students",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/students**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/students-forbidden.png"
+  },
+  {
+    "page": "/manager/students",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/students**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/students-loading.png"
+  },
+  {
+    "page": "/manager/students",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202247444-0",
+        "B1验收-1793202247444-1",
+        "B1验收文本内容-1793202247444"
+      ],
+      "nameVal": "B1验收-1793202247444-0",
+      "skipped": [
+        "select:2:课程 ID:2opts",
+        "select:4:状态:5opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202247444-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/students-success.png"
+  },
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的标签\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/tags-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/tags**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/tags?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/tags?page=1&limit=10"
+      ]
     },
     "status": "PASS",
     "shot": ".cache/v18-b1/shots/tags-error.png"
@@ -34,7 +3777,7 @@
     "page": "/manager/tags",
     "kind": "A",
     "state": "forbidden",
-    "action": "route('**/api/tags**') 403 后 goto",
+    "action": "route('**/api/tags**') 403",
     "asserts": {
       "forbiddenVisible": true,
       "noTableRows": true
@@ -49,53 +3792,67 @@
   {
     "page": "/manager/tags",
     "kind": "A",
-    "state": "empty",
-    "action": "搜索框输 zzz-no-match-zzz",
+    "state": "loading",
+    "action": "route('**/api/tags**') 延时1200ms",
     "asserts": {
-      "emptyStateVisible": true,
-      "hasAction": false
+      "skeletonVisible": true
     },
-    "observed": {
-      "emptyStateText": "没有找到符合条件的标签\n\n换个关键词或清除筛选试试。",
-      "actionText": ""
-    },
-    "status": "FAIL",
-    "shot": ".cache/v18-b1/shots/tags-empty.png"
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/tags-loading.png"
   },
   {
     "page": "/manager/tags",
     "kind": "A",
     "state": "success",
-    "action": "admin 新建一条 tag",
+    "action": "admin 新建一条",
     "asserts": {
       "toastVisible": true,
       "containsName": true,
       "nameNotGeneric": true
     },
     "observed": {
-      "toastText": "已创建\n\nB1验收-1793191416302",
-      "createdName": "B1验收-1793191416302"
+      "filled": [
+        "B1验收-1793202253599-0",
+        "b1-1793202253599-1"
+      ],
+      "nameVal": "B1验收-1793202253599-0",
+      "skipped": [],
+      "toastText": "已创建\n\nB1验收-1793202253599-0"
     },
     "status": "PASS",
     "shot": ".cache/v18-b1/shots/tags-success.png"
   },
   {
-    "page": "/manager/notify-rules",
-    "kind": "B",
-    "state": "loading",
-    "action": "route('**/api/notify-rules**') 延时 1500ms 后 goto",
+    "page": "/manager/user-actions",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
     "asserts": {
-      "skeletonVisible": true
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
     },
-    "observed": {},
+    "observed": {
+      "descText": "没有找到符合条件的行为记录\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
     "status": "PASS",
-    "shot": ".cache/v18-b1/shots/notify-rules-loading.png"
+    "shot": ".cache/v18-b1/shots/user-actions-empty.png",
+    "criterion": "v2",
+    "branch": "B"
   },
   {
-    "page": "/manager/notify-rules",
-    "kind": "B",
+    "page": "/manager/user-actions",
+    "kind": "A",
     "state": "error",
-    "action": "route('**/api/notify-rules**') 500 后 goto",
+    "action": "route('**/api/user-actions**') 500",
     "asserts": {
       "errorStateVisible": true,
       "retryVisible": true,
@@ -103,17 +3860,211 @@
     },
     "observed": {
       "errorText": "加载失败\n\nB1 probe 500\n\n重试",
-      "requestsBefore": 1,
-      "requestsAfter": 2
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/user-actions?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/user-actions?page=1&limit=10"
+      ]
     },
     "status": "PASS",
-    "shot": ".cache/v18-b1/shots/notify-rules-error.png"
+    "shot": ".cache/v18-b1/shots/user-actions-error.png"
   },
   {
-    "page": "/manager/notify-rules",
+    "page": "/manager/user-actions",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/user-actions**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/user-actions-forbidden.png"
+  },
+  {
+    "page": "/manager/user-actions",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/user-actions**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/user-actions-loading.png"
+  },
+  {
+    "page": "/manager/user-actions",
+    "kind": "A",
+    "state": "success",
+    "action": "readOnly 无写操作",
+    "asserts": {},
+    "observed": {
+      "reason": "readOnly: true，无 POST/PUT/PATCH 写入口"
+    },
+    "status": "N-A",
+    "shot": ".cache/v18-b1/shots/user-actions-success.png",
+    "branch": "NA"
+  },
+  {
+    "page": "/manager/users",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": false,
+      "branchB": true
+    },
+    "observed": {
+      "descText": "没有找到符合条件的用户\n\n换个关键词或清除筛选试试。",
+      "hasActionInContainer": false,
+      "condBtnCountBefore": 0,
+      "condBtnCountAfter": 1,
+      "stateConditionalBtnTexts": [
+        "清除筛选"
+      ],
+      "descNamesAction": true
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/users-empty.png",
+    "criterion": "v2",
+    "branch": "B"
+  },
+  {
+    "page": "/manager/users",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/users**') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/users?page=1&limit=10",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/users?page=1&limit=10"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/users-error.png"
+  },
+  {
+    "page": "/manager/users",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/users**') 403",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/users-forbidden.png"
+  },
+  {
+    "page": "/manager/users",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/users**') 延时1200ms",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/users-loading.png"
+  },
+  {
+    "page": "/manager/users",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "filled": [
+        "B1验收-1793202263976-0",
+        "B1Pass1793202263976!",
+        "B1验收-1793202263976-2",
+        "b11793202263976@test.com",
+        "B1验收-1793202263976-4"
+      ],
+      "nameVal": "B1验收-1793202263976-0",
+      "skipped": [
+        "select:5:角色*:4opts"
+      ],
+      "toastText": "已创建\n\nB1验收-1793202263976-0"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/users-success.png"
+  },
+  {
+    "page": "/manager/wechat-accounts",
+    "kind": "B",
+    "state": "empty",
+    "action": "拦截 wechat/accounts 空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "branchA": true,
+      "branchB": false
+    },
+    "observed": {
+      "descText": "尚未配置公众号账号\n\n添加服务号后即可启用公众号 AI 客服与文章发布。\n\n新建账号",
+      "hasActionInContainer": true,
+      "condBtnCount": 0,
+      "stateConditionalBtnTexts": [],
+      "descNamesAction": false
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/wechat-accounts-empty.png",
+    "criterion": "v2",
+    "branch": "A"
+  },
+  {
+    "page": "/manager/wechat-accounts",
+    "kind": "B",
+    "state": "error",
+    "action": "route('/\\/api\\/wechat\\/accounts/') 500",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 2,
+      "requestsAfter": 3,
+      "seenUrls": [
+        "http://127.0.0.1:6791/api/wechat/accounts?page=1&limit=50",
+        "http://127.0.0.1:6791/api/manager-menus",
+        "http://127.0.0.1:6791/api/wechat/accounts?page=1&limit=50"
+      ]
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/wechat-accounts-error.png"
+  },
+  {
+    "page": "/manager/wechat-accounts",
     "kind": "B",
     "state": "forbidden",
-    "action": "route('**/api/notify-rules**') 403 后 goto",
+    "action": "route('/\\/api\\/wechat\\/accounts/') 403",
     "asserts": {
       "forbiddenVisible": true
     },
@@ -121,39 +4072,46 @@
       "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
     },
     "status": "PASS",
-    "shot": ".cache/v18-b1/shots/notify-rules-forbidden.png"
+    "shot": ".cache/v18-b1/shots/wechat-accounts-forbidden.png"
   },
   {
-    "page": "/manager/notify-rules",
+    "page": "/manager/wechat-accounts",
     "kind": "B",
-    "state": "empty",
-    "action": "route notify-rules 返回空列表",
+    "state": "loading",
+    "action": "route(api) 延时1200ms",
     "asserts": {
-      "emptyStateVisible": true,
-      "hasAction": false
+      "skeletonVisible": true
     },
-    "observed": {
-      "emptyStateText": "暂无通知规则\n\n种子数据未初始化，请运行 prisma/seed.ts。",
-      "actionText": ""
-    },
-    "status": "FAIL",
-    "shot": ".cache/v18-b1/shots/notify-rules-empty.png"
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/wechat-accounts-loading.png"
   },
   {
-    "page": "/manager/notify-rules",
+    "page": "/manager/wechat-accounts",
     "kind": "B",
     "state": "success",
-    "action": "admin 编辑一条规则保存",
+    "action": "admin 执行一次写操作（create）",
     "asserts": {
       "toastVisible": true,
       "containsName": true,
       "nameNotGeneric": true
     },
     "observed": {
-      "eventLabel": "新闻发布前提醒",
-      "toastText": "已保存\n\n「新闻发布前提醒」规则已更新"
+      "filled": [
+        "B1验收-1793208778029-0",
+        "B1验收-1793208778029-2",
+        "B1验收-1793208778029-3",
+        "B1Key1793208778029!",
+        "B1验收-1793208778029-5"
+      ],
+      "skipped": [
+        "select:1:类型*:3opts",
+        "select:6:AI 客服场景:4opts"
+      ],
+      "nameVal": "B1验收-1793208778029-0",
+      "toastText": "已创建\n\nB1验收-1793208778029-0"
     },
     "status": "PASS",
-    "shot": ".cache/v18-b1/shots/notify-rules-success.png"
+    "shot": ".cache/v18-b1/shots/wechat-accounts-success.png"
   }
 ]
