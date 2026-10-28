@@ -113,16 +113,19 @@
     "verify": "parity A1 判据改能力等价；ADR-038（原 034 撞号已改）；台账回填"
   },
   "B1": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "大",
     "dir": "B1-五态验收",
-    "commits": [],
-    "note": "42 页 × 5 态 = 210 格。27 页走 CrudPage 可共用判据，15 页逐页。news 全 N-A、login 空/加载 N-A、只读页成功态 N-A。每格须写做了什么+看到什么，禁 grep 判 PASS。；V1.8 未开工",
+    "commits": [
+      "c98ba62"
+    ],
+    "note": "???? 43?x5?=215??D-B1-01 ???? v2??PASS 184 / FAIL 11 / N-A 20 / ?? 195?FAIL 11 ???? UX/???????????banners/collect-tasks/enrollment-offerings?A ? 3?+ articles/chat-history/collect-items/content-hub empty/home-blocks/knowledge-bases empty/content-hub/publish-jobs success?B ? 8????? I-B1-01/02 ?? V1.9 backlog??V1.8 ???",
     "depends_on": [
       "A2"
-    ]
+    ],
+    "verify": "?? 4 ????matrix 43 ??????N-A=20&??=195&?=215?git status src/tests/prisma ??build ???11 FAIL ? defects.md"
   },
   "B2": {
     "status": "ready",
