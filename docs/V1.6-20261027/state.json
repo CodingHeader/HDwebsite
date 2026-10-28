@@ -1,0 +1,50 @@
+{
+  "V15-UX-STATES-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "42页×5态=210格。分A类27页(CrudPage批量,共用判据)+B类15页(逐页)。news全N-A(纯redirect)、login空态/列表态N-A。每格须写做了什么+看到什么,禁grep判PASS(历史坑H4)。不改src/**。",
+    "depends_on": ["V15-AUDIT-FIX-01"]
+  },
+  "V15-KEYBOARD-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "42页×K1~K4=168格,按06§B1最小集。先做共性验证(S2-3)再逐页(S2-4)。K3 Esc必须运行时验证,不得只凭grep(dialog.tsx 98行无命中,但可能有父级兜底)。焦点陷阱/⌘S全局不在范围。",
+    "depends_on": ["V15-AUDIT-FIX-01"]
+  },
+  "V15-MOBILE-375-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "42页×M1~M4=168格。M1扩展既有mobile-375.spec.ts(现有4用例仅覆盖3/42路由,:57-63有现成scrollWidth断言),禁改≤375阈值。M1须给具体数值。前置必须seed(空库致高度漂移,V1.4事故3389vs6204)。不改src/**。",
+    "depends_on": ["V15-AUDIT-FIX-01"]
+  },
+  "V15-CLOSE-01": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "haiku",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "收口:S3-1台账终态(7卡全done+回填V1.4两条流程UNKNOWN)、S3-2全量门禁唯一一次(串行8项,e2e在win32记UNKNOWN)、S3-3 changelog五类+parity复核+双端0 0。如实写FAIL数。",
+    "depends_on": [
+      "V15-UX-STATES-01",
+      "V15-KEYBOARD-01",
+      "V15-MOBILE-375-01"
+    ]
+  }
+}
