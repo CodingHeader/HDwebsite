@@ -37,6 +37,10 @@ export interface HomeData {
     showTitle: boolean;
     showSubtitle: boolean;
     showBtn: boolean;
+    // V1.8/A4：Banner 第二按钮（A2 注册的 3 键；Banner 读的是 settings，故必须放这里而非 HomeData 顶层）
+    showExtraBtn: boolean;
+    extraBtnText: string;
+    extraBtnLink: string;
   };
   homeCards: {
     id: number;
@@ -90,9 +94,8 @@ export interface HomeData {
   statsBgImage: string;
   wechatQrCode: string;
   showImageOverlays: boolean;
-  bannerShowExtraBtn: boolean;
-  bannerExtraBtnText: string;
-  bannerExtraBtnLink: string;
+  // banner 的 3 项（showExtraBtn/extraBtnText/extraBtnLink）放在上面的 bannerSettings 里，
+  // 因为 page.tsx 传给 Banner 的是 d.bannerSettings，放顶层会成为死字段。
 }
 
 async function getHomeDataUncached(): Promise<HomeData> {
@@ -164,6 +167,10 @@ async function getHomeDataUncached(): Promise<HomeData> {
       showTitle: settingsMap.bannerShowTitle !== "false",
       showSubtitle: settingsMap.bannerShowSubtitle !== "false",
       showBtn: settingsMap.bannerShowBtn !== "false",
+      // V1.8/A4：严格等于 "true"（原版 page.tsx:161 同款），默认 false = 第二按钮不显示
+      showExtraBtn: settingsMap.bannerShowExtraBtn === "true",
+      extraBtnText: settingsMap.bannerExtraBtnText || "了解更多",
+      extraBtnLink: settingsMap.bannerExtraBtnLink || "/courses",
     },
     homeCards: homeCardsRaw.map((c) => ({
       id: c.id,
@@ -243,10 +250,6 @@ async function getHomeDataUncached(): Promise<HomeData> {
     statsBgImage: settingsMap.statsBgImage || "",
     wechatQrCode: settingsMap.wechatQrCode || "",
     showImageOverlays: settingsMap.showImageOverlays !== "false",
-    // 严格等于 true：原版 page.tsx:161 即 `=== "true"`，默认 false = 第二按钮不显示
-    bannerShowExtraBtn: settingsMap.bannerShowExtraBtn === "true",
-    bannerExtraBtnText: settingsMap.bannerExtraBtnText || "了解更多",
-    bannerExtraBtnLink: settingsMap.bannerExtraBtnLink || "/courses",
   };
 }
 
