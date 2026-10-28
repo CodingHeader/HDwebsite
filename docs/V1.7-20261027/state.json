@@ -1,0 +1,46 @@
+{
+  "WP1": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "前台配置化复原：11 键 + 9 组件 props + 3 处接线 + 默认态回归。4 个 ST / 14 个 AT。核心风险是默认值走偏会违反 REQ-F-014 前台冻结。className 值零变更、禁止重建基线图。",
+    "depends_on": []
+  },
+  "WP2": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小～中",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "管理端断链：ST1 补 /manager/ai-config 页面级 redirect（API 层已有 307，页面层缺失，不对称）；ST2 承接 userPrompt 能力，依赖 06 §B1 裁决（A 改 schema 需 CCR / B 存 metadata 弱化），未裁决前 ST2 标 blocked。",
+    "depends_on": []
+  },
+  "WP3": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "复用去重：localImageExists 两处重复实现（gallery/page.tsx:19 / data/home.ts:17）提取到 src/lib/image-exists.ts；原版是单一实现 showcase.ts:84。先 diff 确认等价再合一。P2 项仅登记不实作。",
+    "depends_on": []
+  },
+  "WP4": {
+    "status": "ready",
+    "owner": "external-assistant",
+    "tier": "sonnect",
+    "size": "小",
+    "verify": null,
+    "blocked_reason": null,
+    "commits": [],
+    "note": "文档口径修正（元缺陷）：parity-matrix A1 行判据由「组件存在」改为能力清单 + 文件头加「present 须证明能力等价」；写 ADR-034 记录 props 裁撤；登记 AIConfig 拆分无 ADR。不修它，下次重构还会再丢。",
+    "depends_on": ["WP1"]
+  }
+}
