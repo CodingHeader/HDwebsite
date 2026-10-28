@@ -7,7 +7,7 @@
     "verify": null,
     "blocked_reason": null,
     "commits": [],
-    "note": "前台配置化复原：11 键 + 9 组件 props + 3 处接线 + 默认态回归。4 ST / 14 AT。裁决已定（08）：topbarBgImage 默认置空（原值指向已丢失文件）；fourCardsBgColor 默认空（新版 bg-gray-50 已视觉等价，避免双处控制）。核心风险是默认值走偏违反 REQ-F-014。",
+    "note": "前台配置化复原：11 键 + 9 组件 props + 3 处接线 + 默认态回归。4 ST / 14 AT。裁决已定（08）：topbarBgImage 默认置空（原值指向已丢失文件）；fourCardsBgColor 默认空（新版 bg-gray-50 已视觉等价，避免双处控制）。核心风险是默认值走偏违反 REQ-F-014。 执行方案见 09-执行方案总纲.md：阶段0契约补齐(display分组+image类型)→阶段1键→阶段2props→阶段3接线→阶段4回归，共18 AT/7h。",
     "depends_on": []
   },
   "WP2": {
@@ -41,7 +41,9 @@
     "blocked_reason": null,
     "commits": [],
     "note": "文档口径修正（元缺陷）：parity-matrix A1 行判据由「组件存在」改为能力清单 + 文件头加「present 须证明能力等价」；写 ADR-034；登记 AIConfig 拆分。不修它下次重构还会再丢。",
-    "depends_on": ["WP1"]
+    "depends_on": [
+      "WP1"
+    ]
   },
   "DEFERRED": {
     "status": "deferred",
