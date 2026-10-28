@@ -1,3 +1,6 @@
+> 原始报告：`.cache/v18-d1/lighthouse-{mobile,desktop}.json`（15,684 行，按项目惯例不入库）。
+> 关键数值已摘录于下表；需要复核时重跑 `npx -y lighthouse@12` 即可复现。
+
 # D1 执行证据：Lighthouse 移动端性能基线（REQ-NF-001 条目 1）
 
 ## 5W1H
