@@ -1,0 +1,159 @@
+[
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "loading",
+    "action": "route('**/api/tags**') 延时 1500ms 后 goto",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/tags-loading.png"
+  },
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "error",
+    "action": "route('**/api/tags**') 500 后 goto",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "retryBtnText": "重试",
+      "requestsBefore": 1,
+      "requestsAfter": 2
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/tags-error.png"
+  },
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "forbidden",
+    "action": "route('**/api/tags**') 403 后 goto",
+    "asserts": {
+      "forbiddenVisible": true,
+      "noTableRows": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘",
+      "tableRowCount": 0
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/tags-forbidden.png"
+  },
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "empty",
+    "action": "搜索框输 zzz-no-match-zzz",
+    "asserts": {
+      "emptyStateVisible": true,
+      "hasAction": false
+    },
+    "observed": {
+      "emptyStateText": "没有找到符合条件的标签\n\n换个关键词或清除筛选试试。",
+      "actionText": ""
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/tags-empty.png"
+  },
+  {
+    "page": "/manager/tags",
+    "kind": "A",
+    "state": "success",
+    "action": "admin 新建一条 tag",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "toastText": "已创建\n\nB1验收-1793191416302",
+      "createdName": "B1验收-1793191416302"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/tags-success.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "loading",
+    "action": "route('**/api/notify-rules**') 延时 1500ms 后 goto",
+    "asserts": {
+      "skeletonVisible": true
+    },
+    "observed": {},
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-loading.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "error",
+    "action": "route('**/api/notify-rules**') 500 后 goto",
+    "asserts": {
+      "errorStateVisible": true,
+      "retryVisible": true,
+      "retryRefetched": true
+    },
+    "observed": {
+      "errorText": "加载失败\n\nB1 probe 500\n\n重试",
+      "requestsBefore": 1,
+      "requestsAfter": 2
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-error.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "forbidden",
+    "action": "route('**/api/notify-rules**') 403 后 goto",
+    "asserts": {
+      "forbiddenVisible": true
+    },
+    "observed": {
+      "forbiddenText": "没有访问权限\n\n当前账号没有查看此页面的权限，如需开通请联系超级管理员在「角色管理」中授权。\n\nB1 probe 403\n\n返回仪表盘"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-forbidden.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "empty",
+    "action": "route notify-rules 返回空列表",
+    "asserts": {
+      "emptyStateVisible": true,
+      "hasAction": false
+    },
+    "observed": {
+      "emptyStateText": "暂无通知规则\n\n种子数据未初始化，请运行 prisma/seed.ts。",
+      "actionText": ""
+    },
+    "status": "FAIL",
+    "shot": ".cache/v18-b1/shots/notify-rules-empty.png"
+  },
+  {
+    "page": "/manager/notify-rules",
+    "kind": "B",
+    "state": "success",
+    "action": "admin 编辑一条规则保存",
+    "asserts": {
+      "toastVisible": true,
+      "containsName": true,
+      "nameNotGeneric": true
+    },
+    "observed": {
+      "eventLabel": "新闻发布前提醒",
+      "toastText": "已保存\n\n「新闻发布前提醒」规则已更新"
+    },
+    "status": "PASS",
+    "shot": ".cache/v18-b1/shots/notify-rules-success.png"
+  }
+]
