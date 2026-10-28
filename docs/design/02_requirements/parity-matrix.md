@@ -47,7 +47,7 @@ npm run test:visual   # tests/visual/web.spec.ts，15 路由 × 1440/768/375，m
 
 | # | 功能 | main 证据 | upgrade 证据（2026-10-21 实测） | 状态 |
 | --- | --- | --- | --- | --- |
-| A1 | 首页 11 区块（TopBanner/Banner 轮播/FourCards/TopEntranceSection/StatsBanner/PartnerUniversities/CourseSectionNew/CompanyIntro/NewsCenter/CertificateGallery/CampusSection） | `src/app/(web)/page.tsx`（272 行）+ 26 组件 | `src/app/(web)/page.tsx`（193 行）+ **11 个区块组件全部存在**（Banner.tsx、FourCards.tsx、CourseSectionNew.tsx、CertificateGallery.tsx…）；区块顺序/启停由 `resolveHomeBlocks()` 读 TemplateBlock 决定（ADR-024），无配置时回落 main 原样顺序 | **present** |
+| A1 | 首页 11 区块（TopBanner/Banner 轮播/FourCards/TopEntranceSection/StatsBanner/PartnerUniversities/CourseSectionNew/CompanyIntro/NewsCenter/CertificateGallery/CampusSection） | `src/app/(web)/page.tsx`（272 行）+ 26 组件 | `src/app/(web)/page.tsx`（193 行）+ **组件存在**：11 个区块组件文件齐备<br>**能力对等**：9 个组件 props 与原版一致（`showOverlay`/`showContent`/`bgImage`/`bgColor`/`containerAlign`），A3 恢复<br>**配置可达**：8 组配置键已注册且前台可消费（A2 注册 + A4 接线；A5 验证默认态零变化）；区块顺序/启停由 `resolveHomeBlocks()` 读 TemplateBlock 决定（ADR-024），无配置时回落 main 原样顺序 | **present** |
 | A2 | 站点框架 TopBar/Header/Navbar（多级下拉）/Footer | `TopBar/Header/Navbar(243)/Navigation(271)/Footer(138)`，`(web)/layout.tsx` 73 行 | 同名组件全部存在（`SiteChrome` 已下线），`Navigation.tsx` 支持多级 | **present** |
 | A3 | 全局设计令牌（品牌红、Geist 字体、sidebar/chart 变量） | `globals.css` 215 行 | `globals.css` web 令牌按 main 恢复；管理端令牌隔离在 `[data-theme="manager"]` | **present** |
 | A4 | 悬浮联系 FloatingContact | 121 行 | `FloatingContact.tsx` 存在 | **present** |
@@ -69,6 +69,13 @@ npm run test:visual   # tests/visual/web.spec.ts，15 路由 × 1440/768/375，m
 | A20 | error / loading / not-found | 同名 | 同名存在 + `app/not-found.tsx` | **present** |
 | A21 | 动态元数据（站点标题/描述取 Setting） | `(web)/layout.tsx` generateMetadata | `app/layout.tsx` generateMetadata | **present** |
 | A22 | 站点设置键 | `settings-registry.ts` | **85 键**（旧记录 60 键已过期）；含 advantage、banner*、card*、stats* 等此前缺失项 | **present** |
+
+
+> **判据强化（V1.8 / A8）**：`present` 必须证明「**能力等价**」，不得以「文件存在」代证。
+> 核对项：① 组件与 props 是否齐全 ② 配置项是否可注册可消费 ③ 行为是否可复现。
+>
+> 反例（V1.7 实证）：首页 9 个组件虽全部存在，但 8 个丢失 `showOverlay` 等 props，
+> FourCards 丢 7 个卡片字段 —— 旧口径下仍判 `present`。这是判据缺陷，已修正。
 
 ## B. 公开/管理 API
 
