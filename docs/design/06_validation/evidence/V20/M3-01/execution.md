@@ -82,6 +82,15 @@ status: done
 
 **两视口全部 ≥44**。M3 原 40 FAIL（76×36）→ 关键控件全部 44，**M3 归零**。
 
+
+## 后续修复（E1 全量 e2e 发现 · 分页 375 溢出）
+
+全量 e2e 首跑 **78P/1F**：`mobile-375`「整页无横向溢出」在 `/manager/media` 报 `scrollWidth=396>375`。
+**归因**：`Pagination` 按钮组 `min-w-8→min-w-11`（44px）后，页 1-7 共 7 个按钮所在 `div.flex.items-center.gap-1` 不换行 → 实测 428px > 375（卡定义「陷阱 3 · 表格行高/分页变宽可能引发 M1 回归」的预警场景）。
+**修复**：按钮组容器加 `flex-wrap`（`Pagination.tsx:34`，同卡允许文件内的必要配套；44px 按钮不变、375 下换行至两行）。
+**复测**：`/manager/media` 375 → `scrollWidth=375`（无溢出）；两视口命中区仍全 ≥44（见 `verify.json`）；全量 e2e 重跑 **79 passed / 0 failed**。
+
+
 ## 门禁
 - 34 处授权改动 ✓ · login 越界已记录（2 处）✓ · 2 处非交互跳过已说明 ✓ · tsc/build/单测/回归全绿 ✓ · 两视口 ≥44 ✓ · 前台冻结面（`src/app/(web)/**`、`src/components/web/**`）零改动 ✓ · 未加 `md:` 前缀 ✓
 

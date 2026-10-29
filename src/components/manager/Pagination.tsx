@@ -31,7 +31,7 @@ export function Pagination({ page, totalPages, total, onChange, className = "mt-
     <nav aria-label="分页" className={`${className} flex flex-wrap items-center justify-between gap-3 text-[13px] text-mgr-muted-fg`}>
       <span>{total !== undefined ? `共 ${total} 条` : ""}{totalPages > 1 ? ` · 第 ${page}/${totalPages} 页` : ""}</span>
       {totalPages > 1 && (
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <button type="button" aria-label="上一页" className={`${itemCls} hover:bg-mgr-subtle`} disabled={page <= 1} onClick={() => onChange(page - 1)}>
             <ChevronLeft className="h-4 w-4" />
           </button>
