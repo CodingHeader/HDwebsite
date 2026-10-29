@@ -1,0 +1,90 @@
+{
+  "DOC-01": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "sonnect",
+    "size": "小",
+    "slice": "S1",
+    "depends_on": [],
+    "commits": [],
+    "note": "本轮新发现的真缺陷：.env.example 与 env.ts 自相矛盾。①ENCRYPTION_KEY 被注释掉=暗示可选，但 env.ts:41-49 任何环境缺失即 FATAL；②.env.example 称『默认派生自 JWT_SECRET』，但全仓库无派生代码，直接读 env.ENCRYPTION_KEY；③DATABASE_URL/APP_ORIGIN 也被注释，但 PROD_REQUIRED 要求。当前 .env.local 只有 JWT_SECRET 一个键，照文档配置必然启动失败（V2.1 实测过 FATAL）。禁止改 src/lib/env.ts。",
+    "verify": "必需键集合与 env.ts 一致；无『派生自』虚假描述；按文档配置可启动 200；漏填时 FATAL 含键名；src/lib/env.ts 零改动"
+  },
+  "ENV-01": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "sonnect",
+    "size": "中",
+    "slice": "S2",
+    "depends_on": ["DOC-01"],
+    "commits": [],
+    "note": "启动链路固化：env 校验前置到 spawn 之前（当前 Ready 后才 FATAL，端口已监听但服务不可用）；新建 scripts/check-db.mjs 检测 CronJob/Setting/User 三表是否存在（dev.db 现为 0 字节，运行时才报 no such table: main.CronJob）；缺表时输出 db:deploy 指引并 exit 1。禁止改 src/lib/env.ts 与 package.json 的 start 语义。",
+    "verify": "缺 ENCRYPTION_KEY 时 exit!=0 且端口未监听；DB 未迁移时 exit!=0 且输出含 db:deploy；正常情形 200"
+  },
+  "ENV-02": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "haiku",
+    "size": "小",
+    "slice": "S2",
+    "depends_on": ["ENV-01"],
+    "commits": [],
+    "note": "端口自证：/api/health 追加 app='hdwebsite' 与 port（当前 grep -c hdwebsite = 0，无任何应用标识）。根因是本机 3000 被 Aidean 占用、HDwebsite 在 6789，用户打开 3000 看到 Aidean 界面误以为 HDwebsite 被改坏。不改已有字段，避免破坏既有消费方。",
+    "verify": "curl /api/health 含 \"app\":\"hdwebsite\" 与 \"port\":6789；已有字段未变；启动日志含弘道教育与 6789"
+  },
+  "AUD-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "中",
+    "slice": "S3",
+    "depends_on": [],
+    "commits": [],
+    "note": "前台 className 差异全量审计（59 文件，实测 git ls-files 计数）。口径为值集合 diff 非行数 diff。三档定性：合规/有据例外/无据改写，有据档须附 ADR 编号或 文件:行。已预判：StatsBanner 零差异、TopBanner/Banner 合规、Navbar 有据(V10-Q1 用户 2026-10-24 授权)、FourCards 无据。必须用 git ls-files 反查路径，禁止凭命名推断（见 01-自我纠错 §二 我犯过的 E-2）。只审计不改代码。",
+    "verify": "覆盖 59 文件无遗漏；每差异值有档位无待定；有据档附出处；src 零改动"
+  },
+  "AUD-02": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "小",
+    "slice": "S3",
+    "depends_on": ["AUD-01"],
+    "commits": [],
+    "note": "FourCards 归因：main 的 'relative flex-1' 被改为 'absolute inset-0 bg-cover bg-center...'，仓库内无对应 ADR。关键判断点：该改写很可能正是 bgImage 能力（V1.8 A3 恢复的 props）的实现方式，若成立应判『合规+补 ADR』而非『缺陷回滚』。需 git log -S 找引入提交 + 检查 bgImage 键的关系 + 两版渲染对比。若判缺陷需回滚，必须先经用户批准（触碰 REQ-F-014）。",
+    "verify": "找到引入提交 hash 与 message；说明与 bgImage 键的关系；结论明确；若判缺陷须说明回滚影响面且经批准"
+  },
+  "PAR-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "slice": "S4",
+    "depends_on": [],
+    "commits": [],
+    "note": "功能对等独立复核（68 项 = 57 主表 + 11 F 节）。把台账的『missing=0（部分确认，我仅抽样 8/57）』推到已确认。方法硬约束：证据路径必须经 git ls-files 或 grep -rl 反查，禁止凭命名推断。『路径存在但行为未验证』须标 present-unverified，不得算已确认。parity-matrix.md 只读，结论写进 evidence（避免自证循环）。运行时验证依赖 ENV-01，不可用时标 present-unverified。",
+    "verify": "68 项全部有结论；证据路径经反查命中；present-unverified 单独计数；missing 为 0 或每项附理由"
+  },
+  "PAR-02": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "sonnect",
+    "size": "小",
+    "slice": "S4",
+    "depends_on": ["PAR-01"],
+    "commits": [],
+    "note": "前台页面/组件零丢失复核：main 侧 16 页 + 27 组件，HEAD 侧已证 comm -23 为空。新增 ChatWidget/MarkdownRenderer/UserActionTracker/data/* 需说明用途与视觉影响。",
+    "verify": "comm -23 输出 0 行；新增组件有用途说明；不改变既有区块视觉或已由 ADR-039/79df243 覆盖"
+  },
+  "E1": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "haiku",
+    "size": "小",
+    "slice": "S5",
+    "depends_on": ["DOC-01", "ENV-01", "ENV-02", "AUD-01", "AUD-02", "PAR-01", "PAR-02"],
+    "commits": [],
+    "note": "V2.2 收口：8 卡终态 + 逐卡定向检查汇总（不做全量回归）+ 冻结面复核 + changelog + 双端 0 0。推送需凭据。",
+    "verify": "8/8 done；src/contracts、prisma、package.json 零改动；双端 0 0"
+  }
+}
