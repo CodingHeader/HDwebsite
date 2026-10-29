@@ -78,7 +78,7 @@
     "verify": "matrix.md 43 行 / M1 全为数值 / PASS+FAIL+N-A=172；阈值未改；src prisma 零改动"
   },
   "D1-FIX": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "中",
@@ -86,8 +86,10 @@
     "depends_on": [
       "B3"
     ],
-    "commits": [],
-    "note": "CLS 0.208→≤0.1、LCP 3.3s→≤2.5s（mobile）。V1.8 只登记未写卡，本轮补齐。前台冻结约束：仅可加 width/height/aspect-ratio/loading/fetchpriority/preload，禁改 className 值。Lighthouse 不可用记 UNKNOWN。",
+    "commits": [
+      "0ec340b"
+    ],
+    "note": "CLS ??0?????0-0.208?????footer score0.2078??????????LCP ??0.3s/136ms?????3.1-3.3s?Slow4G?????fetchpriority=high?????????????PARTIAL????PASS?",
     "verify": "改后重测贴数值；className 零变更；不可达则如实记 UNKNOWN/PARTIAL"
   },
   "E1": {
