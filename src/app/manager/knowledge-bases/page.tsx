@@ -517,6 +517,11 @@ export default function KnowledgeBasesPage() {
           onRetry={() => void basesQ.reload()}
           emptyTitle="暂无知识库"
           emptyDescription="点击「新建知识库」创建（可绑定已有 Coze dataset 或新建并同步）。"
+          emptyAction={
+            <Button type="button" variant="primary" onClick={openCreate}>
+              新建知识库
+            </Button>
+          }
           rowName={(b) => b.name}
           rowActions={(b) => [
             { key: "detail", label: "详情", onClick: () => setSelected(b) },

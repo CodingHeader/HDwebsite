@@ -11,10 +11,9 @@ import { managerFetch, isForbidden, errorMessage } from "@/lib/manager-fetch";
 import { toastCopy } from "@/contracts/common";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { DetailDialog } from "@/components/manager/DetailDialog";
-import { SearchInput } from "@/components/manager/SearchInput";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
-import { Button, Select } from "@/components/manager/ui";
+import { Button, Select, SearchField } from "@/components/manager/ui";
 import { Bone, ErrorState, Forbidden, confirmDialog, toast, useManagerQuery } from "@/components/manager/feedback";
 
 type SessionRow = {
@@ -123,7 +122,7 @@ export default function ChatHistoryPage() {
                 { label: "公众号", value: "wechat" },
               ]}
             />
-            <SearchInput
+            <SearchField
               value={keyword}
               placeholder="搜索消息内容/会话…"
               onChange={(v) => {
@@ -146,6 +145,13 @@ export default function ChatHistoryPage() {
         onRetry={reload}
         emptyTitle={keyword || channel ? "没有符合条件的会话" : "暂无对话记录"}
         emptyDescription={keyword || channel ? "调整筛选条件试试。" : "访客在官网或公众号与 AI 客服对话后，会话会出现在这里。"}
+        emptyAction={
+          keyword || channel ? (
+            <Button type="button" onClick={() => { setKeyword(""); setChannel(""); setPage(1); }} variant="ghost">
+              清除筛选
+            </Button>
+          ) : undefined
+        }
         rowName={(row) => row.sessionId}
         rowActions={(row) => [
           { key: "view", label: "查看", tone: "primary", onClick: () => openDetail(row) },

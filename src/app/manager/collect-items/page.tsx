@@ -125,6 +125,11 @@ export default function ManagerCollectItemsPage() {
         onRetry={reload}
         emptyTitle={status === "new" ? "没有待审核的内容" : "暂无采集内容"}
         emptyDescription="在「采集源」中试抓或立即执行后，新条目会出现在这里。"
+        emptyAction={
+          <Button type="button" onClick={() => { setStatus(""); setPage(1); }} variant="ghost">
+            查看全部
+          </Button>
+        }
         rowName={(it) => it.title}
         rowActions={(it) => [
           {

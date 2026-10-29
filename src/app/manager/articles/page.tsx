@@ -15,8 +15,7 @@ import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { FormDialog } from "@/components/manager/FormDialog";
 import { DataTable } from "@/components/manager/DataTable";
 import type { DataColumn } from "@/components/manager/DataTable";
-import { SearchInput } from "@/components/manager/SearchInput";
-import { Select, Button } from "@/components/manager/ui";
+import { Select, Button, SearchField } from "@/components/manager/ui";
 import { Badge } from "@/components/manager/ui/misc";
 import { validateRequired } from "@/components/manager/form-utils";
 import type { FieldSpec, FormValues } from "@/components/manager/SchemaForm";
@@ -271,7 +270,7 @@ export default function ManagerArticlesPage() {
               }}
               options={CHANNELS.map((c) => ({ label: c.label, value: c.key }))}
             />
-            <SearchInput
+            <SearchField
               value={keyword}
               placeholder="搜索标题/内容…"
               onChange={(v) => {
@@ -299,7 +298,11 @@ export default function ManagerArticlesPage() {
         emptyTitle={keyword ? `没有找到与「${keyword}」相关的文章` : "还没有文章"}
         emptyDescription={keyword ? "换个关键词试试。" : "写下第一篇新闻或资讯吧。"}
         emptyAction={
-          keyword ? undefined : (
+          keyword || channel ? (
+            <Button type="button" onClick={() => { setKeyword(""); setChannel(""); setPage(1); }} variant="ghost">
+              清除筛选
+            </Button>
+          ) : (
             <Button type="button" onClick={create} variant="primary">
               <Plus aria-hidden="true" />
               新建文章

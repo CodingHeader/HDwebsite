@@ -231,6 +231,12 @@ export default function HomeBlocksPage() {
           onRetry={() => void tbQ.reload()}
           emptyTitle="首页暂无区块"
           emptyDescription="点击「恢复默认」按 main 原样重建，或从注册表新增区块。"
+          emptyAction={
+            <Button type="button" variant="secondary" onClick={() => void resetDefaults()}>
+              <RotateCcw aria-hidden="true" />
+              恢复默认
+            </Button>
+          }
           rowName={(tb) => nameOf(tb.block.code)}
           rowActions={(tb) => [
             { key: "up", label: "上移", icon: <ArrowUp aria-hidden="true" />, onClick: () => void move(tb, -1), disabled: tbs[0]?.id === tb.id },

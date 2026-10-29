@@ -1,0 +1,86 @@
+[
+  {
+    "page": "/manager/articles",
+    "state": "empty",
+    "status": "PASS",
+    "observed": {
+      "actionTexts": [
+        "清除筛选"
+      ]
+    },
+    "asserts": {
+      "emptyStateVisible": true,
+      "containerActionCount": 1
+    }
+  },
+  {
+    "page": "/manager/chat-history",
+    "state": "empty",
+    "status": "PASS",
+    "observed": {
+      "actionTexts": [
+        "清除筛选"
+      ]
+    },
+    "asserts": {
+      "emptyStateVisible": true,
+      "containerActionCount": 1
+    }
+  },
+  {
+    "page": "/manager/content-hub",
+    "state": "empty",
+    "status": "PASS",
+    "observed": {
+      "actionTexts": [
+        "清除筛选"
+      ]
+    },
+    "asserts": {
+      "emptyStateVisible": true,
+      "containerActionCount": 1
+    }
+  },
+  {
+    "page": "/manager/collect-items",
+    "state": "empty",
+    "status": "PASS",
+    "observed": {
+      "actionTexts": [
+        "查看全部"
+      ]
+    },
+    "asserts": {
+      "emptyStateVisible": true,
+      "containerActionCount": 1
+    }
+  },
+  {
+    "page": "/manager/home-blocks",
+    "state": "empty",
+    "status": "PASS",
+    "observed": {
+      "actionTexts": [
+        "恢复默认"
+      ]
+    },
+    "asserts": {
+      "emptyStateVisible": true,
+      "containerActionCount": 1
+    }
+  },
+  {
+    "page": "/manager/knowledge-bases",
+    "state": "empty",
+    "status": "PASS",
+    "observed": {
+      "actionTexts": [
+        "新建知识库"
+      ]
+    },
+    "asserts": {
+      "emptyStateVisible": true,
+      "containerActionCount": 1
+    }
+  }
+]

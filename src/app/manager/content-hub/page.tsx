@@ -20,9 +20,8 @@ import { FormDialog } from "@/components/manager/FormDialog";
 import { DetailDialog } from "@/components/manager/DetailDialog";
 import { Tabs } from "@/components/manager/ui/misc";
 import { FormField } from "@/components/manager/ui/form-field";
-import { Checkbox, DateTimeInput, Input, RadioGroup, Select, Switch, Textarea, Button } from "@/components/manager/ui";
+import { Checkbox, DateTimeInput, Input, RadioGroup, Select, Switch, Textarea, Button, SearchField } from "@/components/manager/ui";
 import { ContentMarkdown } from "@/components/manager/ContentMarkdown";
-import { SearchInput } from "@/components/manager/SearchInput";
 import { PageHeader } from "@/components/manager/shell/PageHeader";
 import { Forbidden, PageSkeleton, cardCls, confirmDialog, toast, useManagerQuery, ErrorState } from "@/components/manager/feedback";
 import { ChannelStates } from "@/components/manager/publish/ChannelStates";
@@ -333,7 +332,7 @@ export default function ContentHubPage() {
         title="内容中枢"
         description="全站内容的统一管理入口：多渠道发布（官网/公众号）、定时与立即执行、渠道预览。"
         actions={
-          <SearchInput
+          <SearchField
             value={keyword}
             placeholder="搜索标题/内容…"
             onChange={(v) => {
@@ -355,6 +354,17 @@ export default function ContentHubPage() {
           onRetry={() => void itemsQ.reload()}
           emptyTitle={keyword ? `没有找到与「${keyword}」相关的内容` : "暂无内容"}
           emptyDescription={keyword ? "换个关键词试试。" : "新建文章或从「采集审核」通过后，内容会出现在这里。"}
+          emptyAction={
+            keyword ? (
+              <Button type="button" onClick={() => { setKeyword(""); setPage(1); }} variant="ghost">
+                清除筛选
+              </Button>
+            ) : (
+              <Button type="button" onClick={() => openEdit("new")} variant="primary">
+                新建内容
+              </Button>
+            )
+          }
           rowName={(r) => r.title}
           rowActions={(r) => [
             ...(canEdit && (r.status === "draft" || r.status === "rejected") ? [{ key: "edit", label: "编辑", tone: "muted" as const, icon: <Pencil aria-hidden="true" />, onClick: () => openEdit(r) }] : []),
