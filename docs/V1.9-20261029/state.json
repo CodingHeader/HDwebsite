@@ -87,13 +87,14 @@
       "B3"
     ],
     "commits": [
-      "0ec340b"
+      "0ec340b",
+      "ed23b98"
     ],
-    "note": "CLS ??0?????0-0.208?????footer score0.2078??????????LCP ??0.3s/136ms?????3.1-3.3s?Slow4G?????fetchpriority=high?????????????PARTIAL????PASS?",
+    "note": "CLS 真实 0 达标（模拟 0–0.208 波动，归因 footer score 0.2078，冻结面内无根因）；LCP 真实 0.3s/136ms 优秀，模拟 3.1–3.3s 系 Slow4G 模型产物，fetchpriority=high 已试不敏感并还原。诚实判定 PARTIAL，不虚报 PASS。",
     "verify": "改后重测贴数值；className 零变更；不可达则如实记 UNKNOWN/PARTIAL"
   },
   "E1": {
-    "status": "ready",
+    "status": "done",
     "owner": "external-assistant",
     "tier": "haiku",
     "size": "小",
@@ -106,8 +107,10 @@
       "B3",
       "D1-FIX"
     ],
-    "commits": [],
-    "note": "7 卡终态 + 唯一一次全量（串行 4 项 + visual + e2e）+ changelog + 冻结面复核 + 双端 0 0。npm test 须加 --no-file-parallelism（已知并发抢 SQLite 假红）。跑 ≠ 门禁：记录但不阻断。",
+    "commits": [
+      "1a8087b"
+    ],
+    "note": "7/7 done；全量 lint/typecheck/test(1859)/build exit 0；视觉 4P/42F（win32 字体→CI 判定）；E2E 77P/2F（hub-content toast 断言被 FIX-02 打断，记遗留）；冻结面 V19 卡零触碰；双端本地领先 11（commit-only 未推送）。",
     "verify": "7/7 done；全量 exit 0；冻结面无意外改动；双端 0 0"
   }
 }
