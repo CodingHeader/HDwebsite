@@ -213,17 +213,23 @@ async function seedFrontNavigation() {
   // P04 修复：仅在 Navigation 为空时种默认前台导航。
   // 原实现按 slug upsert，会在已导入 main 导航（slug 体系不同：education/majors/news…）的库上追加 5 条，
   // 使前台导航溢出、偏离 main 视觉（test:visual 768/375 横向溢出即由此发现）。
+  //
+  // 2026-10-29 用户裁决（备注 2「原分支有的功能 upgrade 也要有」）：一级菜单以 main 的 9 项为准。
+  // 此前这里种的是 upgrade 自造的扁平 9 项（首页/课程中心/新闻资讯/合作院校/校区环境/证书风采/在线报名），
+  // 与 main 完全不同名 → `data/navigation.ts` 用「中文名精确匹配」补二级菜单时全部失配，5 组下拉只剩「关于我们」。
+  // 因此名称/顺序/链接一律对齐 `nav-defaults.ts` 的 defaultNavItems（main 原菜单）；
+  // 二级菜单不在此重复录入，由 data/navigation.ts 按同名回落 defaultNavItems.submenu（13 院校 / 8 专业类 / 10 资讯）。
   if ((await prisma.navigation.count()) > 0) return;
   const navs: { slug: string; name: string; link: string; sort: number; level: number }[] = [
-    { slug: 'home', name: '首页', link: '/', sort: 1, level: 1 },
-    { slug: 'about', name: '关于我们', link: '/about', sort: 2, level: 1 },
-    { slug: 'courses', name: '课程中心', link: '/courses', sort: 3, level: 1 },
-    { slug: 'articles', name: '新闻资讯', link: '/articles', sort: 4, level: 1 },
-    { slug: 'partners', name: '合作院校', link: '/partners', sort: 5, level: 1 },
-    { slug: 'campus', name: '校区环境', link: '/campus', sort: 6, level: 1 },
-    { slug: 'gallery', name: '证书风采', link: '/gallery', sort: 7, level: 1 },
-    { slug: 'apply', name: '在线报名', link: '/apply', sort: 8, level: 1 },
-    { slug: 'contact', name: '联系我们', link: '/contact', sort: 9, level: 1 },
+    { slug: 'nav-home', name: '网站首页', link: '/', sort: 1, level: 1 },
+    { slug: 'nav-about', name: '关于我们', link: '/about', sort: 2, level: 1 },
+    { slug: 'nav-courses', name: '学历提升', link: '/courses', sort: 3, level: 1 },
+    { slug: 'nav-partners', name: '热门院校', link: '/partners', sort: 4, level: 1 },
+    { slug: 'nav-majors', name: '热门专业', link: '/courses', sort: 5, level: 1 },
+    { slug: 'nav-news', name: '资讯中心', link: '/news', sort: 6, level: 1 },
+    { slug: 'nav-learning', name: '学习中心', link: '/learning', sort: 7, level: 1 },
+    { slug: 'nav-party', name: '党建专栏', link: '/party', sort: 8, level: 1 },
+    { slug: 'nav-contact', name: '联系我们', link: '/contact', sort: 9, level: 1 },
   ];
   for (const n of navs) {
     await prisma.navigation.upsert({

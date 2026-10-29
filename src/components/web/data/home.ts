@@ -114,7 +114,9 @@ async function getHomeDataUncached(): Promise<HomeData> {
   ]);
 
   const [partnersRaw, campusesRaw, galleryRaw] = await Promise.all([
-    prisma.partner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 8 }),
+    // 用户 2026-10-29 裁决：首页院校与 main 对齐为 13 家（原 take:8 属于 upgrade 自行收窄，
+    // 与 main 的 universitySubmenu 13 项不一致 → 首页少 5 家）。见 tasks 卡 HD-WEB-NAV-01。
+    prisma.partner.findMany({ where: { status: "active" }, orderBy: { sort: "asc" }, take: 13 }),
     prisma.campus.findMany({
       where: { status: "active" },
       include: { images: { orderBy: { sort: "asc" } } },

@@ -43,16 +43,18 @@ export function FloatingContact({
   };
 
   return (
-    <div className="fixed right-4 bottom-20 z-50 flex flex-col gap-3">
+    <div className="fixed right-3 bottom-16 md:right-4 md:bottom-20 z-50 flex flex-col items-end md:items-stretch gap-2.5 md:gap-3">
+      {/* 移动端（<768px）收成纯图标胶囊，避免 132×192 的浮层压住正文与「立即咨询」按钮；
+          桌面端（≥768px）保持 main 原样的「文字 + 圆形图标」胶囊 —— 1440/768 视觉基线零变化。 */}
       {/* [001~003] 在线客服 - 蓝色 - 统一跳转到 /apply AI 咨询页，source=float 区分入口 */}
       <a
         href="/apply?source=float"
-        className="group flex items-center gap-3 bg-[#5b9bd5] hover:bg-[#4a8ac4] text-white rounded-full pl-4 pr-2 py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
+        className="group flex items-center gap-3 bg-[#5b9bd5] hover:bg-[#4a8ac4] text-white rounded-full p-1 md:pl-4 md:pr-2 md:py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
         data-interaction-id="FLOAT-001"
       >
-        <span className="text-sm font-medium">在线客服</span>
+        <span className="hidden md:inline text-sm font-medium">在线客服</span>
         <div 
-          className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+          className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"
           data-interaction-id="FLOAT-002"
         >
           <MessageCircle className="w-5 h-5" />
@@ -63,12 +65,12 @@ export function FloatingContact({
       <div className="relative">
         <button
           onClick={() => setShowWechat(!showWechat)}
-          className="group flex items-center gap-3 bg-[#7bc142] hover:bg-[#6ab031] text-white rounded-full pl-4 pr-2 py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer w-full"
+          className="group flex items-center gap-3 bg-[#7bc142] hover:bg-[#6ab031] text-white rounded-full p-1 md:pl-4 md:pr-2 md:py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer w-full"
           data-interaction-id="FLOAT-004"
         >
-          <span className="text-sm font-medium" data-interaction-id="FLOAT-006">官方微信</span>
+          <span className="hidden md:inline text-sm font-medium" data-interaction-id="FLOAT-006">官方微信</span>
           <div 
-            className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+            className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"
             data-interaction-id="FLOAT-005"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -80,7 +82,7 @@ export function FloatingContact({
         {/* [007] 二维码浮层 */}
         {showWechat && (
           <div 
-            className="absolute right-full mr-3 bottom-0 bg-white rounded-lg shadow-xl p-3 w-48 border border-gray-200"
+            className="absolute right-0 bottom-full mb-2 md:right-full md:bottom-0 md:mb-0 md:mr-3 bg-white rounded-lg shadow-xl p-3 w-48 border border-gray-200"
             data-interaction-id="FLOAT-007"
           >
             <p className="text-sm text-gray-600 mb-2 text-center">扫码添加微信</p>
@@ -99,12 +101,12 @@ export function FloatingContact({
       {/* [008~011] 校长电话 - 橙色 + tel拨号 - 从settings注入 */}
       <a
         href={`tel:${phone.replace(/-/g, "")}`}
-        className="group flex items-center gap-3 bg-[#f5a623] hover:bg-[#e49513] text-white rounded-full pl-4 pr-2 py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
+        className="group flex items-center gap-3 bg-[#f5a623] hover:bg-[#e49513] text-white rounded-full p-1 md:pl-4 md:pr-2 md:py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer"
         data-interaction-id="FLOAT-008"
       >
-        <span className="text-sm font-medium" data-interaction-id="FLOAT-010">校长电话</span>
+        <span className="hidden md:inline text-sm font-medium" data-interaction-id="FLOAT-010">校长电话</span>
         <div 
-          className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+          className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform"
           data-interaction-id="FLOAT-009"
         >
           <Phone className="w-5 h-5" />
@@ -115,12 +117,12 @@ export function FloatingContact({
       {showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="group flex items-center gap-3 bg-[#666666] hover:bg-[#555555] text-white rounded-full pl-4 pr-2 py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer animate-in fade-in slide-in-from-bottom-2"
+          className="group flex items-center gap-3 bg-[#666666] hover:bg-[#555555] text-white rounded-full p-1 md:pl-4 md:pr-2 md:py-2 shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer animate-in fade-in slide-in-from-bottom-2"
           data-interaction-id="FLOAT-012"
         >
-          <span className="text-sm font-medium" data-interaction-id="FLOAT-014">回到顶部</span>
+          <span className="hidden md:inline text-sm font-medium" data-interaction-id="FLOAT-014">回到顶部</span>
           <div 
-            className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:-translate-y-1 transition-transform"
+            className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:-translate-y-1 transition-transform"
             data-interaction-id="FLOAT-013"
           >
             <ArrowUp className="w-5 h-5" />

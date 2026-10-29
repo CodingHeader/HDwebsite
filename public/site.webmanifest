@@ -1,12 +1,11 @@
 {
-  "name": "Website Clone",
-  "short_name": "Website",
-  "description": "Pixel-perfect website clone",
+  "name": "四川弘道经理学院",
+  "short_name": "弘道教育",
+  "description": "专注专升本教育，助力学历提升",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#ffffff",
-  "theme_color": "#C62F2F",
-  "orientation": "portrait-primary",
+  "theme_color": "#da251d",
   "scope": "/",
   "lang": "zh-CN",
   "icons": [
@@ -41,7 +40,7 @@
       "purpose": "any"
     }
   ],
-  "categories": ["website", "clone"],
+  "categories": ["education"],
   "screenshots": [],
   "related_applications": [],
   "prefer_related_applications": false

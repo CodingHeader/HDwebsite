@@ -70,7 +70,7 @@ export function Navbar({ items }: NavbarProps = {}) {
             return (
               <div
                 key={item.id}
-                className="relative"
+                className="relative shrink-0"
                 onMouseEnter={() => handleMouseEnter(item.id)}
                 onMouseLeave={handleMouseLeave}
                 data-interaction-id={item.id}
@@ -78,7 +78,7 @@ export function Navbar({ items }: NavbarProps = {}) {
                 <Link
                   href={item.href}
                   className={`
-                    flex items-center gap-1 px-6 py-2 text-sm font-medium tracking-wide
+                    flex items-center gap-1 px-6 py-2 text-sm font-medium tracking-wide whitespace-nowrap shrink-0
                     transition-colors duration-200
                     ${isActive 
                       ? "text-white border-b-2 border-white" 
