@@ -131,7 +131,8 @@ export default function ManagerPublishJobsPage() {
     try {
       const body = normalizeFormValues(fields, creating);
       await managerFetch("/api/publish-jobs", { method: "POST", body: JSON.stringify(body) });
-      toast.success(toastCopy.created, creating.scheduledAt ? "已按排期加入队列" : "系统每分钟扫描执行");
+      const contentName = items.find((o) => o.value === Number(body.itemId))?.label ?? `#${body.itemId}`;
+      toast.success(toastCopy.created, `「${contentName}」${creating.scheduledAt ? "已按排期加入队列" : "系统每分钟扫描执行"}`);
       setCreating(null);
       void reload();
       void itemsQ.reload();

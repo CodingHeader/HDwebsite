@@ -193,7 +193,7 @@ export default function ContentHubPage() {
       };
       if (editing === "new") {
         await managerFetch("/api/content-items", { method: "POST", body: JSON.stringify(body) });
-        toast.success("已创建", "草稿已入库，可提交审核。");
+        toast.success("已创建", `「${body.title}」已入库，可提交审核。`);
       } else {
         await managerFetch(`/api/content-items/${editing.id}`, { method: "PUT", body: JSON.stringify(body) });
         toast.success("已保存");

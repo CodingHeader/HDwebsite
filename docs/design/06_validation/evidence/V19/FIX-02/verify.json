@@ -1,0 +1,66 @@
+[
+  {
+    "page": "/manager/content-hub",
+    "status": "PASS",
+    "observed": {
+      "toast": {
+        "title": "已创建",
+        "description": "「FIX02内容标题A」已入库，可提交审核。",
+        "all": "已创建 「FIX02内容标题A」已入库，可提交审核。"
+      }
+    },
+    "asserts": {
+      "title": "已创建",
+      "description": "「FIX02内容标题A」已入库，可提交审核。",
+      "containsName": true
+    }
+  },
+  {
+    "page": "/manager/publish-jobs",
+    "status": "PASS",
+    "observed": {
+      "toast": {
+        "title": "已创建",
+        "description": "「#1 测试内容A」系统每分钟扫描执行",
+        "all": "已创建 「#1 测试内容A」系统每分钟扫描执行"
+      }
+    },
+    "asserts": {
+      "title": "已创建",
+      "description": "「#1 测试内容A」系统每分钟扫描执行",
+      "containsName": true
+    }
+  },
+  {
+    "page": "/manager/banners",
+    "status": "PASS",
+    "observed": {
+      "toast": {
+        "title": "已创建",
+        "description": "/banner-1",
+        "all": "已创建 /banner-1"
+      }
+    },
+    "asserts": {
+      "title": "已创建",
+      "description": "/banner-1",
+      "containsName": true
+    }
+  },
+  {
+    "page": "/manager/enrollment-offerings",
+    "status": "PASS",
+    "observed": {
+      "toast": {
+        "title": "已创建",
+        "description": "2026秋季",
+        "all": "已创建 2026秋季"
+      }
+    },
+    "asserts": {
+      "title": "已创建",
+      "description": "2026秋季",
+      "containsName": true
+    }
+  }
+]

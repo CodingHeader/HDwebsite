@@ -125,7 +125,7 @@ export const STATUS_BADGES: BadgeMap = {
 };
 
 export function displayName(row: Row): string {
-  for (const k of ["title", "name", "username", "label", "nickname", "code", "email", "elementId"]) {
+  for (const k of ["title", "name", "username", "label", "nickname", "code", "email", "elementId", "sourceBatch", "link"]) {
     if (typeof row[k] === "string" && row[k]) return String(row[k]);
   }
   return row.id !== undefined ? `#${row.id}` : "";
