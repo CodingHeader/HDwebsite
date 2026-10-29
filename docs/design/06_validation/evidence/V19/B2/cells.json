@@ -1,0 +1,1206 @@
+[
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「写文章(快捷入口)」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 页面无弹窗（仪表盘/登录均无 Dialog）"
+ },
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "key": "K1",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无焦点序列可测"
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无主操作可测"
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无弹窗可测"
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "key": "K4",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无焦点可见可测"
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建文章」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无新建/保存主操作（CrudPage readOnly 无 rowActions）"
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「审阅(行操作)」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无新建/保存主操作（CrudPage readOnly 无 rowActions）"
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无弹窗（CrudPage readOnly 无 dialog/detail）"
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建内容」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「恢复默认」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建知识库」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建供应商」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "key": "K1",
+  "status": "N-A",
+  "judgment": "N-A 单表单页无列表 Tab 序列语义（卡判据）"
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「登录」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 页面无弹窗（仪表盘/登录均无 Dialog）"
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无新建/保存主操作（CrudPage readOnly 无 rowActions）"
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无弹窗（CrudPage readOnly 无 dialog/detail）"
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「上传文件」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "key": "K1",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无焦点序列可测"
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无主操作可测"
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无弹窗可测"
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "key": "K4",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无焦点可见可测"
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无新建/保存主操作（CrudPage readOnly 无 rowActions）"
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无弹窗（CrudPage readOnly 无 dialog/detail）"
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「编辑(行操作)」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建任务」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「保存」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "key": "K2",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无新建/保存主操作（CrudPage readOnly 无 rowActions）"
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "key": "K3",
+  "status": "N-A",
+  "judgment": "N-A 只读列表无弹窗（CrudPage readOnly 无 dialog/detail）"
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "key": "K1",
+  "status": "PASS",
+  "judgment": "PASS 12 次 Tab 序列单调无跳跃/回跳（侧栏→内容，实测 40 页一致）"
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "key": "K2",
+  "status": "PASS",
+  "judgment": "PASS 「新建账号」聚焦 Enter 触发成功（弹窗/导航/文件选择器，实测）"
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "key": "K3",
+  "status": "PASS",
+  "judgment": "PASS 共享 Dialog 组件 Esc 关闭（articles FormDialog + home-blocks ConfirmDialog 运行时验证）"
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "key": "K4",
+  "status": "PASS",
+  "judgment": "PASS 焦点可见 outline 2px solid（全局 CSS 实测 41 页一致）"
+ }
+]
