@@ -63,7 +63,7 @@
     "verify": "matrix.md 43 行 / 0 待核 / PASS+FAIL+N-A=172；K3 有运行时记录；src tests prisma 零改动"
   },
   "B3": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "大",
@@ -71,7 +71,9 @@
     "depends_on": [
       "B2"
     ],
-    "commits": [],
+    "commits": [
+      "9486a5b"
+    ],
     "note": "43 页 × M1~M4 = 172 格（V1.8 写 42/168 已修正）。M1 必须记 scrollWidth 具体数值。扩展 mobile-375.spec.ts 路由数组，阈值 toBeLessThanOrEqual(375) 不得改。",
     "verify": "matrix.md 43 行 / M1 全为数值 / PASS+FAIL+N-A=172；阈值未改；src prisma 零改动"
   },
