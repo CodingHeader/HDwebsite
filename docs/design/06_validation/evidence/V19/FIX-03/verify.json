@@ -1,0 +1,20 @@
+[
+  {
+    "status": "PASS",
+    "observed": {
+      "before": {
+        "rows": 10,
+        "emptyState": false
+      },
+      "after": {
+        "rows": 0,
+        "emptyState": true
+      }
+    },
+    "asserts": {
+      "beforeRows": 10,
+      "afterRows": 0,
+      "emptyStateVisible": true
+    }
+  }
+]

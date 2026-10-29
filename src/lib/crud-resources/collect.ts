@@ -29,7 +29,8 @@ export const collectSpecs: Record<string, CrudSpec> = {
     model: "collectTask",
     permission: "collect",
     label: "采集任务",
-    searchFields: [],
+    // FIX-03：根因 searchFields 为空数组 → 搜索框显示但后端无过滤（返回全量）。加自有文本字段 errMsg。
+    searchFields: ["errMsg"],
     filters: { sourceId: "number", status: "string" },
     orderBy: [{ id: "desc" }],
     include: { source: { select: { id: true, name: true } } },
