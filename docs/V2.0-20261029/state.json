@@ -26,14 +26,16 @@
     "verify": "hub-content spec 全绿；只改该文件 2 行；断言含实体名未弱化"
   },
   "M3-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "大",
     "dir": "M3-01-命中区",
     "depends_on": [],
     "blocked_reason": null,
-    "commits": [],
+    "commits": [
+      "a529edf"
+    ],
     "note": "【D-20-01 已裁决：方案 A 全局提升，桌面端同样 44px】36 处高度类中实改 34 处 / 19 文件。核心：button-class.ts 三档统一 h-11；input.tsx 4 处 + feedback/styles.ts:34 inputCls（SearchInput.tsx 直接引用，最易漏）+ RelationField:113；图标按钮 6 处改 h-11 w-11；Pagination 的 min-w-8 须同步改 min-w-11；导航壳 11 处。跳过 2 处非交互（DataTable:444 表头、ConfirmDialog:81 aria-hidden 装饰图标）。已知代价：桌面密度变松、B2 键盘参照失效需 E1 复核、视觉基线须 CI 重建。",
     "verify": "375 与 1440 两视口核心控件均 ≥44×44；M3 40 FAIL 归零；mobile-375 无横向溢出回归；只改授权的 19 文件"
   },
