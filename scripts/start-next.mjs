@@ -4,6 +4,10 @@ import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { shouldRunBuild } from "./start-next-utils.mjs";
+// V22-ENV-01：复用 src/lib/env.ts 的校验规则（Node v24 原生 strip-types 可 import .ts，
+// 该模块为纯函数、不依赖 Next 运行时）；另引入 DB 迁移检测。
+import { assertProductionEnv } from "../src/lib/env.ts";
+import { checkDbReady, printDbGuidance } from "./check-db.mjs";
 
 const require = createRequire(import.meta.url);
 const nextBin = require.resolve("next/dist/bin/next");
@@ -38,6 +42,17 @@ import nextEnv from "@next/env";
 const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd(), process.env.NODE_ENV === "production", { info: () => {}, error: console.error });
 loadEnvConfig(process.cwd(), process.env.NODE_ENV === "production", { info: () => {}, error: console.error });
+
+// V22-ENV-01：前置门禁——env 校验 + DB 迁移检测，均在 spawn next 之前、监听端口之前。
+// 原实况：FATAL 发生在 Next instrumentation 内（端口已监听但服务不可用），此处提前到进程入口，
+// 保证「缺条件 → 未监听端口 → exit != 0」。
+assertProductionEnv(process.env);
+
+const dbState = await checkDbReady(process.env);
+if (!dbState.ok) {
+  printDbGuidance(dbState.missing);
+  process.exit(1);
+}
 
 function runBuildIfNeeded() {
   if (!shouldRunBuild({

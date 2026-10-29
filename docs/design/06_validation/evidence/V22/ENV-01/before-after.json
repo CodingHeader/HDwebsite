@@ -1,0 +1,23 @@
+{
+  "id": "V22-ENV-01",
+  "title": "启动链路固化前后对比",
+  "scenarios": [
+    {
+      "name": "缺 ENCRYPTION_KEY（生产）",
+      "before": { "exit": "!=0（但发生在 Next instrumentation 内，端口已监听，Ready 已打印）", "port_listening": true, "detail": "FATAL 在服务器启动后触发，表现为可连但不可用" },
+      "after": { "exit": 1, "port_listening": false, "detail": "assertProductionEnv 在 spawn 前触发，端口从未绑定" }
+    },
+    {
+      "name": "DB 未迁移（dev.db 0 字节）",
+      "before": { "exit": "运行时才 no such table: main.CronJob", "port_listening": true, "detail": "启动看似成功，首次 DB 访问才报错" },
+      "after": { "exit": "!=0", "port_listening": false, "detail": "checkDbReady 在 spawn 前失败，输出含 npm run db:deploy && npm run db:seed" }
+    },
+    {
+      "name": "正常（e2e.db 已迁移）",
+      "before": { "exit": 0, "port_listening": true, "detail": "可启动" },
+      "after": { "exit": 0, "port_listening": true, "detail": "HTTP 200，正常启动" }
+    }
+  ],
+  "files_changed": ["scripts/start-next.mjs", "scripts/check-db.mjs"],
+  "src_lib_env_ts_modified": false
+}
