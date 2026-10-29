@@ -1,0 +1,1593 @@
+[
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「写文章(快捷入口卡)」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "item": "M3",
+  "status": "PASS",
+  "judgment": "PASS 写文章快捷入口卡 343×73 ≥44×44（命中区达标）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager",
+  "src": "src/app/manager/page.tsx",
+  "item": "M4",
+  "status": "N-A",
+  "judgment": "N-A 表单/仪表盘页无数据列表，无卡片切换可测（卡 N-A 合法）",
+  "observed": null
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "item": "M1",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无自身 scrollWidth 可测",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无核心操作可测",
+  "observed": null
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "item": "M3",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无命中区可测",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/ai-config",
+  "src": "src/app/manager/ai-config/page.tsx",
+  "item": "M4",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无列表可测",
+  "observed": null
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建文章」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/articles",
+  "src": "src/app/manager/articles/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/banners",
+  "src": "src/app/manager/banners/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/campus",
+  "src": "src/app/manager/campus/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/categories",
+  "src": "src/app/manager/categories/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯只读页无新建/行操作（卡 N-A 合法），搜索框仅只读过滤",
+  "observed": null
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/chat-history",
+  "src": "src/app/manager/chat-history/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/chat-scenes",
+  "src": "src/app/manager/chat-scenes/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「审阅(行操作)」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/collect-items",
+  "src": "src/app/manager/collect-items/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/collect-sources",
+  "src": "src/app/manager/collect-sources/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯只读页无新建/行操作（卡 N-A 合法），搜索框仅只读过滤",
+  "observed": null
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/collect-tasks",
+  "src": "src/app/manager/collect-tasks/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建内容」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/content-hub",
+  "src": "src/app/manager/content-hub/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/courses",
+  "src": "src/app/manager/courses/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/element-configs",
+  "src": "src/app/manager/element-configs/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/enrollment-offerings",
+  "src": "src/app/manager/enrollment-offerings/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/gallery",
+  "src": "src/app/manager/gallery/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「恢复默认」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/home-blocks",
+  "src": "src/app/manager/home-blocks/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/home-cards",
+  "src": "src/app/manager/home-cards/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/hot-majors",
+  "src": "src/app/manager/hot-majors/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/knowledge",
+  "src": "src/app/manager/knowledge/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建知识库」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/knowledge-bases",
+  "src": "src/app/manager/knowledge-bases/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建供应商」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/llm-providers",
+  "src": "src/app/manager/llm-providers/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「登录」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/login",
+  "src": "src/app/manager/login/page.tsx",
+  "item": "M4",
+  "status": "N-A",
+  "judgment": "N-A 表单/仪表盘页无数据列表，无卡片切换可测（卡 N-A 合法）",
+  "observed": null
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯只读页无新建/行操作（卡 N-A 合法），搜索框仅只读过滤",
+  "observed": null
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/logs",
+  "src": "src/app/manager/logs/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/majors",
+  "src": "src/app/manager/majors/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「上传文件」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/media",
+  "src": "src/app/manager/media/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 媒体网格渲染为卡片，无横向滚动（scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/navigations",
+  "src": "src/app/manager/navigations/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "item": "M1",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无自身 scrollWidth 可测",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无核心操作可测",
+  "observed": null
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "item": "M3",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无命中区可测",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/news",
+  "src": "src/app/manager/news/page.tsx",
+  "item": "M4",
+  "status": "N-A",
+  "judgment": "N-A 纯 redirect 无 UI，无列表可测",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/notify-recipients",
+  "src": "src/app/manager/notify-recipients/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯只读页无新建/行操作（卡 N-A 合法），搜索框仅只读过滤",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/notify-records",
+  "src": "src/app/manager/notify-records/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「编辑(行操作)」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/notify-rules",
+  "src": "src/app/manager/notify-rules/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/notify-templates",
+  "src": "src/app/manager/notify-templates/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/page-templates",
+  "src": "src/app/manager/page-templates/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/partners",
+  "src": "src/app/manager/partners/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建任务」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/publish-jobs",
+  "src": "src/app/manager/publish-jobs/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/roles",
+  "src": "src/app/manager/roles/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/service-guides",
+  "src": "src/app/manager/service-guides/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「保存」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/settings",
+  "src": "src/app/manager/settings/page.tsx",
+  "item": "M4",
+  "status": "N-A",
+  "judgment": "N-A 表单/仪表盘页无数据列表，无卡片切换可测（卡 N-A 合法）",
+  "observed": null
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/students",
+  "src": "src/app/manager/students/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/tags",
+  "src": "src/app/manager/tags/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "item": "M2",
+  "status": "N-A",
+  "judgment": "N-A 纯只读页无新建/行操作（卡 N-A 合法），搜索框仅只读过滤",
+  "observed": null
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/user-actions",
+  "src": "src/app/manager/user-actions/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/users",
+  "src": "src/app/manager/users/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "item": "M1",
+  "status": "PASS",
+  "judgment": "PASS scrollWidth=375（恰好等于阈值，无横向溢出）",
+  "observed": {
+   "scrollWidth": 375
+  }
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "item": "M2",
+  "status": "PASS",
+  "judgment": "PASS 「新建账号」375 下可达且生效（click/Enter 触发弹窗/导航/文件选择器，实测）",
+  "observed": null
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "item": "M3",
+  "status": "FAIL",
+  "judgment": "FAIL 新建/主操作按钮 76×36 高36px<44（触达区不足，记尺寸）",
+  "observed": {
+   "primaryW": 76,
+   "primaryH": 36
+  }
+ },
+ {
+  "page": "//manager/wechat-accounts",
+  "src": "src/app/manager/wechat-accounts/page.tsx",
+  "item": "M4",
+  "status": "PASS",
+  "judgment": "PASS 列表切卡片/压缩，无表格横向滚动（hScroll=0，scrollWidth=375）",
+  "observed": null
+ }
+]

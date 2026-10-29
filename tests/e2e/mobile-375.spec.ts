@@ -55,7 +55,7 @@ test("375：招生批次移动端卡片可渲染", async ({ page }) => {
 });
 
 test("375：整页无横向溢出（scrollWidth = 375）", async ({ page }) => {
-  for (const path of ["/manager/articles", "/manager/content-hub", "/manager/enrollment-offerings"]) {
+  for (const path of ["/manager", "/manager/ai-config", "/manager/articles", "/manager/banners", "/manager/campus", "/manager/categories", "/manager/chat-history", "/manager/chat-scenes", "/manager/collect-items", "/manager/collect-sources", "/manager/collect-tasks", "/manager/content-hub", "/manager/courses", "/manager/element-configs", "/manager/enrollment-offerings", "/manager/gallery", "/manager/home-blocks", "/manager/home-cards", "/manager/hot-majors", "/manager/knowledge", "/manager/knowledge-bases", "/manager/llm-providers", "/manager/login", "/manager/logs", "/manager/majors", "/manager/media", "/manager/navigations", "/manager/news", "/manager/notify-recipients", "/manager/notify-records", "/manager/notify-rules", "/manager/notify-templates", "/manager/page-templates", "/manager/partners", "/manager/publish-jobs", "/manager/roles", "/manager/service-guides", "/manager/settings", "/manager/students", "/manager/tags", "/manager/user-actions", "/manager/users", "/manager/wechat-accounts"]) {
     await page.goto(path, { waitUntil: "load" });
     await page.waitForTimeout(500);
     const sw = await page.evaluate(() => document.documentElement.scrollWidth);
