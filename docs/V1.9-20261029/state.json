@@ -1,45 +1,64 @@
 {
   "FIX-01": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "sonnect",
     "size": "中",
     "dir": "FIX-01-空态动作",
-    "depends_on": ["B1"],
-    "commits": [],
+    "depends_on": [
+      "B1"
+    ],
+    "commits": [
+      "fd64d5d"
+    ],
     "note": "6 页补 emptyAction（articles/chat-history/collect-items/content-hub/home-blocks/knowledge-bases）。DataTable.emptyAction 已存在，不需改组件。与 FIX-02 共改 content-hub，须串行。",
     "verify": "6 页 筛选到 0 条 → empty-state 容器内 button/a ≥1；tsc 0；仅改 6 页"
   },
   "FIX-02": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "sonnect",
     "size": "中",
     "dir": "FIX-02-toast实体名",
-    "depends_on": ["B1", "FIX-01"],
-    "commits": [],
+    "depends_on": [
+      "B1",
+      "FIX-01"
+    ],
+    "commits": [
+      "7567581"
+    ],
     "note": "4 页 toast 点名（banners/content-hub/enrollment-offerings/publish-jobs）。禁用路径 C（改 toastCopy 冻结）。类型 B 走 A（页面传 description），类型 A 优先 A、不行退 B（扩 displayName 候选键）。",
     "verify": "4 页 toast Title+Description 含实体名且非泛词；src/contracts 零改动"
   },
   "FIX-03": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "sonnect",
     "size": "小",
     "dir": "FIX-03-搜索字段",
-    "depends_on": ["B1"],
-    "commits": [],
+    "depends_on": [
+      "B1"
+    ],
+    "commits": [
+      "7e01458"
+    ],
     "note": "collect-tasks searchFields:[] 根因（src/lib/crud-resources/collect.ts:32）。优先路径 A（加可搜字段）；Prisma 不支持关联 contains 则退 B（隐藏搜索框，注意 CrudPage 搜索框无条件渲染，需 spec 开关）。禁路径 C。",
     "verify": "搜索 zzz-no-match-zzz → 0 行 + empty-state，或搜索框不存在；记录搜索前后行数"
   },
   "B2": {
-    "status": "ready",
+    "status": "done",
     "owner": "main-agent",
     "tier": "opus",
     "size": "大",
     "dir": "B2-键盘验收",
-    "depends_on": ["FIX-01", "FIX-02", "FIX-03"],
-    "commits": [],
+    "depends_on": [
+      "FIX-01",
+      "FIX-02",
+      "FIX-03"
+    ],
+    "commits": [
+      "87dd2c7"
+    ],
     "note": "43 页 × K1~K4 = 172 格（V1.8 写 42/168 已修正）。先共性 K3/K4 再逐页 K1/K2。K3 必须运行时验证，缺此项整卡 FAIL。",
     "verify": "matrix.md 43 行 / 0 待核 / PASS+FAIL+N-A=172；K3 有运行时记录；src tests prisma 零改动"
   },
@@ -49,7 +68,9 @@
     "tier": "opus",
     "size": "大",
     "dir": "B3-375px验收",
-    "depends_on": ["B2"],
+    "depends_on": [
+      "B2"
+    ],
     "commits": [],
     "note": "43 页 × M1~M4 = 172 格（V1.8 写 42/168 已修正）。M1 必须记 scrollWidth 具体数值。扩展 mobile-375.spec.ts 路由数组，阈值 toBeLessThanOrEqual(375) 不得改。",
     "verify": "matrix.md 43 行 / M1 全为数值 / PASS+FAIL+N-A=172；阈值未改；src prisma 零改动"
@@ -60,7 +81,9 @@
     "tier": "opus",
     "size": "中",
     "dir": "D1-FIX-性能改进",
-    "depends_on": ["B3"],
+    "depends_on": [
+      "B3"
+    ],
     "commits": [],
     "note": "CLS 0.208→≤0.1、LCP 3.3s→≤2.5s（mobile）。V1.8 只登记未写卡，本轮补齐。前台冻结约束：仅可加 width/height/aspect-ratio/loading/fetchpriority/preload，禁改 className 值。Lighthouse 不可用记 UNKNOWN。",
     "verify": "改后重测贴数值；className 零变更；不可达则如实记 UNKNOWN/PARTIAL"
@@ -71,7 +94,14 @@
     "tier": "haiku",
     "size": "小",
     "dir": "E1-V19收口",
-    "depends_on": ["FIX-01", "FIX-02", "FIX-03", "B2", "B3", "D1-FIX"],
+    "depends_on": [
+      "FIX-01",
+      "FIX-02",
+      "FIX-03",
+      "B2",
+      "B3",
+      "D1-FIX"
+    ],
     "commits": [],
     "note": "7 卡终态 + 唯一一次全量（串行 4 项 + visual + e2e）+ changelog + 冻结面复核 + 双端 0 0。npm test 须加 --no-file-parallelism（已知并发抢 SQLite 假红）。跑 ≠ 门禁：记录但不阻断。",
     "verify": "7/7 done；全量 exit 0；冻结面无意外改动；双端 0 0"
