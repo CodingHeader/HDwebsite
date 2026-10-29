@@ -18,9 +18,9 @@ export const buttonVariants: Record<ButtonVariant, string> = {
 };
 
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-8 px-2.5 text-[12px] [&_svg]:h-3.5 [&_svg]:w-3.5",
-  md: "h-9 px-3.5 text-[13px] [&_svg]:h-4 [&_svg]:w-4",
-  lg: "h-10 px-4 text-[14px] [&_svg]:h-4 [&_svg]:w-4",
+  sm: "h-11 px-2.5 text-[12px] [&_svg]:h-3.5 [&_svg]:w-3.5",
+  md: "h-11 px-3.5 text-[13px] [&_svg]:h-4 [&_svg]:w-4",
+  lg: "h-11 px-4 text-[14px] [&_svg]:h-4 [&_svg]:w-4",
 };
 
 export function buttonClass(variant: ButtonVariant = "secondary", size: ButtonSize = "md", className?: string) {

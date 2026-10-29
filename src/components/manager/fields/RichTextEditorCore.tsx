@@ -32,7 +32,7 @@ function Tool({ label, active, onClick, disabled, children }: { label: string; a
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex h-8 w-8 items-center justify-center rounded text-mgr-muted-fg transition-colors hover:bg-mgr-subtle hover:text-mgr-fg disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex h-11 w-11 items-center justify-center rounded text-mgr-muted-fg transition-colors hover:bg-mgr-subtle hover:text-mgr-fg disabled:pointer-events-none disabled:opacity-50",
         active && "bg-mgr-primary-soft text-mgr-primary"
       )}
     >

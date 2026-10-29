@@ -110,7 +110,7 @@ export function RelationField({
             setOpen(true);
           }}
           className={cn(
-            "h-9 w-full rounded-mgr-control border border-mgr-border bg-mgr-surface pl-8 pr-8 text-[13px] text-mgr-fg shadow-mgr-sm transition-colors placeholder:text-mgr-muted-fg focus:border-mgr-primary focus:outline-none focus:ring-2 focus:ring-mgr-primary/20 aria-[invalid=true]:border-mgr-danger aria-[invalid=true]:ring-mgr-danger/20 disabled:cursor-not-allowed disabled:opacity-70"
+            "h-11 w-full rounded-mgr-control border border-mgr-border bg-mgr-surface pl-8 pr-8 text-[13px] text-mgr-fg shadow-mgr-sm transition-colors placeholder:text-mgr-muted-fg focus:border-mgr-primary focus:outline-none focus:ring-2 focus:ring-mgr-primary/20 aria-[invalid=true]:border-mgr-danger aria-[invalid=true]:ring-mgr-danger/20 disabled:cursor-not-allowed disabled:opacity-70"
           )}
         />
         <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mgr-muted-fg" aria-hidden="true" />

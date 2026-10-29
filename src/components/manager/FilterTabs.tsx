@@ -33,7 +33,7 @@ export function FilterTabs({ tabs, value, onChange, label = "状态筛选" }: Fi
             aria-pressed={active}
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(t.key)}
-            className={`h-7 rounded-[5px] px-3 text-[13px] font-medium transition-colors ${active ? "bg-mgr-surface text-mgr-fg shadow-mgr-sm" : "text-mgr-muted-fg hover:text-mgr-fg"}`}
+            className={`h-11 rounded-[5px] px-3 text-[13px] font-medium transition-colors ${active ? "bg-mgr-surface text-mgr-fg shadow-mgr-sm" : "text-mgr-muted-fg hover:text-mgr-fg"}`}
           >
             {t.label}
           </button>

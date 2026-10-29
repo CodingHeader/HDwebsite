@@ -1,0 +1,79 @@
+{
+  "viewport375": [
+    {
+      "control": "新建按钮",
+      "w": 76,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "搜索框",
+      "w": 343,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "分页按钮",
+      "w": 44,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "content-hub新建内容",
+      "w": 68,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "login用户名输入框",
+      "w": 293,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "login登录按钮",
+      "w": 293,
+      "h": 44,
+      "pass": true
+    }
+  ],
+  "viewport1440": [
+    {
+      "control": "新建按钮",
+      "w": 76,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "搜索框",
+      "w": 240,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "分页按钮",
+      "w": 44,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "content-hub新建内容",
+      "w": 68,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "login用户名输入框",
+      "w": 334,
+      "h": 44,
+      "pass": true
+    },
+    {
+      "control": "login登录按钮",
+      "w": 334,
+      "h": 44,
+      "pass": true
+    }
+  ],
+  "admin": true
+}

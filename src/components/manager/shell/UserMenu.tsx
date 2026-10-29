@@ -52,7 +52,7 @@ export function UserMenu({ name, role, density, onDensityChange, onLogout }: Use
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex h-9 items-center gap-2 rounded-mgr-control px-1.5 hover:bg-mgr-subtle"
+        className="flex h-11 items-center gap-2 rounded-mgr-control px-1.5 hover:bg-mgr-subtle"
       >
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-mgr-primary text-[12px] font-semibold text-mgr-primary-fg">
           {initial}
@@ -87,7 +87,7 @@ export function UserMenu({ name, role, density, onDensityChange, onLogout }: Use
                 aria-checked={density === value}
                 onClick={() => onDensityChange(value)}
                 className={cn(
-                  "flex h-8 items-center justify-center gap-1.5 rounded-mgr-control border text-[13px]",
+                  "flex h-11 items-center justify-center gap-1.5 rounded-mgr-control border text-[13px]",
                   density === value
                     ? "border-mgr-primary bg-mgr-primary-soft text-mgr-primary"
                     : "border-mgr-border text-mgr-fg hover:bg-mgr-subtle"
@@ -104,7 +104,7 @@ export function UserMenu({ name, role, density, onDensityChange, onLogout }: Use
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-9 items-center gap-2 rounded-mgr-control px-3 text-[13px] text-mgr-fg hover:bg-mgr-subtle"
+            className="flex h-11 items-center gap-2 rounded-mgr-control px-3 text-[13px] text-mgr-fg hover:bg-mgr-subtle"
           >
             <ExternalLink className="h-4 w-4 text-mgr-muted-fg" aria-hidden="true" />
             查看前台
@@ -113,7 +113,7 @@ export function UserMenu({ name, role, density, onDensityChange, onLogout }: Use
             role="menuitem"
             type="button"
             onClick={onLogout}
-            className="flex h-9 w-full items-center gap-2 rounded-mgr-control px-3 text-[13px] text-mgr-danger hover:bg-mgr-subtle"
+            className="flex h-11 w-full items-center gap-2 rounded-mgr-control px-3 text-[13px] text-mgr-danger hover:bg-mgr-subtle"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
             退出登录

@@ -31,7 +31,7 @@ export function DetailDialog({ open, onClose, title, description, footer, childr
               </div>
               <Dialog.Close
                 aria-label="关闭"
-                className="-mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
+                className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
               >
                 <X className="h-4 w-4" />
               </Dialog.Close>

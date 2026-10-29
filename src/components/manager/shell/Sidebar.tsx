@@ -56,7 +56,7 @@ export function Sidebar({
 
   const itemClass = (active: boolean) =>
     cn(
-      "group relative flex h-9 items-center gap-3 rounded-mgr-control px-3 text-[13px] font-medium transition-colors",
+      "group relative flex h-11 items-center gap-3 rounded-mgr-control px-3 text-[13px] font-medium transition-colors",
       mini && "justify-center px-0",
       active
         ? "bg-mgr-primary-soft text-mgr-primary"
@@ -68,7 +68,7 @@ export function Sidebar({
       {/* 品牌区 */}
       <div className={cn("flex h-[var(--mgr-topbar-h)] shrink-0 items-center gap-2.5 border-b border-mgr-border px-4", mini && "justify-center px-0")}>
         <Link href="/manager" onClick={onNavigate} className="flex items-center gap-2.5" aria-label={`${siteName} 管理后台首页`}>
-          <span className="flex h-8 w-8 items-center justify-center rounded-mgr-control bg-mgr-primary text-sm font-bold text-mgr-primary-fg">
+          <span className="flex h-11 w-11 items-center justify-center rounded-mgr-control bg-mgr-primary text-sm font-bold text-mgr-primary-fg">
             {siteName.slice(0, 1)}
           </span>
           {!mini && (
@@ -186,7 +186,7 @@ export function Sidebar({
             onClick={onToggleCollapse}
             aria-label={collapsed ? "展开侧栏" : "折叠侧栏"}
             className={cn(
-              "flex h-9 w-full items-center gap-2 rounded-mgr-control px-3 text-[13px] text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg",
+              "flex h-11 w-full items-center gap-2 rounded-mgr-control px-3 text-[13px] text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg",
               mini && "justify-center px-0"
             )}
           >

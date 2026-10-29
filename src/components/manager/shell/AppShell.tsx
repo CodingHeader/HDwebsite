@@ -89,7 +89,7 @@ export function AppShell({ menus, pathname, userName, userRole, siteName, onLogo
               <Dialog.Title className="sr-only">后台导航</Dialog.Title>
               <Dialog.Close
                 aria-label="关闭导航菜单"
-                className="absolute right-2 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle"
+                className="absolute right-2 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle"
               >
                 <X className="h-4 w-4" />
               </Dialog.Close>

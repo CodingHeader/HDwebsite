@@ -209,7 +209,7 @@ const actionTone = {
 function ActionLink({ a, block }: { a: RowActionItem; block?: boolean }) {
   const cls = cn(
     "inline-flex items-center gap-1 rounded-sm text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:h-3.5 [&_svg]:w-3.5",
-    block ? "h-8 justify-center rounded-mgr-control border border-mgr-border bg-mgr-surface px-3" : "px-1 underline-offset-4 hover:underline",
+    block ? "h-11 justify-center rounded-mgr-control border border-mgr-border bg-mgr-surface px-3" : "px-1 underline-offset-4 hover:underline",
     actionTone[a.tone ?? "primary"]
   );
   if (a.href) {

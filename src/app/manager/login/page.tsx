@@ -13,7 +13,7 @@ import { Button, IconButton, Input } from "@/components/manager/ui";
 import { Label } from "@/components/manager/ui/form-field";
 
 const fieldClass =
-  "h-10 rounded-mgr-control border-mgr-border bg-mgr-surface pl-9 text-[14px] text-mgr-fg placeholder:text-mgr-muted-fg focus-visible:border-mgr-primary focus-visible:ring-2 focus-visible:ring-mgr-primary/25";
+  "h-11 rounded-mgr-control border-mgr-border bg-mgr-surface pl-9 text-[14px] text-mgr-fg placeholder:text-mgr-muted-fg focus-visible:border-mgr-primary focus-visible:ring-2 focus-visible:ring-mgr-primary/25";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -157,7 +157,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="h-10 w-full rounded-mgr-control bg-mgr-primary text-[14px] font-semibold text-mgr-primary-fg hover:bg-mgr-primary-hover"
+              className="h-11 w-full rounded-mgr-control bg-mgr-primary text-[14px] font-semibold text-mgr-primary-fg hover:bg-mgr-primary-hover"
             >
               {loading ? (
                 <>

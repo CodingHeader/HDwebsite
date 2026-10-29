@@ -24,7 +24,7 @@ function windowPages(page: number, totalPages: number): (number | "…")[] {
 }
 
 const itemCls =
-  "inline-flex h-8 min-w-8 items-center justify-center rounded-mgr-control px-2 text-[13px] tabular-nums transition-colors disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex h-11 min-w-11 items-center justify-center rounded-mgr-control px-2 text-[13px] tabular-nums transition-colors disabled:pointer-events-none disabled:opacity-40";
 
 export function Pagination({ page, totalPages, total, onChange, className = "mt-4" }: PaginationProps) {
   return (

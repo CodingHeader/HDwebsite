@@ -19,7 +19,7 @@ export function MarkdownField({ a11y, value, onChange, rows = 14, placeholder }:
       type="button"
       aria-pressed={mode === k}
       onClick={() => setMode(k)}
-      className={cn("h-7 rounded px-2.5 text-[12px] font-medium", mode === k ? "bg-mgr-surface text-mgr-fg shadow-mgr-sm" : "text-mgr-muted-fg hover:text-mgr-fg")}
+      className={cn("h-11 rounded px-2.5 text-[12px] font-medium", mode === k ? "bg-mgr-surface text-mgr-fg shadow-mgr-sm" : "text-mgr-muted-fg hover:text-mgr-fg")}
     >
       {label}
     </button>
@@ -35,7 +35,7 @@ export function MarkdownField({ a11y, value, onChange, rows = 14, placeholder }:
         <button
           type="button"
           onClick={() => setPicking(true)}
-          className="inline-flex h-7 items-center gap-1 rounded px-2 text-[12px] text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
+          className="inline-flex h-11 items-center gap-1 rounded px-2 text-[12px] text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
         >
           <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
           插入图片

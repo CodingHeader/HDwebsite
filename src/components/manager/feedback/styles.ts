@@ -5,12 +5,12 @@
 import { buttonClass } from "@/components/manager/ui/button-class";
 
 export const btn = {
-  base: "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-mgr-control px-3.5 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-60 [&_svg]:h-4 [&_svg]:w-4",
+  base: "inline-flex h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-mgr-control px-3.5 text-[13px] font-medium transition-colors disabled:pointer-events-none disabled:opacity-60 [&_svg]:h-4 [&_svg]:w-4",
   primary: "bg-mgr-primary text-mgr-primary-fg shadow-mgr-sm hover:bg-mgr-primary-hover",
   secondary: "border border-mgr-border bg-mgr-surface text-mgr-fg shadow-mgr-sm hover:bg-mgr-subtle",
   danger: "bg-mgr-danger text-white shadow-mgr-sm hover:opacity-90",
   ghost: "text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg",
-  sm: "h-8 px-2.5 text-[12px]",
+  sm: "h-11 px-2.5 text-[12px]",
 } as const;
 
 /** P07：与标准 Button 组件共用同一套类名（buttonClass），确保命令式弹窗与页面按钮一致 */
@@ -31,6 +31,6 @@ export function linkCls(variant: "primary" | "muted" | "danger" = "primary") {
 }
 
 export const inputCls =
-  "h-9 w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 text-[13px] text-mgr-fg shadow-mgr-sm placeholder:text-mgr-muted-fg transition-colors focus:border-mgr-primary focus:outline-none focus:ring-2 focus:ring-mgr-primary/20 aria-[invalid=true]:border-mgr-danger aria-[invalid=true]:ring-mgr-danger/20 disabled:opacity-60";
+  "h-11 w-full rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 text-[13px] text-mgr-fg shadow-mgr-sm placeholder:text-mgr-muted-fg transition-colors focus:border-mgr-primary focus:outline-none focus:ring-2 focus:ring-mgr-primary/20 aria-[invalid=true]:border-mgr-danger aria-[invalid=true]:ring-mgr-danger/20 disabled:opacity-60";
 
 export const cardCls = "rounded-mgr-card border border-mgr-border bg-mgr-surface shadow-mgr-sm";

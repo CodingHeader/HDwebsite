@@ -97,7 +97,7 @@ export function Tabs({ items, value, onChange, className, label }: { items: TabI
               onChange(items[next].key);
             }}
             className={cn(
-              "-mb-px inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-[13px] font-medium transition-colors",
+              "-mb-px inline-flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-[13px] font-medium transition-colors",
               active ? "border-mgr-primary text-mgr-primary" : "border-transparent text-mgr-muted-fg hover:text-mgr-fg"
             )}
           >

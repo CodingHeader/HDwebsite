@@ -36,7 +36,7 @@ export function Topbar({
         type="button"
         onClick={onOpenDrawer}
         aria-label="打开导航菜单"
-        className="-ml-1 flex h-9 w-9 items-center justify-center rounded-mgr-control text-mgr-fg hover:bg-mgr-subtle lg:hidden"
+        className="-ml-1 flex h-11 w-11 items-center justify-center rounded-mgr-control text-mgr-fg hover:bg-mgr-subtle lg:hidden"
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -49,7 +49,7 @@ export function Topbar({
         type="button"
         onClick={onOpenCommand}
         aria-label="搜索后台页面（Ctrl+K）"
-        className="flex h-9 items-center gap-2 rounded-mgr-control border border-mgr-border bg-mgr-bg px-2.5 text-[13px] text-mgr-muted-fg hover:border-mgr-fg/20 hover:text-mgr-fg sm:w-56"
+        className="flex h-11 items-center gap-2 rounded-mgr-control border border-mgr-border bg-mgr-bg px-2.5 text-[13px] text-mgr-muted-fg hover:border-mgr-fg/20 hover:text-mgr-fg sm:w-56"
       >
         <Search className="h-4 w-4" aria-hidden="true" />
         <span className="hidden flex-1 text-left sm:inline">搜索页面…</span>
@@ -59,7 +59,7 @@ export function Topbar({
       <Link
         href="/manager/notify-records"
         aria-label="通知记录"
-        className="flex h-9 w-9 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
+        className="flex h-11 w-11 items-center justify-center rounded-mgr-control text-mgr-muted-fg hover:bg-mgr-subtle hover:text-mgr-fg"
       >
         <Bell className="h-[18px] w-[18px]" />
       </Link>

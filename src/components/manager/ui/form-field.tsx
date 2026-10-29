@@ -70,7 +70,7 @@ export function FormField({
   if (inline) {
     return (
       <div className={className}>
-        <div className="flex min-h-9 items-center justify-between gap-3 rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2">
+        <div className="flex min-h-11 items-center justify-between gap-3 rounded-mgr-control border border-mgr-border bg-mgr-surface px-3 py-2">
           <Label htmlFor={id} required={required} className="cursor-pointer">
             {label}
           </Label>

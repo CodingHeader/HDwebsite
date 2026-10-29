@@ -15,7 +15,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
   { className, type = "text", ...rest },
   ref
 ) {
-  return <input ref={ref} type={type} className={cn(controlClass, "h-9", className)} {...rest} />;
+  return <input ref={ref} type={type} className={cn(controlClass, "h-11", className)} {...rest} />;
 });
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
@@ -38,7 +38,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function 
 ) {
   return (
     <div className={cn("relative", className?.includes("w-") ? undefined : "w-full", className)}>
-      <select ref={ref} className={cn(controlClass, "h-9 appearance-none pr-8")} {...rest}>
+      <select ref={ref} className={cn(controlClass, "h-11 appearance-none pr-8")} {...rest}>
         {placeholder !== undefined && <option value="">{placeholder}</option>}
         {options.map((o) => (
           <option key={String(o.value)} value={String(o.value)} disabled={o.disabled}>
@@ -148,7 +148,7 @@ export function SearchField({
             emit("", true);
           }
         }}
-        className={cn(controlClass, "h-9 pl-8 pr-8 [&::-webkit-search-cancel-button]:hidden")}
+        className={cn(controlClass, "h-11 pl-8 pr-8 [&::-webkit-search-cancel-button]:hidden")}
       />
       {text && (
         <button
@@ -169,7 +169,7 @@ export function SearchField({
 /** 日期时间输入（input[type=datetime-local] 原生美化；键盘与读屏原生可用） */
 export const DateTimeInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   function DateTimeInput({ className, type = "datetime-local", ...rest }, ref) {
-    return <input ref={ref} type={type} className={cn(controlClass, "h-9", className)} {...rest} />;
+    return <input ref={ref} type={type} className={cn(controlClass, "h-11", className)} {...rest} />;
   }
 );
 

@@ -61,7 +61,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(f
       className={cn(
         base,
         variants[variant],
-        size === "sm" ? "h-7 w-7 [&_svg]:h-3.5 [&_svg]:w-3.5" : "h-9 w-9 [&_svg]:h-4 [&_svg]:w-4",
+        size === "sm" ? "h-11 w-11 [&_svg]:h-3.5 [&_svg]:w-3.5" : "h-11 w-11 [&_svg]:h-4 [&_svg]:w-4",
         className
       )}
       {...rest}
