@@ -11,6 +11,7 @@
  * - 保留 0 参可调用性：既有契约测试（lane-b/routes-public.test.ts）以 `healthGET()` 直接调用
  */
 import { prisma } from "@/lib/prisma";
+import { productionPort } from "@/lib/env";
 import { success, serverError } from "@/lib/api-response";
 import { withApi } from "@/lib/api-handler";
 
@@ -28,6 +29,9 @@ const handler = withApi(
     return success({
       status: "ok",
       db: "up",
+      // V22-ENV-02：应用自证标识——一条 curl 即可确认打开的是 HDwebsite 而非其它项目
+      app: "hdwebsite",
+      port: productionPort(),
       time: new Date().toISOString(),
     });
   },

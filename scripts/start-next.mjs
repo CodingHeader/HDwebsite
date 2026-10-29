@@ -128,6 +128,14 @@ const child = spawn(process.execPath, commandArgs, {
   },
 });
 
+// V22-ENV-02：启动身份块——一条日志即可确认启动的是 HDwebsite（app）与其端口，避免被其它项目误导
+console.log("────────────────────────────────────────────");
+console.log("弘道教育 HDwebsite 启动中");
+console.log("  应用标识: hdwebsite");
+console.log("  端口: " + port + " | 环境: " + (process.env.NODE_ENV || "development"));
+console.log("  数据库: " + resolvedDatabaseUrl);
+console.log("────────────────────────────────────────────");
+
 child.on("exit", (code, signal) => {
   if (signal) {
     process.kill(process.pid, signal);
