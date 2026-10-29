@@ -1,6 +1,6 @@
 # HDwebsite V2.1 · 统一规划（前台回归核查 + 功能对等 + 启动链路）
 
-**基线**：`upgrade@d3cbe2c8`，`origin/upgrade = d947dc1`，**本地领先 6 个提交未推送**
+**基线**：`upgrade@47e3c43`，`origin/upgrade = 5f92871`，**本地领先 1 个提交未推送**（V2.0 五卡已于 `5f92871` 全部推送）
 **规划日期**：2026-10-29
 **触发**：用户报告「启动后界面呈现移动端，设计/导航/功能都发生大变化」
 
@@ -69,7 +69,7 @@ SQLITE_ERROR: no such table: main.CronJob
 
 ## 三、本规划的定位
 
-**不重做已完成的 V2.0。** V2.0 的 5 卡中 4 卡已 done（ADR-01/E2E-01/LCP-01/M3-01），仅 E1 待收口。
+**不重做已完成的 V2.0。** V2.0 已于 2026-10-29 全部完成并推送（5/5 done，远端 `5f92871`）：ADR-01 `ecd735d`、E2E-01 `af7aff6`、LCP-01 `6af5568`、M3-01 `a529edf`+`74b123d`、E1 `e8a3091`+`5f92871`。
 
 本规划解决的是 **V2.0 未覆盖的三类问题**：
 
@@ -153,20 +153,34 @@ PAR-01 → PAR-02
 
 ---
 
-## 九、当前的两个阻塞
+## 九、当前的三项阻塞（复核于 2026-10-29 17:35）
 
-### B-1 · `git fetch` 失败（无凭据）
+### B-1 · 推送凭据
 
 ```bash
-$ git fetch origin
-fatal: could not read Username for 'https://github.com': No such file or directory
+$ GIT_TERMINAL_PROMPT=0 git push origin upgrade
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
 ```
 
-**不是网络问题**（`http.proxy = http://127.0.0.1:10808` 已配置且代理可用）。是 HTTPS 凭据缺失。
+不是网络问题（`http.proxy = 10808` 可用，`ls-remote` 匿名成功）。是 HTTPS 写权限需凭据，本机无可用 helper。
 
-**影响**：`origin/upgrade` 停留在 `d947dc1`（规划开始时的值），无法确认远端是否已有新提交。
-**用户已授权推送**，但推送同样需要凭据。**需你提供凭据配置方式，或确认可改用 SSH。**
+**影响范围**：仅 `47e3c43`（本规划提交）1 个提交未推送；`5f92871` 及之前已由执行会话推送。
 
 ### B-2 · 用户访问的 URL 未知
 
-见 §二。这是判定根因的分水岭，**不得假设**。
+见 §二。这是判定"移动端"根因的分水岭，**不得假设**。
+
+### B-3 · remote 归属需你确认
+
+| 地址 | HTTP | 说明 |
+|---|---:|---|
+| `nevermeetagain/HDwebsite`（**你清单里写的**） | **404** | 不存在 |
+| `CodingHeader/HDwebsite`（**当前 remote**） | 200 | `upgrade=5f92871`、`main=94dbbbb`，与本仓库吻合 |
+
+`main=94dbbbb` 正是 AGENTS.md 指定的旧站基准，`upgrade=5f92871` 正是本地推送的 HEAD —— **当前 remote 指向无误，执行会话的改动有事实依据**。
+
+**需你确认**：清单里的 `nevermeetagain/HDwebsite` 是否已迁移/改名到 `CodingHeader/HDwebsite`？
+- 若是 → 请更新项目清单，避免后续再踩
+- 若否 → 当前 remote 指向了别的仓库，须立即改回
+
+不自行裁定：改错会把提交送进非目标仓库，不可逆。
