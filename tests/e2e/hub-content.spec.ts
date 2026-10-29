@@ -19,7 +19,7 @@ test("内容中枢：新建 → 提交审核 → 审核通过 → 预览 markdow
   await page.getByTestId("hub-edit-title").fill(TITLE);
   await page.getByTestId("hub-edit-content").fill(MARKDOWN);
   await page.getByRole("button", { name: "创建" }).click();
-  await expect(page.getByText("草稿已入库")).toBeVisible();
+  await expect(page.getByText(`「${TITLE}」已入库`)).toBeVisible();
 
   const row = page.getByTestId("content-hub-table").locator("tbody tr").filter({ hasText: TITLE });
   await expect(row).toContainText("draft");
@@ -50,7 +50,7 @@ test("内容中枢：审核拒绝流程（备注理由）", async ({ page }) => 
   await page.getByTestId("hub-edit-title").fill(title);
   await page.getByTestId("hub-edit-content").fill("待拒内容");
   await page.getByRole("button", { name: "创建" }).click();
-  await expect(page.getByText("草稿已入库")).toBeVisible();
+  await expect(page.getByText(`「${title}」已入库`)).toBeVisible();
 
   const row = page.getByTestId("content-hub-table").locator("tbody tr").filter({ hasText: title });
   await row.getByRole("button", { name: "提交审核" }).click();
