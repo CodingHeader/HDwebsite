@@ -34,7 +34,8 @@
     "depends_on": [],
     "blocked_reason": null,
     "commits": [
-      "a529edf"
+      "a529edf",
+      "74b123d"
     ],
     "note": "【D-20-01 已裁决：方案 A 全局提升，桌面端同样 44px】36 处高度类中实改 34 处 / 19 文件。核心：button-class.ts 三档统一 h-11；input.tsx 4 处 + feedback/styles.ts:34 inputCls（SearchInput.tsx 直接引用，最易漏）+ RelationField:113；图标按钮 6 处改 h-11 w-11；Pagination 的 min-w-8 须同步改 min-w-11；导航壳 11 处。跳过 2 处非交互（DataTable:444 表头、ConfirmDialog:81 aria-hidden 装饰图标）。已知代价：桌面密度变松、B2 键盘参照失效需 E1 复核、视觉基线须 CI 重建。",
     "verify": "375 与 1440 两视口核心控件均 ≥44×44；M3 40 FAIL 归零；mobile-375 无横向溢出回归；只改授权的 19 文件"
@@ -53,7 +54,7 @@
     "verify": "verdict.md 明确口径 + 说明排除理由 + 最终判定 + src 零改动"
   },
   "E1": {
-    "status": "ready",
+    "status": "done",
     "owner": "external-assistant",
     "tier": "haiku",
     "size": "小",
@@ -65,7 +66,7 @@
       "LCP-01"
     ],
     "commits": [],
-    "note": "5 卡终态 + 唯一全量（lint/typecheck/test/build/visual/e2e 逐项记录，不用 && 串联）+ changelog + 冻结面复核 + 双端 0 0。npm test 加 --no-file-parallelism。判读：四项分别 exit 0 即通过，失败项记 UNKNOWN 不阻断。",
-    "verify": "5/5 done；lint/typecheck/test/build 四项分别 exit 0；E2E 遗留归零；M3 归零或已说明；双端 0 0"
+    "note": "5 卡终态 5/5 done；全量 lint/typecheck/test(1859)/build 四项 exit 0；e2e 79P/0F（hub-content 2 遗留归零）；visual 5P/40F（win32 字体→CI 重建）；M3 两视口全 ≥44（40 FAIL 归零）；冻结面零意外改动；ADR-039 六节；B2 参照仅尺寸类变化、DOM 序不变仍有效；双端 0 0（推送后）。",
+    "verify": "5/5 done；lint/typecheck/test/build 四项分别 exit 0；e2e 79P/0F（E2E 遗留归零）；M3 两视口 ≥44（M3 归零）；冻结面无意外改动；ADR-039 存在且六节；双端 0 0"
   }
 }
