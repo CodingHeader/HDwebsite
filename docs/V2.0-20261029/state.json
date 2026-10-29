@@ -65,7 +65,9 @@
       "M3-01",
       "LCP-01"
     ],
-    "commits": [],
+    "commits": [
+      "e8a3091"
+    ],
     "note": "5 卡终态 5/5 done；全量 lint/typecheck/test(1859)/build 四项 exit 0；e2e 79P/0F（hub-content 2 遗留归零）；visual 5P/40F（win32 字体→CI 重建）；M3 两视口全 ≥44（40 FAIL 归零）；冻结面零意外改动；ADR-039 六节；B2 参照仅尺寸类变化、DOM 序不变仍有效；双端 0 0（推送后）。",
     "verify": "5/5 done；lint/typecheck/test/build 四项分别 exit 0；e2e 79P/0F（E2E 遗留归零）；M3 两视口 ≥44（M3 归零）；冻结面无意外改动；ADR-039 存在且六节；双端 0 0"
   }
