@@ -1,0 +1,79 @@
+{
+  "ENV-01": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "sonnect",
+    "size": "中",
+    "slice": "S1",
+    "depends_on": [],
+    "commits": [],
+    "note": "启动契约固化：env 校验前置到 spawn 之前（当前实测是 Ready 后才 FATAL，端口已监听但服务不可用）；新增 DB 迁移状态检测（dev.db 0 字节仍启动成功，运行时才报 no such table: main.CronJob）；补 .env.example 的 ENCRYPTION_KEY/APP_ORIGIN。禁止改 src/lib/env.ts，校验逻辑在脚本内内联。",
+    "verify": "缺 env 时 exit!=0 且端口未监听；DB 未迁移时 exit!=0 并输出 db:deploy 指引；正常情形 200"
+  },
+  "ENV-02": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "haiku",
+    "size": "小",
+    "slice": "S1",
+    "depends_on": ["ENV-01"],
+    "commits": [],
+    "note": "端口自证：/api/health 追加 app='hdwebsite' 与 port 字段（不改已有字段），启动日志打印身份块。根因是不知我打开的是哪个项目——本机 3000 已被 Aidean 占用，HDwebsite 在 6789。",
+    "verify": "curl /api/health 输出含 \"app\":\"hdwebsite\" 与 \"port\":6789，已有字段未变"
+  },
+  "AUD-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "中",
+    "slice": "S2",
+    "depends_on": [],
+    "commits": [],
+    "note": "前台 className 差异全量审计（59 文件）。口径：className 值集合 diff，不是行数 diff（缩进噪声已排除）。三档定性：合规/有据例外/无据改写。已实测：StatsBanner 零差异、TopBanner/Banner 合规、Navbar 有据（V10-Q1 用户 2026-10-24 授权，源码注释可查）、FourCards 无据。只审计不改代码。",
+    "verify": "覆盖 59 文件无遗漏；每个差异值有档位无待定；有据档附 ADR/文件:行引用；src 零改动"
+  },
+  "AUD-02": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "小",
+    "slice": "S2",
+    "depends_on": ["AUD-01"],
+    "commits": [],
+    "note": "FourCards 结构性改写归因：main 的 'relative flex-1' 被改为 'absolute inset-0 bg-cover bg-center...'，无 ADR 记录。需 git log -S 找引入提交 + 两版渲染对比，判定缺陷/改进。若判缺陷需回滚，必须先经用户批准（触碰 REQ-F-014 冻结面）。",
+    "verify": "找到引入提交 hash；有两版渲染对比；结论明确；若判缺陷须说明回滚方案与影响面"
+  },
+  "PAR-01": {
+    "status": "ready",
+    "owner": "main-agent",
+    "tier": "opus",
+    "size": "大",
+    "slice": "S3",
+    "depends_on": [],
+    "commits": [],
+    "note": "origin/main 功能对等复核：56 个 API 路由 + 16 个前台页面逐项判定直通/重定向/改名/缺失。文件层零丢失已证（comm -23 空）。70 个新增路由需判'强化还是替代'。动态验证需服务运行且 DB 已迁移，否则注明。",
+    "verify": "56 路由全部有归属结论；缺失为 0 或每个附理由；重定向类实测 3xx；前台 16 页可达"
+  },
+  "PAR-02": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "sonnect",
+    "size": "小",
+    "slice": "S3",
+    "depends_on": ["PAR-01"],
+    "commits": [],
+    "note": "前台页面/组件零丢失复核：main 16 页 + 27 组件在 HEAD 全部存在（已证零缺失）。新增 ChatWidget/MarkdownRenderer/UserActionTracker 需说明用途与是否影响视觉。",
+    "verify": "comm -23 输出 0；新增组件有用途说明；不改变既有区块视觉或已由 ADR-039 覆盖"
+  },
+  "E1": {
+    "status": "ready",
+    "owner": "designated-agent",
+    "tier": "haiku",
+    "size": "小",
+    "slice": "S4",
+    "depends_on": ["ENV-01", "ENV-02", "AUD-01", "AUD-02", "PAR-01", "PAR-02"],
+    "commits": [],
+    "note": "V2.1 收口：6 卡终态 + 定向检查（不做全量回归）+ 冻结面复核 + changelog + 双端 0 0。推送需凭据（B-1 阻塞）。",
+    "verify": "6/6 done；src/contracts、prisma、package.json 零改动；双端 0 0"
+  }
+}
