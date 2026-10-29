@@ -28,7 +28,7 @@
     "verify": "缺 ENCRYPTION_KEY 时 exit!=0 且端口未监听；DB 未迁移时 exit!=0 且输出含 db:deploy；正常情形 200"
   },
   "ENV-02": {
-    "status": "in_progress",
+    "status": "done",
     "owner": "designated-agent",
     "tier": "haiku",
     "size": "小",
@@ -36,7 +36,9 @@
     "depends_on": [
       "ENV-01"
     ],
-    "commits": [],
+    "commits": [
+      "dca4aba"
+    ],
     "note": "端口自证：/api/health 追加 app='hdwebsite' 与 port（当前 grep -c hdwebsite = 0，无任何应用标识）。根因是本机 3000 被 Aidean 占用、HDwebsite 在 6789，用户打开 3000 看到 Aidean 界面误以为 HDwebsite 被改坏。不改已有字段，避免破坏既有消费方。",
     "verify": "curl /api/health 含 \"app\":\"hdwebsite\" 与 \"port\":6789；已有字段未变；启动日志含弘道教育与 6789"
   },
